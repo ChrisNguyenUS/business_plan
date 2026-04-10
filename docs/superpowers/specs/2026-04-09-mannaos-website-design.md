@@ -58,33 +58,35 @@ Logo colors extracted (drive the entire site palette):
 > **Note:** Request a transparent PNG version of the logo for clean use on any background color (current files have white/light backing). Until then, use the logo inside a white-background pill/badge in the dark navbar, or place it on a dark teal surface that matches the site.
 
 ### Colors
-Derived directly from the logo palette:
+Light, clean palette derived from the logo:
 ```
-Primary background:   #0A1A1A  (deep dark teal-black — echoes logo darkness)
-Secondary background: #0F2D2D  (dark teal — cards, sections, portal sidebar)
-Accent teal:          #2A9090  (logo teal — buttons, links, active states)
-Accent teal dark:     #1A6060  (hover state, gradient end)
-Accent gradient:      #2A9090 → #1A6060  (teal gradient — hero, CTAs)
-Silver accent:        #8A9BA8  (logo silver — borders, secondary text, badges)
-Charcoal:             #1A1A1A  (logo dark — dividers, icon fills)
-Text primary:         #FFFFFF
-Text secondary:       #B0C8C8  (teal-tinted light gray)
-Surface overlay:      rgba(42, 144, 144, 0.08)  (glassmorphism tint)
+Primary background:   #FFFFFF  (white — clean, professional)
+Secondary background: #F0F7F7  (very light teal tint — alternate sections, cards)
+Surface:              #F8FAFA  (off-white — subtle section separation)
+Accent teal:          #2A9090  (logo teal — buttons, links, active states, CTAs)
+Accent teal dark:     #1A6060  (hover state, pressed)
+Accent gradient:      #2A9090 → #1A6060  (teal gradient — hero CTA buttons)
+Silver accent:        #8A9BA8  (logo silver — borders, dividers, secondary badges)
+Charcoal:             #1A1A1A  (logo dark stroke — headings, icon fills)
+Text primary:         #1A1A1A  (charcoal — matches logo wordmark darkness)
+Text secondary:       #4A6868  (teal-tinted dark gray — body, captions)
+Border:               #D0E4E4  (light teal-gray — card borders, inputs)
 ```
 
 ### Typography
 - **Font:** Inter — Google Fonts, full Vietnamese diacritic support
-- **Headings:** Bold, large, tracking slightly wide (complements the bold wordmark)
-- **Body:** Regular weight, readable
-- **Labels/badges:** Semi-bold, silver (`#8A9BA8`) — matches logo wordmark feel
+- **Headings:** Bold, charcoal `#1A1A1A` — complements the bold logo wordmark
+- **Body:** Regular weight, `#4A6868` — readable, warm
+- **Labels/badges:** Semi-bold, silver `#8A9BA8` — echoes the metallic wordmark feel
 
 ### Visual Style
-- Deep dark teal background — professional, premium, distinct from typical navy sites
-- Glassmorphism cards: teal-tinted semi-transparent surface with silver border (`rgba(138,155,168,0.2)`)
-- Teal gradient buttons with darker teal hover
-- Silver accent lines and dividers — echoes the metallic wordmark
+- Clean white background — professional, trustworthy, accessible
+- Light teal `#F0F7F7` alternating sections — creates rhythm without dark contrast
+- Teal `#2A9090` CTA buttons, links, and active states — logo color drives all interactions
+- Silver borders and dividers — echoes the metallic wordmark
+- Subtle drop shadows on cards (no glassmorphism — doesn't suit light backgrounds)
+- Logo `Logo.PNG` works natively on white background — no transparent PNG required for main site
 - Clean whitespace — not cluttered
-- The logo's 3D metallic feel informs the overall premium aesthetic
 
 ---
 
@@ -217,7 +219,7 @@ raw_response     jsonb
 ### 6.1 Home Page (/)
 
 Sections in order:
-1. **Navbar** — Logo left | Nav links center | VI/EN toggle + "Book Now" + "Sign In" right | Sticky on scroll
+1. **Navbar** — Logo left | Nav links center | Language toggle pill (EN/VI) + "Book Now" (teal button) + "Sign In" right | White background | Sticky on scroll with subtle shadow
 2. **Hero** — Full-width dark gradient, bilingual headline, 2 CTAs: "Đặt lịch ngay" + "Our Services" | Cover photo editable via admin
 3. **Services Overview** — 4 cards: Tax, Insurance, Immigration, AI — icon + description + "Learn more"
 4. **Why Manna** — 4 trust points: Bilingual service, EFIN licensed, Life Insurance licensed, AI-powered | Credential numbers shown
@@ -379,13 +381,18 @@ Vercel Cron job runs daily:
 
 ## 11. Bilingual System
 
-- Language toggle: **VI / EN** in navbar, persists via `localStorage`
-- Default language: Vietnamese
+- **Language toggle button** in navbar (right side, always visible): displays current language and switches on click
+  - Shows **"VI"** when in English mode → click to switch to Vietnamese
+  - Shows **"EN"** when in Vietnamese mode → click to switch to English
+  - Styled as a pill button in teal `#2A9090` — clearly visible, not buried in a dropdown
+- **Default language: English**
+- Selection persists via `localStorage` — survives page refresh and navigation
 - Implementation: `next-i18next` with JSON translation files
-  - `/locales/vi/common.json`
   - `/locales/en/common.json`
-- All static content translated; blog posts have separate VI + EN fields
-- Portal and admin UI: English only (admin is bilingual; portal clients can use VI toggle)
+  - `/locales/vi/common.json`
+- All static public content translated (both languages fully complete)
+- Blog posts have separate `title_en`, `content_en`, `title_vi`, `content_vi` fields — shown based on active language
+- Portal and admin UI: English only (admin is bilingual; clients use the toggle for public pages)
 
 ---
 
