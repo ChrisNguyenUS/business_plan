@@ -46,16 +46,23 @@ A bilingual (Vietnamese/English) professional website for Manna One Solution —
 ## 3. Design System
 
 ### Logo
-Two files provided in `/Logo/`:
-- `Logo.PNG` — full logo with white background (use in light-bg contexts or contained badge)
-- `No background Manna logo.JPG` — for dark backgrounds (place on dark teal surface)
+Two files in `/Logo/`:
+- `Logo-Picsart-BackgroundRemover.PNG` — **PRIMARY** — transparent background, use everywhere on the site
+- `Logo.PNG` — white background version, use for OG images, email, and social share previews only
+
+**Usage by context:**
+| Context | File |
+|---|---|
+| Navbar (white or teal background) | `Logo-Picsart-BackgroundRemover.PNG` |
+| Footer | `Logo-Picsart-BackgroundRemover.PNG` |
+| Hero section (any background) | `Logo-Picsart-BackgroundRemover.PNG` |
+| OG / social share image | `Logo.PNG` |
+| Email templates | `Logo.PNG` |
 
 Logo colors extracted (drive the entire site palette):
 - **Teal** — primary brand color, the metallic M mark: `#2A9090`
 - **Charcoal/black** — dark stroke accent on the M: `#1A1A1A`
 - **Metallic silver** — wordmark "MANNA ONE SOLUTION": `#8A9BA8`
-
-> **Note:** Request a transparent PNG version of the logo for clean use on any background color (current files have white/light backing). Until then, use the logo inside a white-background pill/badge in the dark navbar, or place it on a dark teal surface that matches the site.
 
 ### Colors
 Light, clean palette derived from the logo:
@@ -85,7 +92,8 @@ Border:               #D0E4E4  (light teal-gray — card borders, inputs)
 - Teal `#2A9090` CTA buttons, links, and active states — logo color drives all interactions
 - Silver borders and dividers — echoes the metallic wordmark
 - Subtle drop shadows on cards (no glassmorphism — doesn't suit light backgrounds)
-- Logo `Logo.PNG` works natively on white background — no transparent PNG required for main site
+- Logo `Logo-Picsart-BackgroundRemover.PNG` (transparent PNG) works on any background — white sections, teal hero areas, or colored cards
+- Optional: navbar can use a teal `#2A9090` top bar before scroll, reverting to white on sticky scroll — transparent logo works on both
 - Clean whitespace — not cluttered
 
 ---
