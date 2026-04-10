@@ -45,31 +45,46 @@ A bilingual (Vietnamese/English) professional website for Manna One Solution —
 
 ## 3. Design System
 
+### Logo
+Two files provided in `/Logo/`:
+- `Logo.PNG` — full logo with white background (use in light-bg contexts or contained badge)
+- `No background Manna logo.JPG` — for dark backgrounds (place on dark teal surface)
+
+Logo colors extracted (drive the entire site palette):
+- **Teal** — primary brand color, the metallic M mark: `#2A9090`
+- **Charcoal/black** — dark stroke accent on the M: `#1A1A1A`
+- **Metallic silver** — wordmark "MANNA ONE SOLUTION": `#8A9BA8`
+
+> **Note:** Request a transparent PNG version of the logo for clean use on any background color (current files have white/light backing). Until then, use the logo inside a white-background pill/badge in the dark navbar, or place it on a dark teal surface that matches the site.
+
 ### Colors
+Derived directly from the logo palette:
 ```
-Primary background:   #0A1628  (deep navy)
-Secondary background: #1E3A5F  (mid navy — cards, sections)
-Accent gradient:      #4F8EF7 → #7B2FBE  (blue-to-purple — hero, CTAs)
-Accent solid:         #4F8EF7  (blue — buttons, links)
-Gold accent:          #F5A623  (trust badges, highlights)
+Primary background:   #0A1A1A  (deep dark teal-black — echoes logo darkness)
+Secondary background: #0F2D2D  (dark teal — cards, sections, portal sidebar)
+Accent teal:          #2A9090  (logo teal — buttons, links, active states)
+Accent teal dark:     #1A6060  (hover state, gradient end)
+Accent gradient:      #2A9090 → #1A6060  (teal gradient — hero, CTAs)
+Silver accent:        #8A9BA8  (logo silver — borders, secondary text, badges)
+Charcoal:             #1A1A1A  (logo dark — dividers, icon fills)
 Text primary:         #FFFFFF
-Text secondary:       #E2E8F0
+Text secondary:       #B0C8C8  (teal-tinted light gray)
+Surface overlay:      rgba(42, 144, 144, 0.08)  (glassmorphism tint)
 ```
 
 ### Typography
-- **Font:** Inter (or Plus Jakarta Sans) — Google Fonts, full Vietnamese diacritic support
-- **Headings:** Bold, large, clean
+- **Font:** Inter — Google Fonts, full Vietnamese diacritic support
+- **Headings:** Bold, large, tracking slightly wide (complements the bold wordmark)
 - **Body:** Regular weight, readable
-
-### Logo
-- Provided by owner — no SVG monogram generated in code
-- Used in Navbar (left), Footer, and OG image
+- **Labels/badges:** Semi-bold, silver (`#8A9BA8`) — matches logo wordmark feel
 
 ### Visual Style
-- Dark navy background — professional, modern, tech-forward (Stripe/Linear aesthetic)
-- Glassmorphism cards: semi-transparent with subtle blur/border
-- Gradient buttons with hover animation
+- Deep dark teal background — professional, premium, distinct from typical navy sites
+- Glassmorphism cards: teal-tinted semi-transparent surface with silver border (`rgba(138,155,168,0.2)`)
+- Teal gradient buttons with darker teal hover
+- Silver accent lines and dividers — echoes the metallic wordmark
 - Clean whitespace — not cluttered
+- The logo's 3D metallic feel informs the overall premium aesthetic
 
 ---
 
