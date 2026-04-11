@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-container": "#373636",
+                "on-tertiary": "#ffffff",
+                "surface-bright": "#f7f9ff",
+                "on-tertiary-fixed": "#1b1c1c",
+                "secondary-fixed-dim": "#7bd4dd",
+                "inverse-primary": "#69d6e1",
+                "primary": "#006970",
+                "on-primary-fixed-variant": "#004f55",
+                "primary-fixed": "#87f3fd",
+                "error": "#ba1a1a",
+                "tertiary-container": "#a19f9f",
+                "surface-container": "#ebeef3",
+                "on-secondary-fixed": "#002022",
+                "on-background": "#181c20",
+                "secondary-container": "#95eef6",
+                "on-surface-variant": "#3d494a",
+                "primary-container": "#3aafb9",
+                "error-container": "#ffdad6",
+                "surface": "#f7f9ff",
+                "inverse-surface": "#2d3135",
+                "surface-variant": "#e0e3e8",
+                "on-error": "#ffffff",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "surface-container-lowest": "#ffffff",
+                "surface-tint": "#006970",
+                "primary-fixed-dim": "#69d6e1",
+                "on-tertiary-fixed-variant": "#474747",
+                "tertiary-fixed": "#e4e2e1",
+                "surface-container-high": "#e5e8ee",
+                "tertiary": "#5f5e5e",
+                "surface-container-highest": "#e0e3e8",
+                "secondary": "#006970",
+                "surface-container-low": "#f1f4f9",
+                "on-secondary": "#ffffff",
+                "outline": "#6d797a",
+                "background": "#f7f9ff",
+                "on-error-container": "#93000a",
+                "surface-dim": "#d7dadf",
+                "on-surface": "#181c20",
+                "on-primary-fixed": "#002022",
+                "secondary-fixed": "#98f1f9",
+                "on-secondary-fixed-variant": "#004f54",
+                "outline-variant": "#bcc9ca",
+                "on-primary": "#ffffff",
+                "inverse-on-surface": "#eef1f6",
+                "on-primary-container": "#003d42",
+                "on-secondary-container": "#006e75"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (Predicted Component Implementation) -->
+<aside class="fixed left-0 top-0 h-full z-40 w-20 min-h-screen flex flex-col bg-[#2C2C2C] items-center py-6 space-y-8">
+<div class="mb-4">
+<span class="text-xl font-bold text-white tracking-tighter">M1</span>
+</div>
+<nav class="flex flex-col items-center w-full space-y-4">
+<!-- Dashboard -->
+<button class="w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-white/5 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</button>
+<!-- Cases (Active State) -->
+<button class="w-12 h-12 flex items-center justify-center rounded-xl text-[#3AAFB9] bg-[#3AAFB9]/10 border-r-4 border-[#3AAFB9] transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="folder_shared" style="font-variation-settings: 'FILL' 1;">folder_shared</span>
+</button>
+<!-- Documents -->
+<button class="w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-white/5 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</button>
+<!-- Clients -->
+<button class="w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-white/5 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</button>
+<div class="flex-grow"></div>
+<!-- Settings -->
+<button class="w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-white/5 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</nav>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-20 flex-grow flex flex-col min-h-screen">
+<!-- TopAppBar (Predicted Component Implementation) -->
+<header class="flex justify-between items-center w-full px-8 h-16 sticky top-0 z-30 glass-header border-none bg-white/80">
+<div class="flex items-center space-y-0 gap-4">
+<a class="flex items-center text-[#3AAFB9] font-semibold tracking-tight hover:text-[#2D8E96] transition-colors active:scale-[0.98] duration-150" href="#">
+<span class="material-symbols-outlined mr-1 text-sm">arrow_back</span>
+                    Back to Case MOS-2026-0042
+                </a>
+</div>
+<h1 class="text-lg font-bold text-[#2C2C2C] font-headline tracking-tight">
+                PDF Generator — I-131 Application for Travel Document
+            </h1>
+<div class="flex items-center gap-3">
+<button class="flex items-center px-4 py-2 text-sm font-semibold text-[#212529] hover:text-[#2D8E96] transition-colors">
+<span class="material-symbols-outlined mr-2">share</span>
+                    Share
+                </button>
+<button class="flex items-center px-6 py-2 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined mr-2">download</span>
+                    Download PDF
+                </button>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="flex-grow p-8 grid grid-cols-12 gap-8">
+<!-- Left Column: PDF Preview -->
+<div class="col-span-7 flex flex-col items-center">
+<div class="w-full max-w-2xl bg-white shadow-sm rounded-sm aspect-[1/1.414] p-12 border border-outline-variant/10 relative">
+<!-- Form Header -->
+<div class="border-b-2 border-black pb-4 mb-8 flex justify-between items-start">
+<div class="text-[10px] font-bold uppercase leading-tight max-w-[200px]">
+                            Department of Homeland Security<br/>
+                            U.S. Citizenship and Immigration Services
+                        </div>
+<div class="text-right">
+<div class="text-xl font-bold tracking-tighter">Form I-131</div>
+<div class="text-[10px] font-medium">OMB No. 1615-0013</div>
+</div>
+</div>
+<div class="text-center mb-6">
+<h2 class="text-lg font-extrabold uppercase tracking-tight">Application for Travel Document</h2>
+</div>
+<!-- Sample Fields -->
+<div class="space-y-6">
+<div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+<div>
+<label class="text-[9px] font-bold uppercase text-gray-500 block">Family Name (Last Name)</label>
+<div class="text-sm font-medium border-b border-gray-300 py-1">Nguyen</div>
+</div>
+<div>
+<label class="text-[9px] font-bold uppercase text-gray-500 block">Given Name (First Name)</label>
+<div class="text-sm font-medium border-b border-gray-300 py-1">Thi Mai</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="col-span-1">
+<label class="text-[9px] font-bold uppercase text-gray-500 block">A-Number</label>
+<div class="text-sm font-medium border-b border-gray-300 py-1">123-456-789</div>
+</div>
+<div class="col-span-2">
+<label class="text-[9px] font-bold uppercase text-gray-500 block">Physical Address</label>
+<div class="text-sm font-medium border-b border-gray-300 py-1">1234 Willow Way, San Francisco, CA 94107</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[95%]"></div>
+</div>
+<p class="text-[10px] mt-2 text-gray-500 italic">Form simulation in progress... fields mapping from client profile.</p>
+</div>
+<div class="border-2 border-dashed border-gray-100 h-64 flex items-center justify-center text-gray-300">
+<span class="material-symbols-outlined text-4xl">description</span>
+</div>
+</div>
+<!-- Form Footer Mockup -->
+<div class="absolute bottom-12 left-12 right-12 flex justify-between items-center text-[10px] font-medium border-t border-black pt-2">
+<span>Form I-131 03/21/25</span>
+<span>Page 1 of 4</span>
+</div>
+</div>
+<!-- Page Controls -->
+<div class="mt-6 flex items-center gap-6 bg-surface-container-lowest px-4 py-2 rounded-full shadow-sm">
+<button class="p-1 hover:bg-surface-container text-gray-400"><span class="material-symbols-outlined">chevron_left</span></button>
+<span class="text-sm font-medium">Page 1 of 4</span>
+<button class="p-1 hover:bg-surface-container text-gray-400"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<!-- Right Column: Summary & Actions -->
+<div class="col-span-5 space-y-6">
+<!-- Readiness Status Card -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)]">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div>
+<h3 class="font-bold text-[#2C2C2C]">Incomplete Readiness</h3>
+<p class="text-sm text-amber-700 font-medium">2 critical fields missing for submission</p>
+</div>
+</div>
+<!-- Missing Fields List -->
+<div class="bg-amber-50 rounded-lg p-4 space-y-4 border border-amber-100">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-amber-900 uppercase tracking-wider">Part 3, Item 2</p>
+<p class="text-sm text-amber-800">Date of Intended Departure</p>
+</div>
+<a class="text-xs font-bold text-primary flex items-center hover:underline" href="#">
+                                Go to Client Profile <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+</a>
+</div>
+<div class="h-px bg-amber-200/50"></div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-amber-900 uppercase tracking-wider">Part 7, Item 1a</p>
+<p class="text-sm text-amber-800">Daytime Phone Number</p>
+</div>
+<a class="text-xs font-bold text-primary flex items-center hover:underline" href="#">
+                                Go to Client Profile <span class="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Progress Section -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] border-l-4 border-primary">
+<div class="flex justify-between items-end mb-4">
+<h3 class="font-bold text-[#2C2C2C]">Filled Fields Summary</h3>
+<span class="text-sm font-bold text-primary">38 of 40 fields (95%)</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full mb-6">
+<div class="h-full bg-primary rounded-full w-[95%]"></div>
+</div>
+<div class="space-y-4">
+<div>
+<h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Part 1. Information About You</h4>
+<div class="grid grid-cols-2 gap-y-2 text-sm text-gray-700">
+<div class="flex items-center"><span class="material-symbols-outlined text-primary text-sm mr-2" style="font-variation-settings: 'FILL' 1;">check_circle</span> Name</div>
+<div class="flex items-center"><span class="material-symbols-outlined text-primary text-sm mr-2" style="font-variation-settings: 'FILL' 1;">check_circle</span> Address</div>
+<div class="flex items-center"><span class="material-symbols-outlined text-primary text-sm mr-2" style="font-variation-settings: 'FILL' 1;">check_circle</span> DOB</div>
+<div class="flex items-center"><span class="material-symbols-outlined text-primary text-sm mr-2" style="font-variation-settings: 'FILL' 1;">check_circle</span> Gender</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Form Metadata & Actions -->
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-center text-xs text-tertiary">
+<span class="font-medium">USCIS Form I-131 (Rev. 03/21/25)</span>
+<span class="font-bold">Filing Assistant Mode B</span>
+</div>
+<div class="grid grid-cols-1 gap-3 pt-2">
+<button class="w-full py-3 rounded-lg border border-amber-600 text-amber-700 font-bold hover:bg-amber-50 transition-colors text-sm">
+                            Generate PDF Anyway
+                        </button>
+<button class="w-full py-3 rounded-lg bg-surface-container-high text-gray-400 font-bold cursor-not-allowed text-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">download_for_offline</span>
+                            Download PDF
+                        </button>
+<div class="flex gap-2">
+<button class="flex-1 py-3 rounded-lg bg-transparent text-[#212529] font-bold hover:bg-white/50 transition-colors text-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">print</span>
+                                Print
+                            </button>
+<button class="flex-1 py-3 rounded-lg bg-transparent text-[#212529] font-bold hover:bg-white/50 transition-colors text-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">edit</span>
+                                Edit Logic
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer -->
+<footer class="h-12 border-t border-outline-variant/10 bg-surface flex items-center px-8 justify-between text-[11px] text-tertiary font-medium">
+<div class="flex items-center gap-4">
+<span>Template version: I-131_v2025-03.pdf</span>
+<span class="w-1 h-1 rounded-full bg-gray-300"></span>
+<span>Last updated: March 21, 2025</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span>All systems operational</span>
+</div>
+</footer>
+</main>
+</body></html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Management | Manna One Solution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#474747",
+                    "on-primary-fixed": "#002022",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "outline-variant": "#bcc9ca",
+                    "error-container": "#ffdad6",
+                    "surface": "#f7f9ff",
+                    "on-background": "#181c20",
+                    "surface-container-low": "#f1f4f9",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#7bd4dd",
+                    "inverse-on-surface": "#eef1f6",
+                    "surface-bright": "#f7f9ff",
+                    "on-surface-variant": "#3d494a",
+                    "surface-dim": "#d7dadf",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#004f54",
+                    "inverse-primary": "#69d6e1",
+                    "secondary-fixed": "#98f1f9",
+                    "outline": "#6d797a",
+                    "surface-container": "#ebeef3",
+                    "on-primary-container": "#003d42",
+                    "on-primary-fixed-variant": "#004f55",
+                    "surface-container-high": "#e5e8ee",
+                    "primary-fixed": "#87f3fd",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "on-error": "#ffffff",
+                    "tertiary": "#5f5e5e",
+                    "on-secondary-container": "#006e75",
+                    "on-surface": "#181c20",
+                    "on-tertiary-container": "#373636",
+                    "inverse-surface": "#2d3135",
+                    "secondary-container": "#95eef6",
+                    "surface-variant": "#e0e3e8",
+                    "surface-container-highest": "#e0e3e8",
+                    "primary": "#006970",
+                    "error": "#ba1a1a",
+                    "background": "#f7f9ff",
+                    "secondary": "#006970",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#69d6e1",
+                    "on-secondary-fixed": "#002022",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#a19f9f",
+                    "primary-container": "#3aafb9",
+                    "surface-tint": "#006970",
+                    "tertiary-fixed": "#e4e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .status-pillar { width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-background selection:bg-primary-container/30">
+<!-- Sidebar Overlay (Mobile) -->
+<div class="fixed inset-0 bg-black/50 z-50 hidden"></div>
+<!-- SideNavBar (Authority: JSON + Design System) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 dark:bg-black flex flex-col py-8 px-4 overflow-y-auto z-40">
+<div class="flex items-center gap-3 px-2 mb-10">
+<div class="bg-primary-container w-10 h-10 rounded-lg flex items-center justify-center">
+<span class="text-white text-2xl font-black tracking-tighter">M</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xl font-bold text-[#3AAFB9] tracking-tighter leading-none">Manna One</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Solution</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping from JSON -->
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="badge">badge</span>
+                Staff Management
+            </a>
+<!-- Active State Determination: Staff Management -->
+<a class="group flex items-center px-4 py-3 text-white font-bold bg-[#3AAFB9]/10 rounded-lg active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-primary-container" data-icon="badge">badge</span>
+                Staff Management
+            </a>
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="payments">payments</span>
+                Payroll
+            </a>
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="calendar_month">calendar_month</span>
+                Schedules
+            </a>
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="assessment">assessment</span>
+                Reports
+            </a>
+</nav>
+<div class="pt-6 mt-6 border-t border-slate-800 space-y-1">
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="account_circle">account_circle</span>
+                Chris N. (Admin)
+            </a>
+<a class="group flex items-center px-4 py-3 text-slate-400 font-medium hover:bg-slate-800 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar (Authority: JSON + Design System) -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-30 bg-[#F7F9FF]/80 backdrop-blur-xl dark:bg-[#212529]/80">
+<h1 class="text-xl font-bold text-[#2C2C2C] dark:text-white">Staff Management</h1>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-outline absolute left-3 top-1/2 -translate-y-1/2 text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary-container outline-none transition-all placeholder:text-outline-variant" placeholder="Search staff..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-surface-container" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-surface-container" data-icon="help">help</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/10">
+                        + Add Staff Member
+                    </button>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="px-8 py-8 space-y-8">
+<!-- Summary Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Total Staff -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between border border-outline-variant/10">
+<div>
+<p class="text-sm font-medium text-on-surface-variant mb-1">Total Staff</p>
+<h3 class="text-3xl font-extrabold text-on-surface tracking-tight">5</h3>
+</div>
+<div class="w-12 h-12 bg-surface-container-low rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container" data-icon="groups">groups</span>
+</div>
+</div>
+<!-- Active Staff -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between border border-outline-variant/10">
+<div>
+<p class="text-sm font-medium text-on-surface-variant mb-1">Active</p>
+<h3 class="text-3xl font-extrabold text-[#16A34A] tracking-tight">4</h3>
+</div>
+<div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[#16A34A]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Deactivated Staff -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between border border-outline-variant/10">
+<div>
+<p class="text-sm font-medium text-on-surface-variant mb-1">Deactivated</p>
+<h3 class="text-3xl font-extrabold text-[#ADB5BD] tracking-tight">1</h3>
+</div>
+<div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[#ADB5BD]" data-icon="block">block</span>
+</div>
+</div>
+</section>
+<!-- Main Table Section -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/5">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-outline">Name</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-outline">Role</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-outline">Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-outline">Last Activity</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-outline text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Staff Member 1 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150 group relative">
+<td class="px-6 py-5 flex items-center gap-4">
+<div class="status-pillar bg-primary-container absolute left-0 top-0"></div>
+<img alt="Chris Nguyen" class="w-10 h-10 rounded-lg object-cover" data-alt="portrait of a confident businessman in a modern office environment with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjccDqWiQyfqb_2oTgsp2x8OYBDJX1JyUikTX1x9hKEUVeSkCiTAc8O3BPBjT1iOYB0qAx7iZTFczGPx1AL9kC8KLFshEd8CwNfetXC_GiUU_uKyWOpbLYxH7SlPBoRDaZCCqbOIfxoxq0hLnpOH3zfig8fAJZUeeqQy7j9PLb7T3-AIY81E9mhYWaoCa5XUuX9f69BqLOcG9HF4KYWZkwu37A1J97jN5OC8YFoyGFnFEPdxMMu5ZmlQ0IoME7ULUe1eEA8drcJgQw"/>
+<div>
+<p class="font-bold text-on-surface">Chris Nguyen</p>
+<p class="text-xs text-on-surface-variant">chris@mannaonesolution.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-full tracking-wider">ADMIN</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></div>
+<span class="text-xs font-semibold text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">2 min ago</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="edit">edit</button>
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="toggle_on" style="font-variation-settings: 'FILL' 1;">toggle_on</button>
+</div>
+</td>
+</tr>
+<!-- Staff Member 2 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150 group">
+<td class="px-6 py-5 flex items-center gap-4">
+<img alt="Maria Garcia" class="w-10 h-10 rounded-lg object-cover" data-alt="professional headshot of a woman with a warm smile in a brightly lit architectural studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsOjhzHHaozQBjaGCg6CZfL5v7wMQefMdHDmqjACpS8PG6XgUhZ3a1yX-eQCBSQSjvtU7XM5i1r-0qqaLnVf8_aDHKRyV_xSpIoyzvaDlInZRL1M8_SfPf1e7lPQBNJlQDXxrGi9xdrONuVZs6C85gyi5ZrtNOQXS23lgKrPFKNXwvdvFo0YCNuSEeBhSlLk2cxBuUcaOQMjvPqgqgos49xjcVAYW8bvLXvuUZvjhOU8OyI8uxuhxBJILiOeOlUsaLB3OC_BXLlgYq"/>
+<div>
+<p class="font-bold text-on-surface">Maria Garcia</p>
+<p class="text-xs text-on-surface-variant">maria@mannaonesolution.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-primary-container/10 text-primary-container text-[10px] font-black rounded-full tracking-wider">STAFF</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-semibold text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">15 min ago</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="edit">edit</button>
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="toggle_on" style="font-variation-settings: 'FILL' 1;">toggle_on</button>
+</div>
+</td>
+</tr>
+<!-- Staff Member 3 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150 group">
+<td class="px-6 py-5 flex items-center gap-4">
+<img alt="Linh Tran" class="w-10 h-10 rounded-lg object-cover" data-alt="lifestyle portrait of a young creative professional with natural daylight in a contemporary workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLT11wsQigiTqr7fsdVVzTshCITx1zca5PFDu04HFDy4_I-JsPkJtfTCbYAKwtgQrWBr9WVCUl1SlGTdj5tqYb75DnMB6fdKIMbAhwMMl2s3MSE6KrLoOB0suYsjfCeuMoqpnHO36vgrVbJfLoLcBstsc2EBtvRDnwPCrjfJOurh32dCtibWEjmyvwVVm8IDvO1kfS3yMavTOPzzA1w2s2PTIMcVGtj-iW0dtdEmBbzT28KouRBm50vw9Yh9VypkJMWnX8r4bgw_2i"/>
+<div>
+<p class="font-bold text-on-surface">Linh Tran</p>
+<p class="text-xs text-on-surface-variant">linh@mannaonesolution.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-primary-container/10 text-primary-container text-[10px] font-black rounded-full tracking-wider">STAFF</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-semibold text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">1 hour ago</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="edit">edit</button>
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="toggle_on" style="font-variation-settings: 'FILL' 1;">toggle_on</button>
+</div>
+</td>
+</tr>
+<!-- Staff Member 4 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150 group">
+<td class="px-6 py-5 flex items-center gap-4">
+<img alt="Sofia Rodriguez" class="w-10 h-10 rounded-lg object-cover" data-alt="studio headshot of an executive woman with neutral background and soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1OJdh6f2dLG-jjjfpAt4EZRbU1qmp-veQwEJK4nhM3o0vH73Xa9rilWXd9AZNxH4gnJubqOGtw9_JURGdV5RPe3-__Rr-MxOp5NyOLCDHf0oF0eE8b0pM_dFEBeERK--RBQBT7jAChxNeqs5UmyVF0IKQb-jva2jWSVhDWJj6N-1kNEYDhSRGhbib8ce6vRtQYq0XlLTe10wCEQgiOq9T5bbc7qH5Icu6IsL-b2dcyYyELs0eh0wxkXLNxSN4PyOJ37AK0YljJF4T"/>
+<div>
+<p class="font-bold text-on-surface">Sofia Rodriguez</p>
+<p class="text-xs text-on-surface-variant">sofia@mannaonesolution.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-primary-container/10 text-primary-container text-[10px] font-black rounded-full tracking-wider">STAFF</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-semibold text-on-surface">Active</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">3 hours ago</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="edit">edit</button>
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="toggle_on" style="font-variation-settings: 'FILL' 1;">toggle_on</button>
+</div>
+</td>
+</tr>
+<!-- Staff Member 5 (Deactivated) -->
+<tr class="opacity-50 grayscale bg-surface-container-low/30 group">
+<td class="px-6 py-5 flex items-center gap-4">
+<img alt="David Park" class="w-10 h-10 rounded-lg object-cover" data-alt="focused portrait of a man in a professional setting with industrial aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoMkgYL3uiR64V6hnNhYXN5CQc4cExFDD4GHQWVPWfzDxvF2nUovMMAkdSu3u7KOkY5MPoH_C9--GzCL5Nq_RjJxUNfLCWeMX8FFvNc9zn4tXRUe7onRDyE8_F3CsYGlp4kVIJjGk6dU_H8hIcF1AiGVMLuA5fZdtgZAgQtgnsv53R579V0oJdbFAzomAHANgp2LgYWAaMbvxdijBSWRn_DvuXRIBOKnQD9MIPbgjL6z-eki7vgne_waOHDwLuzNF2tedLTPc-l7kI"/>
+<div>
+<p class="font-bold text-on-surface">David Park</p>
+<p class="text-xs text-on-surface-variant">david@mannaonesolution.com</p>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-primary-container/10 text-primary-container text-[10px] font-black rounded-full tracking-wider">STAFF</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="text-xs font-semibold text-on-surface">Deactivated</span>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">2 weeks ago</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="edit">edit</button>
+<button class="material-symbols-outlined p-2 text-outline hover:text-primary transition-colors" data-icon="toggle_off">toggle_off</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- Modal Overlay (Active state for demo) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden relative border border-outline-variant/20">
+<!-- Modal Header -->
+<div class="px-8 pt-8 pb-4 flex justify-between items-start">
+<div>
+<h2 class="text-2xl font-bold text-[#2C2C2C] tracking-tight">Add New Staff Member</h2>
+<p class="text-sm text-on-surface-variant mt-1">Configure credentials and roles for your new hire.</p>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors p-1" data-icon="close">close</button>
+</div>
+<!-- Modal Content -->
+<form class="px-8 pb-8 space-y-5">
+<div class="space-y-1.5">
+<label class="text-xs font-bold uppercase tracking-widest text-outline ml-1">Full Name</label>
+<input class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all placeholder:text-outline" placeholder="e.g. Sarah Jenkins" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold uppercase tracking-widest text-outline ml-1">Email Address</label>
+<input class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all placeholder:text-outline" placeholder="sarah@mannaonesolution.com" type="email"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-bold uppercase tracking-widest text-outline ml-1">Role</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none appearance-none transition-all cursor-pointer">
+<option>Staff</option>
+<option>Admin</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline text-sm" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold uppercase tracking-widest text-outline ml-1">Temporary Password</label>
+<input class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" type="password" value="••••••••"/>
+</div>
+</div>
+<!-- Modal Actions -->
+<div class="pt-4 flex items-center justify-end gap-4">
+<button class="px-6 py-2.5 text-on-surface-variant font-bold text-sm hover:text-on-surface transition-colors" type="button">Cancel</button>
+<button class="px-8 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all" type="submit">Create Account</button>
+</div>
+</form>
+</div>
+</div>
+</body></html>

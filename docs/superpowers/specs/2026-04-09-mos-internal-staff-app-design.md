@@ -44,10 +44,11 @@ app.mannaonesolution.com  (internal, staff-only)
 | Framework | Next.js | Same stack as public site |
 | Database | Supabase (PostgreSQL) | Free tier, built-in auth, storage |
 | File storage | Supabase Storage | Document scans, ZIP downloads |
-| PDF generation | `pdf-lib` (JS) | Fill USCIS PDFs for mail filing |
+| PDF generation | `pdf-lib` (JS) | Fill AcroForm templates for mail filing — **USCIS PDFs are XFA and must be pre-converted offline via Adobe Acrobat Pro; pdf-lib cannot fill native XFA PDFs** |
+| PDF alternative | Apryse SDK (evaluate) | Handles XFA natively in Node.js — no conversion step needed; commercial pricing |
 | Hosting | Vercel | Same as public site, auto-deploy |
 | Auth | Supabase Auth | Email/password for staff accounts |
-| USCIS tracking | USCIS public status endpoint | No login required, receipt number only |
+| USCIS tracking | Playwright (Node.js) on dedicated VPS | Browser automation bot scrapes `egov.uscis.gov/casestatus/mycasestatus.do` daily; works for all receipt number prefixes; 2–5s delay between requests; ~50 checks/day at MOS scale. Abstracted behind `USCISClient` interface for future Torch API upgrade. |
 
 ---
 
@@ -236,10 +237,61 @@ status_history
 ├── checked_at
 └── source (uscis_api | manual)
 
-users (staff)
+users
 ├── id (Supabase Auth)
 ├── name
-└── role (admin | staff)
+└── role (ultimate_admin | staff)
+    // designed for future 'admin' role between ultimate_admin and staff
+
+checklist_templates
+├── id, form_type, updated_at, updated_by
+└── items (JSON array: [{label, required, order}])
+    // Ultimate Admin edits via UI; propagates to new + open/unfiled cases
+
+fee_schedule
+├── id, service_type (immigration | tax | insurance | ai)
+├── form_type (nullable — immigration sub-types only)
+├── uscis_fee (nullable — immigration only)
+├── mos_fee
+└── updated_at, updated_by
+
+jobs (non-immigration services: Tax, Insurance, AI)
+├── id, client_id (→ clients)
+├── service_type (tax | insurance | ai)
+├── description, fee, deadline
+├── status (open | in_progress | complete)
+├── notes
+└── created_at, created_by
+
+payments
+├── id
+├── case_id (nullable — immigration)
+├── job_id (nullable — non-immigration)
+├── milestone_label (nullable)
+├── amount, payment_date
+├── method (cash | check | card | zelle)
+└── logged_by, created_at
+
+payment_schedules
+├── id, case_id (or job_id)
+├── milestone_label, amount_due
+├── due_trigger (e.g., "at intake", "at filing")
+└── paid (boolean)
+
+expenses
+├── id
+├── case_id (nullable), job_id (nullable)
+├── label (e.g., "USCIS I-485 fee", "Translation", "Postage")
+├── amount, expense_date
+├── paid_by (mos | client)
+└── logged_by, created_at
+
+audit_log
+├── id, user_id, action
+├── entity_type, entity_id
+├── old_value (JSON), new_value (JSON)
+└── created_at
+    // append-only; covers all system changes
 ```
 
 ---
@@ -262,11 +314,31 @@ users (staff)
 
 ## 8. USCIS Status Tracking
 
-- USCIS provides a public case status endpoint queryable by receipt number (no login required)
-- App queries daily for all cases with status not in (approved, denied, archived)
-- On status change: log to `status_history`, flag case in dashboard, notify assigned staff
+**Approach: Playwright browser automation bot**
+
+A Playwright (Node.js) bot runs on a dedicated VPS (~$5/mo, DigitalOcean or equivalent) with a static IP. Each day it:
+
+1. Queries the DB for all active receipt numbers (status not in approved / denied / archived)
+2. For each receipt number: navigates to `egov.uscis.gov/casestatus/mycasestatus.do`, fills in the receipt number, submits, and scrapes the status text from the result page
+3. Compares scraped status to stored `current_uscis_status`
+4. On change: writes to `status_history`, updates `case_forms`, creates in-app notification
+
+**Why this approach:**
+- Works for all receipt number prefixes (IOE, WAC, EAC, LIN, SRC, MSC) — the Torch API requires months of approval and the unofficial `csol-api` only supports IOE
+- At ~50 checks/day with 2–5 second delays between requests, MOS is indistinguishable from a staff member manually checking — well below any IP-ban threshold
+- Built in 1 day; no API registration or approval process
+
+**Architecture:** All scraping logic lives behind a `USCISClient` interface. When/if the official USCIS Torch API approval is obtained, swap in a `TorchAPIUSCISClient` implementation without changing cron logic.
+
+**Failure handling:**
+- If USCIS page structure changes (CSS selectors break): log parse error, alert admin, continue other records
+- If CAPTCHA appears: detect in Playwright response, alert admin immediately, pause polling for that run
+- After 3 consecutive failures on a receipt number: escalate to admin notification
+
+**Other details:**
 - Receipt number format: 3-letter code + 10 digits (e.g., `IOE0123456789`, `WAC2190012345`)
-- Staff enters receipt number manually after client receives it (email from USCIS or mail notice)
+- Staff enters receipt number manually after client receives USCIS notice
+- Cases marked Approved or Denied are archived; polling stops automatically
 
 ---
 
@@ -285,11 +357,23 @@ users (staff)
 ## 10. Auth & Access
 
 - Staff login: email + password via Supabase Auth
-- Two roles:
-  - **Admin** — full access, manage staff accounts, view all cases
-  - **Staff** — create and manage cases, no access to staff management
+- Two roles (designed so an intermediate "Admin" role can be inserted later):
+  - **Ultimate Admin** (1 person — business owner) — everything Staff can do, PLUS: configure document checklist templates, manage fee schedules (USCIS + MOS fees), finance dashboard with revenue/expense tracking, manage staff accounts, view audit trail, export financial reports, manage non-immigration job tracker settings
+  - **Staff** — create and manage clients, cases, and jobs; log payments and expenses; use filing assistant; view their own dashboard (active cases, notifications)
+- Ultimate Admin has a separate login account from Staff accounts
 - No client-facing login — internal tool only
 - Hosted at `app.mannaonesolution.com` — not linked from public site
+
+## 11. Legal & Compliance
+
+**UPL (Unauthorized Practice of Immigration Law)**
+- The Filing Assistant is a **transcription aid only** — it pre-populates data that staff and the supervising attorney or EOIR-accredited representative have already decided. The app does not advise on which form to file, does not evaluate eligibility, and does not coach responses.
+- Under USCIS policy and Texas law (Gov. Code § 81.102), generating filled immigration forms and advising clients constitutes the practice of law. MOS must operate this tool under supervision of a licensed Texas attorney or hold EOIR accreditation. **Confirm with legal counsel before launch.**
+
+**Texas Data Privacy and Security Act (TDPSA, eff. July 2024)**
+- SSN, A-Number, and immigration/citizenship status are **sensitive data** under TDPSA.
+- Required before launch: explicit client consent, DPA with Supabase, Data Protection Assessment, published privacy policy, consumer rights flows (access/correction/deletion within 45 days).
+- Penalties: up to $7,500/violation (Texas AG enforcement).
 
 ---
 
@@ -297,8 +381,11 @@ users (staff)
 
 - AI document extraction (upload passport → auto-fill fields) — Phase 2
 - n8n automated cross-sell workflows — Phase 2
+- Automated USCIS fee change monitoring — Phase 2
+- Tax-specific case management (quarterly deadlines, franchise fees, payroll cycles) — Phase 2
+- AI service-specific fields (client goals, business type, detailed plans) — Phase 2
+- MFA for Ultimate Admin account — Phase 2
 - Client portal (client self-service) — Phase 3
-- Payment processing — Phase 3
 - Spanish language support — Phase 3
 - Mobile app — Phase 3
 - Attorney representative USCIS account filing — not applicable (UPL concern)

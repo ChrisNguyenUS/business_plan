@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Form Field Mapping Editor | Manna One</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004f54",
+                        "on-tertiary-container": "#373636",
+                        "on-primary-fixed-variant": "#004f55",
+                        "secondary-fixed-dim": "#7bd4dd",
+                        "surface-bright": "#f7f9ff",
+                        "surface-dim": "#d7dadf",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#ebeef3",
+                        "on-primary-container": "#003d42",
+                        "on-surface": "#181c20",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#6d797a",
+                        "secondary-fixed": "#98f1f9",
+                        "inverse-on-surface": "#eef1f6",
+                        "tertiary-fixed": "#e4e2e1",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e5e8ee",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "primary-container": "#3aafb9",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f7f9ff",
+                        "on-primary-fixed": "#002022",
+                        "surface-container-low": "#f1f4f9",
+                        "surface-container-highest": "#e0e3e8",
+                        "inverse-primary": "#69d6e1",
+                        "on-secondary-fixed": "#002022",
+                        "primary": "#006970",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-surface-variant": "#3d494a",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2d3135",
+                        "primary-fixed-dim": "#69d6e1",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "tertiary": "#5f5e5e",
+                        "secondary": "#006970",
+                        "on-background": "#181c20",
+                        "surface-variant": "#e0e3e8",
+                        "outline-variant": "#bcc9ca",
+                        "on-secondary-container": "#006e75",
+                        "primary-fixed": "#87f3fd",
+                        "secondary-container": "#95eef6",
+                        "tertiary-container": "#a19f9f",
+                        "background": "#f7f9ff",
+                        "surface-tint": "#006970",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #bcc9ca; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 bg-slate-900 dark:bg-black h-screen w-64 border-r-0 shadow-none z-50">
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-8 h-8 bg-[#006970] rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-white tracking-widest uppercase font-['Inter']">Manna One</h1>
+<p class="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Precision Ledger</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-sm">Cases</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="text-sm">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">supervisor_account</span>
+<span class="text-sm">Staff Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 font-['Inter'] font-semibold tracking-tight rounded-lg" href="#">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white bg-[#006970] rounded-lg shadow-lg font-['Inter'] font-semibold tracking-tight scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-sm">Field Mapping</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-slate-800 pt-4 px-2">
+<div class="flex items-center gap-3">
+<img alt="Staff Profile" class="w-8 h-8 rounded-full bg-slate-800" data-alt="professional headshot of an immigration attorney in business attire, clean white background, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6kx-EJJV33cdd4TuyPaPc3nkM8wk70HU5DCir8iRD7ZxJfOQmb516nViuQztyLwDtw0r2_rjsNtywwp0oT3lrmXpdbJX67DwnloVdM2wLcVfv6MRShm5LyB6Ii4oGhW8b3V5l_MPU8f5v7zjmIU4WM6kuOQ_jzQU7F8Fj6DSQSv0PcHzl94PsbRlFqS9FBStMsP-ov-BMsXZHGfmihERiFE-rK-18cWOLhYTlwEhMIoIHGpkYu6QzLOzpmj-SKj-ZtqoQhEU7P5if"/>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-white truncate">Admin Portal</p>
+<p class="text-[10px] text-slate-500 truncate">System Architect</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col min-h-screen bg-surface-container-low">
+<!-- TopAppBar Shell -->
+<header class="w-full h-16 sticky top-0 z-40 bg-[#F7F9FF]/80 backdrop-blur-xl flex items-center justify-between px-8 border-b border-[#BCC9CA]/15">
+<div class="flex items-center gap-6">
+<h2 class="text-lg font-semibold text-on-surface tracking-tight">Form Field Mapping Editor</h2>
+<div class="relative group">
+<button class="flex items-center gap-2 px-4 py-1.5 bg-surface-container-high rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span>N-400 Naturalization</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg">Reset to Default</button>
+<button class="px-5 py-2 text-sm font-semibold text-white bg-gradient-to-br from-primary to-primary-container rounded-lg shadow-sm hover:secondary-container transition-all">Save Changes</button>
+<div class="w-px h-6 bg-outline-variant/30 mx-2"></div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">help_outline</span></button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 space-y-6">
+<!-- Form Info Card -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm border border-outline-variant/10 flex items-center justify-between">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">description</span>
+<h3 class="text-xl font-semibold text-on-surface">N-400 — Application for Naturalization</h3>
+</div>
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<span class="font-mono bg-surface-container px-2 py-0.5 rounded text-xs uppercase tracking-wider">USCIS Edition: 03/2025</span>
+<span>Total Mapped Fields: <strong class="text-on-surface">96</strong></span>
+<span>Unmapped: <strong class="text-error">0</strong></span>
+</div>
+</div>
+<div class="w-64 space-y-2">
+<div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+<span>Mapping Progress</span>
+<span class="text-primary">100%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full w-full bg-gradient-to-r from-primary to-primary-container"></div>
+</div>
+</div>
+</div>
+<!-- Dual Column Layout -->
+<div class="flex gap-6 items-start">
+<!-- Left Rail: Section Nav -->
+<nav class="w-72 flex-shrink-0 bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/10">
+<div class="p-4 border-b border-outline-variant/10">
+<h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Form Sections</h4>
+</div>
+<div class="py-2">
+<a class="flex items-center justify-between px-4 py-3 group hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface-variant">Part 1: About You</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-4 py-3 bg-surface-container text-primary font-semibold border-l-4 border-primary" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm">Part 2: Biographic Info</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-4 py-3 group hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface-variant">Part 3: Residence</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-4 py-3 group hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface-variant">Part 4: Parents</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-4 py-3 group hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface-variant">Part 5: Employment</span>
+</div>
+</a>
+<a class="flex items-center justify-between px-4 py-3 group hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium text-on-surface-variant">Part 6: Travel Abroad</span>
+</div>
+</a>
+</div>
+</nav>
+<!-- Main Content: Mapping Table -->
+<div class="flex-1 bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center bg-white">
+<h4 class="text-base font-semibold text-on-surface">Part 2: Biographic Information — <span class="text-on-surface-variant font-normal">11 fields</span></h4>
+<div class="flex gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-lg">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-highest border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary/20" placeholder="Search fields..." type="text"/>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-lg transition-colors"><span class="material-symbols-outlined text-on-surface-variant">filter_list</span></button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">USCIS Field ID</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">USCIS Label</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Data Source</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Transform Rule</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Preview Value</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 w-12"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item1</td>
+<td class="px-6 py-4 text-sm font-medium">Ethnicity</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Client Profile &gt; Personal &gt; Ethnicity</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>As-is</option>
+<option>Mapping Table</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Not Hispanic or Latino</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item2</td>
+<td class="px-6 py-4 text-sm font-medium">Race</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Client Profile &gt; Personal &gt; Race</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>As-is</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">White</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item3</td>
+<td class="px-6 py-4 text-sm font-medium">Height (Feet)</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Physical Attributes &gt; Height &gt; Feet</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>Numeric Only</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">5</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item4</td>
+<td class="px-6 py-4 text-sm font-medium">Height (Inches)</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Physical Attributes &gt; Height &gt; Inches</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>Numeric Only</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">11</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item5</td>
+<td class="px-6 py-4 text-sm font-medium">Weight (Pounds)</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Physical Attributes &gt; Weight</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>As-is</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">175</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item6</td>
+<td class="px-6 py-4 text-sm font-medium">Eye Color</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Physical Attributes &gt; Eyes</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>Mapping Table</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Brown</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item7</td>
+<td class="px-6 py-4 text-sm font-medium">Hair Color</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Physical Attributes &gt; Hair</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>As-is</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Black</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">Part2.Item8</td>
+<td class="px-6 py-4 text-sm font-medium">Gender</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20 w-full max-w-[200px]">
+<option>Client Profile &gt; Personal &gt; Gender</option>
+</select>
+</td>
+<td class="px-6 py-4">
+<select class="bg-surface-container-highest border-none rounded-lg text-sm py-1 pl-3 pr-8 focus:ring-2 focus:ring-primary/20">
+<option>Single Char (M/F)</option>
+</select>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">M</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#006970] rounded-full"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Mapped</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-outline-variant text-lg">drag_indicator</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="flex justify-center pt-4">
+<button class="flex items-center gap-3 px-8 py-4 border-2 border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-all group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">science</span>
+<span>Test Mapping with Sample Client</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) - Suppressed as per Task Rules (Detail View) -->
+</body></html>

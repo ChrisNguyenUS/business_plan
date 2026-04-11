@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications - Manna One Solution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#004f55",
+                    "on-secondary-container": "#006e75",
+                    "on-secondary-fixed": "#002022",
+                    "secondary-fixed": "#98f1f9",
+                    "secondary-fixed-dim": "#7bd4dd",
+                    "primary-fixed-dim": "#69d6e1",
+                    "surface-dim": "#d7dadf",
+                    "primary-fixed": "#87f3fd",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#181c20",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface-bright": "#f7f9ff",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f1f4f9",
+                    "on-secondary-fixed-variant": "#004f54",
+                    "secondary-container": "#95eef6",
+                    "on-background": "#181c20",
+                    "on-primary-fixed": "#002022",
+                    "outline-variant": "#bcc9ca",
+                    "surface-tint": "#006970",
+                    "outline": "#6d797a",
+                    "surface-container": "#ebeef3",
+                    "surface-variant": "#e0e3e8",
+                    "surface-container-high": "#e5e8ee",
+                    "primary-container": "#3aafb9",
+                    "on-tertiary-container": "#373636",
+                    "on-error": "#ffffff",
+                    "primary": "#006970",
+                    "on-primary-container": "#003d42",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#69d6e1",
+                    "tertiary-container": "#a19f9f",
+                    "tertiary-fixed": "#e4e2e1",
+                    "surface-container-highest": "#e0e3e8",
+                    "inverse-on-surface": "#eef1f6",
+                    "inverse-surface": "#2d3135",
+                    "secondary": "#006970",
+                    "on-surface-variant": "#3d494a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f7f9ff",
+                    "background": "#f7f9ff",
+                    "on-tertiary-fixed-variant": "#474747",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#5f5e5e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .status-pillar {
+            width: 4px;
+            border-radius: 4px 0 0 4px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen overflow-hidden">
+<!-- SideNavBar (Authority: JSON & Design System) -->
+<aside class="hidden md:flex flex-col h-screen w-64 bg-[#181c20] text-slate-400 p-4 gap-2 z-40">
+<div class="px-4 py-6 mb-4">
+<h1 class="font-headline font-bold text-xl text-white tracking-tight">Manna One</h1>
+<p class="text-xs text-[#3AAFB9] font-medium tracking-wide">Immigration Suite</p>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="dashboard">dashboard</span>
+<span class="font-label text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="folder_shared">folder_shared</span>
+<span class="font-label text-sm font-medium">Cases</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="group">group</span>
+<span class="font-label text-sm font-medium">Clients</span>
+</a>
+<a class="flex items-center justify-between gap-3 px-4 py-3 bg-[#FFFFFF]/10 text-[#3AAFB9] font-semibold rounded-lg shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-lg" data-icon="notifications" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-label text-sm">Notifications</span>
+</div>
+<span class="bg-error text-white text-[10px] px-1.5 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+<span class="font-label text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+<span class="font-label text-sm font-medium">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-surface-container-low">
+<!-- TopAppBar (Authority: JSON & Context) -->
+<header class="bg-[#F7F9FF]/80 backdrop-blur-md flex justify-between items-center w-full px-8 py-4 z-50">
+<div class="flex items-center gap-4">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-[#2C2C2C]">Notifications</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-primary font-label text-sm font-semibold hover:text-[#2D8E96] transition-colors px-4 py-2">
+                    Mark All Read
+                </button>
+<div class="flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-3 py-1.5 cursor-pointer">
+<span class="text-sm font-medium text-on-surface-variant">Filter: All</span>
+<span class="material-symbols-outlined text-sm" data-icon="expand_more">expand_more</span>
+</div>
+<div class="flex items-center gap-3 ml-4">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/30">
+<img alt="User profile" data-alt="Professional headshot of a corporate executive in a modern office setting with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWZ8ab6U2Z0MLxNTo7-ZmGnpzX9bDyWxc8OV9DHECr9tlYWwTh7_MuDsBy7B_z4O9q0tl_AwoP4-Ah1bdZCiJHruRM_ahFcWDqXFCXEVqMHIH98FrQDNEaD8pHUhz16tpDy6bpmOt8d2Pr38UiBgcQECWjhOykxWxGk3_lUD8SwtJVlFZk2C-sPqZoU4ShVWWQvnwoDzQssgWrFbXhQ_cGQrfDkxzmWdSwHpojtlYYR00ORKJzSCKXPODAOAsBCZcvClCB-z8Hm0tR"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Notification Content Area -->
+<div class="flex-1 overflow-y-auto px-8 py-6">
+<div class="max-w-4xl mx-auto space-y-3">
+<!-- 1. USCIS Status Change (Unread) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-[#3AAFB9]"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-secondary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<h3 class="font-headline font-bold text-[#2C2C2C]">USCIS Status Change — IOE0912345678</h3>
+</div>
+<p class="text-sm text-on-surface-variant">Case Was Received → Interview Was Scheduled for case MOS-2026-0042 (I-130, Nguyen Thi Mai)</p>
+<p class="text-xs text-outline font-medium">2 hours ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">View Case →</a>
+</div>
+</div>
+<!-- 2. USCIS Status Change (Unread) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-[#3AAFB9]"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-secondary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="history_edu">history_edu</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<h3 class="font-headline font-bold text-[#2C2C2C]">USCIS Status Change — MSC2490123554</h3>
+</div>
+<p class="text-sm text-on-surface-variant">Request for Evidence Was Mailed for case MOS-2026-0019 (I-485, Rodriguez, Sofia)</p>
+<p class="text-xs text-outline font-medium">3 hours ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">View Case →</a>
+</div>
+</div>
+<!-- 3. Receipt Number Reminder (Warning) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-amber-400"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-amber-50 p-2 rounded-lg">
+<span class="material-symbols-outlined text-amber-600" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1 space-y-1">
+<h3 class="font-headline font-bold text-[#2C2C2C]">Missing Receipt Number</h3>
+<p class="text-sm text-on-surface-variant">MOS-2026-0088 (H-1B, Smith, James) has been pending for 14 days without a receipt number entry.</p>
+<p class="text-xs text-outline font-medium">5 hours ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">Update Case →</a>
+</div>
+</div>
+<!-- 4. Document Upload Confirmation (Success) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-green-500"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-green-50 p-2 rounded-lg">
+<span class="material-symbols-outlined text-green-600" data-icon="cloud_done">cloud_done</span>
+</div>
+<div class="flex-1 space-y-1">
+<h3 class="font-headline font-bold text-[#2C2C2C]">Document Upload Confirmation</h3>
+<p class="text-sm text-on-surface-variant">Client Chen, Wei uploaded 'Birth_Certificate_Translated.pdf' to MOS-2026-0104.</p>
+<p class="text-xs text-outline font-medium">6 hours ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">View Files →</a>
+</div>
+</div>
+<!-- 5. USCIS Status Change (Unread) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-[#3AAFB9]"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-secondary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<h3 class="font-headline font-bold text-[#2C2C2C]">USCIS Status Change — IOE0988772211</h3>
+</div>
+<p class="text-sm text-on-surface-variant">Card Was Produced for case MOS-2025-0912 (I-765, Lopez, Elena)</p>
+<p class="text-xs text-outline font-medium">8 hours ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">View Case →</a>
+</div>
+</div>
+<!-- 6. Case Assignment -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-[#3AAFB9]"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-secondary-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="assignment_ind">assignment_ind</span>
+</div>
+<div class="flex-1 space-y-1">
+<h3 class="font-headline font-bold text-[#2C2C2C]">New Case Assigned</h3>
+<p class="text-sm text-on-surface-variant">You have been assigned as the lead paralegal for MOS-2026-0115 (O-1, Sato, Kenji).</p>
+<p class="text-xs text-outline font-medium">Yesterday</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">Open Case →</a>
+</div>
+</div>
+<!-- 7. Document Upload Confirmation (Success) -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-green-500"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-green-50 p-2 rounded-lg">
+<span class="material-symbols-outlined text-green-600" data-icon="fact_check">fact_check</span>
+</div>
+<div class="flex-1 space-y-1">
+<h3 class="font-headline font-bold text-[#2C2C2C]">E-Signature Completed</h3>
+<p class="text-sm text-on-surface-variant">Retainer agreement signed by client: Patel, Aarav (MOS-2026-0110).</p>
+<p class="text-xs text-outline font-medium">Yesterday</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">Review Docs →</a>
+</div>
+</div>
+<!-- 8. System Notification -->
+<div class="group bg-surface-container-lowest rounded-lg flex items-stretch hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all duration-200 cursor-pointer">
+<div class="status-pillar bg-slate-400"></div>
+<div class="p-5 flex-1 flex items-start gap-4">
+<div class="mt-1 bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-outline" data-icon="archive">archive</span>
+</div>
+<div class="flex-1 space-y-1">
+<h3 class="font-headline font-bold text-[#2C2C2C]">System: Case Archived</h3>
+<p class="text-sm text-on-surface-variant">MOS-2023-0442 has been moved to archive storage following 2 years of inactivity.</p>
+<p class="text-xs text-outline font-medium">2 days ago</p>
+</div>
+<a class="text-[#3AAFB9] font-semibold text-sm self-center whitespace-nowrap hover:text-[#2D8E96]" href="#">View Archive →</a>
+</div>
+</div>
+<!-- Load More -->
+<div class="flex justify-center pt-8 pb-12">
+<button class="bg-transparent border border-outline-variant/30 text-outline font-semibold px-8 py-3 rounded-lg hover:bg-surface-container-high hover:text-on-surface transition-all duration-200 flex items-center gap-2">
+<span>Load More Notifications</span>
+<span class="material-symbols-outlined text-lg" data-icon="refresh">refresh</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

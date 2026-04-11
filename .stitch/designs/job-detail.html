@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Job Detail | Architectural Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#003d42",
+                        "on-surface": "#1b1c1c",
+                        "on-primary-fixed": "#002022",
+                        "tertiary-fixed-dim": "#62df7d",
+                        "surface-container-highest": "#e4e2e1",
+                        "surface-tint": "#006970",
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed": "#87f3fd",
+                        "primary-container": "#3aafb9",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#95eef6",
+                        "tertiary-fixed": "#7ffc97",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#69d6e1",
+                        "surface-variant": "#e4e2e1",
+                        "tertiary": "#006e2d",
+                        "on-surface-variant": "#3d494a",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#004f55",
+                        "secondary": "#006970",
+                        "on-error": "#ffffff",
+                        "primary": "#006970",
+                        "outline": "#6d797a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#006e75",
+                        "on-secondary-fixed": "#002022",
+                        "tertiary-container": "#34b65a",
+                        "primary-fixed-dim": "#69d6e1",
+                        "on-tertiary-fixed-variant": "#005320",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "inverse-surface": "#303030",
+                        "on-tertiary-fixed": "#002109",
+                        "secondary-fixed": "#98f1f9",
+                        "secondary-fixed-dim": "#7bd4dd",
+                        "outline-variant": "#bcc9ca",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container": "#f0eded",
+                        "surface": "#fcf9f8",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary-container": "#004018",
+                        "surface-container-low": "#f6f3f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf9f8; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-shift-no-borders {
+            border: none;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen text-on-surface">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] bg-[#2C2C2C] flex flex-col py-6 shadow-xl shadow-black/20 z-50">
+<div class="px-6 mb-10">
+<h1 class="text-lg font-bold text-white tracking-tight">Manna One Solution</h1>
+<p class="text-xs text-gray-400 font-regular tracking-normal">Internal Staff Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="text-sm font-regular">Dashboard</span>
+</a>
+<a class="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="text-sm font-regular">Clients</span>
+</a>
+<a class="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">folder_open</span>
+<span class="text-sm font-regular">Cases</span>
+</a>
+<!-- Active State: Jobs (Semantic Mapping from Page Intent) -->
+<a class="flex items-center px-6 py-3 bg-[#3AAFB9]/10 text-[#3AAFB9] font-semibold border-r-4 border-[#3AAFB9] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">work</span>
+<span class="text-sm">Jobs</span>
+</a>
+<a class="flex items-center px-6 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3">notifications</span>
+<span class="text-sm font-regular">Notifications</span>
+</a>
+</nav>
+<div class="px-6 pt-6 mt-auto border-t border-white/10">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a female staff member Maria G in a business casual attire with a soft office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvm1T804eq8bXM9ncWq7Al9vPG2501hWAcjyxNi4e7HnSdOxzvWe97gf4zF99bHjAk8LyzI7fwsNjyqhgxM1g1O-iXnj1_r1CSW7OvRIIGdUikwa9dYdm6XR6u93_UyG0pWKSLCO2QX8YqTCSbLsTMgLE3lDoRZzVvBcAD_ez7ml8qvZAPKJTt6qLhChttSmgkTVhEUnpNmfu_qKzG-T3MV4qZE7_RMx4IhnWWDDe_tzw68dP0I3L9VsnZ_hU4JlWy-u_nz5xqogCh"/>
+</div>
+<div>
+<p class="text-xs font-semibold text-white">Maria G.</p>
+<p class="text-[10px] text-gray-500">Tax Specialist</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Content Canvas -->
+<main class="flex-1 ml-[240px] flex flex-col min-h-screen bg-surface">
+<!-- TopNavBar (Authority Source: JSON) -->
+<header class="flex justify-between items-center px-8 h-16 w-full bg-[#fcf9f8] dark:bg-[#1b1c1c] sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<nav class="flex items-center text-sm font-label tracking-tight text-on-surface/60">
+<span class="hover:text-primary transition-colors cursor-pointer">Jobs</span>
+<span class="material-symbols-outlined text-xs mx-2">chevron_right</span>
+<span class="font-semibold text-on-surface">JOB-2026-014</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-[#D97706]/10 px-3 py-1.5 rounded-lg border border-[#D97706]/20">
+<span class="w-2 h-2 rounded-full bg-[#D97706]"></span>
+<span class="text-xs font-semibold text-[#D97706]">In Progress</span>
+<span class="material-symbols-outlined text-sm text-[#D97706]">expand_more</span>
+</div>
+<button class="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-on-surface/60 hover:bg-surface-container-high rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg">archive</span>
+                    Archive
+                </button>
+<div class="h-6 w-px bg-surface-container-highest mx-2"></div>
+<span class="material-symbols-outlined text-on-surface/60 cursor-pointer hover:text-primary">settings</span>
+<span class="material-symbols-outlined text-on-surface/60 cursor-pointer hover:text-primary">help</span>
+</div>
+</header>
+<!-- Main Dashboard Area -->
+<div class="p-8 space-y-6 max-w-7xl">
+<!-- Job Header Card: Architectural Design -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm ring-1 ring-on-surface/5">
+<div class="flex justify-between items-start mb-6">
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<h2 class="headline-md font-semibold text-on-surface tracking-[-0.02em]">JOB-2026-014</h2>
+<span class="px-2 py-0.5 bg-[#D97706]/10 text-[#D97706] text-[10px] font-bold tracking-wider uppercase rounded-sm ring-1 ring-[#D97706]/20">Tax</span>
+</div>
+<p class="text-body-md text-on-surface/70 leading-relaxed">2024 Personal Tax Return — Filing federal + Texas state</p>
+</div>
+<div class="text-right">
+<p class="label-sm text-on-surface/40 mb-1">DEADLINE</p>
+<p class="text-body-md font-semibold text-[#D97706]">April 15, 2026</p>
+<p class="text-[11px] font-medium text-[#D97706]/80 flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-xs">schedule</span>
+                            5 days remaining
+                        </p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t border-surface-container">
+<div class="space-y-1">
+<p class="label-sm text-on-surface/40">CLIENT</p>
+<a class="text-body-md font-semibold text-primary flex items-center gap-1 hover:underline" href="#">
+                            Nguyen, Thi Mai
+                            <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<div class="space-y-1">
+<p class="label-sm text-on-surface/40">SERVICE FEE</p>
+<p class="text-body-md font-semibold text-on-surface">$600.00</p>
+</div>
+<div class="space-y-1">
+<p class="label-sm text-on-surface/40">ASSIGNED TO</p>
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-primary-container/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional profile photo of Maria G the assigned tax specialist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCp4YVek8DTgVHI_DuFVwiPEVnqKc1C9KJXJJ-gWOoHeIIgMNiQcQLCTDTnLpQWnLrxoHN659S4-v21qHQLxAICQklm6KJruGX2EtpYPQeBKanVY_w6aJX35-dpcgoBW2RKUZ8uWAhhbbS0mPZ5i4cd1i9H0rHC_Z4ew309UfHRcXBZUFvzL9JR0LV2YNGQlx5w6We-L7X8_KbxqodtgN2Yz-pRfH8_2zTqoxhdAGLQhrmqpO9hWiIbcjwT7OpYy68OhOLEvkbzstb2"/>
+</div>
+<p class="text-body-md font-medium text-on-surface">Maria G.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Financial Summary Bar: Tonal Layering -->
+<section class="bg-primary/5 rounded-xl p-6 ring-1 ring-primary/10">
+<div class="flex flex-wrap items-center justify-between gap-6 mb-4">
+<div class="flex gap-10">
+<div>
+<p class="label-sm text-primary/60 mb-1">TOTAL FEE</p>
+<p class="text-lg font-bold text-primary">$600</p>
+</div>
+<div>
+<p class="label-sm text-primary/60 mb-1">PAID</p>
+<div class="flex items-baseline gap-2">
+<p class="text-lg font-bold text-primary">$300</p>
+<span class="text-xs font-medium text-primary/60">(50%)</span>
+</div>
+</div>
+<div>
+<p class="label-sm text-primary/60 mb-1">OUTSTANDING</p>
+<p class="text-lg font-bold text-[#ba1a1a]">$300</p>
+</div>
+<div>
+<p class="label-sm text-primary/60 mb-1">EXPENSES</p>
+<p class="text-lg font-bold text-on-surface">$45</p>
+</div>
+<div>
+<p class="label-sm text-primary/60 mb-1">NET REVENUE</p>
+<p class="text-lg font-bold text-tertiary">$255</p>
+</div>
+</div>
+</div>
+<div class="w-full h-2 bg-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/2 rounded-full"></div>
+</div>
+</section>
+<!-- Tab Navigation: Minimalist Editorial Style -->
+<div class="border-b border-surface-container-highest flex gap-8">
+<button class="pb-3 text-sm font-semibold text-primary border-b-2 border-primary tracking-tight">Payments</button>
+<button class="pb-3 text-sm font-medium text-on-surface/50 hover:text-on-surface transition-colors tracking-tight">Expenses</button>
+<button class="pb-3 text-sm font-medium text-on-surface/50 hover:text-on-surface transition-colors tracking-tight">Notes</button>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<!-- Payments Tab Content -->
+<div class="xl:col-span-2 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-on-surface/5 overflow-hidden">
+<div class="px-6 py-4 flex justify-between items-center border-b border-surface-container">
+<h3 class="title-md font-semibold text-on-surface">Payments — $300 of $600 received</h3>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                                Log Payment
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Date</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Amount</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Method</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Logged By</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Notes</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm text-on-surface">Mar 10, 2026</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface">$200.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface/70 text-[11px] font-medium rounded">Card</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface/70">System Auto</td>
+<td class="px-6 py-4 text-sm text-on-surface/50">Deposit via client portal</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm text-on-surface">Apr 02, 2026</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface">$100.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface/70 text-[11px] font-medium rounded">Cash</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface/70">Maria G.</td>
+<td class="px-6 py-4 text-sm text-on-surface/50">In-office payment</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Expenses Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-on-surface/5 overflow-hidden">
+<div class="px-6 py-4 flex justify-between items-center border-b border-surface-container">
+<h3 class="title-md font-semibold text-on-surface">Expenses — $45 total</h3>
+<button class="flex items-center gap-2 px-4 py-2 ring-1 ring-primary text-primary rounded-lg text-sm font-semibold hover:bg-primary/5 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                                Add Expense
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Date</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Label</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Amount</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">Paid By</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm text-on-surface">Mar 12, 2026</td>
+<td class="px-6 py-4 text-sm text-on-surface">E-filing fee</td>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">$25.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded">MOS</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm text-on-surface">Mar 12, 2026</td>
+<td class="px-6 py-4 text-sm text-on-surface">State filing fee</td>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">$20.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface/70 text-[10px] font-bold rounded">CLIENT</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Notes Sidebar (Asymmetric Layout) -->
+<div class="space-y-6">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-on-surface/5 p-6 flex flex-col gap-4">
+<h3 class="title-md font-semibold text-on-surface">Job Notes</h3>
+<div class="space-y-4">
+<!-- Existing Note -->
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-primary/40">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[10px] font-bold text-primary uppercase">Maria G.</span>
+<span class="text-[10px] text-on-surface/40">Apr 05, 10:24 AM</span>
+</div>
+<p class="text-sm text-on-surface/80 leading-relaxed">Client provided updated W-2 forms today. Recalculating the Texas state portion now. Will send for review by EOD.</p>
+</div>
+<div class="pt-4 border-t border-surface-container">
+<textarea class="w-full bg-surface-container-low border-none rounded-lg text-sm focus:ring-1 focus:ring-primary placeholder:text-on-surface/30" placeholder="Type a note..." rows="4"></textarea>
+<button class="mt-3 w-full py-2.5 bg-surface-container-high hover:bg-primary hover:text-white text-on-surface text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">chat_bubble</span>
+                                    Add Note
+                                </button>
+</div>
+</div>
+</div>
+<!-- Side Action Card: Quick Utilities -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm ring-1 ring-on-surface/5 p-6 space-y-4">
+<h3 class="label-sm text-on-surface/40 uppercase tracking-widest">Document Status</h3>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface/70">Federal 1040</span>
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface/70">Texas Franchise Tax</span>
+<span class="material-symbols-outlined text-[#D97706]">pending</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface/70">Client ID Proof</span>
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<button class="w-full py-2 ring-1 ring-on-surface/10 hover:bg-surface-container-low text-on-surface text-xs font-bold uppercase rounded tracking-wider transition-all mt-2">
+                            View Document Vault
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

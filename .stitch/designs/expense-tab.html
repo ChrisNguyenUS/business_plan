@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manna One - Case Expenses</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-high": "#e5e8ee",
+                      "secondary-fixed-dim": "#7bd4dd",
+                      "secondary-container": "#95eef6",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#1b1c1c",
+                      "primary-container": "#3aafb9",
+                      "surface-container": "#ebeef3",
+                      "tertiary": "#5f5e5e",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#87f3fd",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#006e75",
+                      "surface-variant": "#e0e3e8",
+                      "on-tertiary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#bcc9ca",
+                      "on-surface": "#181c20",
+                      "surface-dim": "#d7dadf",
+                      "primary": "#006970",
+                      "secondary-fixed": "#98f1f9",
+                      "on-tertiary-container": "#373636",
+                      "inverse-surface": "#2d3135",
+                      "inverse-primary": "#69d6e1",
+                      "on-background": "#181c20",
+                      "surface-container-low": "#f1f4f9",
+                      "surface-bright": "#f7f9ff",
+                      "surface": "#f7f9ff",
+                      "tertiary-fixed": "#e4e2e1",
+                      "background": "#f7f9ff",
+                      "surface-container-highest": "#e0e3e8",
+                      "on-primary-fixed": "#002022",
+                      "on-primary-container": "#003d42",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "secondary": "#006970",
+                      "on-secondary-fixed-variant": "#004f54",
+                      "on-primary-fixed-variant": "#004f55",
+                      "surface-tint": "#006970",
+                      "inverse-on-surface": "#eef1f6",
+                      "tertiary-container": "#a19f9f",
+                      "outline": "#6d797a",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "primary-fixed-dim": "#69d6e1",
+                      "on-secondary-fixed": "#002022",
+                      "on-surface-variant": "#3d494a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+      </script>
+</head>
+<body class="bg-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (JSON Component Mapping) -->
+<aside class="bg-slate-900 dark:bg-black font-inter tracking-tight h-screen w-64 fixed left-0 top-0 flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-xl font-semibold text-white">Manna One</h1>
+<p class="text-xs text-slate-400">Staff Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-slate-400 font-medium hover:text-slate-200 hover:bg-slate-800/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-6 py-3 text-slate-400 font-medium hover:text-slate-200 hover:bg-slate-800/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+                Clients
+            </a>
+<!-- Active Tab: Cases -->
+<a class="flex items-center px-6 py-3 text-white font-bold border-l-4 border-cyan-500 bg-slate-800/50" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="folder_open">folder_open</span>
+                Cases
+            </a>
+</nav>
+<div class="mt-auto space-y-1">
+<a class="flex items-center px-6 py-3 text-slate-400 font-medium hover:text-slate-200 hover:bg-slate-800/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center px-6 py-3 text-slate-400 font-medium hover:text-slate-200 hover:bg-slate-800/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- TopAppBar (JSON Component Mapping) -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-[#F7F9FF] dark:bg-slate-900 flex items-center justify-between px-8 w-full border-b border-slate-200/20 z-40">
+<div class="flex items-center gap-4">
+<span class="text-lg font-bold text-[#2C2C2C] dark:text-white">Immigration Case Management</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-on-surface-variant/50">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary-container" placeholder="Search cases..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-all" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-all" data-icon="help">help</span>
+<img alt="Staff Profile" class="w-8 h-8 rounded-full bg-primary-container/20" data-alt="professional portrait of a person in a workspace environment with natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADxezBm3ufjT-CO4EFpbL0mvlFecVqOWhZkoFDno-Lchr1YARuHA6U9uo3MhgrQOq-m_TB4KV_sv6bXsx9sp0ipwQXrviVGWRHal-pCO9SBNLdbqu-fSLNOg1a8Q48kFOjZ0u3JB92SAZerj-pI30CwFONZ6V_DGsYtpt2J1b3_owwbFnVurQw_3lLX3OtQNc5lgEsQeCwbH5dA0Ztiy45RjrjTI0SITqQZdO6LRwmkevh2sEgrFOvdgqUCb7Kv151x3iFl-QnAi42"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 p-8 min-h-screen">
+<!-- Breadcrumb & Header -->
+<div class="mb-8">
+<nav class="flex items-center gap-2 text-sm font-medium text-on-surface-variant mb-2">
+<span class="hover:text-primary cursor-pointer">Cases</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-on-surface">MOS-2026-0042</span>
+</nav>
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-3xl font-extrabold text-[#2C2C2C] tracking-tight">Case Financials</h2>
+<p class="text-on-surface-variant text-sm mt-1">Manage and track all disbursements for I-130/I-485 Concurrent Filing.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-highest text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-container-high transition-all">Export Report</button>
+<button class="px-4 py-2 bg-gradient-to-br from-primary to-primary-container text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all">Approve All</button>
+</div>
+</div>
+</div>
+<!-- Tab Navigation -->
+<div class="flex gap-8 border-b border-outline-variant/20 mb-8">
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-primary transition-all">Overview</button>
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-primary transition-all">Documents</button>
+<button class="pb-3 text-sm font-semibold text-primary border-b-2 border-primary">Expenses</button>
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-primary transition-all">Timeline</button>
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-primary transition-all">Billing</button>
+</div>
+<!-- Financial Summary Bar (Asymmetric Tonal Grid) -->
+<div class="grid grid-cols-4 gap-4 mb-8">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Revenue</span>
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="text-2xl font-bold text-[#2C2C2C]">$1,500</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">MOS Expenses</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="payments">payments</span>
+</div>
+<div class="text-2xl font-bold text-[#2C2C2C]">$1,855</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Client-Paid</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person_filled_check">person_filled</span>
+</div>
+<div class="text-2xl font-bold text-[#2C2C2C]">$200</div>
+</div>
+<div class="bg-error-container/20 p-6 rounded-xl border-l-4 border-error">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-error">Net Revenue</span>
+<span class="material-symbols-outlined text-error" data-icon="trending_down">trending_down</span>
+</div>
+<div class="text-2xl font-bold text-error">-$355</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Left Side: Expense List & Form -->
+<div class="col-span-8 space-y-8">
+<!-- Expense List Card -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="px-6 py-4 bg-surface-container-low flex justify-between items-center border-b border-outline-variant/10">
+<h3 class="font-bold text-[#2C2C2C]">Expense Records</h3>
+<span class="text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full">5 Entries</span>
+</div>
+<div class="p-2">
+<table class="w-full text-left">
+<thead>
+<tr class="text-xs font-bold text-on-surface-variant/70 uppercase">
+<th class="px-4 py-4">Item Description</th>
+<th class="px-4 py-4">Status</th>
+<th class="px-4 py-4 text-right">Amount</th>
+<th class="px-4 py-4">Paid By</th>
+<th class="px-4 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-6 bg-primary rounded-full"></div>
+<div>
+<div class="font-semibold text-on-surface">USCIS I-130</div>
+<div class="text-[10px] text-on-surface-variant">Filing Fee • Oct 12, 2023</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-primary-container/20 text-primary border border-primary-container/30 rounded-md">auto</span>
+</td>
+<td class="px-4 py-4 text-right font-bold text-on-surface">$625.00</td>
+<td class="px-4 py-4">
+<span class="text-xs font-medium text-on-surface-variant">MOS</span>
+</td>
+<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-6 bg-primary rounded-full"></div>
+<div>
+<div class="font-semibold text-on-surface">USCIS I-485</div>
+<div class="text-[10px] text-on-surface-variant">Filing Fee • Oct 12, 2023</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4">
+<span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-primary-container/20 text-primary border border-primary-container/30 rounded-md">auto</span>
+</td>
+<td class="px-4 py-4 text-right font-bold text-on-surface">$1,225.00</td>
+<td class="px-4 py-4">
+<span class="text-xs font-medium text-on-surface-variant">MOS</span>
+</td>
+<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-6 bg-outline-variant rounded-full"></div>
+<div>
+<div class="font-semibold text-on-surface">Translation</div>
+<div class="text-[10px] text-on-surface-variant">Birth Certificate • Oct 15, 2023</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"></td>
+<td class="px-4 py-4 text-right font-bold text-on-surface">$45.00</td>
+<td class="px-4 py-4">
+<span class="text-xs font-medium text-on-surface-variant">Client</span>
+</td>
+<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-6 bg-outline-variant rounded-full"></div>
+<div>
+<div class="font-semibold text-on-surface">Photos</div>
+<div class="text-[10px] text-on-surface-variant">Passport Style • Oct 15, 2023</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"></td>
+<td class="px-4 py-4 text-right font-bold text-on-surface">$30.00</td>
+<td class="px-4 py-4">
+<span class="text-xs font-medium text-on-surface-variant">Client</span>
+</td>
+<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-6 bg-primary rounded-full"></div>
+<div>
+<div class="font-semibold text-on-surface">Certified mail</div>
+<div class="text-[10px] text-on-surface-variant">USPS Tracking • Oct 20, 2023</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"></td>
+<td class="px-4 py-4 text-right font-bold text-on-surface">$5.00</td>
+<td class="px-4 py-4">
+<span class="text-xs font-medium text-on-surface-variant">MOS</span>
+</td>
+<td class="px-4 py-4 text-right opacity-0 group-hover:opacity-100">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Add Expense Inline Form -->
+<div class="bg-surface-container-low p-6 rounded-xl border-2 border-dashed border-outline-variant/30">
+<h3 class="font-bold text-[#2C2C2C] mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">add_circle</span>
+                        Add New Expense
+                    </h3>
+<form class="grid grid-cols-12 gap-4">
+<div class="col-span-4">
+<label class="block text-[10px] font-bold uppercase text-on-surface-variant mb-1 ml-1">Label</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-container outline-none" placeholder="e.g. Courier Service" type="text"/>
+</div>
+<div class="col-span-2">
+<label class="block text-[10px] font-bold uppercase text-on-surface-variant mb-1 ml-1">Amount</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-container outline-none" placeholder="$0.00" type="text"/>
+</div>
+<div class="col-span-3">
+<label class="block text-[10px] font-bold uppercase text-on-surface-variant mb-1 ml-1">Date</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-container outline-none" type="date"/>
+</div>
+<div class="col-span-3">
+<label class="block text-[10px] font-bold uppercase text-on-surface-variant mb-1 ml-1">Paid By</label>
+<div class="flex p-1 bg-surface-container-highest rounded-lg">
+<button class="flex-1 text-[10px] font-bold uppercase py-1.5 rounded-md bg-surface-container-lowest shadow-sm text-primary" type="button">MOS</button>
+<button class="flex-1 text-[10px] font-bold uppercase py-1.5 rounded-md text-on-surface-variant" type="button">Client</button>
+</div>
+</div>
+<div class="col-span-10">
+<label class="block text-[10px] font-bold uppercase text-on-surface-variant mb-1 ml-1">Notes</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-container outline-none" placeholder="Additional details..." type="text"/>
+</div>
+<div class="col-span-2 self-end">
+<button class="w-full h-[38px] bg-primary text-white text-xs font-bold uppercase rounded-lg hover:bg-on-secondary-container transition-all" type="submit">Save</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Right Side: Analytics/Category Breakdown -->
+<div class="col-span-4 space-y-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm">
+<h3 class="font-bold text-[#2C2C2C] mb-6">Expense Breakdown</h3>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-2">
+<span>Government Fees</span>
+<span>$1,850.00</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-2">
+<span>Professional Services</span>
+<span>$45.00</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed-dim h-full w-[10%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-2">
+<span>Shipping &amp; Logistics</span>
+<span>$5.00</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full w-[5%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-2">
+<span>Miscellaneous</span>
+<span>$30.00</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-outline-variant h-full w-[8%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20">
+<div class="flex items-start gap-4 p-4 bg-primary/5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="info">info</span>
+<div>
+<p class="text-xs font-bold text-primary">Budget Alert</p>
+<p class="text-[11px] text-on-surface-variant leading-relaxed mt-1">Disbursements for this case have exceeded the allocated retainer. Please verify if a mid-case deposit is required from the client.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Visual Card -->
+<div class="relative h-48 rounded-xl overflow-hidden group shadow-sm">
+<img alt="Finance Background" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="high-end corporate setting with fountain pen on financial documents with soft blue architectural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRCNWbS1fvkTQo-9UMapYszwEjHh-haiLWckxWNr9k2rEJvHNk2O3_hwtshgqnUudfnX-qHnyfYahVe_TJeCuCba0mgTNoBkrhFmUdTLKC8Y4Al-PLk1wNvvAD8Zu32nvc5ijNjQ-WhkXk8YOJdSBgzfOV6BJ8hLmm6Uab6KVDEzoSlcjn7jpOitKo8j_3RC8Ut9Ovw9w6pDQuo0dwXP0LxU_P5rsOXXWsvr0mM8W3x9Mec3uW2l1VaWjl6o04pwWEc0JhZcBDN06W"/>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent flex flex-col justify-end p-6">
+<h4 class="text-white font-bold">Policy Reminder</h4>
+<p class="text-slate-300 text-[10px] mt-1 uppercase tracking-widest font-semibold">Expense Compliance v2.4</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

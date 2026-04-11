@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manna One - New Client</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .text-near-black { color: #212529; }
+        .text-charcoal { color: #2C2C2C; }
+        .status-pillar-teal { border-left: 4px solid #3AAFB9; }
+        .status-pillar-error { border-left: 4px solid #ba1a1a; }
+        .ghost-border { border: 1px solid rgba(188, 201, 202, 0.2); }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#004f55",
+                      "on-primary-fixed": "#002022",
+                      "secondary-fixed": "#98f1f9",
+                      "primary-fixed": "#87f3fd",
+                      "on-secondary-fixed-variant": "#004f54",
+                      "surface-container-low": "#f1f4f9",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#5f5e5e",
+                      "on-surface": "#181c20",
+                      "inverse-primary": "#69d6e1",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f7f9ff",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "surface-tint": "#006970",
+                      "on-secondary-container": "#006e75",
+                      "inverse-surface": "#2d3135",
+                      "tertiary-fixed": "#e4e2e1",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#eef1f6",
+                      "primary": "#006970",
+                      "outline-variant": "#bcc9ca",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-container": "#3aafb9",
+                      "on-surface-variant": "#3d494a",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "secondary-fixed-dim": "#7bd4dd",
+                      "outline": "#6d797a",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#373636",
+                      "on-tertiary-fixed": "#1b1c1c",
+                      "on-background": "#181c20",
+                      "surface": "#f7f9ff",
+                      "background": "#f7f9ff",
+                      "secondary-container": "#95eef6",
+                      "primary-fixed-dim": "#69d6e1",
+                      "surface-variant": "#e0e3e8",
+                      "on-primary-container": "#003d42",
+                      "tertiary-container": "#a19f9f",
+                      "surface-container": "#ebeef3",
+                      "surface-container-high": "#e5e8ee",
+                      "surface-container-highest": "#e0e3e8",
+                      "surface-dim": "#d7dadf",
+                      "secondary": "#006970",
+                      "on-secondary-fixed": "#002022"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r-0 z-50">
+<div class="px-6 py-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg">category</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-white leading-none">Manna One</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Immigration Solutions</p>
+</div>
+</div>
+</div>
+<div class="px-4 py-4">
+<button class="w-full bg-primary text-on-primary py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                New Case
+            </button>
+</div>
+<nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+<!-- Active State for Clients -->
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">folder_shared</span>
+                Cases
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-950 text-teal-600 dark:text-teal-400 font-semibold shadow-sm font-inter text-sm rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+                Clients
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+                Documents
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+                Calendar
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                Reports
+            </a>
+</nav>
+<div class="px-3 py-6 border-t border-slate-100/50 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 font-medium font-inter text-sm rounded-xl hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-8 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/50">
+<div class="flex items-center gap-4">
+<nav class="flex items-center text-sm font-inter">
+<span class="text-slate-500">Clients</span>
+<span class="material-symbols-outlined text-sm text-slate-400 mx-2">chevron_right</span>
+<span class="text-teal-600 font-semibold">New Client</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">Cancel</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm">Save Client</button>
+<div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500 hover:text-primary cursor-pointer transition-colors">notifications</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="User Profile" data-alt="professional portrait of an executive male in his 40s wearing a neutral blazer in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-qLEb2dPKwmU2CMbUoxtUpFnHhTrIBtJ5ZLVo-_crfkMWs1Vnvy8TFstR1jo0X-kmDfhTiETkbHd025WiXF1QieInmEpA1IlR81YqeLDp0-v763uz_tQMVLibdX8v9mTugothmJgkCFf0fvEO9LPgz_jYzeS_kVhMODUL1x7UM16rSdwrRi4ICvVXIK5LlAEiEj85H6ILtyUwO1c5KQUVa4EiyPOFkn1afYgSZ9jFkaByDwVhU-QIdiI6LUWzRO9VXipgJhf3Pmxx"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 p-12 max-w-6xl mx-auto w-full">
+<!-- Progress Header -->
+<div class="mb-10">
+<p class="text-label-md font-semibold text-primary mb-4">Step 1 of 3 — Personal Information</p>
+<div class="flex gap-3">
+<div class="h-1.5 flex-1 rounded-full bg-primary"></div>
+<div class="h-1.5 flex-1 rounded-full bg-surface-container-high"></div>
+<div class="h-1.5 flex-1 rounded-full bg-surface-container-high"></div>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden status-pillar-teal">
+<div class="p-8 md:p-12">
+<div class="mb-10">
+<h2 class="text-3xl font-bold text-charcoal tracking-tight">Personal Information</h2>
+<p class="text-slate-500 mt-2">Enter the legal identification details for the new applicant.</p>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+<!-- Left Column -->
+<div class="space-y-8">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">First Name<span class="text-error ml-0.5">*</span></label>
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="e.g. John" required="" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Last Name<span class="text-error ml-0.5">*</span></label>
+<input class="w-full bg-surface-container-lowest border-2 border-error/40 rounded-lg px-4 py-3 focus:ring-2 focus:ring-error outline-none transition-all" placeholder="e.g. Smith" required="" type="text"/>
+<p class="text-error text-xs font-medium">This field is required</p>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Middle Name</label>
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Optional" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Date of Birth<span class="text-error ml-0.5">*</span></label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" type="date"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Gender</label>
+<select class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all appearance-none cursor-pointer">
+<option value="">Select Gender</option>
+<option value="male">Male</option>
+<option value="female">Female</option>
+<option value="other">Other</option>
+<option value="prefer-not-to-say">Prefer not to say</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Country of Birth<span class="text-error ml-0.5">*</span></label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-10 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Search countries..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+</div>
+</div>
+</div>
+<!-- Right Column -->
+<div class="space-y-8">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Nationality<span class="text-error ml-0.5">*</span></label>
+<select class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all appearance-none cursor-pointer" required="">
+<option value="">Select Nationality</option>
+<option value="us">United States</option>
+<option value="mx">Mexico</option>
+<option value="ca">Canada</option>
+<option value="uk">United Kingdom</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">SSN</label>
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="***-**-****" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">A-Number</label>
+<input class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all font-mono text-sm" placeholder="A-000-000-000" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Preferred Language</label>
+<select class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all appearance-none cursor-pointer">
+<option value="english">English</option>
+<option value="spanish">Spanish</option>
+<option value="french">French</option>
+<option value="mandarin">Mandarin</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-near-black">Marital Status</label>
+<select class="w-full bg-surface-container-lowest ghost-border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none transition-all appearance-none cursor-pointer">
+<option value="single">Single</option>
+<option value="married">Married</option>
+<option value="divorced">Divorced</option>
+<option value="widowed">Widowed</option>
+</select>
+</div>
+<div class="pt-8 flex justify-end">
+<button class="group flex items-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all" type="button">
+                                    Next: Contact &amp; Address
+                                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+<!-- Helpful Note / Bento-ish side element -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="md:col-span-2 bg-white/40 p-6 rounded-2xl border border-white/60 flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">info</span>
+<div>
+<h4 class="font-semibold text-near-black text-sm">Why is an A-Number required?</h4>
+<p class="text-xs text-slate-500 mt-1 leading-relaxed">The Alien Registration Number is a unique seven-, eight-, or nine-digit number assigned to a noncitizen by the Department of Homeland Security. This is crucial for tracking all immigration-related cases.</p>
+</div>
+</div>
+<div class="bg-teal-50/50 p-6 rounded-2xl border border-teal-100 flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-teal-600 text-sm" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-[10px] font-bold text-teal-700 uppercase tracking-wider">Secure Data</span>
+</div>
+<p class="text-xs text-teal-800 font-medium leading-tight">All information provided is encrypted and stored in compliance with Federal data security standards.</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

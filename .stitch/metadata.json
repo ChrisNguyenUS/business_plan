@@ -1,0 +1,159 @@
+{
+  "name": "projects/11496096077619613643",
+  "projectId": "11496096077619613643",
+  "title": "MOS Internal Staff App",
+  "visibility": "PRIVATE",
+  "createTime": "2026-04-10T16:12:47.671675Z",
+  "updateTime": "2026-04-10T17:49:22Z",
+  "projectType": "PROJECT_DESIGN",
+  "origin": "STITCH",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "INTER",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#3AAFB9",
+    "saturation": 3
+  },
+  "screens": {
+    "login": {
+      "id": "37b8918b134c4869802354d00ce0e02c",
+      "sourceScreen": "projects/11496096077619613643/screens/37b8918b134c4869802354d00ce0e02c",
+      "x": 0,
+      "y": 0,
+      "width": 2560,
+      "height": 2048
+    },
+    "dashboard": {
+      "id": "eddb8c27bf1e490d8bdaff835f03df9b",
+      "sourceScreen": "projects/11496096077619613643/screens/eddb8c27bf1e490d8bdaff835f03df9b",
+      "x": 2700,
+      "y": 0,
+      "width": 2560,
+      "height": 2186
+    },
+    "clients": {
+      "id": "2eb109734b5c4a119956b50e1de48ab7",
+      "sourceScreen": "projects/11496096077619613643/screens/2eb109734b5c4a119956b50e1de48ab7",
+      "x": 5400,
+      "y": 0,
+      "width": 2560,
+      "height": 2048
+    },
+    "client-profile": {
+      "id": "6aa1a006039a4272b07a130c8412180c",
+      "sourceScreen": "projects/11496096077619613643/screens/6aa1a006039a4272b07a130c8412180c",
+      "x": 0,
+      "y": 2300,
+      "width": 2560,
+      "height": 2398
+    },
+    "cases": {
+      "id": "2dc83bba1e724fe2832528e61cd0b7f0",
+      "sourceScreen": "projects/11496096077619613643/screens/2dc83bba1e724fe2832528e61cd0b7f0",
+      "x": 2700,
+      "y": 2300,
+      "width": 2560,
+      "height": 3544
+    },
+    "case-detail": {
+      "id": "ea6c3e0190ad4666a0095a8c3318d6a4",
+      "sourceScreen": "projects/11496096077619613643/screens/ea6c3e0190ad4666a0095a8c3318d6a4",
+      "x": 5400,
+      "y": 2300,
+      "width": 3072,
+      "height": 2642
+    },
+    "filing-screen": {
+      "id": "e136c8ba4121469886b5a075ad63a8a9",
+      "sourceScreen": "projects/11496096077619613643/screens/e136c8ba4121469886b5a075ad63a8a9",
+      "x": 0,
+      "y": 5000,
+      "width": 2560,
+      "height": 2396
+    },
+    "notifications": {
+      "id": "d7547f58826f4656b31e270b7553cd65",
+      "sourceScreen": "projects/11496096077619613643/screens/d7547f58826f4656b31e270b7553cd65",
+      "x": 2700,
+      "y": 5000,
+      "width": 2560,
+      "height": 2048
+    },
+    "staff-management": {
+      "id": "4b1ae7ce7f7d4d47a12e7558c4eff32a",
+      "sourceScreen": "projects/11496096077619613643/screens/4b1ae7ce7f7d4d47a12e7558c4eff32a",
+      "x": 5400,
+      "y": 5000,
+      "width": 2560,
+      "height": 2048
+    },
+    "pdf-preview": {
+      "id": "7ab3e502b037408b9a08fe8031aa071c",
+      "sourceScreen": "projects/11496096077619613643/screens/7ab3e502b037408b9a08fe8031aa071c",
+      "x": 0,
+      "y": 7200,
+      "width": 2560,
+      "height": 2344
+    },
+    "new-client": {
+      "id": "1064ccf103b542658309badacc21f3d8",
+      "sourceScreen": "projects/11496096077619613643/screens/1064ccf103b542658309badacc21f3d8",
+      "x": 2700,
+      "y": 7200,
+      "width": 2560,
+      "height": 2538
+    },
+    "new-case": {
+      "id": "6d383c7291334088b82f16604d472c15",
+      "sourceScreen": "projects/11496096077619613643/screens/6d383c7291334088b82f16604d472c15",
+      "x": 5400,
+      "y": 7200,
+      "width": 2560,
+      "height": 2048
+    },
+    "settings": {
+      "id": "a0e8b06647614043bce061dee3cc2164",
+      "sourceScreen": "projects/11496096077619613643/screens/a0e8b06647614043bce061dee3cc2164",
+      "x": 0,
+      "y": 9700,
+      "width": 2560,
+      "height": 2840
+    },
+    "case-archive": {
+      "id": "f3a46d2a0614473db7016809390db6d3",
+      "sourceScreen": "projects/11496096077619613643/screens/f3a46d2a0614473db7016809390db6d3",
+      "x": 2700,
+      "y": 9700,
+      "width": 2560,
+      "height": 3350
+    },
+    "analytics": {
+      "id": "63ede1bf1b88429b89ea9399fa8bbe62",
+      "sourceScreen": "projects/11496096077619613643/screens/63ede1bf1b88429b89ea9399fa8bbe62",
+      "x": 5400,
+      "y": 9700,
+      "width": 2560,
+      "height": 2800
+    },
+    "bulk-import": {
+      "id": "bb2e799c704c44ce9a1e63295f44dad7",
+      "sourceScreen": "projects/11496096077619613643/screens/bb2e799c704c44ce9a1e63295f44dad7",
+      "x": 0,
+      "y": 12700,
+      "width": 2560,
+      "height": 2048
+    },
+    "field-mapping": {
+      "id": "cf39ca534d8348feb3dcf4329003750b",
+      "sourceScreen": "projects/11496096077619613643/screens/cf39ca534d8348feb3dcf4329003750b",
+      "x": 2700,
+      "y": 12700,
+      "width": 2560,
+      "height": 2228
+    }
+  },
+  "metadata": {
+    "userRole": "OWNER"
+  }
+}

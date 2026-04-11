@@ -1,6 +1,6 @@
 # PRD: Manna One Solution Website
 **Date:** April 6, 2026  
-**Project:** mannaonesolution.com  
+**Project:** MannaOS.com  
 **Tech Stack:** Next.js + Vercel  
 **Owner:** Manna One Solution, Houston, TX
 
@@ -23,7 +23,7 @@ A bilingual (Vietnamese/English) professional website for Manna One Solution —
 |---|---|
 | Framework | Next.js (React) |
 | Hosting | Vercel (free tier) |
-| Domain | Already owned — connect to Vercel |
+| Domain | MannaOS.com — connect to Vercel |
 | Contact form | Formspree (free tier, no backend needed) |
 | Appointment booking | Calendly embed |
 | Deployment | GitHub → Vercel auto-deploy |
@@ -238,4 +238,4 @@ No Zalo integration.
 ---
 
 *Manna One Solution — One Stop, All Solutions.*  
-*Houston, TX | mannaonesolution.com*
+*Houston, TX | MannaOS.com*

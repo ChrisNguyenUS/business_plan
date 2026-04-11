@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Manna One Solution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f1f4f9",
+                        "surface-container": "#ebeef3",
+                        "outline-variant": "#bcc9ca",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f7f9ff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2d3135",
+                        "on-primary-container": "#003d42",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "tertiary": "#5f5e5e",
+                        "inverse-primary": "#69d6e1",
+                        "surface": "#f7f9ff",
+                        "on-secondary-container": "#006e75",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-primary-fixed": "#002022",
+                        "primary": "#006970",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "secondary-fixed-dim": "#7bd4dd",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#a19f9f",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#3d494a",
+                        "on-background": "#181c20",
+                        "background": "#f7f9ff",
+                        "on-secondary-fixed": "#002022",
+                        "on-primary-fixed-variant": "#004f55",
+                        "on-tertiary-container": "#373636",
+                        "surface-container-highest": "#e0e3e8",
+                        "surface-container-high": "#e5e8ee",
+                        "primary-fixed": "#87f3fd",
+                        "surface-variant": "#e0e3e8",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eef1f6",
+                        "secondary-fixed": "#98f1f9",
+                        "on-surface": "#181c20",
+                        "surface-tint": "#006970",
+                        "primary-fixed-dim": "#69d6e1",
+                        "primary-container": "#3aafb9",
+                        "secondary-container": "#95eef6",
+                        "outline": "#6d797a",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#d7dadf",
+                        "secondary": "#006970"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex overflow-hidden">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-[#2C2C2C] flex flex-col py-6 px-4 space-y-2 z-50">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-white font-bold text-lg">M</div>
+<div>
+<h1 class="text-white font-semibold text-sm leading-tight">Manna One</h1>
+<p class="text-surface-container-highest/60 text-xs">Staff Portal</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1">
+<!-- Dashboard Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="font-['Inter'] text-sm font-medium">Dashboard</span>
+</a>
+<!-- Clients Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="font-['Inter'] text-sm font-medium">Clients</span>
+</a>
+<!-- Cases Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">folder_open</span>
+<span class="font-['Inter'] text-sm font-medium">Cases</span>
+</a>
+<!-- Notifications Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="font-['Inter'] text-sm font-medium">Notifications</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 pt-6 border-t border-white/10">
+<!-- Profile Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl">account_circle</span>
+<span class="font-['Inter'] text-sm font-medium">Profile</span>
+</a>
+<!-- Settings Tab (Active State) -->
+<a class="flex items-center space-x-3 px-4 py-3 bg-primary-container/10 border-l-4 border-primary-container rounded-r-lg text-primary-container font-semibold transition-all" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-['Inter'] text-sm">Settings</span>
+</a>
+<!-- Logout Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined text-xl text-error/80">logout</span>
+<span class="font-['Inter'] text-sm font-medium">Logout</span>
+</a>
+<div class="mt-4 px-4 flex items-center space-x-3 py-4">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center text-xs font-bold">MG</div>
+<div class="overflow-hidden">
+<p class="text-white text-xs font-semibold truncate">Maria Garcia</p>
+<p class="text-white/40 text-[10px]">Immigration Staff</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen bg-surface-container-low">
+<!-- TopNavBar Structure -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-surface-bright/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 border-b border-transparent">
+<h2 class="font-['Inter'] font-extrabold text-xl tracking-tight text-[#2C2C2C]">Settings</h2>
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">help</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">settings</button>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<img alt="Staff Profile Avatar" class="w-full h-full object-cover" data-alt="professional portrait of Maria Garcia, a Hispanic woman in business attire smiling warmly in a bright modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-ZymA4kjOR7xXXUcTd8KpPCVtR6spcaHN_p2k5NM-oVt8SquBA4maCUAyIq1l8DBZWn5AfHWkjM3HhJA9uzxhwtE2d0Vg65TzOlfkYu78hWp96LO3ji3dqBQWiqm3t6GKtcKdw-l135sRcH0Cpck1n8bHk0pJauHhcUj_qqG5UiPiqntxA8shzDmWznOVrOzBGMfacaf7spQMV46bIZOuFqEBD9WTygq3XwQ3VjABC-22s-TpFPTJQm2VMMCEsOoDSqdKtVTr7lNF"/>
+</div>
+</div>
+</header>
+<div class="mt-16 p-8 max-w-5xl w-full mx-auto space-y-8 pb-16">
+<!-- Profile Section -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] p-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex items-start justify-between mb-8">
+<div class="flex items-center space-x-6">
+<div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center text-white text-2xl font-bold">MG</div>
+<div>
+<h3 class="text-xl font-bold text-[#2C2C2C]">Maria Garcia</h3>
+<div class="flex items-center mt-1 space-x-3">
+<span class="bg-primary-container/10 text-primary-container text-xs font-semibold px-3 py-1 rounded-full">Immigration Staff</span>
+<span class="text-on-surface-variant text-sm">maria@mannaonesolution.com</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<label class="block">
+<span class="text-sm font-semibold text-on-surface-variant mb-1.5 block">Full Name</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all" type="text" value="Maria Garcia"/>
+</label>
+<label class="block opacity-60">
+<span class="text-sm font-semibold text-on-surface-variant mb-1.5 block">Email Address (Read-only)</span>
+<input class="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2.5 cursor-not-allowed" readonly="" type="email" value="maria@mannaonesolution.com"/>
+</label>
+</div>
+<div class="space-y-4">
+<div class="pt-2">
+<button class="text-primary-container font-semibold text-sm flex items-center hover:underline decoration-2 underline-offset-4">
+<span class="material-symbols-outlined mr-2 text-lg">lock_reset</span>
+                                Change Password
+                            </button>
+</div>
+<!-- Collapsible Password Fields (Simulated Visible) -->
+<div class="space-y-3 pt-2">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all text-sm" placeholder="Current Password" type="password"/>
+<div class="grid grid-cols-2 gap-3">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all text-sm" placeholder="New Password" type="password"/>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all text-sm" placeholder="Confirm New" type="password"/>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-10 flex justify-end">
+<button class="px-8 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-semibold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        Save Changes
+                    </button>
+</div>
+</section>
+<!-- Preferences Section -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] p-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary-container"></div>
+<div class="mb-8">
+<h3 class="text-lg font-bold text-[#2C2C2C] flex items-center mb-6">
+<span class="material-symbols-outlined mr-3 text-primary">notifications_active</span>
+                        Notification Preferences
+                    </h3>
+<div class="space-y-4">
+<!-- Toggle ON -->
+<div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+<div>
+<p class="text-sm font-semibold text-on-surface">USCIS Status Change Alerts</p>
+<p class="text-xs text-on-surface-variant">Receive immediate alerts when a case status changes in USCIS portal.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer flex items-center transition-colors">
+<div class="w-4 h-4 bg-white rounded-full absolute right-1"></div>
+</div>
+</div>
+<!-- Toggle ON -->
+<div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+<div>
+<p class="text-sm font-semibold text-on-surface">Document Upload Confirmations</p>
+<p class="text-xs text-on-surface-variant">Get notified when a client successfully uploads required documentation.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer flex items-center transition-colors">
+<div class="w-4 h-4 bg-white rounded-full absolute right-1"></div>
+</div>
+</div>
+<!-- Toggle ON -->
+<div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+<div>
+<p class="text-sm font-semibold text-on-surface">Case Assignment Notifications</p>
+<p class="text-xs text-on-surface-variant">Alerts for new cases assigned to your staff profile.</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer flex items-center transition-colors">
+<div class="w-4 h-4 bg-white rounded-full absolute right-1"></div>
+</div>
+</div>
+<!-- Toggle OFF -->
+<div class="flex items-center justify-between py-2">
+<div>
+<p class="text-sm font-semibold text-on-surface">Daily Summary Email</p>
+<p class="text-xs text-on-surface-variant">Receive a morning digest of all pending tasks and deadlines.</p>
+</div>
+<div class="w-12 h-6 bg-surface-container-highest rounded-full relative cursor-pointer flex items-center transition-colors">
+<div class="w-4 h-4 bg-white rounded-full absolute left-1"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-6 mt-6 border-t border-surface-container-low">
+<h3 class="text-lg font-bold text-[#2C2C2C] flex items-center mb-6">
+<span class="material-symbols-outlined mr-3 text-primary">desktop_windows</span>
+                        Display Preferences
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<label class="text-sm font-semibold text-on-surface-variant mb-1.5 block">Default Cases View</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-container">
+<option>List View</option>
+<option>Grid Layout (Bento)</option>
+</select>
+</div>
+<div>
+<label class="text-sm font-semibold text-on-surface-variant mb-1.5 block">Items Per Page</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-container">
+<option>25 items</option>
+<option>10 items</option>
+<option>50 items</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- Security Section -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] p-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-error/60"></div>
+<h3 class="text-lg font-bold text-[#2C2C2C] flex items-center mb-6">
+<span class="material-symbols-outlined mr-3 text-error">security</span>
+                    Active Sessions
+                </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">laptop_mac</span>
+</div>
+<div>
+<div class="flex items-center space-x-2">
+<p class="text-sm font-bold text-on-surface">Chrome on macOS</p>
+<span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+<span class="text-[10px] uppercase tracking-wider font-bold text-green-600">Current Session</span>
+</div>
+<p class="text-xs text-on-surface-variant">Houston, TX, United States — 192.168.1.45</p>
+</div>
+</div>
+<button class="text-error font-semibold text-xs hover:bg-error/5 px-4 py-2 rounded-lg transition-colors">
+                            Sign Out of All Other Sessions
+                        </button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="pt-8 border-t border-surface-container-highest/30 text-center">
+<p class="text-[11px] text-[#5f5e5e] tracking-wide uppercase font-medium">
+                    MOS Staff App v1.0.0 | Built with ❤ by Manna One Solution | Houston, TX
+                </p>
+</footer>
+</div>
+</main>
+</body></html>

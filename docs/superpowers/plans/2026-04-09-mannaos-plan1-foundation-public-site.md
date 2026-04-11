@@ -4,9 +4,9 @@
 
 **Goal:** Scaffold the MannaOS.com Next.js project and build all public-facing pages (Home, Services, About, Contact, Blog) with bilingual support, SEO/GEO, and Vercel deployment.
 
-**Architecture:** Next.js 14 App Router with Tailwind CSS. Bilingual system via a simple React context (localStorage-persisted, EN default). Public pages statically generated. Blog posts loaded from local Markdown files. No auth in this plan.
+**Architecture:** Next.js 14 App Router with Tailwind CSS. Bilingual system via a simple React context (localStorage-persisted, EN default). Public pages statically generated. Blog posts loaded from local Markdown files. Contact form via Next.js API route with Resend email + Supabase backup (dual delivery — never lose a lead). GA4 analytics from launch.
 
-**Tech Stack:** Next.js 14, Tailwind CSS, TypeScript, gray-matter + remark (blog), Formspree (contact form), Calendly (booking embed), next-sitemap, Vercel.
+**Tech Stack:** Next.js 14, Tailwind CSS, TypeScript, gray-matter + remark (blog), Resend (contact form email), Supabase (contact form backup), Calendly (booking embed), Google Analytics 4, next-sitemap, Vercel.
 
 > **Note:** This plan creates a new git repository separate from the business-planning notes repo. The website codebase lives at its own repo (e.g. `github.com/ChrisNguyenUS/mannaos-web`).
 
@@ -23,6 +23,7 @@ mannaos-web/
 │   │   ├── page.tsx                    Home page
 │   │   ├── about/page.tsx
 │   │   ├── contact/page.tsx
+│   │   ├── api/contact/route.ts       POST handler → Resend email + Supabase backup
 │   │   ├── services/
 │   │   │   ├── page.tsx                Services overview
 │   │   │   ├── tax/page.tsx
@@ -45,6 +46,8 @@ mannaos-web/
 │   │   │   ├── JsonLd.tsx              Injects <script type="application/ld+json">
 │   │   │   ├── LocalBusinessSchema.tsx Manna One Solution local business JSON-LD
 │   │   │   └── FaqSchema.tsx           FAQ section + JSON-LD schema combined
+│   │   ├── analytics/
+│   │   │   └── GoogleAnalytics.tsx     GA4 gtag.js via next/script
 │   │   └── sections/
 │   │       ├── Hero.tsx                Full-width hero, headline, 2 CTAs
 │   │       ├── ServicesGrid.tsx        4-card service overview grid
@@ -58,7 +61,9 @@ mannaos-web/
 │   │   │   ├── en.ts                   All English strings
 │   │   │   └── vi.ts                   All Vietnamese strings (same keys)
 │   │   ├── seo.ts                      buildMetadata(page) helper
-│   │   └── blog.ts                     getAllPosts(), getPostBySlug() — reads /content/blog/
+│   │   ├── blog.ts                     getAllPosts(), getPostBySlug() — reads /content/blog/
+│   │   ├── supabase.ts                 Supabase client (server-side, for contact form backup)
+│   │   └── analytics.ts               GA4 event helpers (trackContactSubmit, trackCalendlyClick, etc.)
 │   └── types/
 │       └── index.ts                    BlogPost, ServiceType, Language types
 ├── content/
@@ -101,7 +106,7 @@ cd mannaos-web
 - [ ] **Step 2: Install dependencies**
 
 ```bash
-npm install gray-matter remark remark-html
+npm install gray-matter remark remark-html resend @supabase/supabase-js
 npm install --save-dev jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event ts-jest @types/jest
 ```
 
@@ -132,15 +137,18 @@ import '@testing-library/jest-dom'
 
 ```bash
 cat > .env.local.example << 'EOF'
-# Supabase (needed in Plan 2 — leave empty for Plan 1)
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+# Supabase (used for contact form backup + full app in Plan 2)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Formspree form ID
-NEXT_PUBLIC_FORMSPREE_ID=your_form_id
+# Resend (contact form email delivery)
+RESEND_API_KEY=your_resend_api_key
 
 # Calendly URL
 NEXT_PUBLIC_CALENDLY_URL=https://calendly.com/mannaonesolution/15min
+
+# Google Analytics 4
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 EOF
 cp .env.local.example .env.local
 ```
@@ -1606,18 +1614,20 @@ import { Button } from '@/components/ui/Button'
 export function ContactStrip() {
   const t = useT()
   const [submitted, setSubmitted] = useState(false)
-  const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID
+  const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!formspreeId) return
-    const form = e.currentTarget
-    await fetch(`https://formspree.io/f/${formspreeId}`, {
+    setSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const data = Object.fromEntries(formData.entries())
+    await fetch('/api/contact', {
       method: 'POST',
-      body: new FormData(form),
-      headers: { Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     })
     setSubmitted(true)
+    setSubmitting(false)
   }
 
   return (
@@ -2113,15 +2123,89 @@ export default function AboutPage() {
 }
 ```
 
-- [ ] **Step 2: Create Contact page**
+- [ ] **Step 2: Create Supabase client for server-side use**
+
+Create `src/lib/supabase.ts`:
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+// Server-side Supabase client with service role key
+// Used for contact form backup — bypasses RLS
+export function createServerSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    return null // Supabase not configured — skip backup
+  }
+  return createClient(url, key)
+}
+```
+
+- [ ] **Step 3: Create contact form API route (Resend + Supabase dual delivery)**
+
+Create `src/app/api/contact/route.ts`:
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+import { createServerSupabaseClient } from '@/lib/supabase'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const { name, phone, email, service, message } = body
+
+  if (!name || !email) {
+    return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
+  }
+
+  // 1. Send email via Resend
+  const emailResult = await resend.emails.send({
+    from: 'MannaOS.com <noreply@mannaos.com>',
+    to: 'contact@mannaonesolution.com',
+    subject: `New Contact: ${name} — ${service || 'General'}`,
+    html: `
+      <h2>New Contact Form Submission</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Service:</strong> ${service || 'Not specified'}</p>
+      <p><strong>Message:</strong></p>
+      <p>${message || 'No message'}</p>
+    `,
+  })
+
+  // 2. Backup to Supabase (never lose a lead)
+  const supabase = createServerSupabaseClient()
+  if (supabase) {
+    await supabase.from('contact_submissions').insert({
+      name,
+      phone: phone || null,
+      email,
+      service_interest: service || null,
+      message: message || null,
+    })
+  }
+
+  if (emailResult.error) {
+    // Email failed but lead is saved in Supabase — not a total loss
+    console.error('Resend error:', emailResult.error)
+    return NextResponse.json({ success: true, warning: 'Email delivery issue — we still received your message' })
+  }
+
+  return NextResponse.json({ success: true })
+}
+```
+
+- [ ] **Step 4: Create Contact page**
 
 Create `src/app/contact/page.tsx`:
 ```typescript
 'use client'
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { trackEvent } from '@/lib/analytics'
 
-// Calendly script loader
 function CalendlyEmbed({ url }: { url: string }) {
   return (
     <>
@@ -2130,6 +2214,7 @@ function CalendlyEmbed({ url }: { url: string }) {
         className="calendly-inline-widget"
         data-url={url}
         style={{ minWidth: '320px', height: '700px' }}
+        onClick={() => trackEvent('calendly_click')}
       />
       <script
         type="text/javascript"
@@ -2142,18 +2227,24 @@ function CalendlyEmbed({ url }: { url: string }) {
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
-  const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID
+  const [submitting, setSubmitting] = useState(false)
   const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL ?? 'https://calendly.com/mannaonesolution/15min'
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!formspreeId) return
-    await fetch(`https://formspree.io/f/${formspreeId}`, {
+    setSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const data = Object.fromEntries(formData.entries())
+
+    await fetch('/api/contact', {
       method: 'POST',
-      body: new FormData(e.currentTarget),
-      headers: { Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     })
+
+    trackEvent('contact_form_submit', { service: data.service as string })
     setSubmitted(true)
+    setSubmitting(false)
   }
 
   return (
@@ -2185,7 +2276,9 @@ export default function ContactPage() {
               </select>
               <textarea name="message" rows={4} placeholder="How can we help?"
                 className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal" />
-              <Button type="submit" variant="primary" className="w-full">Send Message</Button>
+              <Button type="submit" variant="primary" className="w-full" disabled={submitting}>
+                {submitting ? 'Sending...' : 'Send Message'}
+              </Button>
             </form>
           )}
 
@@ -2236,19 +2329,38 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
 }
 ```
 
-- [ ] **Step 4: Verify in browser**
+- [ ] **Step 5: Set up Supabase `contact_submissions` table**
+
+In the Supabase dashboard (or via SQL editor), create the table:
+```sql
+CREATE TABLE contact_submissions (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  phone text,
+  email text NOT NULL,
+  service_interest text,
+  message text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- No RLS needed — only server-side service role key writes to this table
+ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
+-- No policies = no public access (service role key bypasses RLS)
+```
+
+- [ ] **Step 6: Verify in browser**
 
 ```bash
 npm run dev
 ```
 Visit http://localhost:3000/about and http://localhost:3000/contact.
-Confirm: Calendly embed loads, contact form submits (use test Formspree ID), credential badges visible on About page.
+Confirm: Calendly embed loads, contact form submits (check owner email via Resend + check Supabase `contact_submissions` table), credential badges visible on About page.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add -A
-git commit -m "feat: add About and Contact pages with Calendly embed"
+git commit -m "feat: add About and Contact pages with Resend + Supabase contact form and Calendly embed"
 ```
 
 ---
@@ -2474,7 +2586,106 @@ git commit -m "feat: add next-sitemap for SEO sitemap generation"
 
 ---
 
-## Task 15: Vercel Deployment
+## Task 15: Google Analytics 4
+
+**Files:**
+- Create: `src/components/analytics/GoogleAnalytics.tsx`
+- Create: `src/lib/analytics.ts`
+- Modify: `src/app/layout.tsx` (add GoogleAnalytics component)
+
+- [ ] **Step 1: Create GA4 component**
+
+Create `src/components/analytics/GoogleAnalytics.tsx`:
+```typescript
+'use client'
+import Script from 'next/script'
+
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+
+export function GoogleAnalytics() {
+  if (!GA_MEASUREMENT_ID) return null
+
+  return (
+    <>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}');
+        `}
+      </Script>
+    </>
+  )
+}
+```
+
+- [ ] **Step 2: Create analytics event helpers**
+
+Create `src/lib/analytics.ts`:
+```typescript
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void
+  }
+}
+
+export function trackEvent(eventName: string, params?: Record<string, string>) {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, params)
+  }
+}
+```
+
+- [ ] **Step 3: Add GoogleAnalytics to root layout**
+
+In `src/app/layout.tsx`, add the import and component:
+
+Add import at top:
+```typescript
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+```
+
+Add `<GoogleAnalytics />` inside the `<body>` tag, before the closing `</body>`:
+```typescript
+<GoogleAnalytics />
+```
+
+- [ ] **Step 4: Add language toggle tracking**
+
+In `src/lib/i18n/LanguageContext.tsx`, add the analytics import and event:
+
+Add import at top:
+```typescript
+import { trackEvent } from '@/lib/analytics'
+```
+
+Inside the `toggleLanguage` function, after `localStorage.setItem('lang', next)`, add:
+```typescript
+trackEvent('language_toggle', { language: next })
+```
+
+- [ ] **Step 5: Verify GA4 loads**
+
+```bash
+npm run dev
+```
+Open browser DevTools → Network tab. Confirm `gtag/js` script loads when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set in `.env.local`. When not set, no script should load (graceful fallback).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A
+git commit -m "feat: add Google Analytics 4 with custom event tracking"
+```
+
+---
+
+## Task 16: Vercel Deployment
 
 - [ ] **Step 1: Create GitHub repository**
 
@@ -2489,8 +2700,11 @@ git push -u origin main
 1. Go to vercel.com → Add New Project → Import from GitHub → select `mannaos-web`
 2. Framework preset: Next.js (auto-detected)
 3. Add environment variables:
-   - `NEXT_PUBLIC_FORMSPREE_ID` — your Formspree form ID
+   - `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` — your Supabase service role key (server-only)
+   - `RESEND_API_KEY` — your Resend API key
    - `NEXT_PUBLIC_CALENDLY_URL` — your Calendly URL
+   - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — your GA4 measurement ID (e.g., G-XXXXXXXXXX)
 4. Click Deploy
 
 - [ ] **Step 3: Verify deployment**
@@ -2500,8 +2714,9 @@ Open the Vercel preview URL. Check:
 - Navbar logo renders
 - Language toggle switches EN ↔ VI
 - /services, /about, /contact, /blog all load
-- Contact form submits (check Formspree dashboard)
+- Contact form submits (check email delivery via Resend + check Supabase `contact_submissions` table)
 - Calendly embed loads on /contact
+- GA4 fires page views (check GA4 Realtime report)
 
 - [ ] **Step 4: Connect MannaOS.com domain**
 
@@ -2518,7 +2733,7 @@ Open the Vercel preview URL. Check:
 3. Submit sitemap: `https://mannaos.com/sitemap.xml`
 4. Go to Bing Webmaster Tools → add site → submit sitemap
 
-- [ ] **Step 6: Final commit**
+- [ ] **Step 7: Final commit**
 
 ```bash
 git add -A
@@ -2533,7 +2748,7 @@ git commit -m "chore: ready for Vercel deployment — Plan 1 complete"
 
 | Spec section | Covered by task |
 |---|---|
-| Tech Stack (Next.js, Vercel, Formspree, Calendly) | Tasks 1, 12, 15 |
+| Tech Stack (Next.js, Vercel, Resend, Supabase, Calendly, GA4) | Tasks 1, 12, 15, 16 |
 | Design System (colors, typography, logo) | Tasks 2, 7 |
 | Logo (transparent PNG primary) | Tasks 9 |
 | Site structure (all public routes) | Tasks 10–13 |
@@ -2541,7 +2756,7 @@ git commit -m "chore: ready for Vercel deployment — Plan 1 complete"
 | Services pages (all 4 + overview) | Task 11 |
 | FAQ JSON-LD on service pages | Task 6, 11 |
 | About page | Task 12 |
-| Contact + Calendly + Formspree | Task 12 |
+| Contact form (Resend email + Supabase backup) + Calendly | Task 12 |
 | Blog with category filter | Task 13 |
 | Bilingual system (EN default, VI/EN toggle) | Task 4 |
 | Language toggle pill in navbar | Task 8 |
@@ -2549,7 +2764,8 @@ git commit -m "chore: ready for Vercel deployment — Plan 1 complete"
 | SEO (meta, OG, JSON-LD, hreflang) | Tasks 6, 10–13 |
 | GEO (llms.txt, FAQ schema, credentials) | Tasks 6, 9, 11 |
 | Sitemap + robots.txt | Tasks 9, 14 |
-| Vercel deployment + domain | Task 15 |
+| Google Analytics 4 (page views + custom events) | Task 15 |
+| Vercel deployment + domain | Task 16 |
 
 **Out of scope for Plan 1 (handled in Plans 2–3):**
 - Auth, login, signup pages
@@ -2560,6 +2776,7 @@ git commit -m "chore: ready for Vercel deployment — Plan 1 complete"
 
 **No placeholders found.** All steps include actual code or commands.
 **Type consistency verified:** `BlogPost`, `FaqItem`, `ServiceType`, `Language` types used consistently across tasks.
+**Analytics verified:** `trackEvent` from `@/lib/analytics` used in contact form (Task 12) and available for language toggle (Task 4). GA4 component loaded in root layout (Task 15).
 
 ---
 

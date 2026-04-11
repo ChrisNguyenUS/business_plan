@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manna One - Staff Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#e5e8ee",
+                    "surface-dim": "#d7dadf",
+                    "secondary": "#006970",
+                    "surface-variant": "#e0e3e8",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#f7f9ff",
+                    "surface-container-low": "#f1f4f9",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#004f54",
+                    "primary-fixed-dim": "#69d6e1",
+                    "on-secondary-fixed": "#002022",
+                    "on-secondary-container": "#006e75",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#004f55",
+                    "primary-container": "#3aafb9",
+                    "on-surface": "#181c20",
+                    "error": "#ba1a1a",
+                    "primary": "#006970",
+                    "secondary-fixed": "#98f1f9",
+                    "inverse-primary": "#69d6e1",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#003d42",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-background": "#181c20",
+                    "inverse-on-surface": "#eef1f6",
+                    "primary-fixed": "#87f3fd",
+                    "tertiary-container": "#a19f9f",
+                    "surface": "#f7f9ff",
+                    "secondary-container": "#95eef6",
+                    "inverse-surface": "#2d3135",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "background": "#f7f9ff",
+                    "tertiary": "#5f5e5e",
+                    "tertiary-fixed": "#e4e2e1",
+                    "on-surface-variant": "#3d494a",
+                    "on-primary-fixed": "#002022",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface-container-highest": "#e0e3e8",
+                    "on-tertiary-fixed-variant": "#474747",
+                    "surface-tint": "#006970",
+                    "surface-container": "#ebeef3",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#bcc9ca",
+                    "outline": "#6d797a",
+                    "secondary-fixed-dim": "#7bd4dd",
+                    "on-tertiary-container": "#373636"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.8px",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: rgba(58, 175, 185, 0.1);
+            color: white;
+            border-right: 4px solid #3AAFB9;
+        }
+        .tonal-layering-no-borders {
+            border: none !important;
+        }
+        .status-pillar {
+            width: 4px;
+            height: 100%;
+            border-radius: 2px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9ff;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Sidebar Component (Fixed) -->
+<aside class="h-full w-64 fixed left-0 top-0 bg-slate-900 flex flex-col p-6 z-50">
+<div class="mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="text-white font-bold text-2xl">M</span>
+</div>
+<div>
+<h1 class="text-xl font-semibold text-primary-container tracking-tight">Manna One</h1>
+<p class="text-[10px] text-slate-400 uppercase tracking-widest">Immigration Suite</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-white bg-primary-container/10 border-r-4 border-primary-container font-medium transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span>Cases</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200 justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span>Notifications</span>
+</div>
+<span class="bg-error text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">3</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-800/50">
+<div class="flex items-center gap-3 px-2">
+<img alt="Maria G. Profile" class="w-10 h-10 rounded-full object-cover grayscale brightness-110" data-alt="Professional headshot of a Hispanic woman in corporate attire, soft office background, friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4z6lfK3D1hQtwhS9jCfFDTP-n01WJY9Jzgt3pU1CWe4bCNlXRyCYfY8QlqHks-gQe3dBist9qWJ91OWzmkGgxPul4WLBcQCZkcTwulVkB1T0F6yIgxJdGZntvIfOoC45KjTAp-UE8Rb6V1n2FZY64OxMVe-hOnRmWQtL-KDAJAv1eopBPCN43oTaBdot8hAo6OabdlAg6CR8bnAswOqtGAnPh0UuHI7PXb0ctVWegAtCdVjCyjLxTasxQHw82m6dBQklfY-8mPNhg"/>
+<div class="overflow-hidden">
+<p class="text-sm font-semibold text-white truncate">Maria G.</p>
+<p class="text-xs text-slate-500 truncate">Immigration Staff</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<div class="ml-64 min-h-screen">
+<!-- TopAppBar Component -->
+<header class="flex justify-between items-center w-full h-16 px-8 sticky top-0 z-40 bg-[#F7F9FF]/80 backdrop-blur-md">
+<div class="flex items-center gap-6">
+<h2 class="text-2xl font-semibold text-slate-800 tracking-tight">Dashboard</h2>
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low rounded-full border-none text-sm w-64 focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search cases, clients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 mx-2"></div>
+<img alt="Executive User Profile" class="w-9 h-9 rounded-full object-cover" data-alt="blurred background of a high-end modern law office with glass partitions and soft warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBTU5f1Sw5jTNJxWUSvHTGl67-dlGf8a1YbnNbAUEED7mKJIAVsDcECZXNlGo_y1WvKXg0BROPEw1qMA-WtG4lFagRrKEHwRyYuWFGLiZoovMhJP0zRKTe0lwvsQ4fx0_d9akDwv0fqPklbMJHvB7a2VLKt_2BlvWgoICHNkG5IsvTOEsGp9TKxh5qWJAzU-uU0rtr07YBzChQCv1KG2QIL4fNnGxC1NjnPIbsUFsM0Z11U5OwUH4FOKogVJJtsIEmUGF8KHkDUT13"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="p-8 space-y-8">
+<!-- Summary Cards Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Active Cases -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Cases</p>
+<h3 class="text-4xl font-bold text-primary-container">12</h3>
+<p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-green-500">trending_up</span> +2 since last week
+                        </p>
+</div>
+<div class="bg-primary/5 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary-container" data-icon="folder_open">folder_open</span>
+</div>
+</div>
+<!-- Pending Documents -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Pending Docs</p>
+<h3 class="text-4xl font-bold text-amber-600">7</h3>
+<p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-amber-500">schedule</span> Action required
+                        </p>
+</div>
+<div class="bg-amber-50 p-2 rounded-lg">
+<span class="material-symbols-outlined text-amber-600" data-icon="pending_actions">pending_actions</span>
+</div>
+</div>
+<!-- USCIS Alerts -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">USCIS Alerts</p>
+<h3 class="text-4xl font-bold text-error">3</h3>
+<p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-error">priority_high</span> High priority
+                        </p>
+</div>
+<div class="bg-error-container/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+</div>
+<!-- Completed -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+<div>
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Completed MTD</p>
+<h3 class="text-4xl font-bold text-green-600">24</h3>
+<p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-green-500">task_alt</span> On track for goal
+                        </p>
+</div>
+<div class="bg-green-50 p-2 rounded-lg">
+<span class="material-symbols-outlined text-green-600" data-icon="verified">verified</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Recent Cases Column -->
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-0 shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] overflow-hidden">
+<div class="p-6 flex justify-between items-center bg-surface-container-low/30">
+<h3 class="text-lg font-semibold text-slate-800">Recent Cases</h3>
+<button class="text-xs text-primary-container font-bold uppercase tracking-widest hover:underline transition-all">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low/50">
+<tr>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Client Name</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Case Type</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Last Updated</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">RS</div>
+<div>
+<p class="text-sm font-semibold text-slate-800">Rodrigo Silva</p>
+<p class="text-[11px] text-slate-400">#C-88219</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-medium text-slate-600">EB-2 NIW</p>
+<p class="text-[11px] text-slate-400">Form I-140</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">RFE SUBMITTED</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-xs text-slate-500">2h ago</p>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">EL</div>
+<div>
+<p class="text-sm font-semibold text-slate-800">Elena Larsson</p>
+<p class="text-[11px] text-slate-400">#C-88224</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-medium text-slate-600">Family-Based</p>
+<p class="text-[11px] text-slate-400">Form I-130</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">AWAITING DOCS</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-xs text-slate-500">Yesterday</p>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">JM</div>
+<div>
+<p class="text-sm font-semibold text-slate-800">Jun Ma</p>
+<p class="text-[11px] text-slate-400">#C-88301</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-medium text-slate-600">O-1 Visa</p>
+<p class="text-[11px] text-slate-400">Form I-129</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">DRAFTING</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-xs text-slate-500">Oct 24</p>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">AA</div>
+<div>
+<p class="text-sm font-semibold text-slate-800">Abebe Ahmed</p>
+<p class="text-[11px] text-slate-400">#C-88155</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-medium text-slate-600">Asylum</p>
+<p class="text-[11px] text-slate-400">Form I-589</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-error-container/50 text-error">ACTION REQ.</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-xs text-slate-500">Oct 23</p>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">TT</div>
+<div>
+<p class="text-sm font-semibold text-slate-800">Tanya Taylor</p>
+<p class="text-[11px] text-slate-400">#C-88410</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-medium text-slate-600">Naturalization</p>
+<p class="text-[11px] text-slate-400">Form N-400</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">INTERVIEW SCHED.</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-xs text-slate-500">Oct 21</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Quick Actions Bar -->
+<div class="flex flex-wrap items-center gap-4 py-2">
+<button class="px-6 py-2.5 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-lg">add</span> New Client
+                        </button>
+<button class="px-6 py-2.5 rounded-lg border-2 border-primary-container text-primary text-sm font-semibold hover:bg-primary-container/5 transition-colors">
+<span class="material-symbols-outlined text-lg align-middle">create_new_folder</span> New Case
+                        </button>
+<button class="px-6 py-2.5 rounded-lg text-slate-500 text-sm font-semibold hover:bg-slate-100 transition-colors">
+                            Generate Report
+                        </button>
+</div>
+</div>
+<!-- Alerts & Opportunities Column -->
+<div class="col-span-12 lg:col-span-5 space-y-8">
+<!-- USCIS Alerts Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-semibold text-slate-800">USCIS Status Alerts</h3>
+<span class="bg-error text-white text-[10px] px-2 py-0.5 rounded-full font-bold">3 NEW</span>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative">
+<div class="status-pillar bg-error absolute left-0 top-2 bottom-2"></div>
+<div class="flex-grow pl-3">
+<p class="text-xs font-bold text-slate-400">IOE912445892</p>
+<p class="text-sm font-medium text-slate-800">Request for Additional Evidence (RFE) Issued</p>
+<p class="text-[11px] text-slate-400 mt-1">14 mins ago • Rodrigo Silva</p>
+</div>
+</div>
+<div class="flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative">
+<div class="status-pillar bg-amber-500 absolute left-0 top-2 bottom-2"></div>
+<div class="flex-grow pl-3">
+<p class="text-xs font-bold text-slate-400">IOE223004118</p>
+<p class="text-sm font-medium text-slate-800">Case Transferred to New Office</p>
+<p class="text-[11px] text-slate-400 mt-1">3 hours ago • Elena Larsson</p>
+</div>
+</div>
+<div class="flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative">
+<div class="status-pillar bg-green-500 absolute left-0 top-2 bottom-2"></div>
+<div class="flex-grow pl-3">
+<p class="text-xs font-bold text-slate-400">MSC239011477</p>
+<p class="text-sm font-medium text-slate-800">New Card is Being Produced</p>
+<p class="text-[11px] text-slate-400 mt-1">Yesterday • Marco Polo</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Cross-Sell Opportunities Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] bg-gradient-to-br from-white to-primary/5">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary-container" data-icon="auto_awesome">auto_awesome</span>
+<h3 class="text-lg font-semibold text-slate-800">Cross-Sell Opportunities</h3>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-white/60 rounded-xl border border-white/80 shadow-sm">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-bold text-slate-800">Elena Larsson</p>
+<p class="text-xs text-slate-500">I-130 Approved</p>
+</div>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI ANALYSIS</span>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-[11px] font-bold text-slate-400">SUGGESTION:</span>
+<div class="flex gap-1.5">
+<span class="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Tax Services</span>
+<span class="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Insurance</span>
+</div>
+</div>
+<button class="mt-4 w-full py-2 bg-primary-container text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:brightness-105 transition-all">Send Offer</button>
+</div>
+<div class="p-4 bg-white/60 rounded-xl border border-white/80 shadow-sm">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-bold text-slate-800">Rodrigo Silva</p>
+<p class="text-xs text-slate-500">Corporate Sponsor Match</p>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-[11px] font-bold text-slate-400">SUGGESTION:</span>
+<span class="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Compliance Audit</span>
+</div>
+<button class="mt-4 w-full py-2 bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-slate-200 transition-all">Review Profile</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

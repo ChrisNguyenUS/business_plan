@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Export | Manna One</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#002022",
+                    "background": "#f8f9fb",
+                    "surface-container": "#eceef0",
+                    "surface-tint": "#006970",
+                    "secondary-fixed": "#98f1f9",
+                    "on-surface": "#191c1e",
+                    "tertiary-fixed": "#e4e2e1",
+                    "on-primary-fixed-variant": "#004f55",
+                    "tertiary": "#5f5e5e",
+                    "primary-fixed": "#87f3fd",
+                    "on-secondary-container": "#006e75",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-container": "#95eef6",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "error-container": "#ffdad6",
+                    "primary": "#006970",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#a19f9f",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#003d42",
+                    "on-background": "#191c1e",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "on-surface-variant": "#3d494a",
+                    "surface-variant": "#e0e3e5",
+                    "primary-fixed-dim": "#69d6e1",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "surface-container-low": "#f2f4f6",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-secondary-fixed": "#002022",
+                    "secondary": "#006970",
+                    "surface": "#f8f9fb",
+                    "secondary-fixed-dim": "#7bd4dd",
+                    "outline-variant": "#bcc9ca",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#f8f9fb",
+                    "inverse-primary": "#69d6e1",
+                    "surface-dim": "#d8dadc",
+                    "outline": "#6d797a",
+                    "on-tertiary-container": "#373636",
+                    "on-tertiary-fixed-variant": "#474747",
+                    "primary-container": "#3aafb9",
+                    "on-secondary-fixed-variant": "#004f54"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- Left Sidebar -->
+<aside class="bg-slate-900 dark:bg-black font-['Inter'] text-sm antialiased h-full w-64 fixed left-0 top-0 shadow-2xl flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-white leading-tight">Manna One</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Staff Portal</p>
+</div>
+</div>
+<button class="mb-8 w-full py-2.5 px-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-sm">add</span>
+            New Entry
+        </button>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-teal-500/10 text-teal-400 border-r-4 border-teal-500 font-semibold transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Finance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Reporting</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-800/50 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="ml-64 flex flex-col min-h-screen relative">
+<!-- Top Bar -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md fixed top-0 right-0 left-64 h-16 z-40 shadow-sm dark:shadow-none flex items-center justify-between px-8 w-full font-['Inter'] text-sm font-medium">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-semibold text-slate-900 dark:text-white">Financial Export</h2>
+<nav class="hidden md:flex gap-6 ml-8">
+<a class="text-slate-500 hover:text-teal-700 dark:hover:text-teal-300" href="#">Overview</a>
+<a class="text-teal-600 dark:text-teal-400 border-b-2 border-teal-600 pb-1" href="#">Batch Export</a>
+<a class="text-slate-500 hover:text-teal-700 dark:hover:text-teal-300" href="#">Archive</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-primary font-semibold hover:bg-surface-container-high px-4 py-1.5 rounded-lg transition-all">
+                    Export History
+                </button>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500" data-icon="notifications">notifications</span>
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant/30">
+<img alt="Staff Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant/50" data-alt="professional portrait of a financial analyst wearing a dark suit in a bright modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZctM2fuvVXbm6Yonk-o77ID1yh5gsKspr5XIUWJWD_MBHiv1FelX9KzIbnsgjvE2a5dBthZsCNkTjODCXNvHgHMpXmgZa41726I-k0YMCribKVdHwJKC_NFxy9Fn-2ZkfGLSmXgKoyD93Zw1FJJ45edP0afkOgXZxgm_KuFyW5vd_u320_aGtdDf9zUYHyIgweeJ2MebaCWnfRlOzlpV4_aWUfZS5C59gj-NY4L30v4TDpD3zJqMjM6XU6MGdppPDCixyahT0QHZl"/>
+<span class="material-symbols-outlined text-slate-500" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Body -->
+<main class="mt-16 p-8 space-y-8 flex-1">
+<!-- Bento Layout Start -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Left Column: Filters -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Filter Card -->
+<section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-title-md font-semibold text-on-surface">Export Configuration</h3>
+<span class="text-label-md text-on-surface-variant font-medium">Session ID: #MNA-9920</span>
+</div>
+<div class="grid grid-cols-2 gap-x-12 gap-y-8">
+<!-- Date Range -->
+<div class="space-y-4">
+<label class="text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Date Range</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-0 rounded-lg text-sm px-4 py-3 focus:ring-2 focus:ring-primary/20" type="text" value="Oct 01, 2023 - Dec 31, 2023"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="text-[11px] px-3 py-1 rounded-full bg-surface-container-high hover:bg-primary/10 transition-colors">This Month</button>
+<button class="text-[11px] px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">This Quarter</button>
+<button class="text-[11px] px-3 py-1 rounded-full bg-surface-container-high hover:bg-primary/10 transition-colors">This Year</button>
+<button class="text-[11px] px-3 py-1 rounded-full bg-surface-container-high hover:bg-primary/10 transition-colors">Custom</button>
+</div>
+</div>
+<!-- Service Type -->
+<div class="space-y-4">
+<label class="text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Service Type</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-0 rounded-lg text-sm px-4 py-3 focus:ring-2 focus:ring-primary/20 min-h-[44px]" multiple="">
+<option selected="">Immigration</option>
+<option selected="">Tax</option>
+<option>Insurance</option>
+<option>AI Consultancy</option>
+</select>
+</div>
+<p class="text-[11px] text-on-surface-variant italic">Hold Ctrl/Cmd to select multiple</p>
+</div>
+<!-- Client Search -->
+<div class="col-span-2 space-y-4">
+<label class="text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Client Filter</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-0 rounded-lg text-sm px-10 py-3 focus:ring-2 focus:ring-primary/20" placeholder="Search by name, email, or client ID..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-3 text-on-surface-variant" data-icon="search">search</span>
+</div>
+</div>
+<!-- Detail Options -->
+<div class="col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors bg-surface-container-low">
+<span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-body-md text-on-surface-variant">Payment details</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors bg-surface-container-low">
+<span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-body-md text-on-surface-variant">Expense details</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 rounded border-2 border-outline-variant/30 flex items-center justify-center bg-surface-container-low"></div>
+<span class="text-body-md text-on-surface-variant">Line items</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 rounded border-2 border-outline-variant/30 flex items-center justify-center bg-surface-container-low"></div>
+<span class="text-body-md text-on-surface-variant">Archived cases</span>
+</label>
+</div>
+</div>
+</section>
+<!-- Table Preview Section -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="p-6 border-b border-surface-container-low flex justify-between items-center">
+<div class="flex items-center gap-3">
+<h3 class="font-semibold text-on-surface">Data Preview</h3>
+<span class="bg-primary/10 text-primary text-[11px] px-2 py-0.5 rounded font-bold">24 records match</span>
+</div>
+<button class="text-sm text-on-surface-variant hover:text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+                                Refresh
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-surface-container-low text-on-surface-variant uppercase text-[10px] tracking-widest font-bold">
+<tr>
+<th class="px-6 py-4">Client</th>
+<th class="px-6 py-4">Case #</th>
+<th class="px-6 py-4">Service</th>
+<th class="px-6 py-4 text-right">Total Fee</th>
+<th class="px-6 py-4 text-right">Payments</th>
+<th class="px-6 py-4 text-right">Expenses</th>
+<th class="px-6 py-4 text-right">Net Revenue</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-default">
+<td class="px-6 py-4 font-medium">Aetheris Global Ltd.</td>
+<td class="px-6 py-4 text-on-surface-variant">IMM-8821</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Immigration</span></td>
+<td class="px-6 py-4 text-right">$12,500.00</td>
+<td class="px-6 py-4 text-right text-green-600">$12,500.00</td>
+<td class="px-6 py-4 text-right text-red-600">$450.00</td>
+<td class="px-6 py-4 text-right font-semibold">$12,050.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-default">
+<td class="px-6 py-4 font-medium">Marcus Chen</td>
+<td class="px-6 py-4 text-on-surface-variant">TAX-9102</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">Tax</span></td>
+<td class="px-6 py-4 text-right">$3,200.00</td>
+<td class="px-6 py-4 text-right text-green-600">$1,600.00</td>
+<td class="px-6 py-4 text-right text-red-600">$120.00</td>
+<td class="px-6 py-4 text-right font-semibold">$1,480.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-default">
+<td class="px-6 py-4 font-medium">Velocitas Logistics</td>
+<td class="px-6 py-4 text-on-surface-variant">IMM-8911</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Immigration</span></td>
+<td class="px-6 py-4 text-right">$8,450.00</td>
+<td class="px-6 py-4 text-right text-green-600">$8,450.00</td>
+<td class="px-6 py-4 text-right text-red-600">$1,100.00</td>
+<td class="px-6 py-4 text-right font-semibold">$7,350.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-default">
+<td class="px-6 py-4 font-medium">Elena Rodriguez</td>
+<td class="px-6 py-4 text-on-surface-variant">AI-4402</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold">AI</span></td>
+<td class="px-6 py-4 text-right">$15,000.00</td>
+<td class="px-6 py-4 text-right text-green-600">$0.00</td>
+<td class="px-6 py-4 text-right text-red-600">$0.00</td>
+<td class="px-6 py-4 text-right font-semibold">$0.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-default">
+<td class="px-6 py-4 font-medium">Sorenson &amp; Co.</td>
+<td class="px-6 py-4 text-on-surface-variant">TAX-9008</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">Tax</span></td>
+<td class="px-6 py-4 text-right">$5,200.00</td>
+<td class="px-6 py-4 text-right text-green-600">$5,200.00</td>
+<td class="px-6 py-4 text-right text-red-600">$0.00</td>
+<td class="px-6 py-4 text-right font-semibold">$5,200.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: Recent Exports & Insights -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Action Area -->
+<section class="bg-primary p-8 rounded-xl text-white shadow-lg space-y-6">
+<h3 class="text-xl font-bold">Generate Export</h3>
+<p class="text-sm text-primary-fixed leading-relaxed opacity-90">Ready to finalize your financial report. Files are compatible with QuickBooks, Sage, and Microsoft Excel.</p>
+<div class="space-y-3">
+<button class="w-full bg-white text-primary font-bold py-3.5 rounded-lg flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm">
+<span class="material-symbols-outlined" data-icon="csv">description</span>
+                                Export as CSV
+                            </button>
+<button class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3.5 rounded-lg flex items-center justify-center gap-3 transition-all border border-white/20">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf">picture_as_pdf</span>
+                                Export as PDF
+                            </button>
+</div>
+<div class="flex items-start gap-2 pt-4">
+<span class="material-symbols-outlined text-[16px] mt-0.5 text-primary-fixed" data-icon="info">info</span>
+<p class="text-[11px] text-primary-fixed font-medium leading-tight">All exports are logged to the central audit trail. Secure handling and PII protection enabled.</p>
+</div>
+</section>
+<!-- Recent Exports -->
+<section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<h3 class="text-label-md uppercase tracking-wider text-on-surface-variant font-bold mb-6">Recent Exports</h3>
+<div class="space-y-4">
+<div class="group flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="table_view">table_view</span>
+</div>
+<div>
+<p class="text-sm font-semibold truncate max-w-[140px]">Q1_Tax_Records.csv</p>
+<p class="text-[10px] text-on-surface-variant">Oct 24 • 1.2 MB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="download">download</span>
+</div>
+<div class="group flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="table_view">table_view</span>
+</div>
+<div>
+<p class="text-sm font-semibold truncate max-w-[140px]">March_Client_Revenue.csv</p>
+<p class="text-[10px] text-on-surface-variant">Oct 12 • 840 KB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="download">download</span>
+</div>
+<div class="group flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="picture_as_pdf">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-sm font-semibold truncate max-w-[140px]">Annual_Summary_Full.pdf</p>
+<p class="text-[10px] text-on-surface-variant">Sep 30 • 4.5 MB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" data-icon="download">download</span>
+</div>
+</div>
+<button class="w-full mt-4 text-[11px] text-primary font-bold hover:underline">View All History</button>
+</section>
+<!-- Audit & Compliance Notice -->
+<div class="p-4 border border-outline-variant/10 rounded-xl bg-surface-container-low/30">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="security">security</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface">Compliance Note</span>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">
+                            This application is SOC2 compliant. Your user ID <span class="font-bold text-on-surface">#ADM-001</span> is currently authorized for financial data export. 
+                        </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="px-8 py-6 flex items-center justify-between border-t border-outline-variant/10 bg-surface-container-low/50">
+<div class="flex items-center gap-6">
+<p class="text-[10px] text-on-surface-variant font-medium">© 2023 Manna One Solutions Ltd.</p>
+<div class="flex gap-4">
+<a class="text-[10px] text-on-surface-variant hover:text-primary" href="#">System Status</a>
+<a class="text-[10px] text-on-surface-variant hover:text-primary" href="#">Audit Log</a>
+<a class="text-[10px] text-on-surface-variant hover:text-primary" href="#">Privacy Policy</a>
+</div>
+</div>
+<p class="text-[10px] text-on-surface-variant italic">QuickBooks/Excel compatible file format.</p>
+</footer>
+</div>
+</body></html>

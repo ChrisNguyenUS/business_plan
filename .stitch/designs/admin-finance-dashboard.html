@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manna One - Finance Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#003d42",
+                        "on-secondary-container": "#006e75",
+                        "primary-container": "#3aafb9",
+                        "surface-tint": "#006970",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#69d6e1",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#87f3fd",
+                        "outline": "#6d797a",
+                        "outline-variant": "#bcc9ca",
+                        "primary": "#006970",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#69d6e1",
+                        "surface": "#f8f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-surface": "#191c1e",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-fixed-dim": "#7bd4dd",
+                        "secondary-container": "#95eef6",
+                        "secondary-fixed": "#98f1f9",
+                        "background": "#f8f9fb",
+                        "tertiary-container": "#a19f9f",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "secondary": "#006970",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "tertiary": "#5f5e5e",
+                        "on-secondary-fixed": "#002022",
+                        "inverse-on-surface": "#eff1f3",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#002022",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#373636",
+                        "on-primary-fixed-variant": "#004f55",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3d494a",
+                        "tertiary-fixed": "#e4e2e1",
+                        "surface-container": "#eceef0",
+                        "surface-dim": "#d8dadc",
+                        "surface-bright": "#f8f9fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* No-Line Rule Implementation */
+        .no-border-divider { border: none !important; }
+        .glass-effect { backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 dark:bg-black flex flex-col shadow-xl z-50">
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-xl">M</div>
+<div>
+<h1 class="text-xl font-bold text-white leading-none">Manna One</h1>
+<p class="text-xs text-slate-500 mt-1 uppercase tracking-widest">Solution</p>
+</div>
+</div>
+<nav class="flex-1 mt-4">
+<ul class="space-y-1">
+<!-- Dashboard Active State -->
+<li>
+<a class="flex items-center gap-4 bg-teal-900/30 text-[#3AAFB9] border-r-4 border-[#3AAFB9] px-6 py-3 font-medium text-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-slate-400 hover:text-white px-6 py-3 font-medium text-sm hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+                        Finance
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-slate-400 hover:text-white px-6 py-3 font-medium text-sm hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</nav>
+<div class="p-6">
+<div class="bg-slate-800 rounded-xl p-4 flex items-center gap-3">
+<img alt="User Avatar" class="w-10 h-10 rounded-full bg-slate-700" data-alt="professional corporate headshot of a business executive in a dark suit with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9dnJGHsKj5LBPxE1dGpW8qH1fk5JRxylhrX6YxsiBw9n3PUi6Wj8TxHPwAPOSztQtIIJ_qdFntsu0DRxlkE11mXBUjjoBBGGk3scEfJSW5eYHOHH-8wDz5BKoQ3b2QC4HiWAq581Z8YuGwXJ1MjQvC4sUTdI-S1J4TaWSoYPHsw9i_wT7FKFtYoIaN24vOY901jTq3c7VfXD4_v6FTd4MHhjnh042OBkf_CHqLCAAW5SiFYXwxeIZq70Ko8cA1SZcS7n2Qz9AV0zV"/>
+<div class="overflow-hidden">
+<p class="text-sm font-semibold text-white truncate">Ultimate Admin</p>
+<p class="text-xs text-slate-500 truncate">Premium Tier</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Anchor -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-[#f8f9fb]/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-8 z-40">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-semibold text-slate-900 dark:text-white headline-sm tracking-tight">Finance Dashboard</h2>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Ultimate Admin</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 text-slate-500 hover:text-[#3AAFB9] transition-all text-sm font-medium">
+<span class="material-symbols-outlined text-lg" data-icon="calendar_today">calendar_today</span>
+                Period Selector: <span class="text-on-surface">This Month</span>
+<span class="material-symbols-outlined text-xs" data-icon="expand_more">expand_more</span>
+</button>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:text-[#3AAFB9] transition-all opacity-80 active:opacity-100">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-[#3AAFB9] transition-all opacity-80 active:opacity-100">
+<span class="material-symbols-outlined" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-surface">
+<div class="p-8 space-y-8">
+<!-- KPI Section: Bento Style -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Hero KPI -->
+<div class="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<p class="text-sm font-medium text-on-surface-variant">Revenue This Month</p>
+<span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span>
+                                +18%
+                            </span>
+</div>
+<h3 class="text-4xl font-bold text-primary mt-2">$12,450</h3>
+</div>
+<div class="mt-6 flex items-center gap-2">
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[72%]"></div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">72% of Goal</span>
+</div>
+</div>
+<!-- Secondary KPI -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+<p class="text-sm font-medium text-on-surface-variant">Revenue This Quarter</p>
+<h3 class="text-2xl font-bold text-on-surface mt-2">$34,200</h3>
+<div class="mt-4 flex items-end gap-1 h-12">
+<div class="w-full bg-surface-container-high h-[40%] rounded-t-sm"></div>
+<div class="w-full bg-surface-container-high h-[60%] rounded-t-sm"></div>
+<div class="w-full bg-surface-container-high h-[55%] rounded-t-sm"></div>
+<div class="w-full bg-primary h-[90%] rounded-t-sm"></div>
+</div>
+</div>
+<!-- Tertiary Client Stats -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col justify-between">
+<div>
+<p class="text-sm font-medium text-on-surface-variant">Active Clients</p>
+<div class="flex items-baseline gap-2 mt-2">
+<h3 class="text-2xl font-bold text-on-surface">47</h3>
+<span class="text-xs text-green-600 font-semibold">+8 New</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-[10px] mb-1 font-semibold text-on-surface-variant">
+<span>Retention</span>
+<span>78%</span>
+</div>
+<div class="h-1.5 bg-surface-container rounded-full">
+<div class="bg-primary-container h-full w-[78%] rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Service Cards: Asymmetric Row -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<!-- Immigration -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-center mb-4">
+<div class="w-10 h-10 bg-primary-container/10 text-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="travel_explore">travel_explore</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Immigration</span>
+</div>
+<div class="space-y-1">
+<p class="text-lg font-bold text-on-surface">$8,200</p>
+<p class="text-xs text-on-surface-variant">12 Active Cases</p>
+</div>
+<div class="mt-4 flex items-end gap-1 h-8 opacity-40 group-hover:opacity-100 transition-opacity">
+<div class="flex-1 bg-primary h-2"></div>
+<div class="flex-1 bg-primary h-4"></div>
+<div class="flex-1 bg-primary h-3"></div>
+<div class="flex-1 bg-primary h-6"></div>
+<div class="flex-1 bg-primary h-5"></div>
+</div>
+</div>
+<!-- Tax -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-center mb-4">
+<div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Tax</span>
+</div>
+<div class="space-y-1">
+<p class="text-lg font-bold text-on-surface">$3,400</p>
+<p class="text-xs text-on-surface-variant">14 Active Jobs</p>
+</div>
+<div class="mt-4 flex items-end gap-1 h-8 opacity-40 group-hover:opacity-100 transition-opacity">
+<div class="flex-1 bg-orange-400 h-4"></div>
+<div class="flex-1 bg-orange-400 h-2"></div>
+<div class="flex-1 bg-orange-400 h-6"></div>
+<div class="flex-1 bg-orange-400 h-3"></div>
+<div class="flex-1 bg-orange-400 h-5"></div>
+</div>
+</div>
+<!-- Insurance -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-center mb-4">
+<div class="w-10 h-10 bg-teal-100 text-teal-800 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="shield_with_heart">shield_with_heart</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Insurance</span>
+</div>
+<div class="space-y-1">
+<p class="text-lg font-bold text-on-surface">$1,650</p>
+<p class="text-xs text-on-surface-variant">11 Active Jobs</p>
+</div>
+<div class="mt-4 flex items-end gap-1 h-8 opacity-40 group-hover:opacity-100 transition-opacity">
+<div class="flex-1 bg-teal-800 h-3"></div>
+<div class="flex-1 bg-teal-800 h-5"></div>
+<div class="flex-1 bg-teal-800 h-2"></div>
+<div class="flex-1 bg-teal-800 h-4"></div>
+<div class="flex-1 bg-teal-800 h-6"></div>
+</div>
+</div>
+<!-- AI -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-center mb-4">
+<div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">AI Solutions</span>
+</div>
+<div class="space-y-1">
+<p class="text-lg font-bold text-on-surface">$1,200</p>
+<p class="text-xs text-on-surface-variant">6 Active Jobs</p>
+</div>
+<div class="mt-4 flex items-end gap-1 h-8 opacity-40 group-hover:opacity-100 transition-opacity">
+<div class="flex-1 bg-purple-600 h-2"></div>
+<div class="flex-1 bg-purple-600 h-3"></div>
+<div class="flex-1 bg-purple-600 h-5"></div>
+<div class="flex-1 bg-purple-600 h-4"></div>
+<div class="flex-1 bg-purple-600 h-6"></div>
+</div>
+</div>
+</section>
+<!-- Charts & Tables: Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Revenue by Service (Stacked Bar) -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<div class="flex justify-between items-center mb-10">
+<h4 class="title-md font-semibold text-on-surface">Revenue by Service — 6 Months</h4>
+<div class="flex gap-4 text-[10px] font-bold uppercase text-on-surface-variant">
+<span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-primary"></div> Immig.</span>
+<span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-orange-400"></div> Tax</span>
+<span class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-purple-600"></div> AI</span>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-4 px-2">
+<!-- Jan -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[40%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[30%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[15%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">Jan</span>
+</div>
+<!-- Feb -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[45%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[25%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[20%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">Feb</span>
+</div>
+<!-- Mar -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[50%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[20%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[10%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">Mar</span>
+</div>
+<!-- Apr -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[42%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[35%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[12%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">Apr</span>
+</div>
+<!-- May -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[55%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[15%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[18%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">May</span>
+</div>
+<!-- Jun -->
+<div class="flex-1 flex flex-col-reverse h-full group">
+<div class="bg-primary w-full h-[60%] rounded-b-sm group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-orange-400 w-full h-[22%] group-hover:opacity-80 transition-opacity"></div>
+<div class="bg-purple-600 w-full h-[10%] rounded-t-sm group-hover:opacity-80 transition-opacity"></div>
+<span class="text-[10px] text-on-surface-variant text-center mt-2 absolute -bottom-6 w-full left-0">Jun</span>
+</div>
+</div>
+</div>
+<!-- Distribution (Donut Chart representation) -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm flex flex-col justify-between">
+<h4 class="title-md font-semibold text-on-surface mb-6">Revenue Distribution</h4>
+<div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+<!-- SVG Ring -->
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" stroke-width="16"></circle>
+<circle class="text-primary" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" stroke-dasharray="502" stroke-dashoffset="150" stroke-width="16"></circle>
+<circle class="text-orange-400" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" stroke-dasharray="502" stroke-dashoffset="400" stroke-width="16"></circle>
+</svg>
+<div class="absolute text-center">
+<p class="text-2xl font-bold">$14.4k</p>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Total Rev</p>
+</div>
+</div>
+<div class="mt-8 space-y-3">
+<div class="flex justify-between items-center text-xs">
+<span class="flex items-center gap-2"><div class="w-2 h-2 bg-primary"></div> Immigration</span>
+<span class="font-bold">58%</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="flex items-center gap-2"><div class="w-2 h-2 bg-orange-400"></div> Tax Services</span>
+<span class="font-bold">24%</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="flex items-center gap-2"><div class="w-2 h-2 bg-teal-800"></div> Insurance</span>
+<span class="font-bold">12%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table: Outstanding Balances -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 flex justify-between items-center bg-white">
+<h4 class="title-md font-semibold text-on-surface">Outstanding Balances</h4>
+<button class="text-primary font-bold text-xs hover:underline">View All Clients</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant">
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-wider">Client Name</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-wider">Case ID</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-wider">Outstanding Amount</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-wider text-right">Days Overdue</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface transition-colors">
+<td class="px-8 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 text-primary flex items-center justify-center text-xs font-bold">JD</div>
+<span class="text-sm font-semibold">Jameson Douglas</span>
+</td>
+<td class="px-8 py-4 text-sm text-on-surface-variant font-mono">#IMM-9042</td>
+<td class="px-8 py-4 text-sm font-bold">$2,450.00</td>
+<td class="px-8 py-4 text-right">
+<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-[10px] font-bold">24 Days</span>
+</td>
+</tr>
+<tr class="hover:bg-surface transition-colors">
+<td class="px-8 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">MK</div>
+<span class="text-sm font-semibold">Mariana Kovic</span>
+</td>
+<td class="px-8 py-4 text-sm text-on-surface-variant font-mono">#TAX-8812</td>
+<td class="px-8 py-4 text-sm font-bold">$1,800.00</td>
+<td class="px-8 py-4 text-right">
+<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-[10px] font-bold">18 Days</span>
+</td>
+</tr>
+<tr class="hover:bg-surface transition-colors">
+<td class="px-8 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">EL</div>
+<span class="text-sm font-semibold">Ethan Laurent</span>
+</td>
+<td class="px-8 py-4 text-sm text-on-surface-variant font-mono">#AI-4421</td>
+<td class="px-8 py-4 text-sm font-bold">$1,200.00</td>
+<td class="px-8 py-4 text-right">
+<span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-[10px] font-bold">9 Days</span>
+</td>
+</tr>
+<tr class="hover:bg-surface transition-colors">
+<td class="px-8 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center text-xs font-bold">SB</div>
+<span class="text-sm font-semibold">Sarah Belmont</span>
+</td>
+<td class="px-8 py-4 text-sm text-on-surface-variant font-mono">#INS-0092</td>
+<td class="px-8 py-4 text-sm font-bold">$940.00</td>
+<td class="px-8 py-4 text-right">
+<span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-[10px] font-bold">4 Days</span>
+</td>
+</tr>
+<tr class="hover:bg-surface transition-colors">
+<td class="px-8 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center text-xs font-bold">TP</div>
+<span class="text-sm font-semibold">Tobias Price</span>
+</td>
+<td class="px-8 py-4 text-sm text-on-surface-variant font-mono">#IMM-7719</td>
+<td class="px-8 py-4 text-sm font-bold">$820.00</td>
+<td class="px-8 py-4 text-right">
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">Due Today</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB Suppression: This is a Dashboard, FAB not requested/suppressed as per Shell Rules for transactional focus -->
+<!-- Sidebar Right (Insight Rail Strategy) -->
+<aside class="fixed right-0 top-16 bottom-0 w-12 bg-white/40 border-l border-outline-variant/10 flex flex-col items-center py-6 gap-6 glass-effect group hover:w-64 transition-all duration-300 z-30 overflow-hidden">
+<div class="flex items-center gap-4 w-full px-3">
+<span class="material-symbols-outlined text-primary" data-icon="lightbulb">lightbulb</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-xs font-bold uppercase tracking-widest">Insights</span>
+</div>
+<div class="flex flex-col gap-8 mt-4 w-full px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+<div class="space-y-2">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Cash Flow Prediction</p>
+<div class="p-3 bg-primary-container/10 rounded-lg">
+<p class="text-xs text-primary leading-relaxed">Revenue likely to increase by <strong>12%</strong> next month based on active immigration cases.</p>
+</div>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Pending Actions</p>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-[11px]">
+<div class="w-1.5 h-1.5 rounded-full bg-error"></div>
+                        3 overdue tax filings
+                    </div>
+<div class="flex items-center gap-2 text-[11px]">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                        8 pending insurance quotes
+                    </div>
+</div>
+</div>
+</div>
+</aside>
+</body></html>

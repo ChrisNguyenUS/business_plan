@@ -4,7 +4,17 @@
       "Bash(gh repo:*)",
       "Bash(gh api:*)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('description',''\\)\\)\")",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.google.com)",
+      "WebSearch",
+      "WebFetch(domain:developer.uscis.gov)",
+      "WebFetch(domain:www.legistai.com)",
+      "WebFetch(domain:blog.fillvisa.com)",
+      "WebFetch(domain:www.lawandsoftware.com)",
+      "WebFetch(domain:www.promise.legal)",
+      "WebFetch(domain:get.eimmigration.com)",
+      "WebFetch(domain:community.latenode.com)",
+      "Bash(npm install:*)"
     ]
   }
 }

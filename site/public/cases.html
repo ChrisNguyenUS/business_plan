@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift { background-color: #f1f4f9; }
+        .glass-header { backdrop-filter: blur(20px); }
+        /* Custom scrollbar for clean UI */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #bcc9ca; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "background": "#f7f9ff",
+                "inverse-primary": "#69d6e1",
+                "on-surface-variant": "#3d494a",
+                "on-surface": "#181c20",
+                "error": "#ba1a1a",
+                "primary": "#006970",
+                "primary-container": "#3aafb9",
+                "inverse-surface": "#2d3135",
+                "primary-fixed": "#87f3fd",
+                "on-secondary-fixed": "#002022",
+                "secondary": "#006970",
+                "outline": "#6d797a",
+                "on-tertiary-container": "#373636",
+                "surface-variant": "#e0e3e8",
+                "on-primary-fixed": "#002022",
+                "on-error-container": "#93000a",
+                "surface": "#f7f9ff",
+                "error-container": "#ffdad6",
+                "on-tertiary-fixed-variant": "#474747",
+                "on-background": "#181c20",
+                "tertiary-fixed-dim": "#c8c6c5",
+                "on-tertiary-fixed": "#1b1c1c",
+                "on-primary": "#ffffff",
+                "outline-variant": "#bcc9ca",
+                "surface-bright": "#f7f9ff",
+                "on-primary-fixed-variant": "#004f55",
+                "secondary-fixed": "#98f1f9",
+                "on-secondary-fixed-variant": "#004f54",
+                "tertiary-fixed": "#e4e2e1",
+                "surface-tint": "#006970",
+                "surface-dim": "#d7dadf",
+                "on-primary-container": "#003d42",
+                "primary-fixed-dim": "#69d6e1",
+                "on-secondary-container": "#006e75",
+                "surface-container": "#ebeef3",
+                "secondary-fixed-dim": "#7bd4dd",
+                "surface-container-low": "#f1f4f9",
+                "surface-container-highest": "#e0e3e8",
+                "secondary-container": "#95eef6",
+                "surface-container-lowest": "#ffffff",
+                "inverse-on-surface": "#eef1f6",
+                "tertiary-container": "#a19f9f",
+                "on-secondary": "#ffffff",
+                "surface-container-high": "#e5e8ee",
+                "on-error": "#ffffff",
+                "on-tertiary": "#ffffff",
+                "tertiary": "#5f5e5e"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            }
+          },
+        }
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="fixed left-0 top-0 h-full w-64 z-50 bg-slate-900 flex flex-col py-8 shadow-xl">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-bold text-white tracking-tight">Manna One</h1>
+<p class="text-xs text-slate-400 font-medium">Case Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center text-slate-400 py-3 px-6 hover:bg-slate-800 hover:text-white transition-all scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-inter font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center text-slate-400 py-3 px-6 hover:bg-slate-800 hover:text-white transition-all scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-inter font-medium text-sm">Clients</span>
+</a>
+<!-- ACTIVE TAB: Cases -->
+<a class="flex items-center bg-cyan-600/10 text-cyan-400 border-l-4 border-cyan-500 py-3 px-6 transition-all scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">folder_shared</span>
+<span class="font-inter font-medium text-sm">Cases</span>
+</a>
+<a class="flex items-center text-slate-400 py-3 px-6 hover:bg-slate-800 hover:text-white transition-all scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">notifications</span>
+<span class="font-inter font-medium text-sm">Notifications</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-800/50">
+<a class="flex items-center text-slate-400 py-3 px-6 hover:bg-slate-800 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-inter font-medium text-sm">Settings</span>
+</a>
+<a class="flex items-center text-slate-400 py-3 px-6 hover:bg-slate-800 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3">help</span>
+<span class="font-inter font-medium text-sm">Help</span>
+</a>
+<div class="px-6 py-4 mt-4 flex items-center">
+<img alt="Staff Profile" class="w-8 h-8 rounded-full border border-slate-700 object-cover" data-alt="professional headshot of a diverse male executive in a sharp business suit with a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtrly2DZc12GcXgtn2t_aGHhR9KoJpwpNRfFcMJ-3ZvcxixAvutQuXJZVppPBp1XD3qETqrE5_mFt54TyNjZ-T6n7KAg6hR9PXW4LvdZ3ngjHa1bkpdQ3UuVJdw3goa97dq7_ScAgUbHRLVHIMEPKqD5nGbPFz3RT_hkzzd2WsrluSDdbHKouaMrGsBEYkycJ7uUoMAQayzE5BHbffXvD4UtGpIQlfHb43AydCgUDwh2Q0jbwSyRT6seSlLy2sm82J0inr3HMeW4cf"/>
+<div class="ml-3">
+<p class="text-xs font-semibold text-white">Julian Vance</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Senior Paralegal</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar (Authority Source: JSON) -->
+<header class="fixed top-0 right-0 left-64 z-40 bg-white/80 backdrop-blur-md flex justify-between items-center px-8 h-16 w-auto">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-cyan-500/20 placeholder-slate-400 transition-all" placeholder="Search cases..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm hover:brightness-105 transition-all active:scale-95">
+                    + New Case
+                </button>
+<div class="flex items-center space-x-3 text-slate-500">
+<button class="p-2 hover:bg-slate-100 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<div class="pt-24 px-8 pb-12 bg-surface">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-[#2C2C2C] tracking-tight mb-2">Cases</h2>
+<nav class="flex text-sm text-slate-500 font-medium">
+<span class="hover:text-primary cursor-pointer">Dashboard</span>
+<span class="mx-2 text-slate-300">/</span>
+<span class="text-on-surface">Active Cases</span>
+</nav>
+</div>
+<!-- Status Summary Bar -->
+<div class="mb-8 overflow-x-auto">
+<div class="bg-surface-container-lowest p-1 rounded-xl flex items-stretch space-x-1 min-w-max">
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Cases</span>
+<span class="text-xl font-bold text-slate-800">67</span>
+</div>
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">In Progress</span>
+<span class="text-xl font-bold text-primary-container">12</span>
+</div>
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Submitted</span>
+<span class="text-xl font-bold text-slate-700">18</span>
+</div>
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Approved</span>
+<span class="text-xl font-bold text-green-700">24</span>
+</div>
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1">Pending Docs</span>
+<span class="text-xl font-bold text-amber-700">7</span>
+</div>
+<div class="px-6 py-4 flex flex-col border-r border-slate-100">
+<span class="text-[10px] font-bold text-error uppercase tracking-widest mb-1">Denied</span>
+<span class="text-xl font-bold text-error">3</span>
+</div>
+<div class="px-6 py-4 flex flex-col">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Archived</span>
+<span class="text-xl font-bold text-slate-400">3</span>
+</div>
+</div>
+</div>
+<!-- Filter Controls -->
+<div class="mb-6 space-y-4">
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-primary text-white transition-all">All Cases</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">In Progress</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">Submitted</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">Approved</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">Denied</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">Archived</button>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-t border-slate-200/50">
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1.5 rounded-md text-xs font-bold bg-white shadow-sm text-primary">All Types</button>
+<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">Simple</button>
+<button class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">Package</button>
+</div>
+</div>
+<div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+<span>Sort by:</span>
+<select class="bg-transparent border-none text-on-surface font-bold focus:ring-0 cursor-pointer text-xs p-0 pr-6">
+<option>Last Updated</option>
+<option>Created Date</option>
+<option>Case Number</option>
+<option>Client Name</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Cases Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-4px_rgba(0,105,112,0.05)] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Case #</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Client(s)</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Type</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Forms</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Assigned To</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Last Updated</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0042</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 12, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Alejandro Gomez</span>
+<span class="text-xs text-slate-500">Maria Gomez (Beneficiary)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 uppercase">Package</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-130</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-485</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-cyan-500 mr-3"></div>
+<span class="text-xs font-bold text-cyan-700">In Progress</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="portrait of a focused professional man in glasses in an office setting with natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfXW00lcecUe8EMMCEIfn9glb3f6xJLsuKvb4AZLJyuRlZK91Jp9LARe87hyUVdRkAyCfBV49Va9ZlSEx3qQ14PYKyfcgK-PTs0OUPhzpMTXz8Ew7ZuLToFeS0_YUReDJkvbql3AdwQT3pNrzLNUakhnMkNBn--Fkgo8wbhj93RGXsqw5gJgvvLco-jx16mZuT4cf_NEgGm05yIEFxTpPm9SLiaeRkw5r16GU-8eEU6yQoL3D3w1gp2E5gX8mRJqJ6zGOK_wiwq-kS"/>
+<span class="text-xs font-medium text-slate-700">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">2 hours ago</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0038</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 08, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Liam O'Connor</span>
+<span class="text-xs text-slate-500">Self-Petitioner</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">Simple</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">N-400</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-green-500 mr-3"></div>
+<span class="text-xs font-bold text-green-700">Approved</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="portrait of a young woman with a warm smile in professional attire against a blurred architectural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdmG9Ib-bMsK-Z6pmVs6NObDP0mo43EoW0jc5oQIVuKu6kmfjrOr60WpNh8KY_M0cn3ffXs93PCpT0Xy6IvXPOjQWbDMnJvPJKy248I5rDqdDrkezpjL1tr-bxLs3ZUB-zpEcWVigtPhsRRa9xWeTT6D4pY3OnKw_CS1SHe7kI2I0qLd9O6w5MvBzU4Wc_6SIPsZtRL5tILY6E6FgePXdADz74AopVUDPx1Z1CHYDpsZY76CD6zQ4XlP9C5q0JJkr3htxThjGnZ86d"/>
+<span class="text-xs font-medium text-slate-700">Marcus Reed</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">Oct 14, 2025</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0045</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 13, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Chen Wei</span>
+<span class="text-xs text-slate-500">Chen Ming (Beneficiary)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 uppercase">Package</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-129</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-539</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-amber-500 mr-3"></div>
+<span class="text-xs font-bold text-amber-700">Pending Docs</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="headshot of a confident woman in corporate setting with soft daylight and professional aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWYI0INwcY3qpcBcIY27WVUiMe0TbyNFOm9gkOT97rmVkYyI9qDiatS7tpI3he_z9LANaXUsxTeZzusvtRSCmZG6E0oaHPZPrLibRtWLhvBIvzZ47wKfK0N8qlv7-M8BRXsaCIePUb1ct9ag44GMLB4Bq4OARz8X0-Rxke9LJMdXB8a780DwaaihQMS-uhYnsEwk_S_01wjXtWlA2d8NR77pfZ3WZc0962L3j1BAvXKiaegStA5-wscI6sYaX46qHWtxVVaGpF-lcD"/>
+<span class="text-xs font-medium text-slate-700">Julia Vance</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">14 mins ago</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0040</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 10, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Sofia Rossi</span>
+<span class="text-xs text-slate-500">Self-Petitioner</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">Simple</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-90</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-slate-400 mr-3"></div>
+<span class="text-xs font-bold text-slate-600">Submitted</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="portrait of a man in a modern office with natural light and clean minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_5Nfw3QKV66lDJjLXTKyUAX_RNZemixpyWzvzq93Vd91npEKJwZ-_Gs7oMKKrCssVerZOB0sGUxd60Mswq053Rbh5lJLAsejLZwBb0KU1xBtwAC8H3B8yXFg7QXfRuRAaYlXWOHK3lYdGORYV0TcKl4L99A2oIplvhU0KVXDZ6-UbaamH8HWjdPgOiUOfv7Qb0QsDH25quVogDlKeK7JSxWqUZSeHcq2YUBV_jf0jyhZvhvSekbETuPWzHZNCERr5-hVIcF_eMdhy"/>
+<span class="text-xs font-medium text-slate-700">Marcus Reed</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">Yesterday</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0032</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 01, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Ahmed Hassan</span>
+<span class="text-xs text-slate-500">Fatima Hassan (Beneficiary)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 uppercase">Package</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-130</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-765</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-error mr-3"></div>
+<span class="text-xs font-bold text-error">Denied</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="close up headshot of a professional in an office environment with shallow depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOVqOJHJUGYolUxtmKoiw2GLpehyJ4jeWkzNoznk8JSt1MXkZDYz4qyr9OJ1TiksGWoEIP85mnTFOayUyHRKXSeE3JDkBN3W1Z71-aQE1yOQlVrFIc_gPlKoLqAT1xg-8RTiOpj3fZQTeBi5IMKeWQmq0srApuDIX4b4WL42Cawk9AlaAjaUSiJqzAA5RfkkzJXIJ1emi18YHPs5XkWXZtcs_tsAjoNACazPJBUOBjH7RdXoSZ4fKhcxQmAG8zdSCgDolfhM5IsM2_"/>
+<span class="text-xs font-medium text-slate-700">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">Oct 12, 2025</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0046</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 14, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Elena Kozlov</span>
+<span class="text-xs text-slate-500">Self-Petitioner</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">Simple</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-131</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-cyan-500 mr-3"></div>
+<span class="text-xs font-bold text-cyan-700">In Progress</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="corporate professional female headshot with neutral office lighting and blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgsOrME4VsuwfPsXIoG7NR2h0ZFNKKJhYF2srh4j8ibLPmRjva9xQODy1SY2aJ7UKPk_lD2InqsG8hqDoKf6KEqn6L7uPUpM3an2sMdsGGnKZGzdA89KZC5wyA_GuNDacbI8XCFhpKGt8iRefLgwonZzQCRAwSvg6Yx-pt0T4kwY1wDBaGTh8yTFH3oIXgw7GEcxjXRzeJejB4G9RrqJ_8ze0M2NKP9Gu4EReRcHI16f6uO76LyjsuLSHYSYtMHj-AzxPfVGYEatlS"/>
+<span class="text-xs font-medium text-slate-700">Julia Vance</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">Just now</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0041</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 11, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">David Miller</span>
+<span class="text-xs text-slate-500">Lina Miller (Beneficiary)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 uppercase">Package</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-130</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-485</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-slate-400 mr-3"></div>
+<span class="text-xs font-bold text-slate-600">Submitted</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="portrait of a professional woman with a soft smile and modern corporate background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT92Mi1AlcbTysVkTm5Zm9I_ONo9Ugh7gWPx-IQZutk_-gju0O1yCR81UgUCjg2a7VrtYxtFI037MUFp4B8pXiSOb1qyC5YNCYuxb5Q5gBboObIN3-f7jbjB1EWi8NmPpOChJMfYK6bhthQvIM41VcOaF30RC23DUIuUKD-TjTzIPpXDM7k108cV7FlzjqSJJSi3uQe0EtY8_ubwAtrPpxpH-HaqhNMZ81T_VwnbkmDRKV5Qa088F0mBncwGmEzfeFdEi7DdPbESDP"/>
+<span class="text-xs font-medium text-slate-700">Marcus Reed</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">3 hours ago</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-bold text-on-surface">MOS-2026-0035</span>
+<p class="text-[10px] text-slate-400 mt-0.5">Created Oct 05, 2025</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Yuki Tanaka</span>
+<span class="text-xs text-slate-500">Self-Petitioner</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">Simple</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-mono">I-140</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<div class="w-1 h-4 rounded-full bg-green-500 mr-3"></div>
+<span class="text-xs font-bold text-green-700">Approved</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center">
+<img alt="Staff" class="w-6 h-6 rounded-full object-cover mr-2" data-alt="man in business casual attire posing for a professional photo in a bright office space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxa8_0iiJ_WlfIjGEKkfPRNDDEOmUlfTATbmqvNcKoJL5mfrhFKZ39N3B1xhFoUy_nu0jpy7osShmyAIJFnQgyerOJQh8HypPAs3fKhZpyyvtDL1K4V6rpJeiJNkS4SPmVTJSssK5lhZF_j5tdfESXOWPNVuAjYOfhYi4mERHv2beTbfwMQ1U7MIhHTHwXL8c2i5bCKsyJh61jrNrPq1huqg9jlvMTjOHZ556MabKh62m2igq7Y085lg_psveE5truekVdMZJlUQ06"/>
+<span class="text-xs font-medium text-slate-700">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-5 text-xs text-slate-500">Oct 10, 2025</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-slate-50 bg-slate-50/30">
+<span class="text-xs font-medium text-slate-500">Showing 1-10 of 67</span>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-white hover:text-primary transition-all disabled:opacity-30">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-primary text-white text-xs font-bold shadow-sm">1</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white text-xs font-bold text-slate-600 transition-all">2</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white text-xs font-bold text-slate-600 transition-all">3</button>
+<span class="text-slate-400 px-1">...</span>
+<button class="w-8 h-8 rounded-lg hover:bg-white text-xs font-bold text-slate-600 transition-all">7</button>
+<button class="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-white hover:text-primary transition-all">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button Contextual Logic (Authority Source: JSON Context) -->
+<!-- Suppressed for Details/List screens as per instructions, using Header action instead -->
+</body></html>

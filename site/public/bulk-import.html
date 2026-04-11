@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#ebeef3",
+                      "primary": "#006970",
+                      "on-background": "#181c20",
+                      "inverse-on-surface": "#eef1f6",
+                      "secondary-container": "#95eef6",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e5e8ee",
+                      "background": "#f7f9ff",
+                      "outline": "#6d797a",
+                      "on-primary-container": "#003d42",
+                      "surface-dim": "#d7dadf",
+                      "inverse-surface": "#2d3135",
+                      "on-error": "#ffffff",
+                      "outline-variant": "#bcc9ca",
+                      "surface-bright": "#f7f9ff",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e0e3e8",
+                      "secondary-fixed": "#98f1f9",
+                      "primary-fixed-dim": "#69d6e1",
+                      "inverse-primary": "#69d6e1",
+                      "tertiary-fixed": "#e4e2e1",
+                      "surface": "#f7f9ff",
+                      "on-surface-variant": "#3d494a",
+                      "primary-fixed": "#87f3fd",
+                      "primary-container": "#3aafb9",
+                      "on-secondary-container": "#006e75",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e0e3e8",
+                      "tertiary": "#5f5e5e",
+                      "surface-container-low": "#f1f4f9",
+                      "surface-tint": "#006970",
+                      "on-surface": "#181c20",
+                      "on-secondary-fixed": "#002022",
+                      "on-primary-fixed-variant": "#004f55",
+                      "on-primary-fixed": "#002022",
+                      "secondary": "#006970",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#a19f9f",
+                      "on-tertiary-fixed": "#1b1c1c",
+                      "tertiary-fixed-dim": "#c8c6c5",
+                      "secondary-fixed-dim": "#7bd4dd",
+                      "on-secondary-fixed-variant": "#004f54",
+                      "on-tertiary-container": "#373636",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bcc9ca;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-full font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- Sidebar Navigation -->
+<aside class="bg-slate-900 dark:bg-black h-screen w-64 fixed left-0 top-0 flex flex-col h-full py-6 font-inter tracking-tight z-50">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-xl font-semibold text-white leading-none">Manna One</h1>
+<p class="text-xs text-slate-500 uppercase tracking-widest mt-1">Solutions</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-white font-semibold border-r-4 border-teal-500 bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-sm font-medium">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span class="text-sm font-medium">Cases</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-sm font-medium">Documents</span>
+</a>
+<div class="pt-6 mt-6 border-t border-slate-800">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="text-sm font-medium">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<div class="px-6 mt-auto">
+<div class="bg-slate-800/50 rounded-lg p-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional headshot of an executive administrator in a business suit with a confident smile and neutral office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu3_H7DuBQf8vs6P0mkpls-FHkUiUb6TzMjlTB8Pu92aDyx150te9H299BhBJ3LvT0dWdwjLESIEOGpBUJIB5gCapsnlbq9KiX9OnovRF1ub70mfOEOUq9wV1rPCv4DkI_UItbZBGJ8XbqewJXvUMVv2Y3q_hJw_JRVP-bTEEhhxysT9PnM6LYjtTECJ61gCJ8Cv-cUYk0fXcqrCDtxQZxdpgaha4uswDYs6INCF3SZjkZkLovy50H_OMEVFHXfWIOeu-s18zcHaSX"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-semibold text-white truncate">Sarah Jenkins</p>
+<p class="text-xs text-slate-400 truncate">Executive Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="bg-white/80 dark:bg-slate-950/80 backdrop-blur-md fixed top-0 right-0 w-[calc(100%-16rem)] z-40 border-b border-slate-200/20 shadow-sm flex justify-between items-center px-8 h-16">
+<div class="flex items-center gap-2">
+<nav aria-label="Breadcrumb" class="flex text-sm font-inter text-slate-500">
+<ol class="flex items-center space-x-2">
+<li><a class="hover:text-primary transition-colors" href="#">Clients</a></li>
+<li><span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span></li>
+<li class="text-slate-800 font-semibold dark:text-white">Bulk Import</li>
+</ol>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 border-2 border-primary-container text-primary-container px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-container/5 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                    Download CSV Template
+                </button>
+<div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+</header>
+<!-- Content Body -->
+<div class="pt-24 pb-32 px-10 flex-1 space-y-8 bg-surface-container-low max-w-7xl mx-auto w-full">
+<!-- Upload Area Section -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm transition-all duration-300">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+<div class="border-2 border-dashed border-outline-variant bg-surface rounded-xl p-10 flex flex-col items-center justify-center text-center transition-colors hover:bg-surface-container">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<p class="text-on-surface font-bold text-lg mb-1">Drag and drop your CSV file here</p>
+<p class="text-sm text-slate-500">or <button class="text-primary-container font-semibold hover:underline">click to browse</button></p>
+<p class="mt-4 text-xs text-slate-400">CSV files up to 10MB</p>
+</div>
+<div class="space-y-4">
+<h3 class="text-slate-800 font-semibold text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container" data-icon="task">task</span>
+                            Current Selection
+                        </h3>
+<div class="bg-surface p-4 rounded-lg flex items-center justify-between border border-primary-container/20">
+<div class="flex items-center gap-4">
+<div class="p-2 bg-primary-container rounded">
+<span class="material-symbols-outlined text-white" data-icon="description">description</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800">clients_import_april2026.csv</p>
+<p class="text-xs text-green-600 font-medium">24 rows detected</p>
+</div>
+</div>
+<button class="flex items-center gap-1 text-xs text-red-500 font-semibold hover:bg-red-50 px-2 py-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+                                Remove
+                            </button>
+</div>
+<div class="bg-green-50 p-4 rounded-lg flex items-start gap-3 border border-green-100">
+<span class="material-symbols-outlined text-green-600 text-sm mt-0.5" data-icon="check_circle">check_circle</span>
+<p class="text-xs text-green-800 leading-relaxed">File integrity check passed. Data appears to be in UTF-8 format and is ready for column mapping.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Column Mapping Section -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-xl font-bold text-slate-800 mb-1">Map CSV Columns to Client Fields</h2>
+<p class="text-sm text-slate-500">Ensure your headers correctly align with system attributes.</p>
+</div>
+<span class="px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="done_all">done_all</span>
+                        6 of 8 columns auto-mapped
+                    </span>
+</div>
+<div class="overflow-hidden border border-slate-100 rounded-lg">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">CSV Column Header</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Mapped Field</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Rows -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">full_name</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">Full Name</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">date_of_birth</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">Date of Birth</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">a_number</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">A-Number</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">phone</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">Phone</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">email</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">Email</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">address</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">Current Address</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">ssn</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-green-500" data-icon="check_circle">check_circle</span></td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium text-slate-800 bg-surface px-3 py-1.5 rounded border border-slate-200">SSN</div>
+</td>
+</tr>
+<tr class="bg-amber-50/30 hover:bg-amber-50/50 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700">country</td>
+<td class="px-6 py-4"><span class="material-symbols-outlined text-amber-500" data-icon="warning">warning</span></td>
+<td class="px-6 py-4">
+<select class="w-full bg-surface text-sm font-medium text-slate-800 rounded border border-amber-300 focus:ring-2 focus:ring-primary-container outline-none px-3 py-1.5 appearance-none cursor-pointer">
+<option selected="" value="country_birth">Country of Birth</option>
+<option value="nationality">Nationality</option>
+<option value="mailing_country">Mailing Country</option>
+</select>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Validation Preview Section -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<div class="p-8 border-b border-slate-100">
+<h2 class="text-xl font-bold text-slate-800 mb-6">Import Preview</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="bg-green-50 border-l-4 border-green-500 p-4">
+<p class="text-green-700 font-bold text-lg">24 clients</p>
+<p class="text-green-600 text-xs">Ready to import</p>
+</div>
+<div class="bg-amber-50 border-l-4 border-amber-500 p-4">
+<p class="text-amber-700 font-bold text-lg">2 warnings</p>
+<p class="text-amber-600 text-xs">Action recommended</p>
+</div>
+<div class="bg-slate-50 border-l-4 border-slate-300 p-4">
+<p class="text-slate-700 font-bold text-lg">0 errors</p>
+<p class="text-slate-500 text-xs">Blocked records</p>
+</div>
+</div>
+<!-- Warnings List -->
+<div class="space-y-2 mb-8">
+<div class="flex items-center gap-3 bg-amber-50/50 p-3 rounded-lg text-sm text-amber-800 font-medium">
+<span class="material-symbols-outlined text-amber-600" data-icon="report_problem">report_problem</span>
+                            Row 7: SSN format invalid. Expected 9 digits.
+                        </div>
+<div class="flex items-center gap-3 bg-amber-50/50 p-3 rounded-lg text-sm text-amber-800 font-medium">
+<span class="material-symbols-outlined text-amber-600" data-icon="report_problem">report_problem</span>
+                            Row 15: Duplicate A-Number found. Client may already exist in system.
+                        </div>
+</div>
+<!-- Data Preview Table -->
+<div class="overflow-x-auto border border-slate-100 rounded-lg custom-scrollbar">
+<table class="w-full text-left border-collapse text-xs">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">Full Name</th>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">DOB</th>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">A-Number</th>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">Phone</th>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">Email</th>
+<th class="px-4 py-3 font-bold text-slate-600 whitespace-nowrap">Country</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50">
+<tr class="hover:bg-slate-50">
+<td class="px-4 py-3 text-slate-800">Elena Rodriguez</td>
+<td class="px-4 py-3 text-slate-500">1992-05-14</td>
+<td class="px-4 py-3 text-slate-500">A205-998-112</td>
+<td class="px-4 py-3 text-slate-500">555-0102</td>
+<td class="px-4 py-3 text-slate-500">elena.r@example.com</td>
+<td class="px-4 py-3 text-slate-500">Mexico</td>
+</tr>
+<tr class="bg-amber-50/20 hover:bg-amber-50/40">
+<td class="px-4 py-3 text-slate-800">James Chen</td>
+<td class="px-4 py-3 text-slate-500">1985-11-30</td>
+<td class="px-4 py-3 text-slate-500">A199-004-322</td>
+<td class="px-4 py-3 text-slate-500">555-0199</td>
+<td class="px-4 py-3 text-slate-500">j.chen@corp.com</td>
+<td class="px-4 py-3 text-slate-500">China</td>
+</tr>
+<tr class="hover:bg-slate-50">
+<td class="px-4 py-3 text-slate-800">Sarah Al-Fayed</td>
+<td class="px-4 py-3 text-slate-500">1998-02-21</td>
+<td class="px-4 py-3 text-slate-500">A311-554-009</td>
+<td class="px-4 py-3 text-slate-500">555-0212</td>
+<td class="px-4 py-3 text-slate-500">sarah.f@webmail.com</td>
+<td class="px-4 py-3 text-slate-500">Egypt</td>
+</tr>
+<tr class="hover:bg-slate-50">
+<td class="px-4 py-3 text-slate-800">Marcus Thorne</td>
+<td class="px-4 py-3 text-slate-500">1976-08-04</td>
+<td class="px-4 py-3 text-slate-500">A088-771-443</td>
+<td class="px-4 py-3 text-slate-500">555-0344</td>
+<td class="px-4 py-3 text-slate-500">mthorne@pro.net</td>
+<td class="px-4 py-3 text-slate-500">United Kingdom</td>
+</tr>
+<tr class="hover:bg-slate-50">
+<td class="px-4 py-3 text-slate-800">Lucia Bianchi</td>
+<td class="px-4 py-3 text-slate-500">1990-12-12</td>
+<td class="px-4 py-3 text-slate-500">A221-009-887</td>
+<td class="px-4 py-3 text-slate-500">555-0556</td>
+<td class="px-4 py-3 text-slate-500">lbianchi@studio.it</td>
+<td class="px-4 py-3 text-slate-500">Italy</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-16rem)] bg-white/90 backdrop-blur-md border-t border-slate-200/40 p-6 flex items-center justify-between z-40">
+<button class="px-6 py-2 text-slate-500 font-semibold hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                Cancel
+            </button>
+<div class="flex items-center gap-4">
+<p class="text-sm text-slate-500">All data reviewed and validated</p>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-8 py-2.5 rounded-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    Import 24 Clients
+                </button>
+</div>
+</footer>
+</main>
+</body></html>
