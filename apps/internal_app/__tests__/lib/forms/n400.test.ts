@@ -48,4 +48,24 @@ describe('n400 form definition', () => {
     const cityField = addrSection.fields.find((f) => f.id === 'city')!
     expect(cityField.getValue(mockClient as any)).toBe('Houston')
   })
+
+  it('handles missing address safely', () => {
+    const clientWithoutAddress = { ...mockClient, address: {} }
+    const addrSection = n400.sections.find((s) => s.id === 'part2_address')!
+    const streetField = addrSection.fields.find((f) => f.id === 'street')!
+    expect(streetField.getValue(clientWithoutAddress as any)).toBe('')
+  })
+
+  it('returns A-Number without the letter A', () => {
+    const part2_dob = n400.sections.find((s) => s.id === 'part2_dob')!
+    const aNumField = part2_dob.fields.find((f) => f.id === 'a_number')!
+    // Often USCIS forms ask for the 9-digit number directly
+    expect(aNumField.getValue(mockClient as any)).toBe('123456789')
+  })
+
+  it('returns SSN if available', () => {
+    const part2_dob = n400.sections.find((s) => s.id === 'part2_dob')!
+    const ssnField = part2_dob.fields.find((f) => f.id === 'ssn')!
+    expect(ssnField.getValue(mockClient as any)).toBe('123-45-6789')
+  })
 })
