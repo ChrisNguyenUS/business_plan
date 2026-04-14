@@ -12,13 +12,16 @@
   - Client CRM (list, search, create, edit, profile)
   - Case Management (list, new case wizard, case detail + document checklist)
   - Filing Assistant Mode A (copy-paste per field via CopyPasteScreen)
+  - Filing Assistant Mode B (Local PDF generation via pdf-lib)
+  - USCIS Case Tracker (Status polling and historical records)
   - Form definitions: N-400, I-765, I-130, I-131
+  - Dashboard (Stats, alerts, quick actions)
   - Jobs page (tax/insurance/AI services)
   - Notifications page
   - Database migrations: `001_schema.sql` + `002_rls.sql`
-  - 6 passing N-400 unit tests · 0 TypeScript errors
   - UI faithful to `ui_prototypes/public_internal_app/` HTML prototypes
-- [ ] **Phase 2: Unit Tests** - [ ] **Phase 3: Integration Tests**
+- [ ] **Phase 2: Unit Tests**
+- [ ] **Phase 3: Integration Tests**
 - [ ] **Phase 4: CI/CD**
 - [ ] **Phase 5: E2E Tests**
 - [ ] **Phase 6: AI Eval**

@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-navy-950: #060e1a;
+  --color-navy-900: #0a1628;
+  --color-navy-700: #1e3a5f;
+  --color-accent-blue: #4f8ef7;
+  --color-accent-purple: #7b2fbe;
+  --color-gold: #f5a623;
+}
+
+@layer base {
+  body {
+    background-color: #0a1628;
+    color: #e2e8f0;
+  }
+}

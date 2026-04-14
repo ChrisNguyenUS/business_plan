@@ -13,7 +13,7 @@
 ## File Map
 
 ```
-mos-internal/
+apps/internal_app/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx
@@ -88,17 +88,17 @@ mos-internal/
 ## Task 1: Scaffold project + install dependencies
 
 **Files:**
-- Create: `mos-internal/` (entire project)
+- Create: `apps/internal_app/` (entire project)
 - Create: `src/types/index.ts`
 - Create: `.env.local`
 
 - [ ] **Scaffold Next.js app**
 
 ```bash
-npx create-next-app@latest mos-internal \
+npx create-next-app@latest apps/internal_app \
   --typescript --tailwind --eslint --app --src-dir \
   --import-alias "@/*" --no-git
-cd mos-internal
+cd apps/internal_app
 ```
 
 - [ ] **Install dependencies**
@@ -185,14 +185,14 @@ git commit -m "feat: scaffold Next.js app with dependencies"
 ## Task 2: Supabase project + database schema
 
 **Files:**
-- Create: `supabase/migrations/001_schema.sql`
+- Create: `packages/database/supabase/migrations/001_schema.sql`
 - Create: `supabase/migrations/002_rls.sql`
 - Create: `src/lib/supabase/client.ts`
 - Create: `src/lib/supabase/server.ts`
 
 - [ ] **Create Supabase project** at supabase.com → new project → copy URL + keys into `.env.local`
 
-- [ ] **Write migration** at `supabase/migrations/001_schema.sql`
+- [ ] **Write migration** at `packages/database/supabase/migrations/001_schema.sql`
 
 ```sql
 -- Enable UUID extension

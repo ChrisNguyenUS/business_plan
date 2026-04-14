@@ -1,10 +1,13 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  extends: [
-    "./index.js",
-    "next/core-web-vitals"
-  ],
+  extends: ["next/core-web-vitals"],
   rules: {
-    "@next/next/no-html-link-for-pages": "error"
-  }
+    "@next/next/no-html-link-for-pages": "error",
+    "no-console": ["warn", { allow: ["warn", "error"] }]
+  },
+  ignorePatterns: [
+    "node_modules/",
+    ".next/",
+    "dist/"
+  ]
 };

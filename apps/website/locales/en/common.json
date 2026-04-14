@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "bookNow": "Book Now"
+  },
+  "hero": {
+    "headline": "One Stop, All Solutions",
+    "subheadline": "Tax · Insurance · Immigration · AI",
+    "ctaPrimary": "Book Free Consultation",
+    "ctaSecondary": "Our Services"
+  },
+  "services": {
+    "tax": { "name": "Tax & Business", "tagline": "Individual & business tax, LLC setup" },
+    "insurance": { "name": "Insurance & Finance", "tagline": "Life, annuity, P&C coverage" },
+    "immigration": { "name": "Immigration", "tagline": "USCIS document preparation, Texas" },
+    "ai": { "name": "AI / Automation", "tagline": "Workflow automation for SMBs" }
+  }
+}

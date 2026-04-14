@@ -1,6 +1,7 @@
 # MannaOS.com — Manna One Solution Website
 
-**Date:** April 10, 2026 (V1 refocus: immigration document preparation, Texas-only launch)
+**Date:** April 10, 2026
+**Revision:** April 11, 2026 — V1 reframed into **Phase A (4-service marketing showcase — ship-to-show + Facebook ads)** then **Phase B (Immigration SEO/GEO topical depth)**. The immigration Texas-only scope and all SEO/GEO work from the 4/10 draft are preserved inside Phase B.
 **Project:** MannaOS.com
 **Tech Stack:** Next.js 14 + Vercel + Supabase
 **Owner:** Manna One Solution
@@ -8,8 +9,10 @@
 **Phone:** 346-852-4454
 **Email:** `Chris@mannaos.com`
 **Facebook:** facebook.com/mannaonesolution
-**V1 Primary Service:** **Vietnamese-language USCIS immigration document preparation** (Texas residents only)
-**Future Services (Phase 1.5+):** Tax preparation, Life + P&C Insurance (TX-only), AI Automation Consulting
+**V1 Positioning:** **One Stop, All Solutions** — a single bilingual marketing site that showcases all four Manna One Solution services (Tax & Business · Insurance & Finance · Immigration · AI / Automation). Needs to be ship-ready so the owner can show it to clients and point Facebook ad traffic at it.
+**V1 Phase A (Priority 1 — ship first, ~2 weeks):** 4-service landing page + service overview pages (Tax, Insurance, Immigration, AI) + About + Contact/Calendly + bilingual — built to convert ad traffic and client demos. Basic SEO hygiene only (meta, OG, sitemap, schema stubs).
+**V1 Phase B (Priority 2 — follows Phase A):** The full Vietnamese USCIS immigration topical map (pillar → Texas state → 4 Texas cities → 11 form clusters → 5 bundles) with fact-dense pricing, FAQPage schema, /llms.txt, and GEO content rules from the original 4/10 draft. Texas-only immigration scope preserved.
+**Phase 1.5+ Services:** Full tax topical map (Jan–Apr 2027 season), insurance (TX-only), AI Automation deeper topical map.
 **Credentials (current):** IRS EFIN `857993` · Texas Life Insurance License `3142469` · Texas Property & Casualty Insurance License `3118525` · NPN `21024561` · PTIN-registered
 **Credentials (planned pre-launch):** Texas Notary Public (for in-house signature verification on USCIS forms)
 **Service footprint:** Texas residents only in V1 (document preparation is regulated state-by-state; see §1 Geographic Scope)
@@ -21,6 +24,8 @@
 
 ### Problem Statement
 
+- **Manna One Solution has no live website.** The owner cannot show prospective clients a professional online presence during in-person consultations, cannot hand out a URL on business cards, and cannot run Facebook ads against the Vietnamese-American community in Houston because there is no landing page to send traffic to. Every other problem below is gated by this one: until the site is public, visible, and conversion-ready, the other problems have no surface to work on.
+- **Clients and prospects hear about four services (Tax · Insurance · Immigration · AI) by word of mouth, but have no way to see them in one place.** The business is literally called "Manna One Solution" — "One Stop, All Solutions" — so the site must communicate the full service menu at first glance, even if only immigration is being aggressively SEO-optimized in Phase B.
 - **Vietnamese community members in Texas** seeking help with USCIS immigration forms (green card, citizenship, work permit, travel documents, removing conditions on marriage-based green cards) **struggle to find an affordable, Vietnamese-speaking, transparent document preparer**. Their options today are: (a) immigration attorneys who charge 2–5× more than the forms require for straightforward cases, (b) generic non-attorney preparers who don't speak Vietnamese, or (c) "notario" scammers who pretend to be lawyers and often harm the case.
 - **Vietnamese-speaking clients distrust non-attorney preparers** because of widespread notario fraud targeting immigrant communities. Any new entrant must aggressively differentiate on *transparency*, *honest scope disclosures*, and *accurate pricing* — not just language.
 - **Existing and prospective clients** cannot easily look up USCIS filing fees, typical processing times, or package pricing in Vietnamese because USCIS.gov is English-only and community resources are scattered across Facebook groups.
@@ -29,13 +34,24 @@
 
 ### Product Goals
 
-1. **Become the trusted Vietnamese-language USCIS document preparation source in Texas** — rank on Google and AI search (ChatGPT, Perplexity, Google AI Overview, Copilot) for Vietnamese-language immigration form queries ("khai N-400", "gia hạn thẻ xanh", "làm giấy tờ bảo lãnh vợ chồng", etc.) targeted at Texas residents.
-2. **Win the transparency battle** — publish total package prices (service fee + USCIS filing fee) for every form and bundle on the public site. Almost no competitor does this in Vietnamese. It is both an SEO/GEO signal (fact density) and a notario-fraud differentiator.
-3. **Establish credibility despite being new** — compensate for low client count with (a) clear non-attorney disclosures, (b) deep and accurate educational content citing USCIS.gov directly, (c) Texas Notary Public credential for signature verification, (d) honest scope ("we prepare — we do not give legal advice"), (e) strong referral paths to pro-bono legal orgs for complex cases we cannot handle.
-4. **Enable self-service booking** — prospects can schedule free consultations (remote video or in-person at the Houston HQ) without phone friction.
-5. **Give clients a case-tracking portal** — authenticated view of their case status, uploaded documents, and USCIS receipt numbers. Reduces "what's happening with my case?" phone calls.
-6. **Empower admin content management** — let the owner publish bilingual blog posts across the immigration topical map without developer involvement.
-7. **Build a credible SEO foundation that later extends to tax, insurance, and AI automation** — every choice in V1 (topical map, URL architecture, schema, i18n) must support adding those pillars in Phase 1.5 without requiring architectural rework.
+Goals are ordered by Phase A (ship-to-show + ads) then Phase B (SEO/GEO depth). Priority is literal — Phase A goals ship before Phase B goals are touched.
+
+**Phase A — Priority 1 (ship-to-show + Facebook ads, ~2 weeks)**
+
+1. **Ship a credible, bilingual, 4-service marketing site** — Home landing page + About + Contact + four service overview pages (Tax, Insurance, Immigration, AI) in VI and EN. Ready to hand a URL to a prospect during an in-person meeting. "Don't have a website" must no longer be true.
+2. **Make the site ad-ready for Facebook campaigns** — Meta Pixel + Conversions API installed, server-side event de-dup, clear primary CTA (Calendly booking), mobile-first above-the-fold hero that converts cold traffic from paid ads, UTM-aware lead capture, LCP <2.5s on 4G for the ad landing target.
+3. **Communicate "One Stop, All Solutions" at a glance** — the Home page must show all 4 services side by side (banner → 4 service cards → trust badges → how it works → contact strip) per the April 9, 2026 design doc (`2026-04-09-mannaos-website-design.md`). Clients must understand the full menu in 5 seconds.
+4. **Enable self-service booking** — prospects can schedule free consultations (remote video or in-person at Houston HQ) via Calendly embedded on /contact. The Calendly path is the primary Phase A conversion event.
+5. **Capture every lead safely** — contact form with dual delivery (Resend email + Supabase backup). Basic bilingual labels, light spam protection, Texas residency field on the immigration-specific form (non-TX referrals still routed to legal aid, but the site itself welcomes cross-service Texas leads).
+
+**Phase B — Priority 2 (SEO/GEO depth, starts after Phase A ships)**
+
+6. **Become the trusted Vietnamese-language USCIS document preparation source in Texas** — rank on Google and AI search (ChatGPT, Perplexity, Google AI Overview, Copilot) for Vietnamese-language immigration form queries ("khai N-400", "gia hạn thẻ xanh", "làm giấy tờ bảo lãnh vợ chồng", etc.) targeted at Texas residents. Build out the full topical map in §2a: pillar → Texas state → 4 city pages → 11 form clusters → 5 bundles, per locale.
+7. **Win the transparency battle** — publish total package prices (service fee + USCIS filing fee) for every form and bundle on the public site. Almost no competitor does this in Vietnamese. It is both an SEO/GEO signal (fact density) and a notario-fraud differentiator.
+8. **Establish credibility despite being new** — compensate for low client count with (a) clear non-attorney disclosures, (b) deep and accurate educational content citing USCIS.gov directly, (c) Texas Notary Public credential for signature verification, (d) honest scope ("we prepare — we do not give legal advice"), (e) strong referral paths to pro-bono legal orgs for complex cases we cannot handle.
+9. **Give clients a case-tracking portal** — authenticated view of their case status, uploaded documents, and USCIS receipt numbers. Reduces "what's happening with my case?" phone calls.
+10. **Empower admin content management** — let the owner publish bilingual blog posts across the immigration topical map without developer involvement.
+11. **Build a credible SEO foundation that later extends to tax, insurance, and AI automation** — every choice in Phase B (topical map, URL architecture, schema, i18n) must support adding those pillars in Phase 1.5 without requiring architectural rework.
 
 ### Target Users
 
@@ -70,9 +86,74 @@
 - Context: case tracking, document uploads, blog publishing, review requests
 - Motivation: run the practice without spreadsheets or email chains
 
+### V1 Rollout Order — Phase A (Ship-to-Show + Ads) → Phase B (SEO/GEO Depth)
+
+This section is the **single source of truth** for which work ships first. Every other section in this PRD — scope, feature breakdown, flows, timeline, metrics — is ordered against this rollout plan. The original 4/10 draft rolled all the immigration SEO/GEO work into "Phase 1"; this revision splits that Phase 1 into **Phase 1A (Marketing Landing)** and **Phase 1B (Immigration Topical Map)**.
+
+```
+  ┌────────────────────────────────────────────────────────────────┐
+  │  PHASE A — MARKETING LANDING (Priority 1, ships first, ~2 wk) │
+  ├────────────────────────────────────────────────────────────────┤
+  │  • Bilingual (VI/EN) Home landing page — 4 service showcase   │
+  │    (banner hero · 4 service cards · trust badges · how it     │
+  │     works · contact strip · footer) per 2026-04-09 design     │
+  │  • 4 Service Overview pages: Tax · Insurance · Immigration ·  │
+  │    AI — one-pagers, each with pricing summary and CTA         │
+  │  • About page with founder bio + credentials                   │
+  │  • Contact page with Calendly embed + contact form (Resend +  │
+  │    Supabase backup)                                           │
+  │  • Privacy Policy + Terms of Service (stubs per locale)       │
+  │  • Meta Pixel + Conversions API, GA4, UTM capture             │
+  │  • Basic SEO hygiene: per-page <title>/meta, OG image,        │
+  │    sitemap.xml, robots.txt, /llms.txt stub, Organization +    │
+  │    LocalBusiness JSON-LD, hreflang EN⇄VI                      │
+  │  • Floating contact buttons (phone · Messenger · Zalo)        │
+  │  • Mobile-first, LCP <2.5s on 4G (ad landing target)          │
+  │                                                                │
+  │  Phase A deliberately does NOT include: the 11 form cluster    │
+  │  pages, the 5 bundle pages, the 4 Texas city pages, the full   │
+  │  notario fraud awareness / referral-out trust pages, the       │
+  │  client portal, the admin panel, or the blog system. Those    │
+  │  are Phase B work that starts the day Phase A ships.           │
+  └────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  PHASE B — IMMIGRATION SEO/GEO DEPTH (Priority 2, follows A)  │
+  ├────────────────────────────────────────────────────────────────┤
+  │  • Full immigration pillar + Texas state cluster + 4 Texas    │
+  │    city support pages per §2a                                  │
+  │  • 11 form cluster pages (I-90, I-130, I-485, I-751, I-765,   │
+  │    I-131, N-400, N-600, I-864, I-912, AR-11) × 2 locales      │
+  │  • 5 bundle pages × 2 locales                                  │
+  │  • Non-Attorney Disclosure + Notario Fraud Awareness +        │
+  │    Need-an-Immigration-Attorney referral-out pages             │
+  │  • Fact-dense pricing tables (Service Fee + USCIS Fee =       │
+  │    Total) with "verified as of" timestamps                     │
+  │  • Full JSON-LD matrix (LegalService, Service, Offer, HowTo,  │
+  │    FAQPage, Speakable, BreadcrumbList, Person, Article)        │
+  │  • Full /llms.txt immigration scope, AI crawler opt-in,       │
+  │    monthly AI citation audit process                          │
+  │  • Blog system + Tiptap editor with SEO publish-blockers      │
+  │  • Client portal (dashboard · case list · case detail ·       │
+  │    document upload/download · USCIS status display)            │
+  │  • Admin panel (clients · cases · blog · content editor ·    │
+  │    review-ask)                                                 │
+  │  • Texas residency gate on immigration-specific contact flow  │
+  │  • All SEO/GEO content rules from §2a and §4.8 L4             │
+  └────────────────────────────────────────────────────────────────┘
+```
+
+**Why this ordering (and not the original 4/10 order):**
+
+- The owner cannot run Facebook ads, show the site to walk-in clients, or hand out business cards with a URL until a landing page exists. Phase A solves that in ~2 weeks. Phase B (the SEO topical map) takes much longer and does not unblock ads or in-person demos.
+- Phase A and Phase B share the same tech stack, the same design system, the same bilingual routing, and the same Supabase project. Nothing in Phase A is throwaway. Phase B extends Phase A's foundation.
+- The Phase B immigration topical map is **not deleted** or watered down. Every piece of immigration content, schema, pricing strategy, notario fraud differentiation, and GEO work from the original 4/10 draft is preserved — it just runs second. The Phase A landing page links to immigration (even before Phase B ships) via a simple overview page; once Phase B lands, the Home service card for Immigration starts pointing at the full pillar.
+- Texas-only regulatory gating for immigration still applies. Phase A's Immigration service card and overview page must carry the non-attorney disclosure and Texas-residents-only scope statement from day 1, even though the deep form cluster pages don't exist yet. The Tax / Insurance / AI cards are marketing-stage only in Phase A with a "Book a free consultation" CTA — no deep topical map.
+
 ### Geographic Scope
 
-**V1 is Texas-only.** This is a deliberate regulatory and strategic decision, not a growth ceiling.
+**V1 is Texas-only for immigration services.** This is a deliberate regulatory and strategic decision, not a growth ceiling. Tax, Insurance, and AI services are constrained separately — see §1 Regulatory Constraints and the per-service notes below.
 
 ```
 V1 LAUNCH TARGET: Texas residents only
@@ -132,9 +213,39 @@ RATIONALE:
 
 ### Scope & Non-Scope
 
-**In Scope (V1 — Immigration Document Preparation, Texas-only):**
-- Public marketing website with **subdirectory i18n routing**: `/en/...` and `/vi/...` (never toggle-on-one-URL)
-- **One service pillar only: Vietnamese USCIS Document Preparation, Texas residents**
+**In Scope — Phase A (Marketing Landing + Facebook Ads, ~2 weeks, ships first):**
+- Bilingual (VI + EN) public marketing site with **subdirectory i18n routing** (`/en/...` and `/vi/...`, never toggle-on-one-URL), but with a **small Phase A route tree**, not the full Phase B topical map
+- **Home landing page** — banner hero, 4 service showcase cards (Tax · Insurance · Immigration · AI), "Why Manna" trust badges, "How It Works" 3-step, contact strip, footer — per the 2026-04-09 design doc
+- **4 service overview pages** (one-pagers, brochure-style) — `/services/tax`, `/services/insurance`, `/services/immigration`, `/services/ai` — each with bilingual headline, service list, pricing summary, trust credential, FAQ stub, Calendly CTA. Immigration page carries the non-attorney disclosure and Texas-only scope statement even though the Phase B form cluster pages don't exist yet.
+- **About page** — founder bio, credentials (EFIN, Texas Life/P&C licenses, Texas Notary when granted), "One Stop, All Solutions" mission, Houston HQ address
+- **Contact page** — Calendly embed (free tier, one event type), contact form (Resend + Supabase backup), Houston HQ map, phone click-to-call, Facebook Messenger deep link, Zalo deep link
+- **Legal pages** — Privacy Policy + Terms of Service stubs per locale (required for GA4 consent + Meta Pixel)
+- **Ad infrastructure** — Meta Pixel + Conversions API (server-side event de-dup), GA4 with `lead`, `calendly_booking_complete`, `form_submit`, `page_view`, `outbound_click` events, UTM parameter capture persisted on the contact form, consent banner for EU/CA visitors
+- **Design system + shared components** — the exact palette, typography, and logo rules from §7 (already derived from the logo). All components built in Phase A are reused by Phase B — no throwaway work.
+- **Basic SEO hygiene** — unique `<title>` + meta description per page (bilingual), OG image, hreflang reciprocal, canonical tags, auto-generated `sitemap.xml`, `robots.txt`, Organization + LocalBusiness JSON-LD in root layout, a stub `/llms.txt` describing the 4-service business entity (detailed immigration-scope /llms.txt lands in Phase B). No form-level schema, no HowTo, no itemized Offer schema — those are Phase B.
+- **Floating contact buttons** — fixed bottom-right: phone, Facebook Messenger, Zalo
+- **Performance budget** — Home LCP <2.5s on 4G mobile; Lighthouse mobile Performance 90+. This is the ad landing page — it gets the strictest budget in Phase A.
+- **Supabase project bootstrap** — create the project, set up `contact_submissions` table, connect Resend for outbound email. (Full schema for cases, blog, portal is Phase B.)
+
+**In Scope — Phase B (Immigration SEO/GEO Depth + Portal + Admin, starts after Phase A ships):**
+- **Full immigration topical map per §2a** — pillar (`/en/services/vietnamese-immigration-document-preparation/` + VI equivalent) · Texas state cluster · 4 Texas city support pages (Houston, DFW, Austin, San Antonio) · 11 form cluster pages · 5 bundle pages — every page in both locales with native Vietnamese slugs
+- **Non-attorney disclosure system** — above-the-fold banner component on every pillar/form/bundle page + standalone `/non-attorney-disclosure/`, `/notario-fraud-awareness/`, `/need-an-immigration-attorney/` trust pages per locale
+- **Published pricing tables on every form & bundle page** — Service Fee + USCIS Filing Fee = Total, "verified as of" timestamps, admin-editable via `site_content`
+- **Texas residency gate** — on the immigration-specific contact path, non-TX submissions receive an automated Resend reply + referral block pointing to CLINIC/KIND/AILA
+- **Full JSON-LD schema matrix** — LegalService, Service, Offer (itemized bundles), HowTo, FAQPage, Speakable, BreadcrumbList, Person, Article, as documented in §4.8 L4
+- **Expanded `/llms.txt`** — full immigration scope entity description with form-level pricing, credentials, per-state availability
+- **GEO content rules** — answer-first content, fact density, ≥3 internal links per page, ≥1 outbound .gov link, 5–8 visible FAQ matching FAQPage JSON-LD, monthly AI citation audit process
+- **Blog system** — Tiptap editor with post_type (pillar/cluster/support) tier, per-locale slugs, bilingual title + content, cover photo, category, SEO publish-blockers (meta desc, OG image, author, ≥3 internal links, ≥1 .gov outbound link, FAQ, word count by tier)
+- **Client portal** — signup, login, forgot-password (Supabase Auth + Resend), dashboard with active case list, case detail (receipt number, status, history, documents), document upload/download
+- **Admin panel** — client management, case management (create/update/upload), blog editor, website content editor, review acquisition UI
+- **USCIS case status display** — reads from shared Supabase DB populated by the internal staff app's Playwright agent (MannaOS.com stays read-only)
+- **Automated review acquisition system** — post-case Resend email + opt-in SMS with short Google review link, one-per-case enforcement
+- **Off-site directories** — GBP (Houston), Apple Business Connect, Bing Places, Yelp, BBB, Nextdoor, Vietnamese American Chamber of Commerce — NAP consistency across all
+- **Full GA4 event coverage** — all events in §3 Feature Breakdown
+
+Everything below this line about "V1" originally referred to the unified immigration-first scope. Treat references to "V1" in §2a and §4.8 as **Phase B scope** unless otherwise annotated.
+
+- **One service pillar optimized for SEO/GEO: Vietnamese USCIS Document Preparation, Texas residents** (Phase B only)
 - Core pages per locale: Home, Immigration Services pillar (EN + VI), Texas state page, Houston city page, form-specific pages (one per major USCIS form), About, Contact, Pricing, Blog (list + detail), Privacy Policy, Terms of Service, **non-attorney disclosure page**, **notario fraud awareness page**
 - Bilingual system (Vietnamese / English) — **separate URLs per locale**, native Vietnamese slugs, reciprocal `hreflang`, localized metadata, localized FAQ schema, localized JSON-LD
 - SEO: per-locale metadata, canonical tags, sitemap per locale, robots.txt (with AI crawler opt-in), JSON-LD (LocalBusiness, LegalService, Service, FAQPage, Article, BreadcrumbList, Person, Organization, Speakable, HowTo for form guides, Offer for each priced bundle)
@@ -169,7 +280,26 @@ RATIONALE:
 
 ### Success Metrics
 
-**Indexing & Technical:**
+Metrics are split by phase. **Phase A metrics are the primary success signal for V1.0** — they tell the owner whether the landing page is doing its job (showing clients + converting Facebook ad traffic). Phase B metrics (SEO/GEO depth, AI citations, Local Pack) are secondary and measured on a longer horizon.
+
+**Phase A — Marketing Landing + Facebook Ads (Priority 1):**
+
+| Metric | Target | How to Measure |
+|--------|--------|----------------|
+| Home landing LCP (mobile, 4G, 75th pct) | <2.5s | PageSpeed Insights, GSC CWV report |
+| Home Lighthouse Performance (mobile) | ≥90 | Lighthouse CI |
+| Phase A launch-ready date | ≤14 days after kickoff | Git tag |
+| Meta Pixel + CAPI firing | PageView, Lead, Schedule, Contact all verified in Events Manager Test Events within Day 1 of launch | Meta Events Manager |
+| Facebook Ad CTR (cold VI audience, Houston geo) | ≥1.5% on first campaign, ≥2.5% by day 30 | Meta Ads Manager |
+| Facebook Ad cost per landing page view | ≤$0.25 CPC (Houston VI audience benchmark) | Meta Ads Manager |
+| Facebook Ad cost per Calendly booking (primary conversion) | ≤$25/booking at launch, ≤$15/booking by day 30 | Meta Ads Manager + Calendly |
+| Bounce rate on /home from paid traffic | <55% | GA4 segmented by UTM source=facebook |
+| Calendly bookings sourced from ads | ≥3/week from day 14, ≥8/week by day 45 | GA4 + Calendly analytics |
+| Contact form submissions (all services combined) | ≥2/week from day 14, ≥5/week by day 45 | Supabase `contact_submissions` |
+| In-person demo URL handoffs (owner hands out the URL during consultations) | Qualitative — owner reports the site is "show-ready" in the first consultation after launch | Owner self-report |
+| Cross-service lead mix | Tracked from day 1: Tax / Insurance / Immigration / AI breakdown of contact form `service_interest` field | Supabase query |
+
+**Phase B — Immigration SEO/GEO Indexing & Technical (Priority 2):**
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
@@ -849,14 +979,82 @@ sections, city pages emphasize CTAs and local trust signals.
 
 ## 3. Functional Requirements
 
-### Feature Breakdown
+### Phase A Feature Breakdown — 4-Service Marketing Showcase (ships first)
+
+This subsection is the **authoritative feature list for Phase A**. The tables that follow it ("Public site + SEO/GEO foundation", "Auth, Portal, Admin", "Off-site directories") are Phase B scope — they do not block Phase A launch.
+
+**Phase A — Home Landing Page (`/en/` and `/vi/`)**
+
+The Home landing page is the single most important page in Phase A. It is the ad destination for every Facebook campaign, the URL the owner hands out in person, and the 5-second test of whether MannaOS looks legitimate. Sections in order (per 2026-04-09 design doc):
+
+| # | Section | Description | Priority |
+|---|---|---|---|
+| 1 | **Navbar (sticky)** | Logo left (transparent PNG) · nav links center (Services · About · Contact · Blog[Phase B]) · language toggle pill (VI/EN) + "Book Now" (teal CTA) + "Sign In"[Phase B] right · white bg, subtle shadow on scroll | Must |
+| 2 | **Hero banner** | Full-width section. Bilingual H1 headline ("One Stop, All Solutions" / "Một Điểm Đến, Mọi Giải Pháp"). Subheadline naming the 4 services. Two CTAs: primary "Đặt lịch miễn phí / Book Free Consultation" (links to Calendly embed on /contact) + secondary "Our Services" (anchor to service cards below). Hero background image editable in Phase B via `site_content`; in Phase A it's a static optimized image. | Must |
+| 3 | **Services Overview — 4 service cards** | Grid of 4 cards (2×2 on mobile, 4×1 on desktop). **Tax & Business · Insurance & Finance · Immigration · AI / Automation.** Each card: icon + service name (bilingual) + 1-line description + "Learn more →" link to that service's overview page. Cards have subtle drop shadows, teal hover state. This is the "One Stop, All Solutions" moment — the visitor must see all 4 at once. | Must |
+| 4 | **Why Manna — trust badges** | 4 trust points in a horizontal strip: (a) Bilingual service (VN/EN), (b) IRS EFIN licensed (#857993), (c) Texas Life + P&C Insurance licensed (#3142469 / #3118525), (d) Texas Notary Public (pending Phase 0 / "Coming [month]" if not yet commissioned). Credential numbers visible — drives Google E-E-A-T and reassures clients on first visit. | Must |
+| 5 | **How It Works — 3 steps** | 3-step graphic: ① Liên hệ / Contact us → ② Free consultation → ③ We handle it. Simple illustrations or numbered icons. Translated bilingually. | Must |
+| 6 | **Contact strip** | Full-width section with phone (346-852-4454, click-to-call), Facebook Messenger button, inline quick form (name + phone + "I'm interested in..." dropdown with 4 services + submit). Submission goes to the same `contact_submissions` table. | Must |
+| 7 | **Footer** | Logo · services list (4 links) · About · Contact · Privacy · Terms · social links (Facebook, Zalo) · NAP block (name, Bellaire Blvd Houston TX 77036, phone) · copyright. Same on every Phase A page. | Must |
+
+No testimonials section at launch — add real reviews when available (Phase B via `site_content`).
+
+**Phase A — Service Overview Pages (one per service, brochure-style)**
+
+Each of the 4 service overview pages is a single bilingual marketing page — **not** a deep topical map page. Phase B will add deeper cluster pages for immigration (and eventually tax/insurance/AI). For Phase A these pages give the owner something to link to from Home, from ads, and from Facebook posts.
+
+| Service | Route (EN) | Route (VI) | Phase A Content |
+|---|---|---|---|
+| **Tax & Business** | `/en/services/tax/` | `/vi/dich-vu/thue/` | Services list (Individual tax, Business tax, LLC setup, Tax extension), pricing summary ($50–$800 range), EFIN credential badge (#857993), 5-question FAQ stub, Calendly CTA. Not a topical map — one marketing page. |
+| **Insurance & Finance** | `/en/services/insurance/` | `/vi/dich-vu/bao-hiem/` | Services list (Life Insurance, Annuity, Retirement Planning, Auto/Home P&C), Texas-only disclosure, license credentials (#3142469 Life, #3118525 P&C), "Commission-based, free consultation" framing, 5-question FAQ stub, Calendly CTA. |
+| **Immigration** | `/en/services/immigration/` | `/vi/dich-vu/di-tru/` | Services list (N-400, Green Card, Work Permit, Travel Doc, Marriage GC Bundle), **non-attorney disclosure above the fold**, **Texas-only scope statement**, pricing teaser ("from $715 for I-90"), Calendly CTA. This page is the Phase A placeholder that Phase B replaces with the full pillar + form cluster tree. Once Phase B ships, this URL can either remain as a "gateway" page that links down to the pillar or 301 to the pillar — decision owned by the owner at Phase B launch. |
+| **AI / Automation** | `/en/services/ai/` | `/vi/dich-vu/ai-tu-dong-hoa/` | Services list (Workflow automation, AI tools for SMBs, Business digitization, Monthly retainer), "We understand your business — we build the automation" framing, 5-question FAQ stub, "Free discovery call" Calendly CTA. |
+
+**Phase A — Shared page-level features (applies to all Phase A pages):**
+
+| Feature | Description | Priority |
+|---|---|---|
+| **Next.js i18n subdirectory routing** | `/en/` + `/vi/` prefixes via App Router `[locale]` segment. `localeDetection` based on `Accept-Language`. `NEXT_LOCALE` cookie honors explicit switches. Same approach as Phase B — no throwaway — but Phase A only ships the route tree listed above. | Must |
+| **Language switcher component** | Pill button in navbar showing the other locale; uses the same `routeMap` scheme as Phase B (a language-neutral page ID → per-locale URL). Phase A's map has ~8 entries; Phase B extends it. | Must |
+| **Shared layout + design system** | Palette, typography, spacing, logo rules from §7. Tailwind CSS. Reused by Phase B. | Must |
+| **Floating contact buttons** | Fixed bottom-right: phone (tel:), Facebook Messenger (m.me deep link), Zalo (zalo.me deep link). Visible on all Phase A pages. | Must |
+| **Contact form** | Next.js API route → Resend (email to owner) + Supabase `contact_submissions` backup. Fields: name, phone, email, service dropdown (Tax/Insurance/Immigration/AI), message, preferred channel (email/phone/Zalo), UTM fields captured from URL. Bilingual labels. Basic anti-spam (honeypot + rate limit). **Texas residency field is only required when `service_interest = Immigration`.** | Must |
+| **Calendly embed** | Inline on `/en/contact/` + `/vi/lien-he/`. Free tier, one event type ("Free 15-min consultation"). `window.Calendly` event listener fires a GA4 `calendly_booking_complete` event + a Meta Pixel `Schedule` event when a booking finishes. | Must |
+| **Meta Pixel + Conversions API** | Client-side pixel + server-side CAPI via Next.js API route, with de-dup `event_id`s. Events: `PageView`, `Lead` (contact form submit), `Schedule` (Calendly booking), `Contact` (phone/Messenger click). Test Events verified before first campaign. | Must |
+| **Google Analytics 4** | gtag.js via next/script. Events: `page_view`, `form_submit`, `calendly_click`, `calendly_booking_complete`, `phone_click_to_call`, `messenger_click`, `zalo_click`, `locale_switch`, `outbound_click`. Consent banner for EU/CA. | Must |
+| **UTM capture** | Contact form reads `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `gclid`, `fbclid` from URL + stores on `contact_submissions` row. | Must |
+| **Per-page metadata** | `generateMetadata()` per page with bilingual title, description, canonical, hreflang (EN⇄VI⇄x-default), OG image. Metadata authored per locale (not machine-translated). | Must |
+| **Site-wide schema** | Root layout emits `Organization` schema. Home additionally emits `WebSite` + a minimal `LocalBusiness` with Houston HQ address, phone, 4 services listed as `hasOfferCatalog`. No form-level Offer schema in Phase A — that's Phase B. | Must |
+| **/llms.txt (stub)** | Short file describing Manna One Solution as a 4-service one-stop shop (Tax, Insurance, Immigration, AI) with Houston HQ + 346-852-4454. Phase B replaces with the full immigration-scope document. | Must |
+| **robots.txt + sitemap.xml** | `next-sitemap`. Phase A sitemap includes Home + 4 service overview pages + About + Contact + Privacy + Terms + language alternates. Phase B adds the rest. AI crawler Allow directives go in Phase A so the site is discoverable from day one. | Must |
+| **Privacy Policy + Terms of Service** | Stubs per locale. Required for GA4 consent + Meta Pixel compliance. Phase B expands them with the non-attorney document preparer clause and UPL disclaimer. | Must |
+| **404 page** | Custom per locale, with nav back to Home + service cards. | Must |
+| **Image optimization** | `next/image`, explicit width/height (CLS prevention), WebP, descriptive file names, translated alt text per locale. | Must |
+
+**Phase A — Explicitly NOT in scope (deferred to Phase B):**
+
+- The 11 form cluster pages, 5 bundle pages, 4 Texas city pages, Texas state cluster page, and the immigration pillar page
+- Notario Fraud Awareness / Non-Attorney Disclosure / Need-an-Immigration-Attorney standalone trust pages
+- Published form-level pricing tables with "verified as of" timestamps and itemized Offer JSON-LD
+- FAQPage schema per page, HowTo schema, Speakable schema
+- The blog system, Tiptap editor, and SEO publish-blockers
+- Client portal (dashboard, case detail, documents, case tracking)
+- Admin panel (client management, case management, blog editor, content editor, review-ask)
+- USCIS status display (depends on shared Supabase schema + internal staff app)
+- Automated review acquisition system
+- Monthly AI citation audit process
+- GBP / Apple Business Connect / Bing Places / Yelp / Nextdoor directory setup
+
+Phase A launches with the marketing site and ad infrastructure. The day after it ships, Phase B work starts against the same codebase.
+
+### Phase B Feature Breakdown — Immigration SEO/GEO Depth + Portal + Admin
 
 **Public site + SEO/GEO foundation:**
 
 | Feature | Description | Priority | Dependencies |
 |---------|-------------|----------|--------------|
 | **Next.js i18n subdirectory routing** | `/en/` and `/vi/` URL prefixes via App Router + `[locale]` segment. Each locale has its own route tree, metadata, slugs, and sitemap. `localeDetection` auto-redirects first-time visitors based on `Accept-Language`. localStorage remembers explicit switches. **URL is the source of truth, never just state.** | Must-have | None |
-| **Native Vietnamese slugs** | All VI pages use native Vietnamese keyword slugs (e.g. `/vi/dich-vu/khai-thue-tieng-viet/texas/houston/`), never transliterated English. | Must-have | i18n routing |
+| **Native Vietnamese slugs** | All VI pages use native Vietnamese keyword slugs (e.g. `/vi/dich-vu/lam-giay-to-di-tru-tieng-viet/texas/houston/`, `/vi/mau-don/i-90-gia-han-the-xanh/`), never transliterated English. | Must-have | i18n routing |
 | **Public marketing pages (per locale) — V1 immigration-only** | Home · 1 service pillar (Vietnamese Immigration Document Preparation) · 1 Texas state page · 4 Texas city pages (Houston + DFW + Austin + San Antonio) · 11 form cluster pages (I-90, I-130, I-485, I-751, I-765, I-131, N-400, N-600, I-864, I-912, AR-11) · 5 bundle pages · About · Contact · Pricing overview · **Non-Attorney Disclosure** · **Notario Fraud Awareness** · **Need an Immigration Attorney (referral-out)** · Privacy Policy · Terms of Service · Blog list · Blog detail. Each rendered in both EN and VI. 32 non-blog pages per locale. | Must-have | i18n routing |
 | **Pricing tables on every form & bundle page** | Structured pricing component that renders Service Fee + USCIS Fee + Total, pulled from `site_content.pricing`. Includes "verified as of [date]" timestamp and outbound link to uscis.gov/forms/filing-fees. Admin can update fees without a deploy. | Must-have | site_content table, schema Offer |
 | **Non-attorney disclosure component** | Reusable above-the-fold banner on every form/bundle/pillar page stating "We are not attorneys. We prepare USCIS forms at your direction. We do not provide legal advice." Linked to the full disclosure page. | Must-have | None |
@@ -867,7 +1065,7 @@ sections, city pages emphasize CTAs and local trust signals.
 | **Per-locale sitemap.xml** | `next-sitemap` generates `sitemap.xml` index referencing `sitemap-en.xml` and `sitemap-vi.xml`. All URLs include `<xhtml:link rel="alternate" hreflang=...>` entries. | Must-have | None |
 | **robots.txt with AI crawler opt-in** | Explicit `Allow` directives for `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `CCBot` on public content. `Disallow` for `/portal`, `/admin`, `/api`. `Sitemap:` directive. See §4.8 L4. | Must-have | None |
 | **`/llms.txt`** | Static markdown file at site root describing business entity, services, price ranges, credentials, per-state availability, top FAQ answers. Template in §4.8 L4. | Must-have | None |
-| **JSON-LD schema system** | Site-wide `Organization` + per-page `LocalBusiness` (Houston) / `ProfessionalService` / `Service` / `BreadcrumbList` / `FAQPage` / `Article` / `Person` / `Speakable`. All schema bilingual (`inLanguage`, `knowsLanguage`). Templates in §4.8 L4. | Must-have | None |
+| **JSON-LD schema system** | Site-wide `Organization` + per-page `LocalBusiness` (Houston) / `LegalService` / `Service` / `Offer` (form & bundle pricing) / `HowTo` (form preparation steps) / `BreadcrumbList` / `FAQPage` / `Article` / `Person` / `Speakable`. All schema bilingual (`inLanguage`, `knowsLanguage`). Every `LegalService` includes a `disambiguatingDescription` stating non-attorney document preparer status. Templates in §4.8 L4. | Must-have | None |
 | **Breadcrumb component** | Visible breadcrumb navigation on all non-home pages, rendering `BreadcrumbList` JSON-LD. Mirrors URL hierarchy. | Must-have | None |
 | **Per-page metadata system** | Typed Next.js `generateMetadata()` per page with locale-aware title, description, OG tags, Twitter Card, canonical, hreflang. All metadata authored in EN + VI separately (not auto-translated). | Must-have | i18n routing |
 | **Image optimization pipeline** | Next.js `<Image>` with `loading="lazy"`, explicit `width`/`height` (CLS prevention), WebP conversion, descriptive file names, translated alt text per locale. | Must-have | None |
@@ -885,7 +1083,7 @@ sections, city pages emphasize CTAs and local trust signals.
 | **Review acquisition system** | Admin "Request Review" button on client detail → sends bilingual email + (opt-in) SMS via Resend with short Google review link. Stores in `review_requests` table. Max 1 request per service per client. | Must-have | Resend, GBP |
 | **Content decay alerts** | Admin dashboard lists posts with `dateModified > 6 months ago` and prompts for refresh. | Should-have | Blog system |
 
-**Auth, Portal, Admin (multi-state implications):**
+**Auth, Portal, Admin:**
 
 | Feature | Description | Priority | Dependencies |
 |---------|-------------|----------|--------------|
@@ -1125,81 +1323,122 @@ site_content (key-value store, admin-editable — central content engine)
 #### L0 — Intent & Outcome
 
 **Intent**
-- Vietnamese-speaking prospect in Houston needs professional help with taxes, insurance, or immigration but can't find a trusted bilingual provider online.
-- Prospect wants to evaluate credibility and book a consultation without phone calls or in-person visits.
+- **(Phase A primary)** A Vietnamese-speaking prospect in Houston sees a Facebook ad featuring Manna One Solution, clicks through to a bilingual landing page that showcases all 4 services, and either books a Calendly consultation or submits the contact form — all on mobile, in under 3 minutes.
+- **(Phase A secondary)** The owner hands out the MannaOS.com URL during an in-person consultation; the prospect loads it on their phone, sees the 4-service landing page, and is reassured that the business looks legitimate.
+- **(Phase B primary)** A Vietnamese-speaking prospect in Houston searches Google or an AI assistant for a specific USCIS form (e.g. "gia hạn thẻ xanh Houston"), lands on the matching form cluster page, and books a consultation without ever visiting the Home landing page.
 
 **Outcome**
-- Prospect finds MannaOS.com via Google or AI search, reads service details in their language, and books a free consultation — all in one session, under 5 minutes.
+- **(Phase A)** Paid Facebook traffic and in-person handoffs convert to Calendly bookings or contact form submissions at the Phase A targets in §1 Success Metrics. The owner has something to show clients and run ads against.
+- **(Phase B)** Organic search and AI-search traffic converts on deep-funnel immigration pages, with FAQ rich snippets, published pricing, and non-attorney disclosure all visible above the fold.
 
 #### L1 — Business Flow
 
-1. **Prospect** searches Google/AI for service-related query in Vietnamese or English.
-2. **Google/AI** returns MannaOS.com in results (rich snippet with FAQ, local business info).
-3. **Prospect** clicks through, lands on relevant page (home or service page).
-4. **Website** displays content in prospect's preferred language (VI default or persisted choice).
-5. **Prospect** browses service details, pricing, credentials, and FAQ.
-6. **Prospect** decides to take action — either books via Calendly or submits contact form.
+**Phase A path (Facebook ad → Home landing page):**
+
+1. **Owner** launches a Facebook ad targeting the Vietnamese-American community in Houston + surrounding Texas metros. Ad creative features the MannaOS logo, a bilingual headline, and a service-specific hook (Tax / Insurance / Immigration / AI).
+2. **Prospect** sees the ad on Facebook or Instagram, taps the "Learn More" / "Book Now" button.
+3. **Meta** sends the prospect to `mannaos.com/en/?utm_source=facebook&utm_campaign=...&fbclid=...` (or `/vi/` based on ad audience language).
+4. **Next.js middleware** honors the locale prefix and renders the Home landing page on the edge. Meta Pixel fires `PageView`; server-side CAPI fires the de-duplicated copy.
+5. **Prospect** sees the hero banner, scrolls through the 4 service cards, trust badges, "How It Works", and contact strip — in their language — in under 5 seconds.
+6. **Prospect** taps "Book Free Consultation" → navigates to `/contact/` with UTM params preserved.
+7. **Prospect** either (a) fills the Calendly embed to book a consultation (fires `Schedule` on Meta + `calendly_booking_complete` on GA4), or (b) submits the contact form (fires `Lead` on Meta + `form_submit` on GA4), or (c) taps the click-to-call phone button (fires `Contact`).
+8. **Next.js API route** stores the contact form submission in Supabase `contact_submissions` with UTM parameters attached, then sends notification email to the owner via Resend.
+9. **Owner** sees the lead in the Resend inbox (and the Supabase dashboard) within seconds, follows up via phone or email within 24 hours.
+
+**Phase A secondary path (in-person URL handoff):**
+
+1. During an in-person consultation the **owner** writes `mannaos.com` on a card or says it out loud.
+2. **Prospect** types it in their phone browser — Next.js middleware detects Accept-Language `vi*` → 302 → `/vi/`.
+3. Same Home landing page renders. The prospect sees the 4-service showcase and the "legitimate business" signals (logo, credentials, Calendly), which reassures them that the owner isn't a fly-by-night operator.
+
+**Phase B path (organic search / AI search → form cluster page):**
+
+1. **Prospect** searches Google/AI for a specific immigration query in Vietnamese or English.
+2. **Google/AI** returns MannaOS.com in results (rich snippet with FAQ, local business info, pricing extracted from Offer schema).
+3. **Prospect** clicks through, lands directly on a form cluster or bundle page — **not** the Home landing page.
+4. **Website** serves the page in the locale that matches the URL the prospect clicked (`/vi/...` or `/en/...`). There is no toggle; the server-delivered locale is the index target.
+5. **Prospect** reads the above-the-fold non-attorney disclosure, the pricing table (Service + USCIS = Total with verified-as-of timestamp), the Texas-residents-only scope, and the FAQ.
+6. **Prospect** decides to take action — either books via Calendly (Texas residents) or sees the referral-out block (non-Texas).
 7. **Calendly** sends confirmation to prospect + notification to owner.
-8. **Next.js API route** stores submission in Supabase `contact_submissions` table and sends email to owner via Resend.
-9. **Owner** reviews leads, follows up via phone or email within 24 hours.
+8. **Next.js API route** stores submission in Supabase `contact_submissions` and sends email to owner via Resend.
+9. **Owner** reviews leads, follows up within 24 hours.
 
 #### L2 — User Flow
 
 ```mermaid
 flowchart TD
-    Search["Google/AI Search\n'khai thuế Houston'"]
-        --> SERP["Search Results\nMannaOS.com with rich snippet"]
+    FBAd["Facebook / Instagram Ad\nVN audience, Houston geo\nCreative: 4-service hook"]
+        --> AdClick["User taps 'Book Now'\nutm_source=facebook\nfbclid=...\nlocale inferred from audience"]
 
-    SERP --> Home["Page: Home\nVietnamese hero, service cards, trust badges"]
+    AdClick --> Home["Phase A Landing: mannaos.com/{locale}/\nHero banner · 4 service cards\nTrust badges · How It Works\nContact strip · Footer"]
 
-    Home --> LangToggle{"Language\npreference?"}
-    LangToggle -->|Vietnamese| StayVI["Content shown in Vietnamese"]
-    LangToggle -->|English| SwitchEN["User clicks EN toggle\nContent switches to English"]
+    InPerson["Owner hands out\n'mannaos.com' in person"]
+        --> MobileTyped["User types URL on phone\nMiddleware: Accept-Language → /vi/ or /en/"]
+    MobileTyped --> Home
 
-    StayVI --> BrowseServices["Page: /services/tax\nPricing table, EFIN badge, FAQ"]
-    SwitchEN --> BrowseServices
+    OrgSearch["Phase B: Google / AI Search\n'gia hạn thẻ xanh Houston'\n'N-400 tiếng Việt'"]
+        --> SERP["SERP result: form cluster page\nFAQ rich snippet + Offer pricing"]
+    SERP --> FormPage["Phase B Deep Page:\n/vi/dich-vu/.../mau-don/i-90-gia-han-the-xanh/\nNon-attorney disclosure above fold\nPricing table · FAQ · TX scope"]
 
-    BrowseServices --> ReadFAQ["User reads FAQ section\n5–8 Q&As with answers"]
+    Home --> FourCards["User scans 4 service cards\nTax · Insurance · Immigration · AI"]
+    FourCards --> CardClick{"Which service\ncard?"}
+    CardClick -->|Tax| TaxOverview["/{locale}/services/tax/"]
+    CardClick -->|Insurance| InsOverview["/{locale}/services/insurance/"]
+    CardClick -->|Immigration| ImmOverview["/{locale}/services/immigration/\n(Phase A: brochure page\nPhase B: pillar + cluster tree)"]
+    CardClick -->|AI| AIOverview["/{locale}/services/ai/"]
 
-    ReadFAQ --> DecideCTA{"Ready to\ntake action?"}
+    Home --> HeroCTA["Hero primary CTA:\n'Book Free Consultation'"]
+    TaxOverview --> ContactPage
+    InsOverview --> ContactPage
+    ImmOverview --> ContactPage
+    AIOverview --> ContactPage
+    HeroCTA --> ContactPage
+    FormPage --> ContactPage
 
-    DecideCTA -->|Book appointment| ContactPage["Page: /contact\nCalendly embed visible"]
-    DecideCTA -->|Ask a question| ContactPage
+    ContactPage["/{locale}/contact/\nCalendly embed\nContact form (with UTM capture)\nPhone · Messenger · Zalo"]
 
-    ContactPage --> BookCalendly["User: selects date/time\nFills name + phone\nCalendly confirmation shown"]
+    ContactPage --> BookCalendly["Calendly: pick date/time\nName + phone\nConfirmation shown"]
+    ContactPage --> SubmitForm["Contact form submit\nName · Phone · Email\nService dropdown (4)\nMessage · UTM stored"]
+    ContactPage --> PhoneTap["Click-to-call 346-852-4454"]
 
-    ContactPage --> SubmitForm["User: fills contact form\nName, Phone, Email, Service, Message\nSubmits → confirmation message"]
-
-    BookCalendly --> Done["Outcome: consultation booked\nOwner notified via Calendly"]
-    SubmitForm --> Done2["Outcome: lead captured\nOwner notified via email"]
+    BookCalendly --> MetaSchedule["Meta Pixel: Schedule\nGA4: calendly_booking_complete\nOwner notified by Calendly"]
+    SubmitForm --> MetaLead["Meta Pixel: Lead\nGA4: form_submit\nResend email + Supabase row"]
+    PhoneTap --> MetaContact["Meta Pixel: Contact\nGA4: phone_click_to_call"]
 ```
 
 #### L3 — System Flow
 
 ```mermaid
 flowchart TD
-    Browser["Browser\n(visitor on mobile/desktop)"]
-        --> Vercel["Vercel CDN\nServes static HTML (SSG)"]
+    Browser["Browser\n(mobile first — 70% of traffic)"]
+        --> Vercel["Vercel CDN\nServes static HTML (SSG)\nEdge middleware: locale detect"]
 
-    Vercel --> NextJS["Next.js App\nPre-rendered pages with\nJSON-LD structured data"]
+    Vercel --> NextJS["Next.js App (App Router)\napp/[locale]/(public)/\npage.tsx, services/*, contact/*\nPer-locale metadata + JSON-LD"]
 
-    NextJS --> i18n["i18n Context\nReads localStorage for language\nServes VI or EN content"]
+    NextJS --> LocaleRoute["URL is source of truth:\n/en/... or /vi/...\nNEXT_LOCALE cookie honors switches"]
 
-    Browser -->|Contact form submit| APIRoute["Next.js API Route\n(POST /api/contact)"]
-    APIRoute --> ContactDB[("Supabase: contact_submissions\n(backup — never lose a lead)")]
+    Browser -->|Contact form submit| APIRoute["Next.js API Route\n(POST /api/contact)\nReads UTM + fbclid from body"]
+    APIRoute --> ContactDB[("Supabase: contact_submissions\n+ utm_source · utm_campaign\n+ fbclid · service_interest")]
     APIRoute --> Resend["Resend API\n(send email to owner)"]
-    Resend --> OwnerEmail["Owner Email\n(lead notification)"]
+    APIRoute --> MetaCAPI["Meta Conversions API\nServer-side 'Lead' event\nevent_id = client pixel event_id\n(de-duplicates client pixel)"]
+    Resend --> OwnerEmail["Owner Email\n(lead notification with UTM)"]
 
-    Browser -->|Book appointment| Calendly["Calendly Embed\n(iframe within /contact)"]
-    Calendly --> CalendlyAPI["Calendly Service\nSends confirmation email to prospect\nSends notification to owner"]
+    Browser -->|Book appointment| Calendly["Calendly Embed (iframe)\nwindow.Calendly event listener"]
+    Calendly --> CalendlyAPI["Calendly Service\nConfirmation to prospect\nNotification to owner"]
+    Calendly -->|event_scheduled postMessage| ClientPixel["Client Meta Pixel\n'Schedule' event"]
+    ClientPixel --> MetaCAPI
 
-    Browser -->|Click-to-call| Phone["tel:346-852-4454"]
-    Browser -->|Messenger| Facebook["Facebook Messenger\n(external link)"]
+    Browser -->|Page view| Pixel["Client Meta Pixel fbq('PageView')\n+ GA4 page_view"]
+    Pixel --> MetaCAPI
 
-    Vercel --> GoogleBot["Googlebot / Bingbot / AI Crawlers"]
-    GoogleBot --> Sitemap["sitemap.xml\n(auto-generated, all public URLs)"]
-    GoogleBot --> LlmsTxt["/llms.txt\n(entity description for AI)"]
-    GoogleBot --> JsonLD["JSON-LD per page\nLocalBusiness, Service, FAQ, Article"]
+    Browser -->|Click-to-call| Phone["tel:346-852-4454\n+ fbq('Contact')"]
+    Browser -->|Messenger| FB["m.me/mannaonesolution"]
+    Browser -->|Zalo| Zalo["zalo.me/..."]
+
+    Vercel --> GoogleBot["Googlebot / Bingbot / AI Crawlers\n(GPTBot, ClaudeBot, PerplexityBot,\nGoogle-Extended, CCBot — all allowed)"]
+    GoogleBot --> Sitemap["sitemap.xml\n(Phase A: Home + 4 service overviews\n+ About + Contact + legal)\n(Phase B: + pillar + clusters + blog)"]
+    GoogleBot --> LlmsTxt["/llms.txt\n(Phase A: 4-service entity stub)\n(Phase B: full immigration scope)"]
+    GoogleBot --> JsonLD["JSON-LD per page\n(Phase A: Organization + LocalBusiness)\n(Phase B: + LegalService + Service + Offer\n+ FAQPage + HowTo + Speakable + Article)"]
 ```
 
 ---
@@ -1587,7 +1826,7 @@ flowchart TD
 1. **First-time visitor** hits `mannaos.com/` — Next.js middleware reads `Accept-Language`:
    - `vi*` → 302 redirect to `/vi/`
    - otherwise → 302 redirect to `/en/`
-2. **Search engine result click** sends the visitor directly to the canonical locale URL (e.g. `/vi/dich-vu/khai-thue-tieng-viet/texas/houston/`). **No redirect, no toggle, no delay.**
+2. **Search engine result click** sends the visitor directly to the canonical locale URL (e.g. `/vi/dich-vu/lam-giay-to-di-tru-tieng-viet/texas/houston/` or `/vi/mau-don/n-400-xin-quoc-tich/`). **No redirect, no toggle, no delay.**
 3. **Language switcher** (navbar) links to the equivalent page in the other locale (computed at render time from a `routeMap` keyed by a language-neutral page ID).
 4. **Explicit switch** stores preference in a `NEXT_LOCALE` cookie (1-year expiry); subsequent bare-root visits honor the cookie over `Accept-Language`.
 5. **Blog posts** use per-locale slugs from `blog_posts.slug_en` / `slug_vi`; the switcher finds the sibling slug by post ID.
@@ -1598,7 +1837,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     SEVisit["Visitor from search engine\n(e.g. Google VI result)"]
-        --> DirectURL["Lands directly on\n/vi/dich-vu/khai-thue-tieng-viet/texas/houston/"]
+        --> DirectURL["Lands directly on\n/vi/dich-vu/lam-giay-to-di-tru-tieng-viet/texas/houston/"]
 
     RootVisit["Visitor types mannaos.com"]
         --> Middleware{"Next.js middleware\nreads cookie +\nAccept-Language"}
@@ -1632,7 +1871,7 @@ flowchart TD
     LocaleCheck -->|No (bare root)| DetectLocale["Detect locale from:\n1. NEXT_LOCALE cookie\n2. Accept-Language header\n3. Default: 'en'"]
     DetectLocale --> Redirect302["302 redirect to\n/{locale}/..."]
 
-    PassThrough --> AppRouter["Next.js App Router\napp/[locale]/(public)/\nservices/\n  vietnamese-tax-preparation/\n    [state]/\n      [city]/page.tsx"]
+    PassThrough --> AppRouter["Next.js App Router\napp/[locale]/(public)/\nservices/\n  vietnamese-immigration-document-preparation/\n    [state]/\n      [city]/page.tsx\nforms/[formSlug]/page.tsx\nbundles/[bundleSlug]/page.tsx"]
 
     AppRouter --> Metadata["generateMetadata()\n• Locale-aware title + desc\n• canonical: self URL\n• hreflang: en, vi, x-default"]
 
@@ -1640,7 +1879,7 @@ flowchart TD
 
     AppRouter --> ContentLoad["Page content source:\n• Static (MDX per locale) for pillars/clusters/cities\n• DB (blog_posts) for blog detail"]
 
-    AppRouter --> JsonLDGen["JSON-LD generator\n• Organization / LocalBusiness / ProfessionalService\n• Service (per-page)\n• BreadcrumbList\n• FAQPage (locale-specific Q&A)\n• Person (for blog author)\n• Speakable\n• inLanguage + knowsLanguage"]
+    AppRouter --> JsonLDGen["JSON-LD generator\n• Organization / LocalBusiness / LegalService\n• Service + Offer (form & bundle pricing)\n• HowTo (form preparation)\n• BreadcrumbList\n• FAQPage (locale-specific Q&A)\n• Person (for blog author)\n• Speakable\n• inLanguage + knowsLanguage"]
 
     AppRouter --> Sitemap["app/sitemap.ts\nEmits every URL × every locale\nWith <xhtml:link hreflang> entries"]
 
@@ -1661,11 +1900,18 @@ DIRECTORY LAYOUT (Next.js App Router):
         privacy-policy/page.tsx
         terms-of-service/page.tsx
         services/
-          [serviceSlug]/
-            page.tsx             # national pillar
-            [state]/
-              page.tsx           # state cluster
-              [city]/page.tsx    # city support
+          vietnamese-immigration-document-preparation/  # immigration pillar (V1)
+            page.tsx             # pillar
+            texas/
+              page.tsx           # Texas state cluster
+              [city]/page.tsx    # Houston / DFW / Austin / San Antonio
+        forms/
+          [formSlug]/page.tsx    # 11 form cluster pages
+        bundles/
+          [bundleSlug]/page.tsx  # 5 bundle pages
+        non-attorney-disclosure/page.tsx
+        notario-fraud-awareness/page.tsx
+        need-an-immigration-attorney/page.tsx
         blog/
           page.tsx               # list
           [slug]/page.tsx        # detail (slug is locale-specific)
@@ -1680,21 +1926,34 @@ ROUTE MAP (for language switcher):
   config/routeMap.ts exports a typed map like:
     {
       home: { en: '/en', vi: '/vi' },
-      'services.tax': {
-        en: '/en/services/vietnamese-tax-preparation',
-        vi: '/vi/dich-vu/khai-thue-tieng-viet',
+      'services.immigration': {
+        en: '/en/services/vietnamese-immigration-document-preparation',
+        vi: '/vi/dich-vu/lam-giay-to-di-tru-tieng-viet',
       },
-      'services.tax.texas.houston': {
-        en: '/en/services/vietnamese-tax-preparation/texas/houston',
-        vi: '/vi/dich-vu/khai-thue-tieng-viet/texas/houston',
+      'services.immigration.texas.houston': {
+        en: '/en/services/vietnamese-immigration-document-preparation/texas/houston',
+        vi: '/vi/dich-vu/lam-giay-to-di-tru-tieng-viet/texas/houston',
+      },
+      'forms.i-90': {
+        en: '/en/forms/i-90-green-card-renewal',
+        vi: '/vi/mau-don/i-90-gia-han-the-xanh',
+      },
+      'forms.n-400': {
+        en: '/en/forms/n-400-citizenship',
+        vi: '/vi/mau-don/n-400-xin-quoc-tich',
+      },
+      'bundles.marriage-gc': {
+        en: '/en/bundles/marriage-green-card-package',
+        vi: '/vi/goi-dich-vu/ho-so-ket-hon-xin-the-xanh',
       },
       ...
     }
   Each page calls useRouteMap(pageId) to render the switcher.
 
 CONTENT AUTHORING:
-  Marketing pages (pillar/state/city) authored as MDX files in
-    content/en/services/... and content/vi/dich-vu/...
+  Marketing pages (pillar/Texas/city/form/bundle) authored as MDX files in
+    content/en/services/..., content/en/forms/..., content/en/bundles/...
+    content/vi/dich-vu/..., content/vi/mau-don/..., content/vi/goi-dich-vu/...
   Authored separately per locale — do NOT machine-translate.
   Native Vietnamese speaker writes or reviews every VI page.
 
@@ -1737,15 +1996,15 @@ BLOG DETAIL:
 
 ```mermaid
 flowchart TD
-    GoogleUser["User searches Google\n'khai thuế Houston'"]
+    GoogleUser["User searches Google\n'làm N-400 tiếng Việt Houston'"]
         --> GoogleSERP["Google SERP\nMannaOS.com with FAQ rich snippet\nLocal Business card (GBP)"]
 
-    GoogleSERP --> ClickThrough["User clicks → /services/tax\nPricing table, EFIN badge, FAQ"]
+    GoogleSERP --> ClickThrough["User clicks → /forms/n-400-citizenship\nPricing table ($550 + $760 USCIS),\nnon-attorney disclosure, FAQ"]
 
-    AIUser["User asks ChatGPT\n'Vietnamese tax prep in Houston?'"]
-        --> AICrawl["AI has indexed:\n/llms.txt entity description\nFAQ JSON-LD from service pages\nBlog articles with direct answers"]
+    AIUser["User asks ChatGPT\n'Vietnamese non-attorney USCIS\ndocument preparer Houston?'"]
+        --> AICrawl["AI has indexed:\n/llms.txt entity description\nFAQ JSON-LD from form/bundle pages\nBlog articles with direct answers"]
 
-    AICrawl --> AICitation["AI response cites:\n'Manna One Solution in Houston\noffers tax prep $150–$400,\nEFIN certified, bilingual'\nLink: MannaOS.com"]
+    AICrawl --> AICitation["AI response cites:\n'Manna One Solution in Houston\nis a non-attorney document preparer.\nN-400 prep: $550 service + $760 USCIS.\nTexas residents only.'\nLink: MannaOS.com"]
 
     AICitation --> AIClickThrough["User clicks through\n→ MannaOS.com service page"]
 
@@ -1797,22 +2056,33 @@ to `Organization` and `LocalBusiness`.
 |---|---|
 | Site-wide (root layout) | `Organization` |
 | Home | `Organization`, `WebSite`, `BreadcrumbList` (trivial) |
-| National service pillar | `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
-| State cluster pillar | `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
-| City support page (Houston) | `LocalBusiness` + `ProfessionalService`, `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
-| City support page (non-Houston) | `ProfessionalService` (no `address`, uses `areaServed`), `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Immigration pillar page | `LegalService`, `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Texas state cluster page | `LegalService`, `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Houston city support page | `LocalBusiness` + `LegalService`, `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Texas non-Houston city page (DFW / Austin / San Antonio) | `LegalService` (no `address`, uses `areaServed`: Texas), `Service`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Form cluster page (e.g. I-90) | `LegalService`, `Service` (with `Offer` for pricing), `HowTo` (preparation steps), `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Bundle page (e.g. Marriage GC Package) | `LegalService`, `Service` (with `Offer` total + itemized `OfferCatalog`), `HowTo`, `FAQPage`, `BreadcrumbList`, `Speakable` |
+| Non-attorney disclosure page | `LegalService`, `BreadcrumbList` |
+| Notario fraud awareness page | `Article`, `BreadcrumbList`, `Speakable` |
+| Referral-out ("Need an Attorney") page | `Article`, `BreadcrumbList`, `ItemList` (of referral partners) |
 | About | `Person` (owner) + `AboutPage` |
 | Contact | `ContactPage` |
 | Blog list | `Blog`, `BreadcrumbList` |
 | Blog post | `Article` (or `BlogPosting`), `Person` (author), `FAQPage` (if post has FAQ), `BreadcrumbList`, `Speakable` |
 | Privacy / Terms | Minimal — `BreadcrumbList` only |
 
-##### L4.2 LocalBusiness Schema Template (Houston HQ)
+**Why `LegalService` instead of `ProfessionalService`:** Schema.org `LegalService` is the closest
+type for USCIS immigration document preparation. It does NOT imply the provider is a law firm —
+use it with an explicit `description` that states "non-attorney document preparer" and pair it
+with a `disambiguatingDescription` clarifying scope. The type tag improves GEO relevance
+matching for immigration queries without misrepresenting status.
+
+##### L4.2 LocalBusiness + LegalService Schema Template (Houston HQ)
 
 ```json
 {
   "@context": "https://schema.org",
-  "@type": ["LocalBusiness", "ProfessionalService"],
+  "@type": ["LocalBusiness", "LegalService"],
   "name": "Manna One Solution",
   "alternateName": "MannaOS",
   "url": "https://mannaos.com/en/",
@@ -1820,8 +2090,9 @@ to `Organization` and `LocalBusiness`.
   "image": "https://mannaos.com/og-houston.jpg",
   "telephone": "+1-346-852-4454",
   "email": "Chris@mannaos.com",
-  "priceRange": "$150–$400",
-  "description": "Bilingual (Vietnamese / English) tax preparation, life insurance, USCIS immigration document services, and AI automation consulting. EFIN-certified. Serving Houston's Vietnamese community in person and Vietnamese families across the United States remotely.",
+  "priceRange": "$50–$3,200",
+  "description": "Vietnamese-language USCIS immigration document preparation for Texas residents. Non-attorney document preparer serving Houston's Vietnamese community and Vietnamese families across Texas. Transparent pricing: Service Fee + USCIS Filing Fee. Texas Notary Public.",
+  "disambiguatingDescription": "Manna One Solution is a non-attorney document preparation service. We help clients complete USCIS forms. We do NOT provide legal advice, file Form G-28, or represent clients before USCIS. For legal representation, clients are referred to licensed immigration attorneys or accredited nonprofit legal aid providers.",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Bellaire Blvd",
@@ -1843,16 +2114,7 @@ to `Organization` and `LocalBusiness`.
       "dayOfWeek": "Saturday",
       "opens": "10:00", "closes": "14:00" }
   ],
-  "areaServed": [
-    { "@type": "State", "name": "Texas" },
-    { "@type": "State", "name": "California" },
-    { "@type": "State", "name": "Washington" },
-    { "@type": "State", "name": "Virginia" },
-    { "@type": "State", "name": "Florida" },
-    { "@type": "State", "name": "Louisiana" },
-    { "@type": "State", "name": "Georgia" },
-    { "@type": "State", "name": "Massachusetts" }
-  ],
+  "areaServed": { "@type": "State", "name": "Texas" },
   "knowsLanguage": ["vi", "en"],
   "inLanguage": "en",
   "sameAs": [
@@ -1863,52 +2125,39 @@ to `Organization` and `LocalBusiness`.
   "hasCredential": [
     {
       "@type": "EducationalOccupationalCredential",
-      "name": "IRS Electronic Filing Identification Number (EFIN)",
-      "identifier": "857993",
-      "credentialCategory": "Professional License",
-      "recognizedBy": { "@type": "GovernmentOrganization", "name": "Internal Revenue Service" }
-    },
-    {
-      "@type": "EducationalOccupationalCredential",
-      "name": "Texas Life Insurance License",
-      "identifier": "3142469",
-      "credentialCategory": "Professional License",
-      "recognizedBy": { "@type": "GovernmentOrganization", "name": "Texas Department of Insurance" }
-    },
-    {
-      "@type": "EducationalOccupationalCredential",
-      "name": "Texas Property & Casualty Insurance License",
-      "identifier": "3118525",
-      "credentialCategory": "Professional License",
-      "recognizedBy": { "@type": "GovernmentOrganization", "name": "Texas Department of Insurance" }
-    },
-    {
-      "@type": "EducationalOccupationalCredential",
-      "name": "National Producer Number (NPN)",
-      "identifier": "21024561",
-      "credentialCategory": "Professional License",
-      "recognizedBy": { "@type": "Organization", "name": "National Association of Insurance Commissioners" }
+      "name": "Texas Notary Public",
+      "credentialCategory": "Commission",
+      "recognizedBy": { "@type": "GovernmentOrganization", "name": "Texas Secretary of State" }
     }
   ]
 }
 ```
 
-For VI pages, duplicate with `"inLanguage": "vi"` and Vietnamese `description`.
+For VI pages, duplicate with `"inLanguage": "vi"` and a Vietnamese `description` + `disambiguatingDescription`.
 
-##### L4.3 ProfessionalService Schema — Out-of-State Service Page Template
+**Note on other credentials (EFIN, Texas Life 3142469, Texas P&C 3118525, NPN):**
+These are held by the owner but are NOT displayed in the V1 LocalBusiness schema because
+V1 does not offer tax or insurance services. Listing them in the schema would create
+confused service-type signals for Google. They belong on the `/about/` page's `Person`
+schema as owner credentials, not on the business entity. Add them back to LocalBusiness
+`hasCredential` in Phase 1.5+ when tax and insurance services launch.
 
-Non-Houston city/state pages drop `address` and `geo`, use `areaServed` instead:
+##### L4.3 LegalService Schema — Texas Non-Houston City Page Template
+
+Texas non-Houston city pages (DFW, Austin, San Antonio) drop `address` and `geo`
+and use `areaServed: Texas` to signal remote delivery to Texas residents statewide:
 
 ```json
 {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "name": "Manna One Solution — Vietnamese Tax Preparation (California)",
-  "url": "https://mannaos.com/en/services/vietnamese-tax-preparation/california/",
-  "description": "Remote Vietnamese-language tax preparation for California residents. EFIN-certified. Serving the Vietnamese community in Orange County, San Jose, Sacramento, and statewide.",
+  "@type": "LegalService",
+  "name": "Manna One Solution — Vietnamese Immigration Document Preparation (Dallas-Fort Worth)",
+  "url": "https://mannaos.com/en/services/vietnamese-immigration-document-preparation/texas/dallas-fort-worth/",
+  "description": "Remote Vietnamese-language USCIS document preparation for Texas residents in the Dallas-Fort Worth metroplex. Non-attorney document preparer. Service Fee + USCIS Fee pricing. Serving Vietnamese families in Arlington, Garland, Plano, Irving, and the broader DFW area.",
+  "disambiguatingDescription": "Non-attorney document preparer. Does not provide legal advice or file Form G-28.",
   "telephone": "+1-346-852-4454",
-  "priceRange": "$150–$400",
-  "areaServed": { "@type": "State", "name": "California" },
+  "priceRange": "$50–$3,200",
+  "areaServed": { "@type": "State", "name": "Texas" },
   "knowsLanguage": ["vi", "en"],
   "inLanguage": "en",
   "provider": {
@@ -1919,7 +2168,52 @@ Non-Houston city/state pages drop `address` and `geo`, use `areaServed` instead:
 }
 ```
 
-##### L4.4 FAQPage Schema — Template for Every Pillar / State / City Page
+##### L4.3b Service + Offer Schema — Form Cluster Page Template (e.g. I-90)
+
+Every form cluster page includes a `Service` with one or more `Offer` children
+representing the Service Fee + USCIS Fee components. This is what AI engines
+extract for pricing citations.
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "I-90 Green Card Renewal Document Preparation",
+  "description": "Non-attorney document preparation service for USCIS Form I-90 (Application to Replace Permanent Resident Card). For Vietnamese-speaking Texas residents.",
+  "serviceType": "USCIS Form I-90 document preparation",
+  "provider": {
+    "@type": "LegalService",
+    "name": "Manna One Solution",
+    "url": "https://mannaos.com/"
+  },
+  "areaServed": { "@type": "State", "name": "Texas" },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "I-90 Preparation — Paper Filing",
+      "description": "Service Fee $250 + USCIS Filing Fee $465 = $715 total. USCIS filing fee verified as of [LAST_VERIFIED_DATE] at https://www.uscis.gov/forms/filing-fees.",
+      "price": "715.00",
+      "priceCurrency": "USD",
+      "priceSpecification": {
+        "@type": "CompoundPriceSpecification",
+        "priceComponent": [
+          { "@type": "UnitPriceSpecification", "name": "MannaOS Service Fee", "price": "250.00", "priceCurrency": "USD" },
+          { "@type": "UnitPriceSpecification", "name": "USCIS Filing Fee", "price": "465.00", "priceCurrency": "USD" }
+        ]
+      }
+    },
+    {
+      "@type": "Offer",
+      "name": "I-90 Preparation — Online Filing",
+      "description": "Service Fee $250 + USCIS Filing Fee $415 = $665 total.",
+      "price": "665.00",
+      "priceCurrency": "USD"
+    }
+  ]
+}
+```
+
+##### L4.4 FAQPage Schema — Template for Every Pillar / City / Form / Bundle Page
 
 The visible HTML FAQ and the JSON-LD must match exactly. 5–8 entries per page.
 Each answer is 40–80 words, answer-first, with at least one specific fact.
@@ -1932,10 +2226,18 @@ Each answer is 40–80 words, answer-first, with at least one specific fact.
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Dịch vụ khai thuế tiếng Việt ở California có giá bao nhiêu?",
+      "name": "Gia hạn thẻ xanh (I-90) ở Houston giá bao nhiêu?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dịch vụ khai thuế của Manna One Solution cho người Việt ở California có giá từ $150 đến $400 tùy độ phức tạp của hồ sơ. Tờ khai W-2 cơ bản bắt đầu từ $150. Tờ khai có thu nhập tự do, LLC, hoặc nhiều nguồn thu nhập thường từ $250 đến $400. Phí tư vấn ban đầu miễn phí."
+        "text": "Manna One Solution chuẩn bị hồ sơ I-90 gia hạn thẻ xanh với mức phí dịch vụ $250 cộng phí nộp USCIS $465 cho nộp giấy hoặc $415 cho nộp online — tổng $715 (giấy) hoặc $665 (online). Phí USCIS trả trực tiếp cho USCIS. Chúng tôi là dịch vụ chuẩn bị hồ sơ, không phải luật sư. Phí tư vấn ban đầu miễn phí cho cư dân Texas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Manna One Solution có phải là luật sư không?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Không. Manna One Solution là dịch vụ chuẩn bị hồ sơ USCIS bằng tiếng Việt cho cư dân Texas, không phải văn phòng luật sư. Chúng tôi không tư vấn pháp lý, không nộp G-28, và không đại diện khách hàng tại USCIS. Với các trường hợp phức tạp (RFE, bị từ chối, hoặc vi phạm di trú), chúng tôi giới thiệu khách hàng đến luật sư di trú có giấy phép hoặc tổ chức pháp lý phi lợi nhuận."
       }
     }
   ]
@@ -2014,135 +2316,233 @@ Disallow: /api
 Sitemap: https://mannaos.com/sitemap.xml
 ```
 
-##### L4.7 `/llms.txt` (Full File Template)
+##### L4.7 `/llms.txt` (Full File Template — V1 Immigration Scope)
 
 ```
 # Manna One Solution
 
-> Bilingual (Vietnamese / English) professional services based in Houston, TX, serving
-> Vietnamese-American families across the United States. Tax preparation, life insurance,
-> USCIS immigration document services, and AI automation consulting for small business.
-> EFIN-certified. Licensed insurance agent. PTIN-registered.
+> Vietnamese-language USCIS immigration document preparation for Texas residents.
+> Headquartered in Houston, TX. Non-attorney document preparer — not a law firm.
+> Texas Notary Public (pending Phase 0 commission). Transparent pricing (service fee
+> + USCIS filing fee). Serving Vietnamese-American families across Texas with
+> document preparation for green card, citizenship, family petition, travel document,
+> and fee waiver forms.
+
+## Important Scope Disclosure
+Manna One Solution is a **non-attorney document preparer**. We help clients complete,
+organize, and prepare USCIS forms. We do NOT provide legal advice, do NOT file Form
+G-28, do NOT represent clients before USCIS, and do NOT handle Requests for Evidence,
+Notices of Intent to Deny, denials, inadmissibility determinations, or removal
+proceedings. For any of those situations we refer clients to a licensed immigration
+attorney or an accredited nonprofit legal aid provider.
 
 ## Contact
 - **Name**: Manna One Solution
-- **Headquarters**: Bellaire Blvd, Houston, TX 77036
+- **Headquarters**: Bellaire Blvd, Houston, TX 77036 (street number TBD)
 - **Phone**: +1-346-852-4454
 - **Email**: Chris@mannaos.com
 - **Hours**: Mon–Fri 9:00–18:00 CT, Sat 10:00–14:00 CT
-- **Languages**: Vietnamese, English
-- **Delivery**: In-person (Houston HQ) + remote (video, phone, secure portal) nationwide
+- **Languages**: Vietnamese (native), English
+- **Service Area**: Texas residents only
+- **Delivery**: In-person (Houston HQ) + remote (video, phone, secure portal) for Texas residents
 
 ## Credentials
-- IRS EFIN (Electronic Filing Identification Number): 857993
-- Texas Life Insurance License: 3142469 (Texas Department of Insurance)
-- Texas Property & Casualty Insurance License: 3118525 (Texas Department of Insurance)
-- National Producer Number (NPN): 21024561
-- PTIN-registered tax preparer
+- Texas Notary Public (pending — Phase 0 commission with Texas Secretary of State)
+- Non-attorney document preparer (Texas has no state-level immigration consultant registration requirement)
+- IRS EFIN 857993, Texas Life Insurance License 3142469, Texas P&C Insurance License 3118525, NPN 21024561, PTIN-registered (held for Phase 1.5+ services — not part of V1 immigration scope)
 
-## Services and Pricing
-- **Vietnamese Tax Preparation**: $150–$400 depending on complexity
-  - https://mannaos.com/en/services/vietnamese-tax-preparation/
-  - https://mannaos.com/vi/dich-vu/khai-thue-tieng-viet/
-- **Vietnamese Life Insurance** (term, whole, IUL): free consultation; Texas residents only (Texas Life License 3142469)
-  - https://mannaos.com/en/services/vietnamese-life-insurance/
-  - https://mannaos.com/vi/dich-vu/bao-hiem-nhan-tho-tieng-viet/
-- **Vietnamese Property & Casualty Insurance** (auto, home, commercial): free quote; Texas residents only (Texas P&C License 3118525)
-  - https://mannaos.com/en/services/vietnamese-property-casualty-insurance/
-  - https://mannaos.com/vi/dich-vu/bao-hiem-tai-san-tieng-viet/
-- **Vietnamese USCIS Immigration Document Preparation** (N-400, I-130, I-485, I-765): starting at $250 per form
-  - Document preparation only — not legal advice
-  - https://mannaos.com/en/services/vietnamese-immigration-services/
-  - https://mannaos.com/vi/dich-vu/dich-vu-di-tru-tieng-viet/
-- **AI Automation Consulting for Small Business**: custom quote
-  - https://mannaos.com/en/services/vietnamese-ai-automation-consulting/
-  - https://mannaos.com/vi/dich-vu/tu-van-tu-dong-hoa-ai/
+## V1 Services and Pricing (Texas residents only)
+
+All prices below are **Service Fee + USCIS Filing Fee = Total**. USCIS filing fees
+are set by USCIS and paid directly to USCIS. Service fees are what MannaOS charges
+for document preparation. Fees verified against https://www.uscis.gov/forms/filing-fees
+as of [LAST_VERIFIED_DATE].
+
+### Single-Form Services
+- **I-90 Green Card Renewal / Replacement** — paper: $250 + $465 = **$715 total** · online: $250 + $415 = **$665 total**
+  - https://mannaos.com/en/forms/i-90-green-card-renewal/
+  - https://mannaos.com/vi/mau-don/i-90-gia-han-the-xanh/
+- **I-130 Petition for Alien Relative (standalone)** — $425 + $675 = **$1,100 total**
+  - https://mannaos.com/en/forms/i-130-family-petition/
+  - https://mannaos.com/vi/mau-don/i-130-bao-lanh-gia-dinh/
+- **I-485 Adjustment of Status (standalone)** — $650 + $1,440 = **$2,090 total**
+  - https://mannaos.com/en/forms/i-485-adjustment-of-status/
+  - https://mannaos.com/vi/mau-don/i-485-dieu-chinh-tinh-trang/
+- **I-751 Remove Conditions on Green Card** — $550 + $750 = **$1,300 total**
+  - https://mannaos.com/en/forms/i-751-remove-conditions/
+  - https://mannaos.com/vi/mau-don/i-751-bo-dieu-kien-the-xanh/
+- **I-765 Employment Authorization (standalone)** — paper: $250 + $520 = **$770 total** · online: $250 + $470 = **$720 total**
+  - https://mannaos.com/en/forms/i-765-work-permit/
+  - https://mannaos.com/vi/mau-don/i-765-giay-phep-lam-viec/
+- **I-131 Advance Parole / Travel Document** — $250 + $630 = **$880 total**
+  - https://mannaos.com/en/forms/i-131-travel-document/
+  - https://mannaos.com/vi/mau-don/i-131-giay-di-lai/
+- **N-400 Application for Naturalization** — paper: $550 + $760 = **$1,310 total** · online: $550 + $710 = **$1,260 total**
+  - https://mannaos.com/en/forms/n-400-citizenship/
+  - https://mannaos.com/vi/mau-don/n-400-xin-quoc-tich/
+- **N-600 Certificate of Citizenship** — $400 + $1,385 = **$1,785 total**
+  - https://mannaos.com/en/forms/n-600-certificate-of-citizenship/
+  - https://mannaos.com/vi/mau-don/n-600-giay-chung-nhan-quoc-tich/
+- **I-864 Affidavit of Support (standalone)** — $200 + $0 = **$200 total**
+- **I-912 Request for Fee Waiver** — $150 + $0 = **$150 total**
+- **AR-11 Change of Address** — $50 + $0 = **$50 total**
+- **FOIA request assistance** — $100 + $0 = **$100 total**
+- **Certified Vietnamese ↔ English translation** — $25 per page
+
+### Bundles (common multi-form packages)
+- **Marriage Green Card Package** ⭐ — I-130 + I-485 + I-765 + I-131 + I-864
+  - $1,085 service + $2,115 USCIS = **$3,200 total**
+  - https://mannaos.com/en/bundles/marriage-green-card-package/
+  - https://mannaos.com/vi/goi-dich-vu/ho-so-ket-hon-xin-the-xanh/
+- **Family Petition Consular** — I-130 only (spouse/parent/child abroad)
+  - $425 service + $675 USCIS = **$1,100 total**
+- **Citizenship Fast-Track** — N-400 + interview prep
+  - paper: $590 service + $760 USCIS = **$1,350 total** · online: $590 + $710 = **$1,300 total**
+- **Green Card Renewal + Travel Doc** — I-90 + I-131
+  - $305 service + $1,095 USCIS = **$1,400 total**
+- **Remove Conditions + EAD** — I-751 + I-765
+  - $580 service + $1,220 USCIS = **$1,800 total**
+
+### What We Do NOT Do
+- Legal advice or case-strategy recommendations
+- Form G-28 filings or representation before USCIS
+- USCIS interview representation
+- RFE / NOID / denial responses
+- Inadmissibility determinations or waivers
+- Removal (deportation) proceedings or immigration court work
+- Asylum (referred out to qualified nonprofits)
+- Any service for clients residing outside Texas
+- Tax preparation, insurance, or other financial services (planned Phase 1.5+ — not V1)
 
 ## Service Area
-- **Full Local Pack + in-person**: Houston, TX
-- **Remote delivery (content + backlinks)**: Texas, California, Washington, Virginia, Florida, Louisiana, Georgia, Massachusetts, and other U.S. states with Vietnamese-American population
-- **Insurance licensing**: Texas only. Life License 3142469 + P&C License 3118525 + NPN 21024561. Non-resident licensing for other states is a future consideration — see insurance service page and §10 Open Question #10
+- **In-person**: Houston HQ (Bellaire Blvd, Houston, TX 77036)
+- **Remote (video + secure portal)**: Texas residents statewide — Dallas-Fort Worth, Austin, San Antonio, and all other Texas cities
+- **NOT available outside Texas.** Non-Texas residents are referred to CLINIC network affiliates, KIND (for unaccompanied minors), Catholic Charities, and AILA pro-bono referrals in their state.
 
 ## Key FAQs
-- **Can Vietnamese-speaking clients outside Houston use Manna One Solution for tax preparation?**
-  Yes. Tax preparation is delivered remotely via secure portal, video call, and Zalo for Vietnamese-speaking clients in any U.S. state. EFIN certification is federal and valid nationwide.
-- **Is this a law firm for immigration?**
-  No. Manna One Solution is a document preparation service for USCIS applications. We help clients complete, organize, and file forms (N-400, I-130, I-485, I-765). We do not provide legal representation. For complex or contested cases, clients should consult a licensed immigration attorney.
+- **Are you attorneys?**
+  No. Manna One Solution is a non-attorney document preparer. We help Vietnamese-speaking Texas residents complete USCIS forms. We do not provide legal advice, file G-28, or represent clients before USCIS. If you need legal advice or representation, we will refer you to a licensed immigration attorney or an accredited nonprofit.
+- **Why is your pricing cheaper than an attorney?**
+  Because we are not attorneys and we do not provide legal services. We prepare documents — similar to how tax preparers help with tax forms without being CPAs. AILA attorneys typically charge $3,500–$6,000 for a marriage green card package; our service fee for the same bundle is $1,085, plus the same USCIS filing fees ($2,115) that go directly to the government.
+- **Can I use Manna One Solution if I live in California or another state?**
+  No. V1 is Texas residents only. Several states (CA, NV, FL, IL, WA, and others) require immigration consultants to register and post a bond in that state. We are not registered outside Texas. For non-Texas residents we recommend CLINIC, KIND, Catholic Charities, or AILA pro-bono referrals.
 - **What languages do you speak?**
   Vietnamese (native) and English.
 - **Is the initial consultation free?**
-  Yes. All four services include a free initial consultation — remote (video/phone) or in person at the Houston HQ.
+  Yes. Free initial consultation for Texas residents — in-person at our Houston HQ or remote via video.
+- **How do I know you're not a notario scam?**
+  Every page on our website is transparent about what we do and don't do. We publish all pricing (service fee + exact USCIS fee). We tell you upfront we are not attorneys. We refer complex cases out instead of taking your money. See https://mannaos.com/en/notario-fraud-awareness/ for how to verify any immigration service provider — including us.
+
+## Planned Phase 1.5+ Services (NOT available in V1)
+- Vietnamese tax preparation (EFIN 857993 — Phase 1.5, decision gate Sep 30 2026)
+- Vietnamese life insurance, Texas residents only (Texas License 3142469 — Phase 2)
+- Vietnamese property & casualty insurance, Texas residents only (Texas License 3118525 — Phase 2)
+- AI automation consulting for small business (Phase 2)
 ```
 
-##### L4.8 GEO Content Rules (Apply to Every Marketing Page)
+##### L4.8 GEO Content Rules (Apply to Every V1 Marketing Page)
 
 ```
-EVERY PILLAR / STATE / CITY PAGE MUST INCLUDE:
+EVERY PILLAR / TEXAS / CITY / FORM / BUNDLE PAGE MUST INCLUDE:
 
-☐ Primary keyword in H1 (locale-specific)
+☐ Primary keyword in H1 (locale-specific, immigration-scoped)
 ☐ Answer the main question in the first 2 sentences under H1 (no preamble)
-☐ Published price range as plain text (not behind a form)
-☐ Specific credentials inline: "IRS EFIN 857993", "Texas Life Insurance License 3142469", "Texas P&C Insurance License 3118525", "NPN 21024561"
+☐ Non-attorney disclosure within the first 200 words ("non-attorney document preparer,
+  not a law firm, not legal advice")
+☐ Published pricing as plain text — "Service Fee $X + USCIS Fee $Y = $Z total"
+  (not behind a form)
+☐ USCIS fee "verified as of [date]" with outbound link to uscis.gov/forms/filing-fees
+☐ Texas Notary Public credential in footer (once commission granted)
 ☐ NAP block in footer (identical wording every page in the same locale)
-☐ ≥1 outbound link to a .gov source (irs.gov, uscis.gov, state tax/insurance dept)
-☐ ≥3 internal links to related pillar / cluster / city / blog pages
+☐ ≥1 outbound link to a .gov source — uscis.gov preferred for form/bundle pages
+☐ ≥3 internal links to related pillar / Texas / city / form / bundle / blog pages
 ☐ Visible FAQ section (H2: "Frequently Asked Questions" / "Câu hỏi thường gặp")
 ☐ 5–8 FAQ Q&A pairs, each answer 40–80 words, with at least one specific fact per answer
 ☐ FAQPage JSON-LD matching the visible FAQ exactly
-☐ For state/city pages: mention the state/city name + local Vietnamese community hubs
-  (Westminster, Garden Grove, Eden Center, Little Saigon, Versailles, etc.)
-☐ For licensed services (insurance): explicit list of licensed states if less than nationwide
-☐ Disclaimer text where legally appropriate:
-  • Tax pages: "This content is for informational purposes only and does not constitute tax advice."
-  • Insurance pages: "Licensed insurance agent in [list of states]. Not FDIC insured."
-  • Immigration pages: "Manna One Solution is a document preparation service, not a law firm,
-    and does not provide legal advice."
+☐ "Texas residents only" service-scope statement (especially on form and bundle pages)
+☐ Referral-out link for complex cases: "Need legal advice? Here are Houston-area pro-bono
+  options: [link to /need-an-immigration-attorney/]"
+☐ Scope block listing what MannaOS does NOT do (no G-28, no interview rep, no RFE, etc.)
+
+DISCLAIMER TEXT (mandatory on every pillar/form/bundle page):
+  "Manna One Solution is a non-attorney document preparer. We help Vietnamese-speaking
+   Texas residents complete USCIS forms. We are not a law firm and do not provide legal
+   advice. For complex cases — Requests for Evidence, denials, inadmissibility, or
+   removal proceedings — we refer clients to licensed immigration attorneys."
 
 KEY TERM DEFINITIONS:
-  Every pillar page defines key terms in the opening 150 words:
-  - Tax pillar: "Form 1040", "EFIN", "W-2", "1099", "Schedule C"
-  - Insurance pillar: "term life", "whole life", "IUL", "beneficiary"
-  - Immigration pillar: "I-130", "N-400", "I-485", "AOS", "USCIS receipt number"
-  - AI pillar: "workflow automation", "LLM", "RAG"
+  Every pillar / form / bundle page defines key terms in the opening 150 words where
+  applicable: "USCIS", "I-130", "I-485", "I-765", "I-131", "I-751", "N-400", "AOS",
+  "priority date", "receipt number", "NOA", "adjustment of status", "consular processing",
+  "biometrics", "combo card", "advance parole", "conditional green card".
   These definitions become AI extraction bait.
 
 FACT DENSITY RULE:
   Per 200 words of content, include at least 1 specific number, date, or named entity.
   Vague sentences ("we offer competitive pricing") are never cited. Specific sentences
-  ("our federal return preparation starts at $150 and averages 45 minutes per client") are.
+  ("I-90 paper filing is $250 service fee + $465 USCIS fee = $715 total as of April 2026")
+  are cited.
 ```
 
-##### L4.9 Multi-State Location Page Anti-Thin-Content Rules
+##### L4.9 Anti-Thin-Content Rules for Texas City + Form + Bundle Pages
 
 Per `local-seo.md`: *"Each page must have genuinely unique local content. Copy-paste
-pages — Google detects thin location pages and ignores them."*
+pages — Google detects thin location pages and ignores them."* V1 has only 4 Texas
+city pages + 11 form pages + 5 bundle pages per locale — each one must earn its place.
 
 ```
-EVERY STATE PILLAR PAGE MUST INCLUDE:
-  ☐ State-specific tax or regulation context (e.g. CA Franchise Tax Board, WA B&O tax,
-    TX no state income tax, VA NoVA commute patterns affecting federal withholding)
-  ☐ Named Vietnamese community hubs in the state
-    (CA: Westminster / Garden Grove / San Jose / Milpitas;
-     WA: Seattle / Tukwila / Renton;
-     VA: Eden Center / Fairfax / Falls Church;
-     TX: Bellaire / Alief / Midtown Houston, Garland, North Austin;
-     FL: Orlando / Fort Lauderdale;
-     LA: Versailles / New Orleans East;
-     GA: Chamblee / Clarkston;
-     MA: Dorchester / Fields Corner)
-  ☐ At least 3 state-specific FAQ entries (not recycled from the national pillar)
-  ☐ Unique H1 and meta description per state
-  ☐ Outbound link to that state's government tax / insurance / licensing page
-  ☐ Internal links up to the national pillar and down to ≥1 city page (if any exist for that state)
+TEXAS STATE CLUSTER PAGE MUST INCLUDE:
+  ☐ Texas immigration context: Houston as largest Vietnamese community in the South,
+    Dallas-Fort Worth Vietnamese community in Arlington + Garland, growing Austin
+    Vietnamese community, San Antonio's smaller but established VN community
+  ☐ Texas regulatory context: Texas has no state-level immigration consultant
+    registration requirement (unlike CA/NV/FL/IL/WA/MD/MN/NC/NY)
+  ☐ Texas Notary Public credential explained — why it matters for USCIS signatures
+  ☐ 3+ Texas-specific FAQ entries (e.g., "Do I need to travel to Houston to use
+    Manna One Solution from Dallas?")
+  ☐ Outbound link to uscis.gov and Texas Secretary of State notary page
+  ☐ Internal links up to the immigration pillar and down to all 4 Texas city pages
 
-EVERY CITY SUPPORT PAGE MUST INCLUDE:
+TEXAS CITY PAGES (Houston, DFW, Austin, San Antonio) MUST INCLUDE:
   ☐ Unique opening paragraph naming the city and Vietnamese neighborhood
-  ☐ City-specific driving directions (Houston only; non-Houston cities note remote delivery)
-  ☐ Local landmarks or community orgs (e.g. "near Hong Kong City Mall", "minutes from
-     Eden Center", "in the heart of Little Saigon")
-  ☐ At least 3 city-specific FAQ entries
-  ☐ Houston page only: embedded Google Map + in-person Calendly event type
-  ☐ Non-Houston pages: explicit remote delivery messaging in first 100 words
+    (Houston: Bellaire / Alief / Hong Kong City Mall;
+     DFW: Arlington / Garland Vietnamese community;
+     Austin: North Austin / Braker Lane Vietnamese corridor;
+     San Antonio: Southeast San Antonio Vietnamese community)
+  ☐ Houston page only: full street address, embedded Google Map, in-person Calendly
+    event type, driving directions from major landmarks
+  ☐ Non-Houston Texas cities: explicit remote delivery messaging in first 100 words
+    ("We serve [city] Vietnamese families remotely via secure video consultation")
+  ☐ 3+ city-specific FAQ entries (e.g., "Can I use Manna One Solution from Austin
+    without traveling to Houston?")
+  ☐ Unique H1 and meta description per city
+  ☐ Links up to Texas state cluster + down to at least 2 form cluster pages
+
+FORM CLUSTER PAGES (11 forms × 2 locales) MUST INCLUDE:
+  ☐ Form-specific H1 (e.g. "I-90 Green Card Renewal — Vietnamese Document Preparation
+    in Texas")
+  ☐ Pricing table (Service + USCIS = Total) with "verified as of [date]"
+  ☐ "Who qualifies for this form" plain-language eligibility summary
+  ☐ "Common mistakes" section unique to this form
+  ☐ "What you'll need" document checklist unique to this form
+  ☐ Non-attorney disclosure above the fold
+  ☐ 5+ form-specific FAQ entries
+  ☐ HowTo JSON-LD for the preparation process (5–10 steps)
+  ☐ Outbound link to that form's uscis.gov page
+  ☐ Link to at least one bundle page (if the form is a bundle component)
+
+BUNDLE PAGES (5 bundles × 2 locales) MUST INCLUDE:
+  ☐ Bundle-specific H1 (e.g. "Marriage Green Card Package — Vietnamese Document
+    Preparation in Texas")
+  ☐ Itemized pricing: each component form's Service Fee + USCIS Fee, plus total
+  ☐ Attorney comparison block citing AILA or comparable survey
+  ☐ Unique timeline / what-to-expect section
+  ☐ Complete "required documents" list for the bundle
+  ☐ Non-attorney disclosure above the fold
+  ☐ Scope block listing what's excluded from the bundle
+  ☐ 5+ bundle-specific FAQ entries
+  ☐ Referral-out note for complex cases
+  ☐ Links to each component form's cluster page
 ```
 
 ##### L4.10 Monthly AI Citation Audit Process
@@ -2241,46 +2641,106 @@ Six core tables + one audit log:
 
 ## 7. UI/UX Direction
 
+_Dark theme source of truth: `2026-04-06-manna-one-solution-website-design.md`. The 4-card services layout is preserved from that doc. This section supersedes any light-palette references in earlier design iterations._
+
 ### Design Language
 
-**Palette** (derived from logo):
+**Palette** (dark navy — Stripe/Linear aesthetic):
 ```
-Primary background:   #FFFFFF  (white — clean, professional)
-Secondary background: #F0F7F7  (light teal tint — alternate sections)
-Accent teal:          #2A9090  (logo teal — buttons, links, CTAs)
-Accent teal dark:     #1A6060  (hover/pressed states)
-Silver accent:        #8A9BA8  (borders, dividers, secondary badges)
-Charcoal:             #1A1A1A  (headings, icon fills)
-Text primary:         #1A1A1A
-Text secondary:       #4A6868  (body, captions)
-Border:               #D0E4E4  (card borders, inputs)
+Primary background:   #0A1628  (deep navy — full site background)
+Secondary background: #1E3A5F  (mid navy — cards, alternate sections)
+Accent gradient:      #4F8EF7 → #7B2FBE  (blue-to-purple — hero CTA buttons, highlights)
+Accent solid:         #4F8EF7  (blue — links, active states, icon fills)
+Gold accent:          #F5A623  (trust badges, credential number highlights)
+Text primary:         #FFFFFF
+Text secondary:       #E2E8F0  (muted white — body text, captions)
+Border (glass):       rgba(255, 255, 255, 0.08)  (glassmorphism card borders)
+Border hover:         rgba(255, 255, 255, 0.18)  (card hover state)
 ```
+
+**Hero** (Home + each service overview page):
+```
+Hero background:      linear-gradient(135deg, #060E1A 0%, #0A1628 50%, #1E3A5F 100%)
+Hero text:            #FFFFFF
+Hero CTA primary:     gradient button (#4F8EF7 → #7B2FBE) with white text + glow on hover
+Hero CTA secondary:   transparent, 1px white border, white text
+```
+Full-width deep dark gradient sets a tech-forward, trustworthy tone. Transparent logo PNG works on dark backgrounds without modification.
 
 **Typography:**
-- Inter (Google Fonts) — full Vietnamese diacritic support
-- Headings: Bold, charcoal #1A1A1A
-- Body: Regular, #4A6868
-- Labels/badges: Semi-bold, silver #8A9BA8
+- **Font:** Inter — Google Fonts, full Vietnamese diacritic support
+- **Headings:** Bold, white `#FFFFFF` — large, clean
+- **Body:** Regular weight, `#E2E8F0` — readable on dark background
+- **Credential badges:** Semi-bold, gold `#F5A623` — EFIN, license numbers, trust signals
 
-**Brand personality:** Trustworthy, Professional, Bilingual, Modern, Accessible
+**Brand personality:** Trustworthy · Professional · Bilingual · Modern · Tech-forward
+
+### Visual Style
+
+- **Dark navy full-site** — `#0A1628` primary background across all pages (Stripe/Linear aesthetic)
+- **Glassmorphism cards** — `rgba(30, 58, 95, 0.6)` background with `backdrop-filter: blur(12px)` and 1px rgba-white border; used for service cards, trust badges block, "How It Works" steps
+- **Gradient CTA buttons** — blue-to-purple `#4F8EF7 → #7B2FBE`; `scale(1.02)` + box-shadow glow on hover; 200ms transition
+- **Gold for trust signals** — credential numbers (EFIN, Life license, P&C license, Notary) rendered in gold `#F5A623` — stands out against dark background
+- **Transparent logo** — `Logo-Picsart-BackgroundRemover.PNG` works on dark navy backgrounds without modification
+- **Sticky navbar** — dark `#0A1628` background; subtle bottom border; gradient logo glow on scroll
+- **Clean whitespace** — generous section padding; not cluttered despite dark background
+
+### 4 Service Cards — Component Spec (Home Landing + `/services` overview)
+
+Renders as the third section on the Home page immediately below the dark hero. This is the "One Stop, All Solutions" moment — the visitor sees all 4 services at once in the first scroll past the hero.
+
+**Grid layout:**
+- Mobile: `grid-cols-2` (2 × 2 grid)
+- Desktop: `grid-cols-4` (single row)
+
+**Per-card anatomy (glassmorphism):**
+```
+Background:      rgba(30, 58, 95, 0.6)                   (mid navy semi-transparent)
+Backdrop-filter: blur(12px)
+Border:          1px solid rgba(255, 255, 255, 0.08)
+Border-radius:   16px
+Box-shadow:      0 4px 24px rgba(79, 142, 247, 0.12)     (blue-tinted glow)
+Hover:           box-shadow → 0 8px 40px rgba(79,142,247,0.22)
+                 border → rgba(255,255,255,0.18)
+                 translateY(-2px)
+Padding:         28px (desktop) / 16px (mobile)
+
+Content (in order):
+  1. Icon          SVG, 48×48 — gradient fill (#4F8EF7 → #7B2FBE), unique per service
+  2. Service name  Bold, 18px, white #FFFFFF — bilingual
+  3. Description   Regular, 14px, #E2E8F0 — 1-line bilingual tagline
+  4. "Learn more →"  Semi-bold, blue #4F8EF7; underline + glow on hover
+```
+
+**Four cards (in order):**
+| Card | Icon theme | EN name | VI name | Links to |
+|---|---|---|---|---|
+| 1 | Tax / document | Tax & Business | Thuế & Kinh Doanh | `/en/services/tax/` |
+| 2 | Shield / chart | Insurance & Finance | Bảo Hiểm & Tài Chính | `/en/services/insurance/` |
+| 3 | Passport / globe | Immigration | Di Trú | `/en/services/immigration/` |
+| 4 | Robot / circuit | AI / Automation | Tự Động Hóa AI | `/en/services/ai/` |
 
 ### Key Interaction Patterns
 
 - **Mobile-first** responsive design — 70% of traffic expected on mobile
-- **Sticky navbar** with subtle shadow on scroll — white background, teal accents
-- **Language toggle pill** — always visible in navbar, teal #2A9090
-- **Floating contact buttons** — fixed bottom-right: phone + Facebook Messenger
-- **Cards with subtle drop shadows** — no glassmorphism (light background context)
-- **Loading states** — skeleton screens for portal/admin data loading
-- **Empty states** — friendly messages with CTAs (e.g., "Book a consultation" on empty dashboard)
-- **Form validation** — inline errors, teal focus rings on inputs
+- **Sticky navbar** — dark `#0A1628` background; subtle bottom border; language toggle pill always visible
+- **Language toggle pill** — shows the OTHER locale (VI when in English, EN when in Vietnamese)
+- **Floating contact buttons** — fixed bottom-right: phone · Facebook Messenger · Zalo; gradient backgrounds matching CTAs
+- **Glassmorphism cards** — hover glow + lift (`translateY(-2px)`); consistent across service cards, trust badges, How It Works steps
+- **Gradient buttons** — `scale(1.02)` + glow on hover; 200ms transition; primary action throughout the site
+- **Loading states** — skeleton screens for portal/admin data loading (dark variant)
+- **Empty states** — friendly messages with gradient CTA buttons on dark background
+- **Form validation** — inline errors, blue `#4F8EF7` focus rings on inputs
 
 ### Logo Usage
 
 | Context | File |
 |---------|------|
-| Navbar, Footer, Hero | `Logo-Picsart-BackgroundRemover.PNG` (transparent) |
-| OG/social share, Email | `Logo.PNG` (white background) |
+| Navbar (dark background) | `Logo-Picsart-BackgroundRemover.PNG` (transparent — white elements visible on dark navy) |
+| Footer | `Logo-Picsart-BackgroundRemover.PNG` (transparent) |
+| Hero section | `Logo-Picsart-BackgroundRemover.PNG` (transparent) |
+| OG / social share image | `Logo.PNG` (white background) |
+| Email templates | `Logo.PNG` (white background) |
 
 ---
 
@@ -2314,14 +2774,79 @@ Border:               #D0E4E4  (card borders, inputs)
 
 | Phase | Scope | Duration | Target |
 |-------|-------|----------|--------|
-| **Phase 0: Research + Regulatory (gate for Phase 1)** | (1) Owner obtains Texas Notary Public commission (for in-house form signatures). (2) Owner confirms no additional state registration needed (Texas = permissive). (3) Keyword research in VI + EN (40 + 40 immigration queries targeted to Texas). (4) Competitor audit (≥3 Vietnamese-language and ≥3 English-language document preparers in Houston / Texas — content, pricing, schema, backlinks). (5) Topical Map documented and approved. (6) USCIS filing fees verified at uscis.gov/forms/filing-fees. Business data already collected: address (Bellaire Blvd, Houston, TX 77036 — street number TBD), email Chris@mannaos.com, EFIN 857993, Texas Life 3142469, Texas P&C 3118525, NPN 21024561. | 1–2 weeks | April 2026 |
-| **Phase 1: Foundation, Public Site & Immigration Topical Map** | Next.js scaffold with `[locale]` routing; all V1 public pages (Home + Immigration pillar + Texas state + 4 Texas city + 11 form cluster + 5 bundle + About + Contact + Pricing + Non-Attorney Disclosure + Notario Fraud Awareness + Referral-Out + Privacy + Terms + Blog list) in EN + VI; all JSON-LD schemas (LocalBusiness, LegalService, Service, FAQPage, HowTo, Article, Offer, BreadcrumbList, Person, Organization); sitemap-en.xml + sitemap-vi.xml; robots.txt with AI crawler opt-in; `/llms.txt`; hreflang reciprocal; GA4 with custom events; Calendly embed; contact form with TX residency gate; floating contact buttons; Vercel deploy. **32 non-blog pages per locale.** | 3–4 weeks | April–May 2026 |
+| **Phase 0: Research + Regulatory (gate for Phase 1B only — Phase 1A can start in parallel)** | (1) Owner obtains Texas Notary Public commission (for in-house form signatures). (2) Owner confirms no additional state registration needed (Texas = permissive). (3) Keyword research in VI + EN (40 + 40 immigration queries targeted to Texas). (4) Competitor audit (≥3 Vietnamese-language and ≥3 English-language document preparers in Houston / Texas — content, pricing, schema, backlinks). (5) Topical Map documented and approved. (6) USCIS filing fees verified at uscis.gov/forms/filing-fees. Business data already collected: address (Bellaire Blvd, Houston, TX 77036 — street number TBD), email Chris@mannaos.com, EFIN 857993, Texas Life 3142469, Texas P&C 3118525, NPN 21024561. **Important:** Phase 0 does not block Phase 1A. The marketing landing page and ad infrastructure can ship before the keyword research and notary commission land. | 1–2 weeks | April 2026 |
+| **Phase 1A: Marketing Landing + Facebook Ad Infrastructure (ships first, unblocks demos + ads)** | Next.js scaffold with `[locale]` routing; design system + Tailwind; Home landing page (hero banner · 4 service cards · trust badges · How It Works · contact strip · footer) per 2026-04-09 design; 4 service overview pages (Tax · Insurance · Immigration · AI) with Phase A scope (brochure-style, Calendly CTA); About page; Contact page with Calendly embed + contact form (Resend + Supabase backup); Privacy Policy + Terms stubs; Meta Pixel + Conversions API + GA4 with de-dup event_ids; UTM capture on contact form; root-layout Organization + LocalBusiness JSON-LD; hreflang EN⇄VI; /llms.txt stub; sitemap.xml + robots.txt; floating contact buttons (phone · Messenger · Zalo); Vercel deploy; Home LCP <2.5s on 4G verified; Meta Test Events verified. **~12 pages per locale at launch.** | 1.5–2 weeks | April 2026 |
+| **Phase 1A Gate** | Phase 1A is shipped the moment the owner can: (1) point a Facebook ad at the Home URL and see Meta Pixel events in Events Manager, (2) hand out `mannaos.com` in an in-person consultation and have the prospect see a working bilingual site with 4 service cards, (3) receive a Calendly booking and a contact form lead end-to-end. No SEO rank, no AI citations, no portal, no admin needed for this gate. | — | April 2026 |
+| **Phase 1B: Immigration SEO/GEO Topical Map** | All Phase B public pages (Immigration pillar + Texas state + 4 Texas city + 11 form cluster + 5 bundle + Non-Attorney Disclosure + Notario Fraud Awareness + Referral-Out + Blog list) in EN + VI; full JSON-LD matrix (LegalService, Service, FAQPage, HowTo, Article, Offer, BreadcrumbList, Person, Speakable); per-locale sitemaps; AI crawler opt-in directives; expanded /llms.txt with immigration scope; Texas residency gate on immigration contact path; pricing tables with verified-as-of timestamps; notario fraud differentiation components. **32 non-blog pages per locale (Phase 1A + Phase 1B combined).** Built on top of the Phase 1A codebase — zero throwaway. | 2–3 weeks | April–May 2026 |
 | **Phase 2: Auth + Client Portal (case-tracking focus)** | Supabase Auth (with Resend); client signup (with TX residency + SMS consent); login; forgot-password; portal dashboard; case list view; case detail view (USCIS receipt number, current status, status history, uploaded documents); document upload/download | 1–2 weeks | May 2026 |
 | **Phase 3: Admin Panel + Content Engine** | Client management; case management (create case, assign form/bundle, update status, upload USCIS correspondence); blog editor (Tiptap) with post_type tier, per-locale slugs, SEO publish-blockers, word count validation; website content editor (for pricing, disclosures, fee timestamps); author bio system; review acquisition UI; admin notifications | 1–2 weeks | May 2026 |
-| **Phase 4: Polish, Launch & Directory Submission** | See detailed launch checklist below | 1–2 weeks | May–June 2026 |
+| **Phase 4: Polish, Launch & Directory Submission** | See detailed launch checklist below. Phase 4 applies the directory + review-acquisition polish on top of the already-live Phase 1A + 1B site. | 1–2 weeks | May–June 2026 |
 | **Phase 1.5: Content Expansion (within V1 scope)** | Grow blog to 40+ posts per locale; add more cluster pages for forms we discover demand for (e.g., I-589 asylum if within scope, DS-260 coordination, I-601 waivers referral); refine pricing based on first 30 cases; first quarterly AI citation audit; refresh Phase 0 keyword list based on actual GSC data | 4–6 weeks | June–July 2026 |
 | **Phase 1.75 (decision gate): Tax Pillar** | If V1 traction is positive AND owner wants to add tax before 2027 filing season: build out Tax pillar following the same 4-tier structure. Texas-only initially to stay consistent with V1; expand to other states after. **Decision gate on Sep 30, 2026.** | 4–6 weeks | Oct–Dec 2026 |
 | **Phase 2 (broader scope)**: Add Life + P&C Insurance pillars (Texas-only), AI Automation Consulting pillar (national), online payments, Spanish language (`/es/` tree), potentially non-resident immigration state expansion if owner has registered/bonded in new states. | TBD | Q1–Q2 2027 |
+
+### Phase 1A Launch Checklist — Marketing Landing + Facebook Ads
+
+Phase 1A ships **before** Phase 4. It is the minimum-viable public site that unblocks Facebook ads and in-person client demos. Phase 4 later layers the off-site directory + review work on top.
+
+**Content readiness (Phase 1A):**
+```
+☐ Home landing page: hero banner + 4 service cards + trust badges + How It Works + contact strip + footer — rendered in EN + VI
+☐ Hero headline + subhead copy finalized in both locales (native VI reviewer approved)
+☐ 4 service overview pages (/services/tax · /services/insurance · /services/immigration · /services/ai) — rendered in EN + VI, each with service list, pricing summary, trust credential, Calendly CTA
+☐ Immigration overview page carries non-attorney disclosure + Texas-residents-only scope statement above the fold
+☐ About page with founder bio + credentials (EFIN 857993, Texas Life 3142469, Texas P&C 3118525, NPN 21024561, Texas Notary — hedged if not yet granted)
+☐ Contact page with Calendly embed + contact form + Houston HQ map + phone + Messenger + Zalo
+☐ Privacy Policy + Terms of Service stubs in EN + VI
+☐ 404 page custom-designed per locale with nav + service cards
+```
+
+**Technical readiness (Phase 1A):**
+```
+☐ Home LCP <2.5s on 4G mobile (Lighthouse mobile Performance ≥90)
+☐ All Phase 1A pages render in EN + VI with no placeholder copy
+☐ hreflang reciprocal EN ⇄ VI ⇄ x-default on every Phase 1A page
+☐ sitemap.xml generated with Phase 1A URLs only (Phase 1B will extend)
+☐ robots.txt present with AI crawler Allow directives
+☐ /llms.txt stub describing Manna One Solution as a 4-service one-stop (Tax · Insurance · Immigration · AI), Houston HQ, phone, credentials
+☐ Organization + LocalBusiness JSON-LD in root layout, validated via Google Rich Results Test
+☐ Floating contact buttons (phone · Messenger · Zalo) visible on all Phase 1A pages
+☐ Vercel custom domain mannaos.com connected with HTTPS
+```
+
+**Ad infrastructure readiness (Phase 1A):**
+```
+☐ Meta Pixel installed in root layout, fires PageView on every page
+☐ Meta Conversions API wired via Next.js API route with de-dup event_ids
+☐ Meta Test Events verified for: PageView, Lead (contact form), Schedule (Calendly), Contact (phone/Messenger click)
+☐ GA4 installed with events: page_view, form_submit, calendly_click, calendly_booking_complete, phone_click_to_call, messenger_click, zalo_click, locale_switch, outbound_click
+☐ Consent banner for EU/CA visitors present (GDPR / CPRA compliance)
+☐ UTM parameter capture tested end-to-end: ad click → contact_submissions row contains utm_source, utm_campaign, fbclid
+☐ First Facebook ad campaign drafted (creative + copy in VI + EN, audience: Vietnamese language + Houston geo)
+```
+
+**Lead capture readiness (Phase 1A):**
+```
+☐ Contact form submits to Next.js API route → Resend email + Supabase contact_submissions row (dual delivery)
+☐ Test lead received in owner email within 30 seconds
+☐ Test lead appears in Supabase contact_submissions table
+☐ Calendly embed loads without redirect on mobile
+☐ Test booking completed end-to-end, confirmation received by prospect and owner
+☐ Phone click-to-call tested on iOS Safari + Android Chrome
+☐ Facebook Messenger deep link opens the MannaOS page
+☐ Zalo deep link opens the MannaOS account (or falls back gracefully if Zalo not installed)
+```
+
+**Phase 1A go-live gate (all must be true):**
+```
+☐ Owner can point a Facebook ad at https://mannaos.com/ and see Meta Events Manager Test Events firing
+☐ Owner can hand out "mannaos.com" in an in-person consultation and the prospect sees a working bilingual site with 4 service cards
+☐ A real Calendly booking from a real prospect has completed end-to-end
+☐ A real contact form submission has been received via Resend + visible in Supabase
+☐ No placeholder copy on Home or any service overview page
+```
+
+Phase 1B (the immigration topical map), Phase 2 (portal), Phase 3 (admin), and Phase 4 (directory submission + reviews) start **after** this gate is green — but work on them can be drafted in parallel.
 
 ### Phase 4 Launch Checklist
 
@@ -2490,7 +3015,11 @@ Most multi-state and multi-pillar questions from the prior revision are now reso
 
 | Question | Decision | Date |
 |----------|----------|------|
-| **V1 service scope** | Vietnamese-language USCIS immigration document preparation ONLY. Tax, Life Insurance, P&C Insurance, and AI Automation Consulting are deferred to Phase 1.5+ and Phase 2 (see §9 timeline). Supersedes the prior 5-pillar decision. | 2026-04-10 (V1 refocus) |
+| **V1 rollout order** | Split V1 into **Phase 1A (marketing landing + Facebook ad infrastructure)** and **Phase 1B (immigration SEO/GEO topical map)**. Phase 1A ships first so the owner has a URL for client demos and Facebook ads. Phase 1B preserves all immigration depth from the original 4/10 draft and starts the day Phase 1A ships. See §1 V1 Rollout Order and §9 Timeline. Reason for the change: the owner cannot run Facebook ads or hand out a URL at in-person consultations until a public landing page exists — the 4/10 draft's unified Phase 1 (3–4 weeks to first live page) blocks that for too long. | 2026-04-11 (Phase A/B split) |
+| **V1 marketing positioning** | Home landing page must showcase **all 4 Manna One Solution services** (Tax · Insurance · Immigration · AI) per the 2026-04-09 design doc. "One Stop, All Solutions" is the brand promise and must be visible in 5 seconds. Each service gets a brochure-style overview page in Phase 1A; the Immigration service additionally gets the full topical map in Phase 1B. Supersedes the 4/10 draft's "immigration-only on Home" decision. | 2026-04-11 (Phase A/B split) |
+| **V1 ad infrastructure** | Meta Pixel + Conversions API (with server-side de-duplication), GA4 with custom events, and UTM parameter capture on the contact form are **must-have Phase 1A deliverables**, not Phase 4 polish. The Home landing page is an ad destination and must be measured from day one. | 2026-04-11 (Phase A/B split) |
+| **V1 service scope (SEO depth)** | Vietnamese-language USCIS immigration document preparation is the only service pillar that gets the full 4-tier topical map in Phase 1B. Tax, Life Insurance, P&C Insurance, and AI Automation Consulting are represented as Phase 1A brochure-style overview pages only; their deep topical maps are deferred to Phase 1.5+ and Phase 2 (see §9 timeline). Supersedes the prior "immigration pages only, no Tax/Insurance/AI surface at all in V1" decision. | 2026-04-11 (Phase A/B split) |
+| **V1 service scope (original)** | Vietnamese-language USCIS immigration document preparation ONLY. Tax, Life Insurance, P&C Insurance, and AI Automation Consulting are deferred to Phase 1.5+ and Phase 2 (see §9 timeline). Supersedes the prior 5-pillar decision. **Note:** this decision was partially reversed on 2026-04-11 — Tax/Insurance/AI now have Phase 1A brochure surface to support the 4-service landing page. | 2026-04-10 (V1 refocus) |
 | **V1 geographic scope** | Texas residents only. Owner is not registered as an immigration consultant in any other state, and CA/NV/FL/IL/WA/MD/MN/NC/NY require state registration + bonding. Marketing, contact form, and content all gated to Texas. Contact form contains a "Are you a Texas resident?" field; non-TX submissions get an automated referral reply pointing to CLINIC / AILA pro-bono. Supersedes the prior multi-state Tier 1/Tier 2 rollout. | 2026-04-10 (V1 refocus) |
 | **Service provider classification** | MannaOS operates as a **non-attorney document preparer**, not a law firm. Does NOT file Form G-28, does NOT represent clients before USCIS, does NOT give legal advice, does NOT handle RFEs / NOIDs / denials / inadmissibility / removal. Explicit non-attorney disclosure required above the fold on every pillar, form, and bundle page per §2a.3c. | 2026-04-10 (V1 refocus) |
 | **V1 form list** | 11 forms: I-90, I-130, I-485, I-751, I-765, I-131, N-400, N-600, I-864, I-912, AR-11. Each becomes a form-cluster page per locale. | 2026-04-10 (V1 refocus) |

@@ -14,7 +14,11 @@
       "WebFetch(domain:www.promise.legal)",
       "WebFetch(domain:get.eimmigration.com)",
       "WebFetch(domain:community.latenode.com)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('mcpServers', {}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('mcpServers',{}\\).get\\('pencil',{}\\), indent=2\\)\\)\")",
+      "Bash(.claude/skills/brainstorming/scripts/start-server.sh --project-dir \"/Users/anhnguyen/Obsidian/Business planning\")",
+      "Skill(update-config)"
     ]
   }
 }
