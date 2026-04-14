@@ -2,3 +2,24 @@
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/workspace-desktop.json
+
+# Turborepo
+.turbo
+
+# Next.js
+.next/
+out/
+
+# Node
+node_modules/
+
+# Env files
+.env*.local
+.env
+
+# pnpm
+pnpm-debug.log
+
+# Build artifacts
+dist/
+build/
