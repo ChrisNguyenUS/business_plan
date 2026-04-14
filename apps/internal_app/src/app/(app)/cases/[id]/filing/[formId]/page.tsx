@@ -42,42 +42,8 @@ export default async function FilingScreenPage({
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href={`/cases/${caseId}`}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-        </Link>
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">
-            {formDef.name}
-          </h2>
-          <p className="text-sm text-slate-400 mt-0.5">
-            {client.last_name}, {client.first_name} — Mode A: Copy & Paste
-          </p>
-        </div>
-      </div>
-
-      {/* UPL Disclaimer */}
-      <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
-        <span className="material-symbols-outlined text-amber-500 shrink-0">info</span>
-        <div>
-          <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">
-            UPL Notice — Texas TDPSA Compliance
-          </p>
-          <p className="text-sm text-amber-600">
-            This screen provides pre-filled data for you to copy into the official USCIS portal.
-            Manna One Solution is a registered immigration consultant. All form advice and preparation
-            must be reviewed and approved by the supervising authorized representative before submission.
-          </p>
-        </div>
-      </div>
-
-      {/* Copy-Paste Fields */}
-      <CopyPasteScreen formDef={formDef} client={client} />
+    <div className="flex flex-col min-h-screen">
+      <CopyPasteScreen formDef={formDef} client={client} caseId={caseId} />
     </div>
   )
 }
