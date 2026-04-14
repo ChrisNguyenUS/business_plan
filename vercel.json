@@ -1,0 +1,4 @@
+{
+  "buildCommand": "pnpm turbo build --filter=internal_app",
+  "outputDirectory": "apps/internal_app/.next"
+}
