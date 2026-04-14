@@ -20,7 +20,7 @@
   - Notifications page
   - Database migrations: `001_schema.sql` + `002_rls.sql`
   - UI faithful to `ui_prototypes/public_internal_app/` HTML prototypes
-- [ ] **Phase 2: Unit Tests**
+- [x] **Phase 2: Unit Tests**
 - [ ] **Phase 3: Integration Tests**
 - [ ] **Phase 4: CI/CD**
 - [ ] **Phase 5: E2E Tests**
