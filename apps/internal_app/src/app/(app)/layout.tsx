@@ -12,14 +12,12 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { href: '/clients', label: 'Clients', icon: 'group' },
+  { href: '/settings/staff', label: 'Staff Directory', icon: 'group' },
   { href: '/cases', label: 'Cases', icon: 'folder_shared' },
-  { href: '/jobs', label: 'Jobs', icon: 'work' },
-  { href: '/notifications', label: 'Notifications', icon: 'notifications' },
+  { href: '/documents', label: 'Documents', icon: 'description' },
+  { href: '/pdf-generator', label: 'PDF Generator', icon: 'picture_as_pdf' },
   { href: '/finance/export', label: 'Finance Export', icon: 'download', adminOnly: true },
-  { href: '/settings/checklist-templates', label: 'Checklist Templates', icon: 'checklist', adminOnly: true },
-  { href: '/settings/fee-schedule', label: 'Fee Schedule', icon: 'payments', adminOnly: true },
-  { href: '/settings/staff', label: 'Staff Accounts', icon: 'manage_accounts', adminOnly: true },
+  { href: '/settings/checklist-templates', label: 'Admin Tools', icon: 'admin_panel_settings', adminOnly: true },
   { href: '/settings/audit-log', label: 'Audit Log', icon: 'history', adminOnly: true },
 ]
 

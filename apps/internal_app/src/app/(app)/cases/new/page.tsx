@@ -42,61 +42,75 @@ function ClientLookup({ value, onChange, label, placeholder }: {
   }, [search])
 
   return (
-    <div className="relative" ref={wrapperRef}>
-      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex justify-between">
-        <span>{label}</span>
-        {value && <span className="text-primary cursor-pointer hover:underline" onClick={() => { onChange('', ''); setSelectedName(''); setSearch('') }}>Clear</span>}
+    <div className="relative w-full" ref={wrapperRef}>
+      <h2 className="text-2xl font-bold text-slate-800 tracking-tight mb-2">Identify the Client</h2>
+      <p className="text-sm text-slate-500 mb-8">Search for an existing client in the MOS database or create a new profile to continue.</p>
+      
+      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex justify-between">
+        <span>Client Name or A-Number</span>
+        {value && <span className="text-[#3AAFB9] cursor-pointer hover:underline" onClick={() => { onChange('', ''); setSelectedName(''); setSearch('') }}>Clear</span>}
       </label>
+      
       {value ? (
-        <div className="w-full px-4 py-2.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-green-600">check_circle</span>
-            <span className="font-semibold">{selectedName || 'Client Selected'}</span>
+        <div className="w-full px-4 py-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-green-200/50 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-green-700 text-sm">person</span>
+            </div>
+            <div>
+              <p className="font-semibold">{selectedName}</p>
+              <p className="text-xs text-green-700 mt-0.5">Selected from database</p>
+            </div>
           </div>
-          <span className="text-xs text-green-600/70 truncate w-32 text-right">{value}</span>
+          <span className="material-symbols-outlined text-green-600 text-[28px]">check_circle</span>
         </div>
       ) : (
         <>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
             <input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setIsOpen(true) }}
               onFocus={() => setIsOpen(true)}
-              placeholder={placeholder}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#f7f9ff] border border-[#bcc9ca]/30 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 placeholder:text-slate-400 transition-all font-sans"
-              style={{ '--tw-ring-color': '#3AAFB9' } as React.CSSProperties}
+              placeholder="e.g. Maria"
+              className="w-full pl-4 pr-10 py-3 border-b-2 border-[#3AAFB9] bg-transparent text-lg text-slate-800 outline-none placeholder:text-slate-300 font-sans font-medium transition-colors focus:bg-slate-50 rounded-t-lg"
             />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#3AAFB9]">search</span>
           </div>
+          
           {isOpen && search.trim() && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-[#bcc9ca]/30 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-              {results.length > 0 ? (
-                results.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(c.id, `${c.first_name} ${c.last_name}`)
-                      setSelectedName(`${c.first_name} ${c.last_name}`)
-                      setIsOpen(false)
-                      setSearch('')
-                    }}
-                    className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-sm">person</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 truncate">{c.first_name} {c.last_name}</p>
-                      <p className="text-[11px] text-slate-400 truncate">
-                        {c.a_number ? `A# ${c.a_number}` : 'No A-Number'} · {c.email || 'No email'}
-                      </p>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-3 text-sm text-slate-500">No matching clients found.</div>
-              )}
+            <div className="absolute z-20 w-full mt-2 bg-white border border-[#ebeef3] rounded-xl shadow-[0_12px_40px_-12px_rgba(0,105,112,0.15)] overflow-hidden">
+              <div className="bg-[#f7f9ff] px-4 py-2 border-b border-[#ebeef3]">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Matching Results ({results.length})</p>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                {results.length > 0 ? (
+                  results.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        onChange(c.id, `${c.first_name} ${c.last_name}`)
+                        setSelectedName(`${c.first_name} ${c.last_name}`)
+                        setIsOpen(false)
+                        setSearch('')
+                      }}
+                      className="w-full text-left px-5 py-4 hover:bg-[#f7f9ff] border-b border-[#ebeef3] last:border-0 flex items-center gap-4 transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-[#e7f6f7] text-[#006970] flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-lg">person</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-bold text-slate-800 truncate">{c.first_name} {c.last_name}</p>
+                        <p className="text-xs font-semibold text-slate-400 mt-0.5 truncate tracking-wide">
+                          {c.a_number ? `A# ${c.a_number}` : 'No A-Number'}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-5 py-6 text-sm text-center text-slate-500 font-medium">No matching clients found.</div>
+                )}
+              </div>
             </div>
           )}
         </>

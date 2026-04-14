@@ -63,7 +63,7 @@ export async function GET(
 
     const filledPdfBytes = await pdfDoc.save()
 
-    return new NextResponse(filledPdfBytes, {
+    return new NextResponse(Buffer.from(filledPdfBytes) as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

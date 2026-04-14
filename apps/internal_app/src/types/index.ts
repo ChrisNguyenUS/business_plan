@@ -1,3 +1,5 @@
+export type ServiceTag = 'immigration' | 'tax' | 'insurance' | 'ai'
+
 export type FormType =
   | 'n400'
   | 'i485'

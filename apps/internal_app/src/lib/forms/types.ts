@@ -1,4 +1,4 @@
-import type { FilingMode } from '@/types'
+export type FilingMode = 'paper' | 'online' | 'mail'
 
 export type Client = Record<string, any>
 

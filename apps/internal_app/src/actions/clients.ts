@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Client } from '@/types'
 
 export async function getClients(query?: string) {
   const supabase = await createClient()
@@ -32,7 +31,7 @@ export async function getClient(id: string) {
     .eq('id', id)
     .single()
   if (error) throw error
-  return data as Client
+  return data
 }
 
 export async function createClient_(formData: FormData) {

@@ -118,7 +118,7 @@ export default async function DashboardPage() {
                     const isUrgent = c.status === 'rfe_issued'
                     
                     return (
-                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group cursor-pointer relative" onClick={() => undefined}>
+                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group cursor-pointer relative">
                         {/* We use a hack for tr block links in modern HTML but here we'll just style it */}
                         <td className="px-6 py-5">
                           <Link href={`/cases/${c.id}`} className="absolute inset-0 z-10"></Link>
@@ -143,7 +143,16 @@ export default async function DashboardPage() {
                           </span>
                         </td>
                         <td className="px-6 py-5 relative z-0">
-                          <p className="text-xs text-slate-500">{new Date(c.created_at).toLocaleDateString()}</p>
+                          <p className="text-sm font-medium text-slate-400">—</p>
+                        </td>
+                        <td className="px-6 py-5 relative z-0">
+                          <p className="text-sm font-medium text-slate-500">2h ago</p>
+                        </td>
+                        <td className="px-6 py-5 relative z-10 text-right pr-8">
+                          <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30">
+                            Open
+                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                          </Link>
                         </td>
                       </tr>
                     )

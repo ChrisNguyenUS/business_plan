@@ -17,11 +17,12 @@ export default async function CasesPage({
 
   const statusOptions: Array<{ value: CaseStatus | ''; label: string }> = [
     { value: '', label: 'All Cases' },
-    { value: 'documents_pending', label: 'Documents Pending' },
-    { value: 'ready_to_file', label: 'Ready to File' },
-    { value: 'submitted', label: 'Submitted' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'rfe_issued', label: 'RFE Issued' },
+    { value: 'drafting', label: 'Drafting' },
+    { value: 'awaiting_docs', label: 'Awaiting Docs' },
+    { value: 'under_review', label: 'Under Review' },
+    { value: 'rfe_issued', label: 'Action Req. (RFE)' },
+    { value: 'rfe_submitted', label: 'RFE Submitted' },
+    { value: 'interview_scheduled', label: 'Interview Sched.' },
     { value: 'approved', label: 'Approved' },
     { value: 'denied', label: 'Denied' },
   ]
