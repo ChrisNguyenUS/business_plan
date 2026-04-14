@@ -3,7 +3,7 @@ import { setReceiptNumber, checkCaseStatus } from '@/actions/tracker'
 import Link from 'next/link'
 
 export default async function TrackerPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Get all case forms that have a case attached
   const { data: forms } = await supabase

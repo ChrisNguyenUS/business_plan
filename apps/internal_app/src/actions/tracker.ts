@@ -4,7 +4,7 @@ import { fetchUscisStatus } from '@/lib/uscis/status'
 import { revalidatePath } from 'next/cache'
 
 export async function setReceiptNumber(caseFormId: string, receiptNumber: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('case_forms')
     .update({ receipt_number: receiptNumber })
@@ -14,7 +14,7 @@ export async function setReceiptNumber(caseFormId: string, receiptNumber: string
 }
 
 export async function checkCaseStatus(caseFormId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: caseForm, error } = await supabase
     .from('case_forms')
     .select('receipt_number')

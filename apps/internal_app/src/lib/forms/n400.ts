@@ -21,7 +21,7 @@ export const n400: FormDefinition = {
       fields: [
         { id: 'date_of_birth', label: 'Date of Birth (MM/DD/YYYY)', getValue: (c) => formatDate(c.date_of_birth) },
         { id: 'country_of_birth', label: 'Country of Birth', getValue: (c) => c.country_of_birth ?? '' },
-        { id: 'a_number', label: 'Alien Registration Number (A-Number)', getValue: (c) => c.a_number ?? '' },
+        { id: 'a_number', label: 'Alien Registration Number (A-Number)', getValue: (c) => c.a_number ? c.a_number.replace(/^A-?/i, '') : '' },
         { id: 'ssn', label: 'US Social Security Number', getValue: (c) => c.ssn ?? 'None' },
         { id: 'marital_status', label: 'Marital Status', getValue: (c) => c.marital_status ?? '' },
       ],

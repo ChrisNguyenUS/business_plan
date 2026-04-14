@@ -21,8 +21,8 @@ export async function fetchUscisStatus(receiptNumber: string): Promise<UscisStat
 /** Parse USCIS case status HTML response */
 export function parseUscisStatus(html: string): UscisStatusResult {
   // USCIS wraps status in <h4> and description in <p> inside .rows.text-center
-  const h4Match = html.match(/<h4[^>]*>(.*?)<\/h4>/s)
-  const pMatch = html.match(/<div[^>]*class="[^"]*rows text-center[^"]*"[^>]*>.*?<p[^>]*>(.*?)<\/p>/s)
+  const h4Match = html.match(/<h4[^>]*>([\s\S]*?)<\/h4>/)
+  const pMatch = html.match(/<div[^>]*class="[^"]*rows text-center[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/)
 
   const status = h4Match ? stripTags(h4Match[1]).trim() : 'Unknown'
   const description = pMatch ? stripTags(pMatch[1]).trim() : ''
