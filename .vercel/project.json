@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_ZSe26MMIARaf8mT3Ns8l5rx5emiC",
+  "orgId": "team_IDN26d83DwReOY51raRahxAk",
+  "projectName": "internal-app",
+  "settings": {
+    "createdAt": 1776184032725,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "apps/internal_app",
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

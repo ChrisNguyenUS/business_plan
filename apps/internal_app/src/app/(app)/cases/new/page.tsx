@@ -1,9 +1,109 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createCase } from '@/actions/cases'
+import { getClients } from '@/actions/clients'
 import type { FormType } from '@/types'
+
+function ClientLookup({ value, onChange, label, placeholder }: {
+  value: string;
+  onChange: (id: string, name: string) => void;
+  label: string;
+  placeholder: string;
+}) {
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState<any[]>([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedName, setSelectedName] = useState('')
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setResults([])
+      return
+    }
+    const fetchClients = async () => {
+      const res = await getClients(search)
+      setResults(res)
+    }
+    const delay = setTimeout(fetchClients, 300)
+    return () => clearTimeout(delay)
+  }, [search])
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex justify-between">
+        <span>{label}</span>
+        {value && <span className="text-primary cursor-pointer hover:underline" onClick={() => { onChange('', ''); setSelectedName(''); setSearch('') }}>Clear</span>}
+      </label>
+      {value ? (
+        <div className="w-full px-4 py-2.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-green-600">check_circle</span>
+            <span className="font-semibold">{selectedName || 'Client Selected'}</span>
+          </div>
+          <span className="text-xs text-green-600/70 truncate w-32 text-right">{value}</span>
+        </div>
+      ) : (
+        <>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
+            <input
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setIsOpen(true) }}
+              onFocus={() => setIsOpen(true)}
+              placeholder={placeholder}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#f7f9ff] border border-[#bcc9ca]/30 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 placeholder:text-slate-400 transition-all font-sans"
+              style={{ '--tw-ring-color': '#3AAFB9' } as React.CSSProperties}
+            />
+          </div>
+          {isOpen && search.trim() && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-[#bcc9ca]/30 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+              {results.length > 0 ? (
+                results.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      onChange(c.id, `${c.first_name} ${c.last_name}`)
+                      setSelectedName(`${c.first_name} ${c.last_name}`)
+                      setIsOpen(false)
+                      setSearch('')
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-sm">person</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{c.first_name} {c.last_name}</p>
+                      <p className="text-[11px] text-slate-400 truncate">
+                        {c.a_number ? `A# ${c.a_number}` : 'No A-Number'} · {c.email || 'No email'}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-slate-500">No matching clients found.</div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
 
 const FORM_OPTIONS: Array<{
   id: FormType
@@ -160,35 +260,19 @@ export default function NewCasePage() {
             {caseType === 'package' ? 'Clients (Petitioner + Beneficiary)' : 'Client'}
           </h3>
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                {caseType === 'package' ? 'Primary Client (Petitioner) ID' : 'Client ID'}{' '}
-                <span className="text-red-400">*</span>
-              </label>
-              <input
-                value={primaryClientId}
-                onChange={(e) => setPrimaryClientId(e.target.value)}
-                placeholder="Paste client UUID or search above..."
-                className="w-full px-4 py-2.5 bg-[#f7f9ff] border border-[#bcc9ca]/30 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 font-mono placeholder:text-slate-400 transition-all"
-                style={{ '--tw-ring-color': '#3AAFB9' } as React.CSSProperties}
-              />
-              <p className="mt-1 text-[11px] text-slate-400">
-                Go to the client profile and copy their ID from the URL
-              </p>
-            </div>
+            <ClientLookup
+              value={primaryClientId}
+              onChange={(id: string) => setPrimaryClientId(id)}
+              label={caseType === 'package' ? 'Primary Client (Petitioner) *' : 'Client *'}
+              placeholder="Search for an existing client in the MOS database..."
+            />
             {caseType === 'package' && (
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Secondary Client (Beneficiary) ID
-                </label>
-                <input
-                  value={secondaryClientId}
-                  onChange={(e) => setSecondaryClientId(e.target.value)}
-                  placeholder="Paste beneficiary client UUID..."
-                  className="w-full px-4 py-2.5 bg-[#f7f9ff] border border-[#bcc9ca]/30 rounded-lg text-sm text-slate-700 outline-none focus:ring-2 font-mono placeholder:text-slate-400 transition-all"
-                  style={{ '--tw-ring-color': '#3AAFB9' } as React.CSSProperties}
-                />
-              </div>
+              <ClientLookup
+                value={secondaryClientId}
+                onChange={(id: string) => setSecondaryClientId(id)}
+                label="Secondary Client (Beneficiary)"
+                placeholder="Search beneficiary in the MOS database..."
+              />
             )}
           </div>
         </div>
