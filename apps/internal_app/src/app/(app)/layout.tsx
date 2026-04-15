@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import SearchBar from '@/components/layout/SearchBar'
+import PageTitle from '@/components/layout/PageTitle'
 
 interface NavItem {
   href: string
@@ -125,6 +126,7 @@ export default async function AppLayout({
           }}
         >
           <div className="flex items-center gap-4">
+            <PageTitle />
             <SearchBar />
           </div>
 
