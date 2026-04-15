@@ -23,7 +23,9 @@
       "Bash(pnpm --filter internal_app build)",
       "Bash(ls -d .worktrees)",
       "Bash(ls -d worktrees)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm turbo *)"
     ]
   }
 }
