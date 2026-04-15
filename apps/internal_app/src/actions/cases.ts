@@ -90,8 +90,15 @@ export async function createCase(formData: FormData) {
       filing_mode: mailForms.includes(ft) ? 'mail' : 'online',
     }))
 
-    const { error: formsError } = await supabase.from('case_forms').insert(caseForms)
+    const { error: formsError, data: insertedForms } = await supabase
+      .from('case_forms')
+      .insert(caseForms)
+      .select('id, form_type')
     if (formsError) throw formsError
+
+    const formIdByType = new Map(
+      (insertedForms ?? []).map((f: any) => [f.form_type, f.id])
+    )
 
     // Populate document checklist from templates
     const { data: templates } = await supabase
@@ -103,6 +110,7 @@ export async function createCase(formData: FormData) {
       const docItems = templates.flatMap((t: any) =>
         (t.items as Array<{ label: string; required: boolean; order: number }>).map((item) => ({
           case_id: caseId,
+          case_form_id: formIdByType.get(t.form_type) ?? null,
           label: item.label,
           required: item.required,
           received: false,
@@ -136,4 +144,15 @@ export async function updateReceiptNumber(
     .update({ receipt_number: receiptNumber.trim().toUpperCase() })
     .eq('id', caseFormId)
   if (error) throw error
+  revalidatePath('/cases')
+}
+
+export async function toggleDocumentReceived(docId: string, received: boolean, caseId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('documents')
+    .update({ received })
+    .eq('id', docId)
+  if (error) throw error
+  revalidatePath(`/cases/${caseId}`)
 }
