@@ -24,3 +24,6 @@ pnpm-debug.log
 # Build artifacts
 dist/
 build/
+
+# Vercel
+.vercel
