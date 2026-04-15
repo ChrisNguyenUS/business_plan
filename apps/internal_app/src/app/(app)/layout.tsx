@@ -32,7 +32,7 @@ export default async function AppLayout({
 
   // Fetch user profile to determine role
   const { data: profile } = await supabase
-    .from('users')
+    .from('profiles')
     .select('name, role')
     .eq('id', user.id)
     .single()
@@ -41,6 +41,7 @@ export default async function AppLayout({
   const displayName = profile?.name || user.email?.split('@')[0] || 'Staff'
   const initials = displayName
     .split(' ')
+    .filter(Boolean)
     .map((n: string) => n[0])
     .join('')
     .toUpperCase()

@@ -1,3 +1,13 @@
+export type UserRole = 'staff' | 'ultimate_admin'
+
+export interface Profile {
+  id: string
+  created_at: string
+  updated_at: string
+  name: string | null
+  role: UserRole
+}
+
 export type ServiceTag = 'immigration' | 'tax' | 'insurance' | 'ai'
 
 export type FormType =
