@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       {/* Summary Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Cases */}
-        <div className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+        <Link href="/cases" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Cases</p>
             <h3 className="text-4xl font-bold text-primary-container">{activeCases ?? 0}</h3>
@@ -59,10 +59,10 @@ export default async function DashboardPage() {
           <div className="bg-primary/5 p-2 rounded-lg">
             <span className="material-symbols-outlined text-primary-container" data-icon="folder_open">folder_open</span>
           </div>
-        </div>
+        </Link>
 
         {/* Total Clients */}
-        <div className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Clients</p>
             <h3 className="text-4xl font-bold text-amber-600">{clientCount ?? 0}</h3>
@@ -73,10 +73,10 @@ export default async function DashboardPage() {
           <div className="bg-amber-50 p-2 rounded-lg">
             <span className="material-symbols-outlined text-amber-600" data-icon="group">group</span>
           </div>
-        </div>
+        </Link>
 
         {/* USCIS Alerts */}
-        <div className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">USCIS Alerts</p>
             <h3 className="text-4xl font-bold text-error">{rfeCases?.length ?? 0}</h3>
@@ -87,10 +87,10 @@ export default async function DashboardPage() {
           <div className="bg-error-container/30 p-2 rounded-lg">
             <span className="material-symbols-outlined text-error" data-icon="warning">warning</span>
           </div>
-        </div>
+        </Link>
 
         {/* Completed MTD */}
-        <div className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
+        <Link href="/cases?status=approved" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Completed MTD</p>
             <h3 className="text-4xl font-bold text-green-600">{completedMTD ?? 0}</h3>
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
           <div className="bg-green-50 p-2 rounded-lg">
             <span className="material-symbols-outlined text-green-600" data-icon="verified">verified</span>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="grid grid-cols-12 gap-8 items-start">
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 rfeCases.map((c: any) => (
-                  <Link key={c.id} href={`/cases/${c.id}`} className="block flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative">
+                  <Link key={c.id} href={`/cases/${c.id}`} className="flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative no-underline">
                     <div className={`status-pillar absolute left-0 top-2 bottom-2 ${c.status === 'rfe_issued' ? 'bg-error' : 'bg-amber-500'}`}></div>
                     <div className="flex-grow pl-3">
                       <p className="text-xs font-bold text-slate-400">ID: {c.id.split('-')[0]}</p>
