@@ -43,9 +43,7 @@ export async function getCase(id: string) {
       primary_client:clients!cases_primary_client_id_fkey(*),
       secondary_client:clients!cases_secondary_client_id_fkey(*),
       case_forms(*),
-      documents(*),
-      payments(*),
-      expenses(*)
+      documents(*)
     `)
     .eq('id', id)
     .single()
