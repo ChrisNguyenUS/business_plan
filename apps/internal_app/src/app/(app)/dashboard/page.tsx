@@ -98,7 +98,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* USCIS Alerts */}
-        <Link href="/cases?filter=alerts" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start cursor-pointer">
+        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start cursor-pointer">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">USCIS Alerts</p>
             <h3 className="text-4xl font-bold text-error">{rfeCases?.length ?? 0}</h3>
@@ -152,13 +152,11 @@ export default async function DashboardPage() {
                     const initials = `${(c.primary_client as any)?.first_name?.[0] || ''}${(c.primary_client as any)?.last_name?.[0] || ''}`.toUpperCase()
                     const formsDesc = (c.case_forms as any[]).map((f: any) => f.form_type.toUpperCase()).join(', ') || 'N/A'
                     const isUrgent = c.status === 'rfe_issued'
-                    
+
                     return (
-                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group cursor-pointer relative">
-                        {/* We use a hack for tr block links in modern HTML but here we'll just style it */}
+                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group">
                         <td className="px-6 py-5">
-                          <Link href={`/cases/${c.id}`} className="absolute inset-0 z-10"></Link>
-                          <div className="flex items-center gap-3 relative z-0">
+                          <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">{initials}</div>
                             <div>
                               <p className="text-sm font-semibold text-slate-800">{(c.primary_client as any)?.first_name} {(c.primary_client as any)?.last_name}</p>
@@ -166,26 +164,23 @@ export default async function DashboardPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5 relative z-0">
+                        <td className="px-6 py-5">
                           <p className="text-[11px] text-slate-600 font-medium">{formsDesc}</p>
                         </td>
-                        <td className="px-6 py-5 relative z-0">
+                        <td className="px-6 py-5">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            isUrgent 
-                              ? 'bg-amber-100 text-amber-700' 
+                            isUrgent
+                              ? 'bg-amber-100 text-amber-700'
                               : 'bg-primary/10 text-primary'
                           }`}>
                             {c.status.replace(/_/g, ' ').toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-5 relative z-0">
-                          <p className="text-sm font-medium text-slate-400">—</p>
-                        </td>
-                        <td className="px-6 py-5 relative z-0">
+                        <td className="px-6 py-5">
                           <p className="text-sm font-medium text-slate-500">{timeAgo(c.created_at)}</p>
                         </td>
-                        <td className="px-6 py-5 relative z-10 text-right pr-8">
-                          <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30">
+                        <td className="px-6 py-5 text-right pr-8">
+                          <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30 cursor-pointer">
                             Open
                             <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                           </Link>
