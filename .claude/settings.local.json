@@ -20,7 +20,10 @@
       "Bash(.claude/skills/brainstorming/scripts/start-server.sh --project-dir \"/Users/anhnguyen/Obsidian/Business planning\")",
       "Skill(update-config)",
       "Bash(pnpm dlx *)",
-      "Bash(pnpm --filter internal_app build)"
+      "Bash(pnpm --filter internal_app build)",
+      "Bash(ls -d .worktrees)",
+      "Bash(ls -d worktrees)",
+      "Bash(npx tsc *)"
     ]
   }
 }
