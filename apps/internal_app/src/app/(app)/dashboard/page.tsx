@@ -1,14 +1,29 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { getCrossSellOpportunities } from '@/actions/crossSell'
+import CrossSellCard from '@/components/dashboard/CrossSellCard'
+
+function timeAgo(date: string): string {
+  const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
+  if (s < 60) return 'just now'
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
   const [
     { count: clientCount },
     { count: activeCases },
     { data: recentCases },
     { data: rfeCases },
+    { count: completedMTD },
   ] = await Promise.all([
     supabase.from('clients').select('*', { count: 'exact', head: true }),
     supabase.from('cases').select('*', { count: 'exact', head: true })
@@ -30,7 +45,12 @@ export default async function DashboardPage() {
       .in('status', ['rfe_issued', 'denied', 'interview_scheduled'])
       .order('created_at', { ascending: false })
       .limit(5),
+    supabase.from('cases').select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
+      .gte('created_at', monthStart),
   ])
+
+  const crossSellOpportunities = await getCrossSellOpportunities()
 
   return (
     <div className="space-y-8">
@@ -82,7 +102,7 @@ export default async function DashboardPage() {
         <div className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Completed MTD</p>
-            <h3 className="text-4xl font-bold text-green-600">24</h3>
+            <h3 className="text-4xl font-bold text-green-600">{completedMTD ?? 0}</h3>
             <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
               <span className="material-symbols-outlined text-sm text-green-500">task_alt</span> On track for goal
             </p>
@@ -146,7 +166,7 @@ export default async function DashboardPage() {
                           <p className="text-sm font-medium text-slate-400">—</p>
                         </td>
                         <td className="px-6 py-5 relative z-0">
-                          <p className="text-sm font-medium text-slate-500">2h ago</p>
+                          <p className="text-sm font-medium text-slate-500">{timeAgo(c.created_at)}</p>
                         </td>
                         <td className="px-6 py-5 relative z-10 text-right pr-8">
                           <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30">
@@ -211,46 +231,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Cross-Sell Opportunities Card */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] bg-gradient-to-br from-white to-primary/5">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="material-symbols-outlined text-primary-container" data-icon="auto_awesome">auto_awesome</span>
-              <h3 className="text-lg font-semibold text-slate-800">Cross-Sell Opportunities</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-white/60 rounded-xl border border-white/80 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">Elena Larsson</p>
-                    <p className="text-xs text-slate-500">I-130 Approved</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI ANALYSIS</span>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400">SUGGESTION:</span>
-                  <div className="flex gap-1.5 flex-wrap">
-                    <span className="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Tax Services</span>
-                    <span className="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Insurance</span>
-                  </div>
-                </div>
-                <button className="mt-4 w-full py-2 bg-primary-container text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:brightness-105 transition-all">Send Offer</button>
-              </div>
-              
-              <div className="p-4 bg-white/60 rounded-xl border border-white/80 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">Rodrigo Silva</p>
-                    <p className="text-xs text-slate-500">Corporate Sponsor Match</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400">SUGGESTION:</span>
-                  <span className="text-[10px] px-2 py-1 bg-surface-container-high text-on-surface rounded-full">Compliance Audit</span>
-                </div>
-                <button className="mt-4 w-full py-2 bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-slate-200 transition-all">Review Profile</button>
-              </div>
-            </div>
-          </div>
+          <CrossSellCard opportunities={crossSellOpportunities} />
           
         </div>
       </div>

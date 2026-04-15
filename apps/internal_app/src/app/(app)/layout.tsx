@@ -7,18 +7,15 @@ interface NavItem {
   href: string
   label: string
   icon: string
-  adminOnly?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { href: '/settings/staff', label: 'Staff Directory', icon: 'group' },
   { href: '/cases', label: 'Cases', icon: 'folder_shared' },
-  { href: '/documents', label: 'Documents', icon: 'description' },
+  { href: '/clients', label: 'Clients', icon: 'group' },
+  { href: '/jobs', label: 'Jobs', icon: 'work' },
   { href: '/pdf-generator', label: 'PDF Generator', icon: 'picture_as_pdf' },
-  { href: '/finance/export', label: 'Finance Export', icon: 'download', adminOnly: true },
-  { href: '/settings/checklist-templates', label: 'Admin Tools', icon: 'admin_panel_settings', adminOnly: true },
-  { href: '/settings/audit-log', label: 'Audit Log', icon: 'history', adminOnly: true },
+  { href: '/tracker', label: 'USCIS Tracker', icon: 'travel_explore' },
 ]
 
 export default async function AppLayout({
@@ -49,7 +46,7 @@ export default async function AppLayout({
     .toUpperCase()
     .slice(0, 2)
 
-  const visibleNav = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin)
+  const visibleNav = NAV_ITEMS
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f7f9ff' }}>
