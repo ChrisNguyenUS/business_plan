@@ -2,16 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getCrossSellOpportunities } from '@/actions/crossSell'
 import CrossSellCard from '@/components/dashboard/CrossSellCard'
-
-function timeAgo(date: string): string {
-  const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
-  if (s < 60) return 'just now'
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
-}
+import RecentCasesTable from '@/components/dashboard/RecentCasesTable'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -122,63 +113,7 @@ export default async function DashboardPage() {
               <Link href="/cases" className="text-xs text-primary-container font-bold uppercase tracking-widest hover:underline transition-all">View All</Link>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-surface-container-low/50">
-                  <tr>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Client Name</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Forms</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Last Updated</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y-0">
-                  {(recentCases ?? []).map((c: any) => {
-                    const initials = `${(c.primary_client as any)?.first_name?.[0] || ''}${(c.primary_client as any)?.last_name?.[0] || ''}`.toUpperCase()
-                    const formsDesc = (c.case_forms as any[]).map((f: any) => f.form_type.toUpperCase()).join(', ') || 'N/A'
-                    const isUrgent = c.status === 'rfe_issued'
-                    
-                    return (
-                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group cursor-pointer relative">
-                        {/* We use a hack for tr block links in modern HTML but here we'll just style it */}
-                        <td className="px-6 py-5">
-                          <Link href={`/cases/${c.id}`} className="absolute inset-0 z-10"></Link>
-                          <div className="flex items-center gap-3 relative z-0">
-                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">{initials}</div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">{(c.primary_client as any)?.first_name} {(c.primary_client as any)?.last_name}</p>
-                              <p className="text-[11px] text-slate-400 truncate w-32">#{c.id.split('-')[0]}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 relative z-0">
-                          <p className="text-[11px] text-slate-600 font-medium">{formsDesc}</p>
-                        </td>
-                        <td className="px-6 py-5 relative z-0">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            isUrgent 
-                              ? 'bg-amber-100 text-amber-700' 
-                              : 'bg-primary/10 text-primary'
-                          }`}>
-                            {c.status.replace(/_/g, ' ').toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 relative z-0">
-                          <p className="text-sm font-medium text-slate-400">—</p>
-                        </td>
-                        <td className="px-6 py-5 relative z-0">
-                          <p className="text-sm font-medium text-slate-500">{timeAgo(c.created_at)}</p>
-                        </td>
-                        <td className="px-6 py-5 relative z-10 text-right pr-8">
-                          <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30">
-                            Open
-                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              <RecentCasesTable cases={recentCases as any[] ?? []} />
             </div>
           </div>
           
