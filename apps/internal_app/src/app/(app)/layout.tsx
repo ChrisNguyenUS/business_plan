@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import SearchBar from '@/components/layout/SearchBar'
 
 interface NavItem {
   href: string
@@ -124,17 +125,7 @@ export default async function AppLayout({
           }}
         >
           <div className="flex items-center gap-4">
-            {/* Quick search placeholder */}
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
-                search
-              </span>
-              <input
-                placeholder="Search cases, clients..."
-                className="pl-10 pr-4 py-1.5 bg-[#f1f4f9] rounded-full border-none text-sm w-64 outline-none focus:ring-2"
-                style={{ '--tw-ring-color': '#3AAFB9' } as React.CSSProperties}
-              />
-            </div>
+            <SearchBar />
           </div>
 
           <div className="flex items-center gap-3">
