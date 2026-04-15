@@ -1,0 +1,11 @@
+node_modules
+.next
+.turbo
+.worktrees
+.git
+apps/*/node_modules
+apps/*/.next
+apps/*/.turbo
+packages/*/node_modules
+packages/*/.turbo
+.DS_Store
