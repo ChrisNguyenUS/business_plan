@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       {/* Summary Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Cases */}
-        <Link href="/cases" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
+        <Link href="/cases" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Cases</p>
             <h3 className="text-4xl font-bold text-primary-container">{activeCases ?? 0}</h3>
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* Total Clients */}
-        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
+        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Clients</p>
             <h3 className="text-4xl font-bold text-amber-600">{clientCount ?? 0}</h3>
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* USCIS Alerts */}
-        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
+        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">USCIS Alerts</p>
             <h3 className="text-4xl font-bold text-error">{rfeCases?.length ?? 0}</h3>
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* Completed MTD */}
-        <Link href="/cases?status=approved" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start block no-underline">
+        <Link href="/cases?status=approved" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Completed MTD</p>
             <h3 className="text-4xl font-bold text-green-600">{completedMTD ?? 0}</h3>
