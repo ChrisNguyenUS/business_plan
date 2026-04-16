@@ -170,10 +170,15 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
           <Calendar className="h-8 w-8 text-primary mb-3" />
           <h3 className="font-bold text-charcoal text-lg mb-2">{dictionary.contact_book_title}</h3>
           <p className="text-muted-foreground text-sm mb-4">{dictionary.contact_book_desc}</p>
-          <Button className="w-full bg-primary hover:bg-teal-dark text-white rounded-full gap-2">
+          <a
+            href="https://calendly.com/mannaos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-teal-dark text-white rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
+          >
             <Calendar className="h-4 w-4" />
             {dictionary.contact_book_btn}
-          </Button>
+          </a>
         </div>
 
         {/* Direct Contact */}

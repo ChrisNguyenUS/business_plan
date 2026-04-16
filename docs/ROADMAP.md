@@ -21,6 +21,7 @@
   - Database migrations: `001_schema.sql` + `002_rls.sql`
   - UI faithful to `ui_prototypes/public_internal_app/` HTML prototypes
 - [x] **Phase 2: Unit Tests**
+- [x] **Phase 1 (Website): MannaOS.com Phase A Marketing Landing** — Bilingual (EN/VI) Next.js 16 site with Home, 4 Service pages, About, Contact, Privacy Policy, ToS, floating buttons, SEO (sitemap, robots, JSON-LD), contact form (Supabase + Resend), deployed on Vercel. Shared Supabase project `ffsrlmtqzlidnuitkdvw`.
 - [ ] **Phase 3: Integration Tests**
 - [ ] **Phase 4: CI/CD**
 - [ ] **Phase 5: E2E Tests**
