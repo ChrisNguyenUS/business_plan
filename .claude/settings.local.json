@@ -25,7 +25,11 @@
       "Bash(ls -d worktrees)",
       "Bash(npx tsc *)",
       "Bash(pnpm install *)",
-      "Bash(pnpm turbo *)"
+      "Bash(pnpm turbo *)",
+      "Bash(vercel --version)",
+      "Bash(npm run *)",
+      "Bash(~/.npm-global/bin/vercel env *)",
+      "Bash(~/.npm-global/bin/vercel --prod --yes)"
     ]
   }
 }
