@@ -18,8 +18,10 @@ node_modules/
 .env*.local
 .env
 
-# pnpm
+# pnpm — reject npm/yarn lockfiles that break pnpm workspace
 pnpm-debug.log
+package-lock.json
+yarn.lock
 
 # Build artifacts
 dist/
