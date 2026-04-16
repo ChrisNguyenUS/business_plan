@@ -1,0 +1,32 @@
+{
+  "name": "BlogPost",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug"
+    },
+    "title_en": {
+      "type": "string",
+      "description": "English title"
+    },
+    "title_vi": {
+      "type": "string",
+      "description": "Vietnamese title"
+    },
+    "content_en": {
+      "type": "string",
+      "description": "English content (HTML)"
+    },
+    "content_vi": {
+      "type": "string",
+      "description": "Vietnamese content (HTML)"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Cover image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "tax",

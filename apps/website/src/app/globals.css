@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ===== MannaOS Design System - Light Theme (Preserved from Vite codebase) ===== */
+@theme inline {
+  /* --- Font --- */
+  --font-inter: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  /* --- Border Radius --- */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* --- Brand Colors (mapped from HSL CSS vars) --- */
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-teal: hsl(var(--teal));
+  --color-teal-dark: hsl(var(--teal-dark));
+  --color-teal-light: hsl(var(--teal-light));
+  --color-charcoal: hsl(var(--charcoal));
+  --color-silver: hsl(var(--silver));
+  --color-surface: hsl(var(--surface));
+
+  /* --- Semantic Colors --- */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* --- Animations --- */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Keyframes */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* ===== CSS Custom Properties (EXACT copy from old index.css) ===== */
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --radius: 0.5rem;
+
+  /* Light Theme - MannaOS Brand */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --primary: 174 54% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 96%;
+  --secondary-foreground: 0 0% 15%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 170 30% 96%;
+  --accent-foreground: 0 0% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 174 54% 36%;
+
+  /* MannaOS Brand tokens */
+  --teal: 174 54% 36%;
+  --teal-dark: 174 54% 25%;
+  --teal-light: 170 30% 96%;
+  --charcoal: 0 0% 10%;
+  --silver: 210 12% 60%;
+  --surface: 170 20% 98%;
+
+  /* Charts */
+  --chart-1: 174 54% 36%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 200 60% 50%;
+  --chart-4: 30 80% 55%;
+  --chart-5: 340 75% 55%;
+}
+
+.dark {
+  --background: 220 20% 8%;
+  --foreground: 0 0% 90%;
+  --card: 220 20% 10%;
+  --card-foreground: 0 0% 90%;
+  --popover: 220 20% 10%;
+  --popover-foreground: 0 0% 90%;
+  --primary: 174 54% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 20% 18%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 215 20% 18%;
+  --muted-foreground: 215 16% 60%;
+  --accent: 215 20% 18%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 215 20% 22%;
+  --input: 215 20% 22%;
+  --ring: 174 54% 36%;
+  --teal: 174 54% 36%;
+  --teal-dark: 174 54% 25%;
+  --teal-light: 220 20% 14%;
+  --charcoal: 0 0% 90%;
+  --silver: 210 12% 60%;
+  --surface: 220 20% 12%;
+}
+
+/* ===== Global Styles ===== */
+@layer base {
+  * {
+    border-color: theme('colors.border');
+  }
+
+  body {
+    background-color: theme('colors.background');
+    color: theme('colors.foreground');
+    font-family: var(--font-inter);
+  }
+}
