@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isClientRedirect = searchParams.get('error') === 'client_redirect'
   const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,6 +77,24 @@ export default function LoginPage() {
               Sign in to your staff account
             </p>
           </div>
+
+          {/* Client redirect banner */}
+          {isClientRedirect && (
+            <div className="w-full mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-700 font-medium">
+                Client accounts sign in at{' '}
+                <a
+                  href="https://mannaos.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-bold"
+                >
+                  mannaos.com
+                </a>
+                .
+              </p>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (
@@ -206,5 +226,13 @@ export default function LoginPage() {
         </footer>
       </main>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
