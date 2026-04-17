@@ -29,7 +29,14 @@
       "Bash(vercel --version)",
       "Bash(npm run *)",
       "Bash(~/.npm-global/bin/vercel env *)",
-      "Bash(~/.npm-global/bin/vercel --prod --yes)"
+      "Bash(~/.npm-global/bin/vercel --prod --yes)",
+      "Bash(supabase db *)",
+      "Bash(node -e ' *)",
+      "Bash(node *)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }
