@@ -45,6 +45,11 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role as string | undefined
 
+  // No profile row means unknown user — send to login
+  if (!role) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   // Client accounts do not belong in the internal app
   if (role === 'client') {
     const url = new URL('/login', request.url)

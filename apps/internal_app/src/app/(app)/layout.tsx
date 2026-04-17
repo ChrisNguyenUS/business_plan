@@ -33,12 +33,15 @@ export default async function AppLayout({
   // Fetch user profile to determine role
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, role')
+    .select('full_name, role')
     .eq('id', user.id)
     .single()
 
-  const isAdmin = profile?.role === 'admin'
-  const displayName = profile?.name || user.email?.split('@')[0] || 'Staff'
+  // Defense-in-depth: block client accounts that slipped past middleware
+  if (!profile || profile.role === 'client') redirect('/login')
+
+  const isAdmin = profile.role === 'admin'
+  const displayName = profile.full_name || user.email?.split('@')[0] || 'Staff'
   const initials = displayName
     .split(' ')
     .filter(Boolean)
