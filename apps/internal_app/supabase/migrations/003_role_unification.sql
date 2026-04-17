@@ -3,6 +3,8 @@
 --
 -- NOTE: This migration must be manually executed in the Supabase SQL Editor.
 -- Do NOT run this via automated migrations if using Supabase CLI without review.
+
+BEGIN;
 -- Review the changes carefully before execution in production.
 
 -- ============================================================
@@ -68,3 +70,5 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+COMMIT;
