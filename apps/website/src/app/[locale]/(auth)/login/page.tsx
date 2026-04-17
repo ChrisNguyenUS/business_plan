@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const params = useParams();
@@ -30,7 +31,32 @@ export default function LoginPage() {
       return;
     }
 
-    router.push(`/${locale}/portal`);
+    // Fetch role to determine redirect destination
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+
+    if (!userId) {
+      setError('Sign in failed. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    const role = profile?.role;
+
+    if (role === 'staff') {
+      await supabase.auth.signOut();
+      setError('Staff members sign in via the internal app, not this website.');
+      setLoading(false);
+      return;
+    }
+
+    router.push(role === 'admin' ? `/${locale}/admin` : `/${locale}/portal`);
   }
 
   return (
