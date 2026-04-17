@@ -3,79 +3,127 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Briefcase, MessageSquare, AlertCircle, Calendar, ExternalLink, ChevronRight, FileText } from "lucide-react";
+import {
+  Briefcase,
+  Compass,
+  AlertCircle,
+  ChevronRight,
+  FileText,
+  Shield,
+  Brain,
+  Calculator,
+} from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
-interface Case {
+type ServiceType = "immigration" | "tax" | "insurance" | "ai";
+
+interface ServiceJob {
   id: string;
-  client_name: string;
-  service_type: string;
-  form_codes: string | null;
+  service_type: ServiceType;
+  description: string;
   status: string;
-  payment_status: string;
-  uscis_receipt: string | null;
-  notes: string | null;
-  created_at: string;
   updated_at: string;
 }
 
-interface Submission {
-  id: string;
-  full_name: string;
-  service_type: string | null;
-  message: string | null;
-  status: string;
-  created_at: string;
-}
-
-const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
-  intake: { color: "bg-blue-100 text-blue-700", label: "Intake" },
-  documents_requested: { color: "bg-yellow-100 text-yellow-700", label: "Documents Requested" },
-  in_progress: { color: "bg-purple-100 text-purple-700", label: "In Progress" },
-  submitted_to_uscis: { color: "bg-indigo-100 text-indigo-700", label: "Submitted to USCIS" },
-  awaiting_response: { color: "bg-orange-100 text-orange-700", label: "Awaiting Response" },
-  completed: { color: "bg-green-100 text-green-700", label: "Completed" },
-  on_hold: { color: "bg-gray-100 text-gray-700", label: "On Hold" },
+const SERVICE_META: Record<
+  ServiceType,
+  {
+    label: string;
+    icon: React.ElementType;
+    infoPath: string;
+    statuses: Record<string, { color: string; label: string }>;
+  }
+> = {
+  immigration: {
+    label: "Immigration",
+    icon: FileText,
+    infoPath: "/services/immigration",
+    statuses: {
+      documents_pending: { color: "bg-yellow-100 text-yellow-700", label: "Documents Pending" },
+      ready_to_file: { color: "bg-blue-100 text-blue-700", label: "Ready to File" },
+      submitted: { color: "bg-indigo-100 text-indigo-700", label: "Submitted" },
+      receipt_received: { color: "bg-purple-100 text-purple-700", label: "Receipt Received" },
+      in_progress: { color: "bg-purple-100 text-purple-700", label: "In Review" },
+      rfe_issued: { color: "bg-red-100 text-red-700", label: "Action Required" },
+      approved: { color: "bg-green-100 text-green-700", label: "Approved" },
+      denied: { color: "bg-red-600 text-white", label: "Denied" },
+    },
+  },
+  tax: {
+    label: "Tax Services",
+    icon: Calculator,
+    infoPath: "/services/tax",
+    statuses: {
+      open: { color: "bg-yellow-100 text-yellow-700", label: "Documents Needed" },
+      in_progress: { color: "bg-blue-100 text-blue-700", label: "In Progress" },
+      complete: { color: "bg-green-100 text-green-700", label: "Filed & Complete" },
+    },
+  },
+  insurance: {
+    label: "Insurance",
+    icon: Shield,
+    infoPath: "/services/insurance",
+    statuses: {
+      open: { color: "bg-blue-100 text-blue-700", label: "Active" },
+      in_progress: { color: "bg-yellow-100 text-yellow-700", label: "Renewal Due" },
+      complete: { color: "bg-gray-100 text-gray-700", label: "Expired" },
+    },
+  },
+  ai: {
+    label: "AI Services",
+    icon: Brain,
+    infoPath: "/services/ai",
+    statuses: {
+      open: { color: "bg-purple-100 text-purple-700", label: "Pending Setup" },
+      in_progress: { color: "bg-purple-100 text-purple-700", label: "Pending Setup" },
+      complete: { color: "bg-green-100 text-green-700", label: "Active" },
+    },
+  },
 };
 
-const PAYMENT_STATUS: Record<string, { color: string; label: string }> = {
-  pending: { color: "text-yellow-600", label: "Payment Pending" },
-  partial: { color: "text-orange-600", label: "Partial Payment" },
-  paid: { color: "text-green-600", label: "Paid" },
-  waived: { color: "text-gray-500", label: "Waived" },
+const ALL_SERVICES: ServiceType[] = ["immigration", "tax", "insurance", "ai"];
+
+const EXPLORE_DESCRIPTIONS: Record<ServiceType, string> = {
+  immigration: "Green cards, naturalization, work permits, family petitions, and more.",
+  tax: "Personal and business tax filing, ITIN, and year-round bookkeeping.",
+  insurance: "Health, auto, and life insurance plans tailored for immigrants.",
+  ai: "AI-powered tools to streamline your business operations.",
 };
+
+const CALENDLY_FALLBACK = "https://calendly.com/mannaonesolution";
 
 export default function PortalPage() {
   const params = useParams();
   const locale = (params.locale as string) || "en";
   const { user, profile } = useAuth();
 
-  const [tab, setTab] = useState<"cases" | "inquiries">("cases");
-  const [cases, setCases] = useState<Case[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [tab, setTab] = useState<"my-services" | "explore">("my-services");
+  const [jobs, setJobs] = useState<ServiceJob[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     if (!user) return;
 
-    // Load cases for this user
-    const { data: casesData } = await supabase
-      .from("cases")
-      .select("*")
-      .eq("client_user_id", user.id)
+    // Resolve the client record linked to this auth account
+    const { data: clientRecord } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!clientRecord) {
+      setLoading(false);
+      return;
+    }
+
+    const { data: jobsData } = await supabase
+      .from("jobs")
+      .select("id, service_type, description, status, updated_at")
+      .eq("client_id", clientRecord.id)
       .order("updated_at", { ascending: false });
 
-    // Load submissions by this user's email
-    const { data: subData } = await supabase
-      .from("contact_submissions")
-      .select("*")
-      .eq("email", user.email)
-      .order("created_at", { ascending: false });
-
-    setCases(casesData || []);
-    setSubmissions(subData || []);
+    setJobs((jobsData as ServiceJob[]) ?? []);
     setLoading(false);
   }, [user]);
 
@@ -83,45 +131,62 @@ export default function PortalPage() {
     loadData();
   }, [loadData]);
 
+  const enrolledServices = [
+    ...new Set(jobs.map((j) => j.service_type)),
+  ] as ServiceType[];
+  const availableServices = ALL_SERVICES.filter(
+    (s) => !enrolledServices.includes(s)
+  );
   const displayName = profile?.full_name || user?.email || "";
+  const calendlyUrl =
+    process.env.NEXT_PUBLIC_CALENDLY_URL ?? CALENDLY_FALLBACK;
 
   return (
     <div className="py-12 lg:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-charcoal mb-1">My Portal</h1>
         <p className="text-muted-foreground mb-6">
-          Welcome back, <span className="font-semibold text-charcoal">{displayName}</span>
+          Welcome back,{" "}
+          <span className="font-semibold text-charcoal">{displayName}</span>
         </p>
 
-        {/* Info Banner */}
         <div className="bg-teal-light border border-primary/20 rounded-xl p-4 mb-8 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
           <p className="text-sm text-muted-foreground">
             {locale === "vi"
-              ? "Đây là cổng thông tin theo dõi hồ sơ. Mọi cập nhật mới sẽ hiển thị ở đây."
-              : "Track your active cases and inquiries here. All updates will appear below."}
+              ? "Theo dõi trạng thái dịch vụ của bạn tại đây."
+              : "Track your active services and discover new ones below."}
           </p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 p-1 rounded-xl bg-muted mb-8">
           <button
-            onClick={() => setTab("cases")}
+            onClick={() => setTab("my-services")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              tab === "cases" ? "bg-white text-charcoal shadow-sm" : "text-muted-foreground"
+              tab === "my-services"
+                ? "bg-white text-charcoal shadow-sm"
+                : "text-muted-foreground"
             }`}
           >
             <Briefcase className="h-4 w-4" />
-            Cases ({cases.length})
+            My Services
+            {enrolledServices.length > 0 && (
+              <span className="ml-1 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold">
+                {enrolledServices.length}
+              </span>
+            )}
           </button>
           <button
-            onClick={() => setTab("inquiries")}
+            onClick={() => setTab("explore")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              tab === "inquiries" ? "bg-white text-charcoal shadow-sm" : "text-muted-foreground"
+              tab === "explore"
+                ? "bg-white text-charcoal shadow-sm"
+                : "text-muted-foreground"
             }`}
           >
-            <MessageSquare className="h-4 w-4" />
-            Inquiries ({submissions.length})
+            <Compass className="h-4 w-4" />
+            Explore Services
           </button>
         </div>
 
@@ -129,140 +194,178 @@ export default function PortalPage() {
           <div className="flex justify-center py-16">
             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
-        ) : tab === "cases" ? (
-          /* Cases Tab */
-          cases.length > 0 ? (
-            <div className="space-y-4">
-              {cases.map((c) => {
-                const st = STATUS_CONFIG[c.status] || { color: "bg-gray-100 text-gray-700", label: c.status };
-                const pay = PAYMENT_STATUS[c.payment_status] || { color: "text-gray-500", label: c.payment_status };
+        ) : tab === "my-services" ? (
+          <MyServicesTab
+            enrolledServices={enrolledServices}
+            jobs={jobs}
+            locale={locale}
+            onExplore={() => setTab("explore")}
+          />
+        ) : (
+          <ExploreServicesTab
+            availableServices={availableServices}
+            locale={locale}
+            calendlyUrl={calendlyUrl}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MyServicesTab({
+  enrolledServices,
+  jobs,
+  locale,
+  onExplore,
+}: {
+  enrolledServices: ServiceType[];
+  jobs: ServiceJob[];
+  locale: string;
+  onExplore: () => void;
+}) {
+  if (enrolledServices.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 rounded-full bg-teal-light flex items-center justify-center mx-auto mb-4">
+          <Briefcase className="h-7 w-7 text-primary" />
+        </div>
+        <h3 className="font-semibold text-charcoal mb-2">
+          No active services yet
+        </h3>
+        <p className="text-muted-foreground text-sm mb-4">
+          {locale === "vi"
+            ? "Khám phá các dịch vụ của chúng tôi."
+            : "Explore what we offer and book a free consultation to get started."}
+        </p>
+        <button
+          onClick={onExplore}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-teal-dark transition-colors"
+        >
+          <Compass className="h-4 w-4" />
+          Explore Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {enrolledServices.map((serviceType) => {
+        const meta = SERVICE_META[serviceType];
+        const Icon = meta.icon;
+        const serviceJobs = jobs.filter((j) => j.service_type === serviceType);
+
+        return (
+          <div
+            key={serviceType}
+            className="bg-white rounded-xl border border-border overflow-hidden"
+          >
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <h3 className="font-semibold text-charcoal">{meta.label}</h3>
+            </div>
+            <div className="divide-y divide-border">
+              {serviceJobs.map((job) => {
+                const statusCfg = meta.statuses[job.status] ?? {
+                  color: "bg-gray-100 text-gray-700",
+                  label: job.status,
+                };
                 return (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCase(c)}
-                    className="w-full text-left bg-white rounded-xl border border-border p-5 hover:shadow-md transition-shadow"
+                  <div
+                    key={job.id}
+                    className="px-5 py-4 flex items-center justify-between"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${st.color}`}>
-                        {st.label}
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <h3 className="font-semibold text-charcoal mb-1">{c.service_type}</h3>
-                    {c.form_codes && (
-                      <p className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                        <FileText className="h-3.5 w-3.5" /> {c.form_codes}
+                    <div>
+                      <p className="text-sm font-medium text-charcoal line-clamp-1">
+                        {job.description}
                       </p>
-                    )}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-                      <span className={pay.color}>{pay.label}</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(c.updated_at).toLocaleDateString()}
-                      </span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Updated {new Date(job.updated_at).toLocaleDateString()}
+                      </p>
                     </div>
-                  </button>
+                    <span
+                      className={`ml-4 shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusCfg.color}`}
+                    >
+                      {statusCfg.label}
+                    </span>
+                  </div>
                 );
               })}
             </div>
-          ) : (
-            <EmptyState locale={locale} />
-          )
-        ) : (
-          /* Inquiries Tab */
-          submissions.length > 0 ? (
-            <div className="space-y-4">
-              {submissions.map((s) => (
-                <div key={s.id} className="bg-white rounded-xl border border-border p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                      {s.status}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(s.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="text-sm text-charcoal font-medium">{s.service_type || "General"}</p>
-                  {s.message && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{s.message}</p>
-                  )}
-                </div>
-              ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExploreServicesTab({
+  availableServices,
+  locale,
+  calendlyUrl,
+}: {
+  availableServices: ServiceType[];
+  locale: string;
+  calendlyUrl: string;
+}) {
+  if (availableServices.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+          <Compass className="h-7 w-7 text-green-600" />
+        </div>
+        <h3 className="font-semibold text-charcoal mb-2">You&#39;re all set!</h3>
+        <p className="text-muted-foreground text-sm">
+          You&#39;re enrolled in all of our services.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {availableServices.map((serviceType) => {
+        const meta = SERVICE_META[serviceType];
+        const Icon = meta.icon;
+        const bookingUrl = `${calendlyUrl}?utm_source=portal&utm_medium=explore&utm_campaign=${serviceType}`;
+
+        return (
+          <div
+            key={serviceType}
+            className="bg-white rounded-xl border border-border p-5 flex flex-col"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-charcoal">{meta.label}</h3>
             </div>
-          ) : (
-            <EmptyState locale={locale} />
-          )
-        )}
-
-        {/* Case Detail Modal */}
-        {selectedCase && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setSelectedCase(null)}>
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-charcoal">Case Details</h2>
-                <button onClick={() => setSelectedCase(null)} className="text-muted-foreground hover:text-charcoal text-xl">✕</button>
-              </div>
-
-              <div className="space-y-4">
-                <DetailRow label="Service" value={selectedCase.service_type} />
-                <DetailRow label="Form Codes" value={selectedCase.form_codes} />
-                <DetailRow label="Status" value={STATUS_CONFIG[selectedCase.status]?.label || selectedCase.status} />
-                <DetailRow label="Payment" value={PAYMENT_STATUS[selectedCase.payment_status]?.label || selectedCase.payment_status} />
-                <DetailRow label="USCIS Receipt" value={selectedCase.uscis_receipt} />
-                <DetailRow label="Notes" value={selectedCase.notes} />
-                <DetailRow label="Last Updated" value={new Date(selectedCase.updated_at).toLocaleString()} />
-
-                {selectedCase.uscis_receipt && (
-                  <a
-                    href={`https://egov.uscis.gov/casestatus/mycasestatus.do`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-teal-dark transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Check USCIS Status
-                  </a>
-                )}
-              </div>
+            <p className="text-sm text-muted-foreground mb-4 flex-1">
+              {EXPLORE_DESCRIPTIONS[serviceType]}
+            </p>
+            <div className="flex items-center gap-3 mt-auto">
+              <Link
+                href={`/${locale}${meta.infoPath}`}
+                className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
+              >
+                Learn More
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-teal-dark transition-colors"
+              >
+                Request Consultation
+              </a>
             </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground font-medium uppercase">{label}</p>
-      <p className="text-sm text-charcoal">{value}</p>
-    </div>
-  );
-}
-
-function EmptyState({ locale }: { locale: string }) {
-  return (
-    <div className="text-center py-16">
-      <div className="w-16 h-16 rounded-full bg-teal-light flex items-center justify-center mx-auto mb-4">
-        <Briefcase className="h-7 w-7 text-primary" />
-      </div>
-      <h3 className="font-semibold text-charcoal mb-2">
-        {locale === "vi" ? "Chưa có dữ liệu" : "Nothing here yet"}
-      </h3>
-      <p className="text-muted-foreground text-sm mb-4">
-        {locale === "vi"
-          ? "Liên hệ chúng tôi để bắt đầu."
-          : "Contact us to get started with your case."}
-      </p>
-      <Link
-        href={`/${locale}/contact`}
-        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-teal-dark transition-colors"
-      >
-        <Calendar className="h-4 w-4" />
-        Book a Free Consultation
-      </Link>
+        );
+      })}
     </div>
   );
 }
