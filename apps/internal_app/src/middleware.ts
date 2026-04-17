@@ -13,9 +13,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -32,14 +30,41 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const isAuthPage = pathname.startsWith('/login')
 
-  if (!user && !isAuthPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Not logged in
+  if (!user) {
+    if (!isAuthPage) return NextResponse.redirect(new URL('/login', request.url))
+    return supabaseResponse
   }
 
-  if (user && isAuthPage) {
+  // Logged in — single profile query covers all branches below
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const role = profile?.role as string | undefined
+
+  // Client accounts do not belong in the internal app
+  if (role === 'client') {
+    const url = new URL('/login', request.url)
+    url.searchParams.set('error', 'client_redirect')
+    return NextResponse.redirect(url)
+  }
+
+  // Logged-in admin/staff visiting login → send to dashboard
+  if (isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
+  // Block staff from routes they cannot access
+  const STAFF_BLOCKED = ['/jobs']
+  if (role === 'staff' && STAFF_BLOCKED.some((p) => pathname.startsWith(p))) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Attach role to response header for use in layouts
+  supabaseResponse.headers.set('x-user-role', role ?? '')
   return supabaseResponse
 }
 
