@@ -37,7 +37,7 @@ export default async function AppLayout({
     .eq('id', user.id)
     .single()
 
-  const isAdmin = profile?.role === 'ultimate_admin'
+  const isAdmin = profile?.role === 'admin'
   const displayName = profile?.name || user.email?.split('@')[0] || 'Staff'
   const initials = displayName
     .split(' ')
@@ -47,7 +47,9 @@ export default async function AppLayout({
     .toUpperCase()
     .slice(0, 2)
 
-  const visibleNav = NAV_ITEMS
+  const visibleNav = isAdmin
+    ? NAV_ITEMS
+    : NAV_ITEMS.filter((item) => item.href !== '/jobs')
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f7f9ff' }}>
@@ -96,7 +98,7 @@ export default async function AppLayout({
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-white truncate">{displayName}</p>
               <p className="text-xs text-slate-400 truncate capitalize">
-                {isAdmin ? 'Ultimate Admin' : 'Immigration Staff'}
+                {isAdmin ? 'Admin' : 'Staff'}
               </p>
             </div>
           </div>
