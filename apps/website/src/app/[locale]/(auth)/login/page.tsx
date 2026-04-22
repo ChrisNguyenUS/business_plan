@@ -41,13 +41,21 @@ export default function LoginPage() {
       return;
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileErr } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
 
-    const role = profile?.role;
+    if (profileErr || !profile) {
+      // Profile missing or unreadable — sign out and show a clear error
+      await supabase.auth.signOut();
+      setError('Could not load your account profile. Please contact support.');
+      setLoading(false);
+      return;
+    }
+
+    const role = profile.role;
 
     if (role === 'staff') {
       await supabase.auth.signOut();

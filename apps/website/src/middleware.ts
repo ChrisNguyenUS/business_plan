@@ -81,11 +81,13 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role as string | undefined;
 
+  // Admin paths: only allow 'admin' role
   if (isAdminPath && role !== 'admin') {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
-  if (isPortalPath && role !== 'client') {
+  // Portal paths: allow 'client' role; admins may also access portal
+  if (isPortalPath && role !== 'client' && role !== 'admin') {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
