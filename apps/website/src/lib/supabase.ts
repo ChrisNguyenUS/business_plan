@@ -1,12 +1,13 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 // Browser client (used in client components)
-// Gracefully handles missing env during static build
+// Automatically handles cookie-based sessions for SSR compatibility
 export const supabase: SupabaseClient = supabaseUrl
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
   : (null as unknown as SupabaseClient);
 
 // Server client (used in API routes with elevated privileges)
