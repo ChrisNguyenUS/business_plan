@@ -47,13 +47,22 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             </div>
           </div>
           <div className="rounded-2xl overflow-hidden shadow-2xl">
-            <Image
-              src="/images/about.png"
-              alt="Manna One Solution Office"
-              width={600}
-              height={400}
-              className="w-full h-80 lg:h-[400px] object-cover"
-            />
+            {d.about_photo ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={d.about_photo}
+                alt="Manna One Solution Office"
+                className="w-full h-80 lg:h-[400px] object-cover"
+              />
+            ) : (
+              <Image
+                src="/images/about.png"
+                alt="Manna One Solution Office"
+                width={600}
+                height={400}
+                className="w-full h-80 lg:h-[400px] object-cover"
+              />
+            )}
           </div>
         </div>
 

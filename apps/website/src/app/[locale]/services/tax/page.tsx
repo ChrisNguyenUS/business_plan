@@ -24,14 +24,18 @@ export default async function TaxPage({ params }: { params: Promise<{ locale: st
     <ServicePageTemplate
       title={d.tax_title}
       desc={d.tax_desc}
-      services={[d.tax_s1, d.tax_s2, d.tax_s3, d.tax_s4]}
-      pricing={[
-        { service: d.tax_pricing_1, price: d.tax_price_1 },
-        { service: d.tax_pricing_2, price: d.tax_price_2 },
-        { service: d.tax_pricing_3, price: d.tax_price_3 },
-        { service: d.tax_pricing_4, price: d.tax_price_4 },
-        { service: d.tax_pricing_5, price: d.tax_price_5 },
-      ]}
+      services={Array.isArray(d.tax_services) && d.tax_services.length > 0 ? [] : [d.tax_s1, d.tax_s2, d.tax_s3, d.tax_s4]}
+      pricing={
+        Array.isArray(d.tax_services) && d.tax_services.length > 0
+          ? d.tax_services.map((s) => ({ service: s.name, price: s.price }))
+          : [
+              { service: d.tax_pricing_1, price: d.tax_price_1 },
+              { service: d.tax_pricing_2, price: d.tax_price_2 },
+              { service: d.tax_pricing_3, price: d.tax_price_3 },
+              { service: d.tax_pricing_4, price: d.tax_price_4 },
+              { service: d.tax_pricing_5, price: d.tax_price_5 },
+            ]
+      }
       faqs={faqs}
       badgeText="EFIN Licensed"
       ctaText={d.services_cta}

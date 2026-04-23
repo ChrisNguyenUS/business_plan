@@ -38,17 +38,19 @@ export default function ServicePageTemplate({
         </div>
 
         {/* Services List */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold text-charcoal mb-6">{dictionary.services_what_we_offer}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {services.map((s, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-teal-light/50 border border-border">
-                <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                <span className="text-charcoal text-sm font-medium">{s}</span>
-              </div>
-            ))}
+        {services && services.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-charcoal mb-6">{dictionary.services_what_we_offer}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {services.map((s, i) => (
+                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-teal-light/50 border border-border">
+                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span className="text-charcoal text-sm font-medium">{s}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pricing */}
         {pricing && pricing.length > 0 && (

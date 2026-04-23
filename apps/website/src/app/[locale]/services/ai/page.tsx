@@ -24,7 +24,12 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
     <ServicePageTemplate
       title={d.ai_title}
       desc={d.ai_desc}
-      services={[d.ai_s1, d.ai_s2, d.ai_s3, d.ai_s4]}
+      services={Array.isArray(d.ai_services) && d.ai_services.length > 0 ? [] : [d.ai_s1, d.ai_s2, d.ai_s3, d.ai_s4]}
+      pricing={
+        Array.isArray(d.ai_services) && d.ai_services.length > 0
+          ? d.ai_services.map((s) => ({ service: s.name, price: s.price }))
+          : undefined
+      }
       faqs={faqs}
       ctaText={d.ai_cta}
       dictionary={d}
