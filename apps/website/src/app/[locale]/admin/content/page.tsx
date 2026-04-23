@@ -23,6 +23,41 @@ type ImmForm = {
   uscisFeeOnline: string;
 };
 
+const DEFAULT_TAX_OFFERINGS = [
+  { id: "1", name: "Individual Tax Preparation" },
+  { id: "2", name: "Extension Filing (Form 4868)" },
+  { id: "3", name: "Business Tax (LLC/S-Corp)" },
+  { id: "4", name: "LLC Setup (Full Package)" }
+];
+
+const DEFAULT_TAX_SERVICES = [
+  { id: "1", name: "Extension Filing (Form 4868)", price: "$50 – $75" },
+  { id: "2", name: "Individual Tax (Simple)", price: "$150 – $250" },
+  { id: "3", name: "Individual Tax (Complex)", price: "$250 – $400" },
+  { id: "4", name: "Business Tax (LLC/S-Corp)", price: "$400 – $800" },
+  { id: "5", name: "LLC Setup (Full Package)", price: "$300 – $500 + state fee" }
+];
+
+const DEFAULT_INSURANCE_OFFERINGS = [
+  { id: "1", name: "Life Insurance" },
+  { id: "2", name: "Annuity Plans" },
+  { id: "3", name: "Retirement Planning" }
+];
+
+const DEFAULT_IMMIGRATION_OFFERINGS = [
+  { id: "1", name: "N-400 Citizenship Application" },
+  { id: "2", name: "Green Card Applications" },
+  { id: "3", name: "Visa Renewal" },
+  { id: "4", name: "Immigration Consultation" }
+];
+
+const DEFAULT_AI_OFFERINGS = [
+  { id: "1", name: "Workflow Automation" },
+  { id: "2", name: "AI Tools for SMBs" },
+  { id: "3", name: "Business Digitization" },
+  { id: "4", name: "Monthly Retainer Support" }
+];
+
 export default function AdminContent() {
   const [activeSection, setActiveSection] = useState<ContentSection>("homepage");
   const [content, setContent] = useState<Record<string, any>>({});
@@ -195,7 +230,7 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">Tax & Business</h2>
                 <ServiceCategoryPanel 
                   title="What We Offer (Top List)" 
-                  items={content.tax_offerings || []} 
+                  items={(content.tax_offerings && content.tax_offerings.length > 0) ? content.tax_offerings : DEFAULT_TAX_OFFERINGS}
                   onChange={(items) => updateField("tax_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
@@ -203,7 +238,7 @@ export default function AdminContent() {
                 />
                 <ServiceCategoryPanel 
                   title="Pricing (Bottom Table)" 
-                  items={content.tax_services || []} 
+                  items={(content.tax_services && content.tax_services.length > 0) ? content.tax_services : DEFAULT_TAX_SERVICES}
                   onChange={(items) => updateField("tax_services", items)}
                   headerColor="bg-amber-100/50"
                   borderColor="border-amber-200"
@@ -214,7 +249,7 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">Insurance & Finance</h2>
                 <ServiceCategoryPanel 
                   title="What We Offer (Top List)" 
-                  items={content.insurance_offerings || []} 
+                  items={(content.insurance_offerings && content.insurance_offerings.length > 0) ? content.insurance_offerings : DEFAULT_INSURANCE_OFFERINGS}
                   onChange={(items) => updateField("insurance_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
@@ -233,7 +268,7 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">Immigration</h2>
                 <ServiceCategoryPanel 
                   title="What We Offer (Top List)" 
-                  items={content.immigration_offerings || []} 
+                  items={(content.immigration_offerings && content.immigration_offerings.length > 0) ? content.immigration_offerings : DEFAULT_IMMIGRATION_OFFERINGS}
                   onChange={(items) => updateField("immigration_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
@@ -316,7 +351,7 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">AI / Automation</h2>
                 <ServiceCategoryPanel 
                   title="What We Offer (Top List)" 
-                  items={content.ai_offerings || []} 
+                  items={(content.ai_offerings && content.ai_offerings.length > 0) ? content.ai_offerings : DEFAULT_AI_OFFERINGS} 
                   onChange={(items) => updateField("ai_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"

@@ -111,7 +111,7 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
         }
 
         if (row.section === "services") {
-          if (content.tax_services !== undefined) dbDict.tax_services = content.tax_services;
+          if (content.tax_services && content.tax_services.length > 0) dbDict.tax_services = content.tax_services;
           else dbDict.tax_services = [
             { id: "1", name: dbDict.tax_pricing_1, price: dbDict.tax_price_1 },
             { id: "2", name: dbDict.tax_pricing_2, price: dbDict.tax_price_2 },
@@ -124,7 +124,7 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           if (content.immigration_services !== undefined) dbDict.immigration_services = content.immigration_services;
           if (content.ai_services !== undefined) dbDict.ai_services = content.ai_services;
 
-          if (content.tax_offerings !== undefined) dbDict.tax_offerings = content.tax_offerings;
+          if (content.tax_offerings && content.tax_offerings.length > 0) dbDict.tax_offerings = content.tax_offerings;
           else dbDict.tax_offerings = [
             { id: "1", name: dbDict.tax_s1 },
             { id: "2", name: dbDict.tax_s2 },
@@ -132,14 +132,14 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             { id: "4", name: dbDict.tax_s4 }
           ];
 
-          if (content.insurance_offerings !== undefined) dbDict.insurance_offerings = content.insurance_offerings;
+          if (content.insurance_offerings && content.insurance_offerings.length > 0) dbDict.insurance_offerings = content.insurance_offerings;
           else dbDict.insurance_offerings = [
             { id: "1", name: dbDict.insurance_s1 },
             { id: "2", name: dbDict.insurance_s2 },
             { id: "3", name: dbDict.insurance_s3 }
           ];
 
-          if (content.immigration_offerings !== undefined) dbDict.immigration_offerings = content.immigration_offerings;
+          if (content.immigration_offerings && content.immigration_offerings.length > 0) dbDict.immigration_offerings = content.immigration_offerings;
           else dbDict.immigration_offerings = [
             { id: "1", name: dbDict.immigration_s1 },
             { id: "2", name: dbDict.immigration_s2 },
@@ -147,7 +147,7 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             { id: "4", name: dbDict.immigration_s4 }
           ];
 
-          if (content.ai_offerings !== undefined) dbDict.ai_offerings = content.ai_offerings;
+          if (content.ai_offerings && content.ai_offerings.length > 0) dbDict.ai_offerings = content.ai_offerings;
           else dbDict.ai_offerings = [
             { id: "1", name: dbDict.ai_s1 },
             { id: "2", name: dbDict.ai_s2 },
@@ -157,7 +157,7 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           
           if (content.uscis_date) dbDict.uscis_date = content.uscis_date;
 
-          if (content.immigration_form_bundles !== undefined) {
+          if (content.immigration_form_bundles && content.immigration_form_bundles.length > 0) {
             dbDict.immigration_form_bundles = content.immigration_form_bundles;
           } else {
             dbDict.immigration_form_bundles = [
