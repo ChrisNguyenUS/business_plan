@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertCircle, Calendar } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { Locale } from "@/lib/i18n/config";
@@ -97,7 +97,22 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
           </p>
         </div>
 
-        {/* Services + Pricing */}
+        {/* What We Offer */}
+        {Array.isArray(d.immigration_offerings) && d.immigration_offerings.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-charcoal mb-6">What We Offer / Dịch Vụ Của Chúng Tôi</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {d.immigration_offerings.map((s: any, i: number) => (
+                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-teal-light/50 border border-border">
+                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <span className="text-charcoal text-sm font-medium">{s.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pricing */}
         <div className="mb-12">
           <h2 className="text-xl font-bold text-charcoal mb-2">Services & Transparent Pricing</h2>
           <p className="text-muted-foreground text-sm mb-6">

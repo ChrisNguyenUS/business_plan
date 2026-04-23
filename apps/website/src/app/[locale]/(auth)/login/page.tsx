@@ -64,7 +64,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push(role === 'admin' ? `/${locale}/admin` : `/${locale}/portal`);
+    // Force full page reload to ensure middleware sees the new cookie and clears Next.js cache
+    window.location.href = role === 'admin' ? `/${locale}/admin` : `/${locale}/portal`;
   }
 
   return (

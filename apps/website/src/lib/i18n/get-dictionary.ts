@@ -14,6 +14,10 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
   insurance_services?: { id: string; name: string; price: string }[];
   immigration_services?: { id: string; name: string; price: string }[];
   ai_services?: { id: string; name: string; price: string }[];
+  tax_offerings?: { id: string; name: string }[];
+  insurance_offerings?: { id: string; name: string }[];
+  immigration_offerings?: { id: string; name: string }[];
+  ai_offerings?: { id: string; name: string }[];
   uscis_date?: string;
   i90_form?: any;
   marriage_form?: any;
@@ -83,6 +87,11 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           if (content.insurance_services) dbDict.insurance_services = content.insurance_services;
           if (content.immigration_services) dbDict.immigration_services = content.immigration_services;
           if (content.ai_services) dbDict.ai_services = content.ai_services;
+
+          if (content.tax_offerings) dbDict.tax_offerings = content.tax_offerings;
+          if (content.insurance_offerings) dbDict.insurance_offerings = content.insurance_offerings;
+          if (content.immigration_offerings) dbDict.immigration_offerings = content.immigration_offerings;
+          if (content.ai_offerings) dbDict.ai_offerings = content.ai_offerings;
           
           if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
           if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;

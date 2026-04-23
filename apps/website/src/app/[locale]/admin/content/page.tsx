@@ -10,7 +10,6 @@ const SECTIONS: { key: ContentSection; label: string; icon: any }[] = [
   { key: "homepage", label: "Home", icon: Type },
   { key: "about", label: "About", icon: ImageIcon },
   { key: "services", label: "Services", icon: LayoutGrid },
-  { key: "immigration_pricing", label: "Immigration Pricing", icon: DollarSign },
 ];
 
 type ServiceItem = { id: string; name: string; price: string };
@@ -32,13 +31,26 @@ export default function AdminContent() {
   const [saved, setSaved] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from("site_content").select("*").eq("section", activeSection).single();
-    if (data) {
-      setContent(typeof data.content === "string" ? JSON.parse(data.content) : data.content || {});
-    } else {
+    try {
+      const fetchPromise = supabase.from("site_content").select("*").eq("section", activeSection).single();
+      // 5 second timeout to prevent infinite spinning if Safari network stack hangs on tab resume
+      const timeoutPromise = new Promise<{ data: null, error: any }>((resolve) => 
+        setTimeout(() => resolve({ data: null, error: new Error("timeout") }), 5000)
+      );
+      
+      const { data } = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      if (data) {
+        setContent(typeof data.content === "string" ? JSON.parse(data.content) : data.content || {});
+      } else {
+        setContent({});
+      }
+    } catch (err) {
+      console.error(err);
       setContent({});
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [activeSection]);
 
   useEffect(() => {
@@ -176,79 +188,123 @@ export default function AdminContent() {
           )}
 
           {activeSection === "services" && (
-            <div>
-              <p className="text-sm text-muted-foreground mb-4">Add, edit, reorder or remove individual services under each category. Changes are saved when you click <strong className="text-charcoal">Save Changes</strong> above.</p>
+            <div className="space-y-8">
+              <p className="text-sm text-muted-foreground">Manage your service offerings and detailed pricing. Use "What We Offer" to build the top list of services on the page, and "Pricing" to build the detailed cost breakdown table.</p>
               
-              <div className="space-y-4">
+              <div className="bg-white rounded-xl border border-border p-6 space-y-4">
+                <h2 className="text-xl font-bold text-charcoal">Tax & Business</h2>
                 <ServiceCategoryPanel 
-                  title="Tax & Business" 
+                  title="What We Offer (Top List)" 
+                  items={content.tax_offerings || []} 
+                  onChange={(items) => updateField("tax_offerings", items)}
+                  headerColor="bg-slate-100"
+                  borderColor="border-slate-200"
+                  hasPrice={false}
+                />
+                <ServiceCategoryPanel 
+                  title="Pricing (Bottom Table)" 
                   items={content.tax_services || []} 
                   onChange={(items) => updateField("tax_services", items)}
                   headerColor="bg-amber-100/50"
                   borderColor="border-amber-200"
                 />
+              </div>
+
+              <div className="bg-white rounded-xl border border-border p-6 space-y-4">
+                <h2 className="text-xl font-bold text-charcoal">Insurance & Finance</h2>
                 <ServiceCategoryPanel 
-                  title="Insurance & Finance" 
+                  title="What We Offer (Top List)" 
+                  items={content.insurance_offerings || []} 
+                  onChange={(items) => updateField("insurance_offerings", items)}
+                  headerColor="bg-slate-100"
+                  borderColor="border-slate-200"
+                  hasPrice={false}
+                />
+                <ServiceCategoryPanel 
+                  title="Pricing (Bottom Table)" 
                   items={content.insurance_services || []} 
                   onChange={(items) => updateField("insurance_services", items)}
                   headerColor="bg-blue-100/50"
                   borderColor="border-blue-200"
                 />
+              </div>
+
+              <div className="bg-white rounded-xl border border-border p-6 space-y-4">
+                <h2 className="text-xl font-bold text-charcoal">Immigration</h2>
                 <ServiceCategoryPanel 
-                  title="Immigration" 
+                  title="What We Offer (Top List)" 
+                  items={content.immigration_offerings || []} 
+                  onChange={(items) => updateField("immigration_offerings", items)}
+                  headerColor="bg-slate-100"
+                  borderColor="border-slate-200"
+                  hasPrice={false}
+                />
+                <ServiceCategoryPanel 
+                  title="Other Pricing (Bottom Table)" 
                   items={content.immigration_services || []} 
                   onChange={(items) => updateField("immigration_services", items)}
                   headerColor="bg-green-100/50"
                   borderColor="border-green-200"
                 />
+
+                <div className="pt-4 mt-6 border-t border-border space-y-6">
+                  <h3 className="text-lg font-bold text-charcoal">Immigration Forms Bundles</h3>
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
+                    All prices are Service Fee + USCIS Fee. USCIS fees are verified as of the date below and are subject to change.
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-primary">USCIS Fees Verified Date (displayed on site)</label>
+                    <input 
+                      type="text" 
+                      value={content.uscis_date || "April 2026"} 
+                      onChange={(e) => updateField("uscis_date", e.target.value)}
+                      className="w-full h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <ImmPricingFormCard 
+                      title="I-90 Green Card Renewal" 
+                      form={content.i90_form || { serviceFee: "250", uscisFeePaper: "465", uscisFeeOnline: "415" }}
+                      onChange={(f) => updateField("i90_form", f)}
+                    />
+                    <ImmPricingFormCard 
+                      title="⭐ Marriage Green Card Bundle" 
+                      isBundle
+                      form={content.marriage_form || { serviceFee: "1085", uscisFeePaper: "2115", uscisFeeOnline: "" }}
+                      onChange={(f) => updateField("marriage_form", f)}
+                    />
+                    <ImmPricingFormCard 
+                      title="N-400 Citizenship Application" 
+                      form={content.n400_form || { serviceFee: "550", uscisFeePaper: "760", uscisFeeOnline: "710" }}
+                      onChange={(f) => updateField("n400_form", f)}
+                    />
+                    <ImmPricingFormCard 
+                      title="I-131 Travel Document" 
+                      form={content.i131_form || { serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" }}
+                      onChange={(f) => updateField("i131_form", f)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-border p-6 space-y-4">
+                <h2 className="text-xl font-bold text-charcoal">AI / Automation</h2>
                 <ServiceCategoryPanel 
-                  title="AI / Automation" 
+                  title="What We Offer (Top List)" 
+                  items={content.ai_offerings || []} 
+                  onChange={(items) => updateField("ai_offerings", items)}
+                  headerColor="bg-slate-100"
+                  borderColor="border-slate-200"
+                  hasPrice={false}
+                />
+                <ServiceCategoryPanel 
+                  title="Pricing (Bottom Table)" 
                   items={content.ai_services || []} 
                   onChange={(items) => updateField("ai_services", items)}
                   headerColor="bg-purple-100/50"
                   borderColor="border-purple-200"
-                />
-              </div>
-            </div>
-          )}
-
-          {activeSection === "immigration_pricing" && (
-            <div className="space-y-6">
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
-                All prices are Service Fee + USCIS Fee. USCIS fees are verified as of the date below and are subject to change.
-              </div>
-
-              <div className="bg-white rounded-xl border border-border p-6 space-y-2">
-                <label className="block text-sm font-semibold text-primary">USCIS Fees Verified Date (displayed on site)</label>
-                <input 
-                  type="text" 
-                  value={content.uscis_date || "April 2026"} 
-                  onChange={(e) => updateField("uscis_date", e.target.value)}
-                  className="w-full h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <ImmPricingFormCard 
-                  title="I-90 Green Card Renewal" 
-                  form={content.i90_form || { serviceFee: "250", uscisFeePaper: "465", uscisFeeOnline: "415" }}
-                  onChange={(f) => updateField("i90_form", f)}
-                />
-                <ImmPricingFormCard 
-                  title="⭐ Marriage Green Card Bundle" 
-                  isBundle
-                  form={content.marriage_form || { serviceFee: "1085", uscisFeePaper: "2115", uscisFeeOnline: "" }}
-                  onChange={(f) => updateField("marriage_form", f)}
-                />
-                <ImmPricingFormCard 
-                  title="N-400 Citizenship Application" 
-                  form={content.n400_form || { serviceFee: "550", uscisFeePaper: "760", uscisFeeOnline: "710" }}
-                  onChange={(f) => updateField("n400_form", f)}
-                />
-                <ImmPricingFormCard 
-                  title="I-131 Travel Document" 
-                  form={content.i131_form || { serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" }}
-                  onChange={(f) => updateField("i131_form", f)}
                 />
               </div>
             </div>
@@ -272,7 +328,7 @@ function ContentField({ label, value, onChange, multiline = false }: { label: st
   );
 }
 
-function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor }: { title: string, items: ServiceItem[], onChange: (items: ServiceItem[]) => void, headerColor: string, borderColor: string }) {
+function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor, hasPrice = true }: { title: string, items: any[], onChange: (items: any[]) => void, headerColor: string, borderColor: string, hasPrice?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const moveItem = (index: number, dir: number) => {
@@ -284,7 +340,7 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
     onChange(newItems);
   };
 
-  const updateItem = (index: number, key: keyof ServiceItem, value: string) => {
+  const updateItem = (index: number, key: string, value: string) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [key]: value };
     onChange(newItems);
@@ -295,7 +351,7 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
   };
 
   const addItem = () => {
-    onChange([...items, { id: Date.now().toString(), name: "", price: "" }]);
+    onChange([...items, { id: Date.now().toString(), name: "", ...(hasPrice ? { price: "" } : {}) }]);
     setIsOpen(true);
   };
 
@@ -307,7 +363,7 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
       >
         <div className="flex items-center gap-2">
           <span className="font-bold text-charcoal">{title}</span>
-          <span className="text-xs text-muted-foreground">({items.length} services)</span>
+          <span className="text-xs text-muted-foreground">({items.length} items)</span>
         </div>
         {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
       </button>
@@ -326,18 +382,20 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
               </div>
               <input 
                 type="text" 
-                placeholder="Service Name" 
+                placeholder="Name" 
                 value={item.name} 
                 onChange={(e) => updateItem(index, "name", e.target.value)}
                 className="flex-1 h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
               />
-              <input 
-                type="text" 
-                placeholder="Price / Desc" 
-                value={item.price} 
-                onChange={(e) => updateItem(index, "price", e.target.value)}
-                className="w-48 h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
-              />
+              {hasPrice && (
+                <input 
+                  type="text" 
+                  placeholder="Price / Desc" 
+                  value={item.price || ""} 
+                  onChange={(e) => updateItem(index, "price", e.target.value)}
+                  className="w-48 h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
+                />
+              )}
               <button onClick={() => removeItem(index)} className="p-2 text-muted-foreground hover:text-red-500 transition-colors">
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -349,7 +407,7 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
             className="w-full flex items-center justify-center gap-2 py-3 mt-2 border border-dashed border-border rounded-lg text-sm text-muted-foreground hover:text-primary hover:border-primary transition-colors bg-white"
           >
             <Plus className="h-4 w-4" />
-            Add Service to {title}
+            Add item
           </button>
         </div>
       )}
