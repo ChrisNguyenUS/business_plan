@@ -16,9 +16,9 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
   const d = await getDictionary(locale as Locale);
 
   const services = [
-    { name: "N-400 Citizenship Application", vi: "Đơn Xin Quốc Tịch N-400", price: "$550 service + $760 USCIS = $1,310 total" },
-    { name: "I-90 Green Card Renewal", vi: "Gia Hạn Thẻ Xanh I-90", price: "$250 service + $465 USCIS = $715 total" },
-    { name: "I-131 Travel Document", vi: "Giấy Đi Lại I-131", price: "$250 service + $630 USCIS = $880 total" },
+    { name: "N-400 Citizenship Application", vi: "Đơn Xin Quốc Tịch N-400", price: d.imm_n400_price || "$550 service + $760 USCIS = $1,310 total" },
+    { name: "I-90 Green Card Renewal", vi: "Gia Hạn Thẻ Xanh I-90", price: d.imm_gc_price || "$250 service + $465 USCIS = $715 total" },
+    { name: "I-131 Travel Document", vi: "Giấy Đi Lại I-131", price: d.imm_visa_price || "$250 service + $630 USCIS = $880 total" },
     { name: "I-765 Work Permit (EAD)", vi: "Giấy Phép Làm Việc I-765", price: "$250 service + $520 USCIS = $770 total" },
     { name: "I-751 Remove Conditions", vi: "Xóa Điều Kiện Thẻ Xanh I-751", price: "$550 service + $750 USCIS = $1,300 total" },
     { name: "Marriage Green Card Bundle", vi: "Trọn Gói Thẻ Xanh Kết Hôn", price: "I-130 + I-485 + I-765 + I-131 + I-864 = $3,200 total" },
@@ -26,6 +26,7 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
     { name: "I-912 Fee Waiver", vi: "Miễn Phí USCIS I-912", price: "$150 service (USCIS fee $0) = $150 total" },
     { name: "AR-11 Change of Address", vi: "Đổi Địa Chỉ AR-11", price: "$50 service (USCIS fee $0) = $50 total" },
     { name: "Certified Translation (per page)", vi: "Dịch Thuật Công Chứng", price: "$25 per page" },
+    { name: "General Consultation", vi: "Tư Vấn Di Trú", price: d.imm_consult_price || "Free consultation for Texas residents" }
   ];
 
   const faqs = [
