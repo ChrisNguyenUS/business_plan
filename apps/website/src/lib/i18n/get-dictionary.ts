@@ -38,11 +38,45 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
       // Create a mutable copy of the dictionary to allow overrides
       const dbDict = { ...dictionary } as any;
 
+      const hasServicesRow = siteContent.some(row => row.section === "services");
+
+      if (!hasServicesRow) {
+        dbDict.tax_offerings = [
+          { id: "1", name: dbDict.tax_s1 },
+          { id: "2", name: dbDict.tax_s2 },
+          { id: "3", name: dbDict.tax_s3 },
+          { id: "4", name: dbDict.tax_s4 }
+        ];
+        dbDict.insurance_offerings = [
+          { id: "1", name: dbDict.insurance_s1 },
+          { id: "2", name: dbDict.insurance_s2 },
+          { id: "3", name: dbDict.insurance_s3 }
+        ];
+        dbDict.immigration_offerings = [
+          { id: "1", name: dbDict.immigration_s1 },
+          { id: "2", name: dbDict.immigration_s2 },
+          { id: "3", name: dbDict.immigration_s3 },
+          { id: "4", name: dbDict.immigration_s4 }
+        ];
+        dbDict.ai_offerings = [
+          { id: "1", name: dbDict.ai_s1 },
+          { id: "2", name: dbDict.ai_s2 },
+          { id: "3", name: dbDict.ai_s3 },
+          { id: "4", name: dbDict.ai_s4 }
+        ];
+        dbDict.tax_services = [
+          { id: "1", name: dbDict.tax_pricing_1, price: dbDict.tax_price_1 },
+          { id: "2", name: dbDict.tax_pricing_2, price: dbDict.tax_price_2 },
+          { id: "3", name: dbDict.tax_pricing_3, price: dbDict.tax_price_3 },
+          { id: "4", name: dbDict.tax_pricing_4, price: dbDict.tax_price_4 },
+          { id: "5", name: dbDict.tax_pricing_5, price: dbDict.tax_price_5 }
+        ];
+      }
+
       siteContent.forEach((row) => {
         const content = typeof row.content === "string" ? JSON.parse(row.content) : row.content;
         
         if (row.section === "homepage") {
-          // Merge bilingual content based on current locale
           if (locale === "en") {
             if (content.hero_headline_en) dbDict.hero_headline = content.hero_headline_en;
             if (content.hero_sub_en) dbDict.hero_sub = content.hero_sub_en;
@@ -53,13 +87,11 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           
           if (content.hero_bg_image) dbDict.hero_bg_image = content.hero_bg_image;
           
-          // Badges are common for both locales, or they can be translated if the admin puts bilingual text
           if (content.badge_1) dbDict.why_bilingual = content.badge_1;
           if (content.badge_2) dbDict.why_efin = content.badge_2;
           if (content.badge_3) dbDict.why_insurance_license = content.badge_3;
           if (content.badge_4) dbDict.why_ai = content.badge_4;
 
-          // Legacy fallbacks (in case Admin hasn't updated to new format)
           if (content.hero_headline && !content.hero_headline_en && locale === "en") dbDict.hero_headline = content.hero_headline;
           if (content.hero_subtitle && !content.hero_sub_en && locale === "en") dbDict.hero_sub = content.hero_subtitle;
           if (content.cta_text) dbDict.hero_cta1 = content.cta_text;
@@ -76,22 +108,55 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           
           if (content.about_photo) dbDict.about_photo = content.about_photo;
 
-          // Legacy fallbacks
           if (content.mission && !content.about_mission_en && locale === "en") dbDict.about_mission = content.mission;
           if (content.story) dbDict.about_story = content.story;
           if (content.areas) dbDict.about_areas = content.areas;
         }
 
         if (row.section === "services") {
-          if (content.tax_services) dbDict.tax_services = content.tax_services;
-          if (content.insurance_services) dbDict.insurance_services = content.insurance_services;
-          if (content.immigration_services) dbDict.immigration_services = content.immigration_services;
-          if (content.ai_services) dbDict.ai_services = content.ai_services;
+          if (content.tax_services !== undefined) dbDict.tax_services = content.tax_services;
+          else dbDict.tax_services = [
+            { id: "1", name: dbDict.tax_pricing_1, price: dbDict.tax_price_1 },
+            { id: "2", name: dbDict.tax_pricing_2, price: dbDict.tax_price_2 },
+            { id: "3", name: dbDict.tax_pricing_3, price: dbDict.tax_price_3 },
+            { id: "4", name: dbDict.tax_pricing_4, price: dbDict.tax_price_4 },
+            { id: "5", name: dbDict.tax_pricing_5, price: dbDict.tax_price_5 }
+          ];
 
-          if (content.tax_offerings) dbDict.tax_offerings = content.tax_offerings;
-          if (content.insurance_offerings) dbDict.insurance_offerings = content.insurance_offerings;
-          if (content.immigration_offerings) dbDict.immigration_offerings = content.immigration_offerings;
-          if (content.ai_offerings) dbDict.ai_offerings = content.ai_offerings;
+          if (content.insurance_services !== undefined) dbDict.insurance_services = content.insurance_services;
+          if (content.immigration_services !== undefined) dbDict.immigration_services = content.immigration_services;
+          if (content.ai_services !== undefined) dbDict.ai_services = content.ai_services;
+
+          if (content.tax_offerings !== undefined) dbDict.tax_offerings = content.tax_offerings;
+          else dbDict.tax_offerings = [
+            { id: "1", name: dbDict.tax_s1 },
+            { id: "2", name: dbDict.tax_s2 },
+            { id: "3", name: dbDict.tax_s3 },
+            { id: "4", name: dbDict.tax_s4 }
+          ];
+
+          if (content.insurance_offerings !== undefined) dbDict.insurance_offerings = content.insurance_offerings;
+          else dbDict.insurance_offerings = [
+            { id: "1", name: dbDict.insurance_s1 },
+            { id: "2", name: dbDict.insurance_s2 },
+            { id: "3", name: dbDict.insurance_s3 }
+          ];
+
+          if (content.immigration_offerings !== undefined) dbDict.immigration_offerings = content.immigration_offerings;
+          else dbDict.immigration_offerings = [
+            { id: "1", name: dbDict.immigration_s1 },
+            { id: "2", name: dbDict.immigration_s2 },
+            { id: "3", name: dbDict.immigration_s3 },
+            { id: "4", name: dbDict.immigration_s4 }
+          ];
+
+          if (content.ai_offerings !== undefined) dbDict.ai_offerings = content.ai_offerings;
+          else dbDict.ai_offerings = [
+            { id: "1", name: dbDict.ai_s1 },
+            { id: "2", name: dbDict.ai_s2 },
+            { id: "3", name: dbDict.ai_s3 },
+            { id: "4", name: dbDict.ai_s4 }
+          ];
           
           if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
           if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;

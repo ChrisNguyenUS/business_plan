@@ -20,15 +20,16 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
     { q: "What is a monthly retainer?", a: "A monthly retainer gives you ongoing access to our AI and automation team. We maintain your systems, add new features, and provide priority support." },
   ];
 
+  const offerings = d.ai_offerings || [];
+  const services = d.ai_services || [];
+
   return (
     <ServicePageTemplate
       title={d.ai_title}
       desc={d.ai_desc}
-      services={Array.isArray(d.ai_offerings) && d.ai_offerings.length > 0 ? d.ai_offerings.map(o => o.name) : [d.ai_s1, d.ai_s2, d.ai_s3, d.ai_s4]}
+      services={offerings.map(o => o.name)}
       pricing={
-        Array.isArray(d.ai_services) && d.ai_services.length > 0
-          ? d.ai_services.map((s) => ({ service: s.name, price: s.price }))
-          : undefined
+        services.map((s) => ({ service: s.name, price: s.price }))
       }
       faqs={faqs}
       ctaText={d.ai_cta}
