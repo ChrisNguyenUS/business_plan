@@ -19,10 +19,7 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
   immigration_offerings?: { id: string; name: string }[];
   ai_offerings?: { id: string; name: string }[];
   uscis_date?: string;
-  i90_form?: any;
-  marriage_form?: any;
-  n400_form?: any;
-  i131_form?: any;
+  immigration_form_bundles?: { id: string; name: string; isBundle?: boolean; serviceFee: string; uscisFeePaper: string; uscisFeeOnline: string; }[];
   imm_n400_price?: string;
   imm_gc_price?: string;
   imm_visa_price?: string;
@@ -158,6 +155,19 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             { id: "4", name: dbDict.ai_s4 }
           ];
           
+          if (content.uscis_date) dbDict.uscis_date = content.uscis_date;
+
+          if (content.immigration_form_bundles !== undefined) {
+            dbDict.immigration_form_bundles = content.immigration_form_bundles;
+          } else {
+            dbDict.immigration_form_bundles = [
+              { id: "1", name: "I-90 Green Card Renewal", serviceFee: "250", uscisFeePaper: "465", uscisFeeOnline: "415" },
+              { id: "2", name: "⭐ Marriage Green Card Bundle", isBundle: true, serviceFee: "1085", uscisFeePaper: "2115", uscisFeeOnline: "" },
+              { id: "3", name: "N-400 Citizenship Application", serviceFee: "550", uscisFeePaper: "760", uscisFeeOnline: "710" },
+              { id: "4", name: "I-131 Travel Document", serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" },
+            ];
+          }
+          
           if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
           if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
           if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
@@ -165,11 +175,8 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
         }
 
         if (row.section === "immigration_pricing") {
-          if (content.uscis_date) dbDict.uscis_date = content.uscis_date;
-          if (content.i90_form) dbDict.i90_form = content.i90_form;
-          if (content.marriage_form) dbDict.marriage_form = content.marriage_form;
-          if (content.n400_form) dbDict.n400_form = content.n400_form;
-          if (content.i131_form) dbDict.i131_form = content.i131_form;
+          // Fallbacks for older data if still in this row
+          if (content.uscis_date && !dbDict.uscis_date) dbDict.uscis_date = content.uscis_date;
 
           if (content.n400_price) dbDict.imm_n400_price = content.n400_price;
           if (content.gc_price) dbDict.imm_gc_price = content.gc_price;

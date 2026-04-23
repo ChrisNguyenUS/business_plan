@@ -263,29 +263,52 @@ export default function AdminContent() {
                     />
                   </div>
 
-                  <div className="space-y-4">
-                    <ImmPricingFormCard 
-                      title="I-90 Green Card Renewal" 
-                      form={content.i90_form || { serviceFee: "250", uscisFeePaper: "465", uscisFeeOnline: "415" }}
-                      onChange={(f) => updateField("i90_form", f)}
-                    />
-                    <ImmPricingFormCard 
-                      title="⭐ Marriage Green Card Bundle" 
-                      isBundle
-                      form={content.marriage_form || { serviceFee: "1085", uscisFeePaper: "2115", uscisFeeOnline: "" }}
-                      onChange={(f) => updateField("marriage_form", f)}
-                    />
-                    <ImmPricingFormCard 
-                      title="N-400 Citizenship Application" 
-                      form={content.n400_form || { serviceFee: "550", uscisFeePaper: "760", uscisFeeOnline: "710" }}
-                      onChange={(f) => updateField("n400_form", f)}
-                    />
-                    <ImmPricingFormCard 
-                      title="I-131 Travel Document" 
-                      form={content.i131_form || { serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" }}
-                      onChange={(f) => updateField("i131_form", f)}
-                    />
-                  </div>
+                    {(() => {
+                      const defaultImmBundles: ImmForm[] = [
+                        { id: "1", name: "I-90 Green Card Renewal", serviceFee: "250", uscisFeePaper: "465", uscisFeeOnline: "415" },
+                        { id: "2", name: "⭐ Marriage Green Card Bundle", isBundle: true, serviceFee: "1085", uscisFeePaper: "2115", uscisFeeOnline: "" },
+                        { id: "3", name: "N-400 Citizenship Application", serviceFee: "550", uscisFeePaper: "760", uscisFeeOnline: "710" },
+                        { id: "4", name: "I-131 Travel Document", serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" },
+                      ];
+                      
+                      const immBundles: ImmForm[] = content.immigration_form_bundles || defaultImmBundles;
+
+                      const updateImmBundle = (index: number, newBundle: ImmForm) => {
+                        const newBundles = [...immBundles];
+                        newBundles[index] = newBundle;
+                        updateField("immigration_form_bundles", newBundles);
+                      };
+
+                      const removeImmBundle = (index: number) => {
+                        const newBundles = immBundles.filter((_, i) => i !== index);
+                        updateField("immigration_form_bundles", newBundles);
+                      };
+
+                      const addImmBundle = () => {
+                        const newBundles = [...immBundles, { id: Date.now().toString(), name: "New Bundle", serviceFee: "0", uscisFeePaper: "0", uscisFeeOnline: "0" }];
+                        updateField("immigration_form_bundles", newBundles);
+                      };
+
+                      return (
+                        <>
+                          {immBundles.map((bundle, index) => (
+                            <ImmPricingFormCard 
+                              key={bundle.id}
+                              form={bundle}
+                              onChange={(f) => updateImmBundle(index, f)}
+                              onRemove={() => removeImmBundle(index)}
+                            />
+                          ))}
+                          <button 
+                            onClick={addImmBundle}
+                            className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-border rounded-lg text-sm text-muted-foreground hover:text-primary hover:border-primary transition-colors bg-white"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add Bundle
+                          </button>
+                        </>
+                      );
+                    })()}
                 </div>
               </div>
 
@@ -415,7 +438,7 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
   );
 }
 
-function ImmPricingFormCard({ title, isBundle = false, form, onChange }: { title: string, isBundle?: boolean, form: any, onChange: (f: any) => void }) {
+function ImmPricingFormCard({ form, onChange, onRemove }: { form: ImmForm, onChange: (f: ImmForm) => void, onRemove: () => void }) {
   const sf = parseInt(form.serviceFee) || 0;
   const up = parseInt(form.uscisFeePaper) || 0;
   const uo = parseInt(form.uscisFeeOnline) || 0;
@@ -424,7 +447,29 @@ function ImmPricingFormCard({ title, isBundle = false, form, onChange }: { title
   
   return (
     <div className="bg-white rounded-xl border border-border p-6 space-y-4 shadow-sm">
-      <h3 className="font-bold text-charcoal text-lg mb-4">{title}</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <input 
+          type="text" 
+          value={form.name} 
+          onChange={(e) => onChange({ ...form, name: e.target.value })}
+          placeholder="Bundle Name"
+          className="flex-1 h-10 rounded-lg border border-border px-3 font-bold text-charcoal focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground">
+            <input 
+              type="checkbox" 
+              checked={form.isBundle || false}
+              onChange={(e) => onChange({ ...form, isBundle: e.target.checked })}
+              className="rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            Is Bundle (Hides Online Fee)
+          </label>
+          <button onClick={onRemove} className="p-2 text-muted-foreground hover:text-red-500 transition-colors">
+            <Trash2 className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
       
       <div className="flex items-center justify-between gap-4">
         <label className="w-1/3 text-sm font-medium text-muted-foreground">Service Fee</label>
@@ -440,7 +485,7 @@ function ImmPricingFormCard({ title, isBundle = false, form, onChange }: { title
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <label className="w-1/3 text-sm font-medium text-muted-foreground">{isBundle ? "USCIS Fees" : "USCIS Fee (Paper)"}</label>
+        <label className="w-1/3 text-sm font-medium text-muted-foreground">{form.isBundle ? "USCIS Fees" : "USCIS Fee (Paper)"}</label>
         <div className="flex-1 relative">
           <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">$</span>
           <input 
@@ -452,7 +497,7 @@ function ImmPricingFormCard({ title, isBundle = false, form, onChange }: { title
         </div>
       </div>
 
-      {!isBundle && (
+      {!form.isBundle && (
         <div className="flex items-center justify-between gap-4">
           <label className="w-1/3 text-sm font-medium text-muted-foreground">USCIS Fee (Online)</label>
           <div className="flex-1 relative">
@@ -468,7 +513,7 @@ function ImmPricingFormCard({ title, isBundle = false, form, onChange }: { title
       )}
 
       <div className="flex items-center justify-between gap-4 pt-4 border-t border-border mt-2">
-        <label className="w-1/3 font-bold text-charcoal">{isBundle ? "Bundle Total" : "Total (Paper)"}</label>
+        <label className="w-1/3 font-bold text-charcoal">{form.isBundle ? "Bundle Total" : "Total (Paper)"}</label>
         <div className="flex-1 font-bold text-primary">
           ${totalPaper.toLocaleString()}
         </div>

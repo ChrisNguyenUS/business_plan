@@ -15,42 +15,29 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
 
-  const formatFormPrice = (form: any, defaultService: number, defaultUscis: number) => {
-    if (!form) return `$${defaultService} service + $${defaultUscis} USCIS = $${(defaultService + defaultUscis).toLocaleString()} total`;
+  const formatFormPrice = (form: any) => {
     const sf = parseInt(form.serviceFee) || 0;
     const uf = parseInt(form.uscisFeePaper) || 0;
     return `$${sf} service + $${uf} USCIS = $${(sf + uf).toLocaleString()} total`;
   };
 
-  const defaultServices = [
-    { name: "N-400 Citizenship Application", vi: "Đơn Xin Quốc Tịch N-400", price: formatFormPrice(d.n400_form, 550, 760) },
-    { name: "I-90 Green Card Renewal", vi: "Gia Hạn Thẻ Xanh I-90", price: formatFormPrice(d.i90_form, 250, 465) },
-    { name: "I-131 Travel Document", vi: "Giấy Đi Lại I-131", price: formatFormPrice(d.i131_form, 250, 630) },
-    { name: "I-765 Work Permit (EAD)", vi: "Giấy Phép Làm Việc I-765", price: "$250 service + $520 USCIS = $770 total" },
-    { name: "I-751 Remove Conditions", vi: "Xóa Điều Kiện Thẻ Xanh I-751", price: "$550 service + $750 USCIS = $1,300 total" },
-    { name: "Marriage Green Card Bundle", vi: "Trọn Gói Thẻ Xanh Kết Hôn", price: formatFormPrice(d.marriage_form, 1085, 2115) },
-    { name: "I-130 Family Petition", vi: "Bảo Lãnh Gia Đình I-130", price: "$425 service + $675 USCIS = $1,100 total" },
-    { name: "I-912 Fee Waiver", vi: "Miễn Phí USCIS I-912", price: "$150 service (USCIS fee $0) = $150 total" },
-    { name: "AR-11 Change of Address", vi: "Đổi Địa Chỉ AR-11", price: "$50 service (USCIS fee $0) = $50 total" },
-    { name: "Certified Translation (per page)", vi: "Dịch Thuật Công Chứng", price: "$25 per page" },
-    { name: "General Consultation", vi: "Tư Vấn Di Trú", price: d.imm_consult_price || "Free consultation for Texas residents" }
-  ];
+  const formBundles = Array.isArray(d.immigration_form_bundles) 
+    ? d.immigration_form_bundles.map(b => ({
+        name: b.name,
+        vi: "",
+        price: formatFormPrice(b)
+      }))
+    : [];
 
-  const dynamicServices = Array.isArray(d.immigration_services) ? d.immigration_services.map(s => ({
-    name: s.name,
-    vi: "",
-    price: s.price
-  })) : [];
+  const dynamicServices = Array.isArray(d.immigration_services) 
+    ? d.immigration_services.map(s => ({
+        name: s.name,
+        vi: "",
+        price: s.price
+      }))
+    : [];
 
-  const services = dynamicServices.length > 0 
-    ? [
-        { name: "N-400 Citizenship Application", vi: "Đơn Xin Quốc Tịch N-400", price: formatFormPrice(d.n400_form, 550, 760) },
-        { name: "I-90 Green Card Renewal", vi: "Gia Hạn Thẻ Xanh I-90", price: formatFormPrice(d.i90_form, 250, 465) },
-        { name: "I-131 Travel Document", vi: "Giấy Đi Lại I-131", price: formatFormPrice(d.i131_form, 250, 630) },
-        { name: "Marriage Green Card Bundle", vi: "Trọn Gói Thẻ Xanh Kết Hôn", price: formatFormPrice(d.marriage_form, 1085, 2115) },
-        ...dynamicServices
-      ]
-    : defaultServices;
+  const services = [...formBundles, ...dynamicServices];
 
   const faqs = [
     { q: "Gia hạn thẻ xanh (I-90) ở Houston giá bao nhiêu? / How much is green card renewal in Houston?", a: "Manna One Solution charges $250 service fee + $465 USCIS filing fee = $715 total for paper I-90. Online filing is $250 + $415 = $665 total. USCIS fees verified April 2026." },
