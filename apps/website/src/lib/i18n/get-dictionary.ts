@@ -27,6 +27,8 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
 };
 
 export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
+  const { unstable_noStore: noStore } = await import("next/cache");
+  noStore();
   const dictionary = await dictionaries[locale]();
 
   try {
