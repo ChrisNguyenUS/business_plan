@@ -6,12 +6,22 @@ interface WhyMannaProps {
 }
 
 export default function WhyManna({ dictionary }: WhyMannaProps) {
-  const badges = [
+  const defaultBadges = [
     { icon: Globe, title: dictionary.why_bilingual, desc: dictionary.why_bilingual_desc },
     { icon: ShieldCheck, title: dictionary.why_efin, desc: dictionary.why_efin_desc },
     { icon: Award, title: dictionary.why_insurance_license, desc: dictionary.why_insurance_license_desc },
     { icon: Stamp, title: dictionary.why_ai, desc: dictionary.why_ai_desc },
   ];
+
+  const icons = [Globe, ShieldCheck, Award, Stamp];
+
+  const badges = Array.isArray(dictionary.trust_badges) && dictionary.trust_badges.length > 0
+    ? dictionary.trust_badges.map((b, i) => ({
+        icon: icons[i % icons.length],
+        title: b.title,
+        desc: b.desc,
+      }))
+    : defaultBadges;
 
   return (
     <section className="py-20">

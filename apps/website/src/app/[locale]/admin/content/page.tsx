@@ -23,6 +23,13 @@ type ImmForm = {
   uscisFeeOnline: string;
 };
 
+const DEFAULT_TRUST_BADGES = [
+  { id: "1", title: "Bilingual Service (VI/EN)", desc: "Native Vietnamese speaker — no language barrier, no miscommunication" },
+  { id: "2", title: "IRS EFIN Licensed #857993", desc: "IRS-authorized electronic filer — verified credential for tax services" },
+  { id: "3", title: "TX Life & P&C Insurance Licensed", desc: "Texas-licensed Life & Property/Casualty insurance agent." },
+  { id: "4", title: "Texas Notary Public (Pending)", desc: "In-house signature witnessing for USCIS forms — a core trust differentiator" }
+];
+
 const DEFAULT_TAX_OFFERINGS = [
   { id: "1", name: "Individual Tax Preparation" },
   { id: "2", name: "Extension Filing (Form 4868)" },
@@ -99,17 +106,30 @@ export default function AdminContent() {
       .from("site_content")
       .select("id")
       .eq("section", activeSection)
-      .single();
+    try {
+      const { data: existing, error } = await supabase
+        .from("site_content")
+        .select("id")
+        .eq("section", activeSection)
+        .maybeSingle();
 
-    if (existing) {
-      await supabase.from("site_content").update({ content }).eq("id", existing.id);
-    } else {
-      await supabase.from("site_content").insert({ section: activeSection, content });
+      if (error) {
+        console.error("Supabase Error:", error);
+      }
+
+      if (existing) {
+        await supabase.from("site_content").update({ content }).eq("id", existing.id);
+      } else {
+        await supabase.from("site_content").insert({ section: activeSection, content });
+      }
+
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Save error:", err);
+      setSaving(false);
     }
-
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   }
 
   const updateField = (key: string, value: any) => {
@@ -188,14 +208,52 @@ export default function AdminContent() {
 
               {/* Trust Badges Card */}
               <div className="bg-white rounded-xl border border-border overflow-hidden">
-                <div className="px-6 py-4 border-b border-border bg-slate-50/50">
+                <div className="px-6 py-4 border-b border-border bg-slate-50/50 flex justify-between items-center">
                   <h2 className="text-base font-bold text-charcoal">Why Manna — Trust Badges</h2>
+                  <button
+                    onClick={() => {
+                      const current = content.trust_badges || DEFAULT_TRUST_BADGES;
+                      updateField("trust_badges", [...current, { id: Date.now().toString(), title: "New Badge", desc: "Badge description" }]);
+                    }}
+                    className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
+                  >
+                    <Plus className="h-4 w-4" /> Add Badge
+                  </button>
                 </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ContentField label="Badge 1" value={content.badge_1 || "Bilingual Service (VI/EN)"} onChange={(v) => updateField("badge_1", v)} />
-                  <ContentField label="Badge 2" value={content.badge_2 || "IRS EFIN Licensed #857993"} onChange={(v) => updateField("badge_2", v)} />
-                  <ContentField label="Badge 3" value={content.badge_3 || "TX Life & P&C Insurance Licensed"} onChange={(v) => updateField("badge_3", v)} />
-                  <ContentField label="Badge 4" value={content.badge_4 || "Texas Notary Public (Pending)"} onChange={(v) => updateField("badge_4", v)} />
+                <div className="p-6 flex flex-col gap-4">
+                  {(content.trust_badges || DEFAULT_TRUST_BADGES).map((b: any, idx: number) => (
+                    <div key={b.id || idx} className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-slate-50 relative group">
+                      <button
+                        onClick={() => {
+                          const newBadges = (content.trust_badges || DEFAULT_TRUST_BADGES).filter((_: any, i: number) => i !== idx);
+                          updateField("trust_badges", newBadges);
+                        }}
+                        className="absolute top-2 right-2 p-2 text-red-500 hover:bg-red-50 rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                        title="Delete Badge"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <ContentField 
+                        label={`Badge ${idx + 1} Title`} 
+                        value={b.title || ""} 
+                        onChange={(v) => {
+                          const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                          newBadges[idx] = { ...newBadges[idx], title: v };
+                          updateField("trust_badges", newBadges);
+                        }} 
+                      />
+                      <ContentField 
+                        label="Description" 
+                        value={b.desc || ""} 
+                        onChange={(v) => {
+                          const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                          newBadges[idx] = { ...newBadges[idx], desc: v };
+                          updateField("trust_badges", newBadges);
+                        }} 
+                        multiline
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </>

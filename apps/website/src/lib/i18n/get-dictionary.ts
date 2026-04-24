@@ -24,6 +24,7 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
   imm_gc_price?: string;
   imm_visa_price?: string;
   imm_consult_price?: string;
+  trust_badges?: { id: string; title: string; desc: string }[];
 };
 
 export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
@@ -86,6 +87,9 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           
           if (content.hero_bg_image) dbDict.hero_bg_image = content.hero_bg_image;
           
+          if (content.trust_badges) dbDict.trust_badges = content.trust_badges;
+          
+          // Legacy fallbacks
           if (content.badge_1) dbDict.why_bilingual = content.badge_1;
           if (content.badge_2) dbDict.why_efin = content.badge_2;
           if (content.badge_3) dbDict.why_insurance_license = content.badge_3;
