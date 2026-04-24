@@ -7,6 +7,8 @@ import Footer from "@/components/layout/Footer";
 import FloatingButtons from "@/components/layout/FloatingButtons";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
+export const revalidate = 0;
+
 export async function generateStaticParams() {
   return [{ locale: "en" }, { locale: "vi" }];
 }
