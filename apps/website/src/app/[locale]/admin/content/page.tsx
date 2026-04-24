@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, CheckCircle, Type, Image as ImageIcon, LayoutGrid, DollarSign, ChevronUp, ChevronDown, Trash2, Plus, Info } from "lucide-react";
+import { 
+  Save, CheckCircle, Type, Image as ImageIcon, LayoutGrid, DollarSign, ChevronUp, ChevronDown, Trash2, Plus, Info,
+  Globe, ShieldCheck, Award, Stamp, Star, Heart, Briefcase, Users, FileText, BadgeCheck, Scale, Building, TrendingUp, Handshake, Zap, Clock, MapPin 
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type ContentSection = "homepage" | "about" | "services" | "immigration_pricing";
@@ -10,6 +13,28 @@ const SECTIONS: { key: ContentSection; label: string; icon: any }[] = [
   { key: "homepage", label: "Home", icon: Type },
   { key: "about", label: "About", icon: ImageIcon },
   { key: "services", label: "Services", icon: LayoutGrid },
+];
+
+const ICON_OPTIONS = [
+  { name: "Globe", icon: Globe },
+  { name: "ShieldCheck", icon: ShieldCheck },
+  { name: "Award", icon: Award },
+  { name: "Stamp", icon: Stamp },
+  { name: "CheckCircle", icon: CheckCircle },
+  { name: "Star", icon: Star },
+  { name: "Heart", icon: Heart },
+  { name: "Briefcase", icon: Briefcase },
+  { name: "Users", icon: Users },
+  { name: "FileText", icon: FileText },
+  { name: "BadgeCheck", icon: BadgeCheck },
+  { name: "Scale", icon: Scale },
+  { name: "Building", icon: Building },
+  { name: "TrendingUp", icon: TrendingUp },
+  { name: "Handshake", icon: Handshake },
+  { name: "Zap", icon: Zap },
+  { name: "DollarSign", icon: DollarSign },
+  { name: "Clock", icon: Clock },
+  { name: "MapPin", icon: MapPin },
 ];
 
 type ServiceItem = { id: string; name: string; price: string };
@@ -221,39 +246,65 @@ export default function AdminContent() {
                   </button>
                 </div>
                 <div className="p-6 flex flex-col gap-4">
-                  {(content.trust_badges || DEFAULT_TRUST_BADGES).map((b: any, idx: number) => (
-                    <div key={b.id || idx} className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-slate-50 relative group">
-                      <button
-                        onClick={() => {
-                          const newBadges = (content.trust_badges || DEFAULT_TRUST_BADGES).filter((_: any, i: number) => i !== idx);
-                          updateField("trust_badges", newBadges);
-                        }}
-                        className="absolute top-2 right-2 p-2 text-red-500 hover:bg-red-50 rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                        title="Delete Badge"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <ContentField 
-                        label={`Badge ${idx + 1} Title`} 
-                        value={b.title || ""} 
-                        onChange={(v) => {
-                          const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
-                          newBadges[idx] = { ...newBadges[idx], title: v };
-                          updateField("trust_badges", newBadges);
-                        }} 
-                      />
-                      <ContentField 
-                        label="Description" 
-                        value={b.desc || ""} 
-                        onChange={(v) => {
-                          const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
-                          newBadges[idx] = { ...newBadges[idx], desc: v };
-                          updateField("trust_badges", newBadges);
-                        }} 
-                        multiline
-                      />
-                    </div>
-                  ))}
+                  {(content.trust_badges || DEFAULT_TRUST_BADGES).map((b: any, idx: number) => {
+                    const SelectedIcon = ICON_OPTIONS.find((o) => o.name === (b.icon || "CheckCircle"))?.icon || CheckCircle;
+                    return (
+                      <div key={b.id || idx} className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-slate-50 relative group">
+                        <button
+                          onClick={() => {
+                            const newBadges = (content.trust_badges || DEFAULT_TRUST_BADGES).filter((_: any, i: number) => i !== idx);
+                            updateField("trust_badges", newBadges);
+                          }}
+                          className="absolute top-2 right-2 p-2 text-red-500 hover:bg-red-50 rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          title="Delete Badge"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        
+                        <div className="flex items-center gap-3 pr-10">
+                          <div className="p-2 rounded-md bg-white border border-border shadow-sm flex items-center justify-center w-10 h-10">
+                            <SelectedIcon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Icon</label>
+                            <select
+                              value={b.icon || "CheckCircle"}
+                              onChange={(e) => {
+                                const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                                newBadges[idx] = { ...newBadges[idx], icon: e.target.value };
+                                updateField("trust_badges", newBadges);
+                              }}
+                              className="w-full rounded-md border border-input bg-white px-3 py-1.5 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              {ICON_OPTIONS.map((opt) => (
+                                <option key={opt.name} value={opt.name}>{opt.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <ContentField 
+                          label={`Badge ${idx + 1} Title`} 
+                          value={b.title || ""} 
+                          onChange={(v) => {
+                            const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                            newBadges[idx] = { ...newBadges[idx], title: v };
+                            updateField("trust_badges", newBadges);
+                          }} 
+                        />
+                        <ContentField 
+                          label="Description" 
+                          value={b.desc || ""} 
+                          onChange={(v) => {
+                            const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                            newBadges[idx] = { ...newBadges[idx], desc: v };
+                            updateField("trust_badges", newBadges);
+                          }} 
+                          multiline
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </>

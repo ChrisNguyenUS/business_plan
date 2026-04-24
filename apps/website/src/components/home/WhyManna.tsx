@@ -1,4 +1,4 @@
-import { Globe, ShieldCheck, Award, Stamp } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 interface WhyMannaProps {
@@ -7,20 +7,14 @@ interface WhyMannaProps {
 
 export default function WhyManna({ dictionary }: WhyMannaProps) {
   const defaultBadges = [
-    { icon: Globe, title: dictionary.why_bilingual, desc: dictionary.why_bilingual_desc },
-    { icon: ShieldCheck, title: dictionary.why_efin, desc: dictionary.why_efin_desc },
-    { icon: Award, title: dictionary.why_insurance_license, desc: dictionary.why_insurance_license_desc },
-    { icon: Stamp, title: dictionary.why_ai, desc: dictionary.why_ai_desc },
+    { icon: "Globe", title: dictionary.why_bilingual, desc: dictionary.why_bilingual_desc },
+    { icon: "ShieldCheck", title: dictionary.why_efin, desc: dictionary.why_efin_desc },
+    { icon: "Award", title: dictionary.why_insurance_license, desc: dictionary.why_insurance_license_desc },
+    { icon: "Stamp", title: dictionary.why_ai, desc: dictionary.why_ai_desc },
   ];
 
-  const icons = [Globe, ShieldCheck, Award, Stamp];
-
   const badges = Array.isArray(dictionary.trust_badges) && dictionary.trust_badges.length > 0
-    ? dictionary.trust_badges.map((b, i) => ({
-        icon: icons[i % icons.length],
-        title: b.title,
-        desc: b.desc,
-      }))
+    ? dictionary.trust_badges
     : defaultBadges;
 
   return (
@@ -29,19 +23,22 @@ export default function WhyManna({ dictionary }: WhyMannaProps) {
         <h2 className="text-3xl lg:text-4xl font-bold text-charcoal text-center mb-14">
           {dictionary.why_title}
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {badges.map((b, i) => (
-            <div
-              key={i}
-              className="text-center p-6 rounded-2xl bg-teal-light border border-primary/10"
-            >
-              <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <b.icon className="h-7 w-7 text-primary" />
+        <div className="flex flex-wrap justify-center gap-6">
+          {badges.map((b: any, i) => {
+            const IconComponent = (LucideIcons as any)[b.icon] || LucideIcons.CheckCircle;
+            return (
+              <div
+                key={b.id || i}
+                className="flex-1 min-w-[250px] max-w-[300px] text-center p-6 rounded-2xl bg-teal-light border border-primary/10"
+              >
+                <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
+                  <IconComponent className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-charcoal text-sm mb-2">{b.title}</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">{b.desc}</p>
               </div>
-              <h3 className="font-bold text-charcoal text-sm mb-2">{b.title}</h3>
-              <p className="text-muted-foreground text-xs leading-relaxed">{b.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
