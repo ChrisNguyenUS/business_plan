@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { Phone, MapPin, Send, Calendar, CheckCircle } from "lucide-react";
+import { generateEventId, trackFbq, trackGa } from "@/lib/analytics/events";
+
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return m ? decodeURIComponent(m[1]) : null;
+}
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -49,13 +56,30 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
         gclid: params.get("gclid") || "",
       };
 
+      const eventId = generateEventId();
+      const fbp = readCookie("_fbp");
+      const fbc = readCookie("_fbc");
+
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, locale, ...utm }),
+        body: JSON.stringify({
+          ...form,
+          locale,
+          ...utm,
+          event_id: eventId,
+          event_source_url: window.location.href,
+          fbp,
+          fbc,
+        }),
       });
 
       if (res.ok) {
+        trackFbq("Lead", { content_name: form.service_type || "general" }, eventId);
+        trackGa("generate_lead", {
+          service: form.service_type || "general",
+          locale,
+        });
         setSubmitted(true);
       }
     } catch {
@@ -63,6 +87,21 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCalendlyClick = () => {
+    trackFbq("Schedule", { content_name: "calendly" });
+    trackGa("schedule_click", { destination: "calendly" });
+  };
+
+  const handlePhoneClick = () => {
+    trackFbq("Contact", { method: "phone" });
+    trackGa("phone_click", { number: "3468524454" });
+  };
+
+  const handleFacebookClick = () => {
+    trackFbq("Contact", { method: "facebook" });
+    trackGa("facebook_click", {});
   };
 
   return (
@@ -174,6 +213,7 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
             href="https://calendly.com/mannaos"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleCalendlyClick}
             className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-teal-dark text-white rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
           >
             <Calendar className="h-4 w-4" />
@@ -187,6 +227,7 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
           <div className="space-y-4">
             <a
               href="tel:3468524454"
+              onClick={handlePhoneClick}
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-teal-light transition-colors"
             >
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -201,6 +242,7 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
               href="https://facebook.com/mannaonesolution"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleFacebookClick}
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-teal-light transition-colors"
             >
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">

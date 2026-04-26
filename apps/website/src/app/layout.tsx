@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -49,6 +51,10 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
+      <head>
+        <GoogleAnalytics />
+        <MetaPixel />
+      </head>
       <body className="min-h-full flex flex-col font-[var(--font-inter)]">
         <script
           type="application/ld+json"

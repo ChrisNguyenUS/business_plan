@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendCapiLead } from "@/lib/analytics/meta-capi";
 
 // Resend import - will be used when API key is configured
 // import { Resend } from 'resend';
@@ -22,6 +23,10 @@ export async function POST(request: Request) {
       utm_term,
       fbclid,
       gclid,
+      event_id,
+      event_source_url,
+      fbp,
+      fbc,
       website, // honeypot
     } = body;
 
@@ -97,6 +102,34 @@ export async function POST(request: Request) {
       } catch (emailError) {
         console.error("Resend email error:", emailError);
       }
+    }
+
+    // 3. Mirror Lead to Meta CAPI (deduped with browser Pixel via shared event_id)
+    if (event_id) {
+      const [firstName, ...rest] = (full_name || "").trim().split(/\s+/);
+      const lastName = rest.join(" ");
+      const xff = request.headers.get("x-forwarded-for") || "";
+      const clientIp = xff.split(",")[0]?.trim() || null;
+      await sendCapiLead({
+        eventId: event_id,
+        eventSourceUrl: event_source_url || "",
+        user: {
+          emails: email ? [email] : undefined,
+          phones: phone ? [phone] : undefined,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
+          clientIp,
+          clientUserAgent: request.headers.get("user-agent"),
+          fbp: fbp || null,
+          fbc: fbc || null,
+        },
+        customData: {
+          content_name: service_type || "general",
+          locale,
+          ...(utm_source ? { utm_source } : {}),
+          ...(utm_campaign ? { utm_campaign } : {}),
+        },
+      });
     }
 
     return NextResponse.json({ success: true });
