@@ -32,7 +32,8 @@
       "Bash(~/.npm-global/bin/vercel --prod --yes)",
       "Bash(supabase db *)",
       "Bash(node -e ' *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "WebFetch(domain:mannaos.com)"
     ]
   },
   "enableAllProjectMcpServers": true,
