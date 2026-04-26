@@ -19,7 +19,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
 
   const alternateHref = getAlternateLocaleHref(pathname, locale);
   const altLabel = locale === "en" ? "VI" : "EN";
@@ -281,7 +281,9 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                 <Search style={{ width: '17px', height: '17px' }} />
               </button>
 
-              {user ? (
+              {loading ? (
+                <div style={{ width: '100px', height: '38px' }} />
+              ) : user ? (
                 <>
                   {/* My Portal */}
                   <Link href={`/${locale}/portal`} className="btn-client-login">
@@ -378,7 +380,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                 <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Link href={alternateHref} className="lang-toggle">{altLabel}</Link>
-                    {user ? (
+                    {loading ? null : user ? (
                       <>
                         <Link href={`/${locale}/portal`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: 'center' }}>
                           <LayoutDashboard style={{ width: '15px', height: '15px' }} />

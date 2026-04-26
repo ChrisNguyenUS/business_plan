@@ -103,28 +103,36 @@ export default function PortalPage() {
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    if (!user) return;
-
-    // Resolve the client record linked to this auth account
-    const { data: clientRecord } = await supabase
-      .from("clients")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!clientRecord) {
+    if (!user) {
       setLoading(false);
       return;
     }
 
-    const { data: jobsData } = await supabase
-      .from("jobs")
-      .select("id, service_type, description, status, updated_at")
-      .eq("client_id", clientRecord.id)
-      .order("updated_at", { ascending: false });
+    try {
+      // Resolve the client record linked to this auth account
+      const { data: clientRecord } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-    setJobs((jobsData as ServiceJob[]) ?? []);
-    setLoading(false);
+      if (!clientRecord) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: jobsData } = await supabase
+        .from("jobs")
+        .select("id, service_type, description, status, updated_at")
+        .eq("client_id", clientRecord.id)
+        .order("updated_at", { ascending: false });
+
+      setJobs((jobsData as ServiceJob[]) ?? []);
+    } catch (err) {
+      console.error("Portal loadData error:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {

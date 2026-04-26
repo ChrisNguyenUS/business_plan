@@ -57,32 +57,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        fetchProfile(s.user.id).then(setProfile);
-      }
-      setLoading(false);
-    });
+    let isMounted = true;
 
-    // Listen for auth changes
+    // Use onAuthStateChange as the single source of truth.
+    // It fires INITIAL_SESSION on mount, which replaces the need for getSession().
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, s) => {
+      if (!isMounted) return;
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
         const p = await fetchProfile(s.user.id);
-        setProfile(p);
+        if (isMounted) {
+          setProfile(p);
+          setLoading(false);
+        }
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
