@@ -16,7 +16,7 @@ export default function Footer({ dictionary, locale }: FooterProps) {
           {/* Brand */}
           <div>
             <h3 className="text-xl font-bold mb-2">
-              Manna<span className="text-primary">OS</span>
+              Manna One <span className="text-primary">Solution</span>
             </h3>
             <p className="text-white/60 text-sm">{dictionary.footer_tagline}</p>
           </div>

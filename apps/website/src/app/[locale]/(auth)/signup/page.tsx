@@ -75,7 +75,7 @@ export default function SignUpPage() {
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 rounded-full bg-[#3a4a5c] flex items-center justify-center shadow-lg">
             <Image
-              src="/images/logo-transparent.png"
+              src="/images/logo-official.png"
               alt="Manna One Solution"
               width={48}
               height={48}

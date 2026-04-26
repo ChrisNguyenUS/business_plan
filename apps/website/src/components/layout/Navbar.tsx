@@ -225,14 +225,14 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
             {/* Logo */}
             <Link href={`/${locale}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
               <Image
-                src="/images/logo-transparent.png"
+                src="/images/logo-official.png"
                 alt="Manna One Solution"
                 width={36}
                 height={36}
                 style={{ borderRadius: '8px' }}
               />
               <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1a1a' }}>
-                Manna<span style={{ color: 'hsl(174, 54%, 36%)' }}>OS</span>
+                Manna One <span style={{ color: 'hsl(174, 54%, 36%)' }}>Solution</span>
               </span>
             </Link>
 

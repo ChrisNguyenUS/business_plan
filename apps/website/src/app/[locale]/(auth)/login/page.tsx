@@ -75,7 +75,7 @@ export default function LoginPage() {
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 rounded-full bg-[#3a4a5c] flex items-center justify-center shadow-lg">
             <Image
-              src="/images/logo-transparent.png"
+              src="/images/logo-official.png"
               alt="Manna One Solution"
               width={48}
               height={48}
@@ -87,7 +87,7 @@ export default function LoginPage() {
 
         {/* Title */}
         <h1 className="text-2xl font-bold text-charcoal text-center mb-1">
-          Welcome to Manna One
+          Welcome to Manna One Solution
         </h1>
         <p className="text-muted-foreground text-center text-sm mb-8">
           Sign in to continue
