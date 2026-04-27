@@ -7,6 +7,10 @@ import { revalidatePath } from "next/cache";
 const ALLOWED_SECTIONS = new Set(["homepage", "about", "services", "immigration_pricing"]);
 
 export async function POST(request: Request) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: "Server misconfiguration: Supabase env vars missing" }, { status: 500 });
+  }
+
   try {
     const { section, content } = await request.json();
 
