@@ -410,7 +410,7 @@ export default function AdminContent() {
                         { id: "4", name: "I-131 Travel Document", serviceFee: "250", uscisFeePaper: "630", uscisFeeOnline: "" },
                       ];
                       
-                      const immBundles: ImmForm[] = content.immigration_form_bundles || defaultImmBundles;
+                      const immBundles: ImmForm[] = (content.immigration_form_bundles && content.immigration_form_bundles.length > 0) ? content.immigration_form_bundles : defaultImmBundles;
 
                       const updateImmBundle = (index: number, newBundle: ImmForm) => {
                         const newBundles = [...immBundles];
