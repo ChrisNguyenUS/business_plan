@@ -96,6 +96,7 @@ export default function AdminContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -127,32 +128,23 @@ export default function AdminContent() {
 
   async function save() {
     setSaving(true);
-    const { data: existing } = await supabase
-      .from("site_content")
-      .select("id")
-      .eq("section", activeSection)
+    setSaveError(null);
     try {
-      const { data: existing, error } = await supabase
-        .from("site_content")
-        .select("id")
-        .eq("section", activeSection)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Supabase Error:", error);
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section: activeSection, content }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json.error || `Save failed (${res.status})`);
       }
-
-      if (existing) {
-        await supabase.from("site_content").update({ content }).eq("id", existing.id);
-      } else {
-        await supabase.from("site_content").insert({ section: activeSection, content });
-      }
-
-      setSaving(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error("Save error:", err);
+      setSaveError(err instanceof Error ? err.message : "Save failed");
+    } finally {
       setSaving(false);
     }
   }
@@ -181,6 +173,9 @@ export default function AdminContent() {
             <span className="inline-flex items-center gap-1 text-sm text-green-600">
               <CheckCircle className="h-4 w-4" /> Saved!
             </span>
+          )}
+          {saveError && (
+            <span className="text-sm text-red-600">{saveError}</span>
           )}
         </div>
       </div>
