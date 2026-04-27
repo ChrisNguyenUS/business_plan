@@ -15,22 +15,15 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        {dictionary.hero_bg_image ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={dictionary.hero_bg_image}
-            alt="Manna One Solution"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <Image
-            src="/images/hero-bg.jpeg"
-            alt="Manna One Solution"
-            fill
-            className="object-cover"
-            priority
-          />
-        )}
+        <Image
+          src={dictionary.hero_bg_image || "/images/hero-bg.jpeg"}
+          alt="Manna One Solution"
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+          fetchPriority="high"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 to-charcoal/50" />
       </div>
 

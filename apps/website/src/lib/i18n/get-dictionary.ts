@@ -28,14 +28,13 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
 };
 
 export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
-  const { unstable_noStore: noStore } = await import("next/cache");
-  noStore();
   const dictionary = await dictionaries[locale]();
 
   try {
     const { data: siteContent } = await supabase.from("site_content").select("*");
     if (siteContent) {
       // Create a mutable copy of the dictionary to allow overrides
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dbDict = { ...dictionary } as any;
 
       const hasServicesRow = siteContent.some(row => row.section === "services");

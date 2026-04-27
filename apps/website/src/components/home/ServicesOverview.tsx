@@ -73,7 +73,10 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
               <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
                 {s.desc}
               </p>
-              <Link href={s.link}>
+              <Link
+                href={s.link}
+                aria-label={`${dictionary.services_learn_more} — ${s.title}`}
+              >
                 <Button
                   variant="ghost"
                   size="sm"
