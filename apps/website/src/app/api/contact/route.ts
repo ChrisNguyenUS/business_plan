@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendCapiLead } from "@/lib/analytics/meta-capi";
 
-// Resend import - will be used when API key is configured
-// import { Resend } from 'resend';
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 export async function POST(request: Request) {
   try {
@@ -86,17 +92,17 @@ export async function POST(request: Request) {
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "MannaOS <notifications@mannaos.com>",
           to: ["Chris@mannaos.com"],
-          subject: `[MannaOS] New Contact: ${full_name} — ${service_type || "General"}`,
+          subject: `[MannaOS] New Contact: ${String(full_name).slice(0, 100)} — ${String(service_type || "General").slice(0, 50)}`,
           html: `
             <h2>New Contact Submission</h2>
-            <p><strong>Name:</strong> ${full_name}</p>
-            <p><strong>Phone:</strong> ${phone || "N/A"}</p>
-            <p><strong>Email:</strong> ${email || "N/A"}</p>
-            <p><strong>Service:</strong> ${service_type || "General"}</p>
+            <p><strong>Name:</strong> ${escapeHtml(full_name)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(phone || "N/A")}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email || "N/A")}</p>
+            <p><strong>Service:</strong> ${escapeHtml(service_type || "General")}</p>
             <p><strong>Message:</strong></p>
-            <p>${message || "N/A"}</p>
+            <p>${escapeHtml(message || "N/A")}</p>
             <hr/>
-            <p><small>Language: ${locale} | Source: ${utm_source || "direct"} | Campaign: ${utm_campaign || "none"}</small></p>
+            <p><small>Language: ${escapeHtml(locale)} | Source: ${escapeHtml(utm_source || "direct")} | Campaign: ${escapeHtml(utm_campaign || "none")}</small></p>
           `,
         });
       } catch (emailError) {
