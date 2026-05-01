@@ -109,11 +109,7 @@ export default function BlogPostPage() {
         </h1>
 
         <div className="prose prose-lg max-w-none prose-headings:text-charcoal prose-p:text-muted-foreground prose-a:text-primary">
-          {content && content.startsWith("<") ? (
-            <div dangerouslySetInnerHTML={{ __html: content }} />
-          ) : (
-            <ReactMarkdown>{content || ""}</ReactMarkdown>
-          )}
+          <ReactMarkdown>{content || ""}</ReactMarkdown>
         </div>
       </article>
     </div>
