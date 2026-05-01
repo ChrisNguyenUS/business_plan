@@ -71,6 +71,9 @@
 - **C5** Atomic budget reservation via DB `UPDATE ... WHERE` clause (no race condition).
 - **C6** `idempotency_key` on jobs (prevents double-charge on duplicate clicks).
 - **C7** `user_id` on all tables for RLS (multi-user-ready).
+- **C8** Tables store R2 `object_key` (relative path), not absolute URLs — domain change = env var swap, no DB migration.
+- **C9** Partial unique index `WHERE deleted_at IS NULL` on `services.slug` — soft-delete + recreate same slug works without conflict.
+- **C10** RLS explicit on satellite tables (`settings`, `usage_logs`) — not just main entities.
 
 ---
 
@@ -169,12 +172,12 @@ CREATE TABLE social_studio_themes (
   background_color     TEXT NOT NULL,           -- '#FAF7F0'
   font_serif           TEXT,                    -- 'Playfair Display'
   font_sans            TEXT,                    -- 'Inter'
-  logo_url             TEXT,
+  logo_key             TEXT,                    -- R2 object key, e.g. 'themes/{id}/logo.png'
   style_descriptors    TEXT,                    -- prompt prefix
-  reference_image_urls TEXT[] DEFAULT '{}',
+  reference_image_keys TEXT[] DEFAULT '{}',     -- R2 object keys (NOT absolute URLs)
   text_tone            TEXT,                    -- friendly|formal|educational
   default_aspect_ratio TEXT DEFAULT '4:5',
-  voice_sample_posts   JSONB DEFAULT '[]',      -- [{title, body, image_url, notes}]
+  voice_sample_posts   JSONB DEFAULT '[]',      -- [{title, body, image_key, notes}]
   voice_rules          TEXT,                    -- markdown
   is_active            BOOLEAN DEFAULT true,
   deleted_at           TIMESTAMPTZ,
@@ -193,9 +196,14 @@ CREATE TABLE social_studio_services (
   icon            TEXT,                          -- lucide name or emoji
   display_order   INT DEFAULT 0,
   deleted_at      TIMESTAMPTZ,
-  created_at      TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, slug)
+  created_at      TIMESTAMPTZ DEFAULT now()
 );
+
+-- Partial unique index: enforce slug uniqueness only for non-deleted rows.
+-- Without this, soft-deleting then recreating a service with same slug fails.
+CREATE UNIQUE INDEX uniq_active_service_slug
+  ON social_studio_services(user_id, slug)
+  WHERE deleted_at IS NULL;
 
 -- Posts: 1 post = 1 carousel
 CREATE TABLE social_studio_posts (
@@ -239,12 +247,14 @@ CREATE TABLE social_studio_slides (
 );
 
 -- Generated images: versioned per slide
+-- Storage convention: lưu object_key (relative path), KHÔNG lưu absolute URL.
+-- Frontend/API tự nối R2_PUBLIC_URL + '/' + object_key. Đổi domain = đổi env var.
 CREATE TABLE social_studio_generated_images (
   id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slide_id             UUID NOT NULL REFERENCES social_studio_slides(id) ON DELETE CASCADE,
   user_id              UUID NOT NULL REFERENCES auth.users(id),
-  image_url            TEXT NOT NULL,
-  thumbnail_url        TEXT,
+  object_key           TEXT NOT NULL,           -- 'slides/{post_id}/{slide_id}/{image_id}.png'
+  thumbnail_key        TEXT,                    -- 'slides/{post_id}/{slide_id}/{image_id}_thumb.webp'
   prompt_used          TEXT NOT NULL,
   prompt_template_version TEXT NOT NULL,        -- e.g. 'v1.0.0'
   is_current           BOOLEAN DEFAULT true,
@@ -258,18 +268,22 @@ CREATE UNIQUE INDEX uniq_current_image_per_slide
   ON social_studio_generated_images(slide_id) WHERE is_current = true;
 
 -- Generation jobs: background processing
+-- job_type discriminator: 'create' = full carousel, 'regenerate' = subset of slides.
+-- Both flow through the same atomic budget reserve (cost-tracker.atomicReserve).
 CREATE TABLE social_studio_generation_jobs (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID NOT NULL REFERENCES auth.users(id),
   post_id             UUID NOT NULL REFERENCES social_studio_posts(id) ON DELETE CASCADE,
+  job_type            TEXT NOT NULL DEFAULT 'create' CHECK (job_type IN ('create','regenerate')),
+  target_slide_ids    UUID[] DEFAULT '{}',      -- for regenerate; empty = all slides
   idempotency_key     UUID NOT NULL UNIQUE,
   status              TEXT NOT NULL CHECK (status IN
                       ('queued','processing','completed','failed','cancelled')),
   total_slides        INT NOT NULL,
   completed_slides    INT NOT NULL DEFAULT 0,
   reserved_cost_usd   NUMERIC(10,4) NOT NULL,
-  actual_cost_usd     NUMERIC(10,4),
-  theme_snapshot      JSONB,                    -- frozen at creation
+  -- actual_cost_usd intentionally omitted: single source of truth = SUM(usage_logs).
+  theme_snapshot      JSONB NOT NULL,           -- frozen theme + service at creation
   error_message       TEXT,
   retry_count         INT NOT NULL DEFAULT 0,
   last_processed_at   TIMESTAMPTZ,
@@ -279,6 +293,11 @@ CREATE TABLE social_studio_generation_jobs (
 
 CREATE INDEX idx_generation_jobs_status_created
   ON social_studio_generation_jobs(status, created_at)
+  WHERE status IN ('queued','processing');
+
+-- Used by atomic budget reserve to count concurrent jobs per user (rate limit).
+CREATE INDEX idx_generation_jobs_user_active
+  ON social_studio_generation_jobs(user_id, status)
   WHERE status IN ('queued','processing');
 
 -- Usage logs: cost tracking
@@ -317,9 +336,24 @@ CREATE TABLE social_studio_r2_uploads_audit (
 );
 ```
 
-### 5.2 RLS policies (sketch)
+### 5.2 RLS policies
+
+**RLS-enabled tables** (auth.uid() = user_id pattern):
+- `social_studio_themes`
+- `social_studio_services`
+- `social_studio_posts`
+- `social_studio_slides`
+- `social_studio_generated_images`
+- `social_studio_generation_jobs`
+- `social_studio_settings`             ← **MUST** RLS (singleton per user)
+- `social_studio_usage_logs`           ← **MUST** RLS (cost privacy)
+
+**Service-role-only tables** (no RLS, accessed only by cron via service_role key):
+- `social_studio_r2_uploads_audit`     ← no `user_id` column
+
 ```sql
--- Example for posts; same pattern on all main tables
+-- Example for posts; replicate for all RLS-enabled tables above.
+-- Tables without `deleted_at` (slides, generated_images) skip the deleted_at filter.
 ALTER TABLE social_studio_posts ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY posts_select_own ON social_studio_posts
@@ -334,8 +368,15 @@ CREATE POLICY posts_update_own ON social_studio_posts
 CREATE POLICY posts_delete_own ON social_studio_posts
   FOR DELETE USING (auth.uid() = user_id);
 
--- Service role bypasses RLS for cron jobs (uses service_role key)
+-- usage_logs is INSERT-only from app code; cron uses service_role to bypass.
+-- settings is upserted by onboarding (Section 8.9), then user-managed.
 ```
+
+**Service role bypasses RLS** for:
+- Cron jobs (process-jobs, reaper, archive, rollover) via `SUPABASE_SERVICE_ROLE_KEY`.
+- Saga compensating logic (R2 cleanup on COMMIT failure).
+
+Never expose service_role key to client; only used in API routes / cron handlers.
 
 ### 5.3 R2 storage layout
 ```
@@ -348,7 +389,16 @@ mannaos-social-studio (R2 bucket, public)
     └── {image_id}_thumb.webp     (400px webp for library grid)
 ```
 
-URLs returned: `https://pub-xxxxx.r2.dev/{path}` (MVP). Custom domain Phase 2.
+**Storage convention (CRITICAL):** Tables store `object_key` only (e.g. `slides/abc/def/img.png`) — never absolute URLs. Frontend/API constructs the full URL by prepending `R2_PUBLIC_URL`:
+
+```ts
+// lib/social-studio/r2-client.ts
+export function publicUrl(objectKey: string): string {
+  return `${process.env.R2_PUBLIC_URL}/${objectKey}`
+}
+```
+
+Result: switching from `pub-xxxxx.r2.dev` → `media.mannaos.com` in Phase 2 = update env var only, **zero DB migration**. Cache headers (`Cache-Control: public, max-age=31536000, immutable`) set at PUT time.
 
 ### 5.4 Migrations order
 ```
@@ -413,7 +463,7 @@ buildSlidePrompt({
   service: ServiceRow,
   post: PostRow,
   slide: SlideRow,
-  previousSlideImageUrl?: string,
+  previousSlideKey?: string,
 }): { prompt: string, referenceImageUrls: string[] }
 ```
 
@@ -453,13 +503,15 @@ Layout templates per `slide_type`:
 - **summary:** Table-style 2-column comparison or checklist. Header row primary color, data rows on cream.
 - **cta:** Full logo prominent left/center. Tagline. Checkmark list 3-5 items. Contact icons (Messenger/Web/Location). City visible.
 
-Reference images injection:
+Reference images injection (resolves keys → public URLs at the boundary):
 ```ts
+import { publicUrl } from '@/lib/social-studio/r2-client'
+
 referenceImageUrls = [
-  theme.logo_url,                              // brand
-  ...theme.reference_image_urls.slice(0, 2),   // style
-  ...(previousSlideImageUrl ? [previousSlideImageUrl] : []), // continuity
-]
+  publicUrl(theme.logo_key),                                     // brand
+  ...theme.reference_image_keys.slice(0, 2).map(publicUrl),      // style
+  ...(previousSlideKey ? [publicUrl(previousSlideKey)] : []),    // continuity
+].filter(Boolean)
 ```
 
 Versioned via `prompt_template_version` constant; bumped when template changes. Stored in `generated_images` for traceability.
@@ -593,7 +645,7 @@ Voice samples + rules stored on `social_studio_themes`. Passed verbatim to Sonne
 
 ### 7.5 Validation rules
 - `accent_color`: valid hex, contrast ratio ≥3.0 vs background (warn, not block).
-- `reference_image_urls`: max 5, each ≤5MB.
+- `reference_image_keys`: max 5, each ≤5MB. Validate prefix matches R2 bucket prefix on upload (no SSRF via arbitrary URLs).
 - `voice_sample_posts`: max 10 entries.
 - `voice_rules`: max 2000 chars.
 - `default_aspect_ratio`: in {'4:5','1:1','9:16'}.
@@ -943,7 +995,7 @@ Build only when triggered by real usage signal.
 | Multi-platform aspect ratios | Serious TikTok or IG Story | 3-4 days |
 | N8N auto-post integration | Daily manual posting tedious | Outside this app |
 | Engagement tracking | Iterate based on FB/IG analytics | 5-7 days |
-| Custom domain `media.mannaos.com` | URL pretty-up | 2 hours |
+| Custom domain `media.mannaos.com` | Brand polish | 30 min (env var swap, see C8) |
 | Multi-user collaboration | VA joins workflow | ~3 days UI |
 | Theme A/B testing | Want to test variations | 1 week |
 | Auto-translate VI→EN | Caption typing tedious | 1-2 days |
