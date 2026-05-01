@@ -11,8 +11,38 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 5;
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const bucket = rateLimitBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    if (rateLimitBuckets.size > 5_000) {
+      for (const [k, v] of rateLimitBuckets) {
+        if (v.resetAt < now) rateLimitBuckets.delete(k);
+      }
+    }
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) return false;
+  bucket.count++;
+  return true;
+}
+
 export async function POST(request: Request) {
   try {
+    const xff = request.headers.get("x-forwarded-for") || "";
+    const clientIp = xff.split(",")[0]?.trim() || "unknown";
+    if (!checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again in a minute." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
 
     const {
@@ -114,8 +144,6 @@ export async function POST(request: Request) {
     if (event_id) {
       const [firstName, ...rest] = (full_name || "").trim().split(/\s+/);
       const lastName = rest.join(" ");
-      const xff = request.headers.get("x-forwarded-for") || "";
-      const clientIp = xff.split(",")[0]?.trim() || null;
       await sendCapiLead({
         eventId: event_id,
         eventSourceUrl: event_source_url || "",
@@ -124,7 +152,7 @@ export async function POST(request: Request) {
           phones: phone ? [phone] : undefined,
           firstName: firstName || undefined,
           lastName: lastName || undefined,
-          clientIp,
+          clientIp: clientIp === "unknown" ? null : clientIp,
           clientUserAgent: request.headers.get("user-agent"),
           fbp: fbp || null,
           fbc: fbc || null,
