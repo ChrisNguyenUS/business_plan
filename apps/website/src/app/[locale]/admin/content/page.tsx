@@ -6,6 +6,12 @@ import {
   Globe, ShieldCheck, Award, Stamp, Star, Heart, Briefcase, Users, FileText, BadgeCheck, Scale, Building, TrendingUp, Handshake, Zap, Clock, MapPin 
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import {
+  updateServiceContentDescription,
+  type ServiceContent,
+  type ServiceLocale,
+  type ServiceSlug,
+} from "@/lib/services/service-content";
 
 type ContentSection = "homepage" | "about" | "services";
 
@@ -81,6 +87,62 @@ const DEFAULT_AI_OFFERINGS = [
   { id: "4", name: "Monthly Retainer Support" }
 ];
 
+const SERVICE_CONTENT_CONFIG: Array<{
+  slug: ServiceSlug;
+  title: string;
+  cardSummary: { en: string; vi: string };
+  detailIntro: { en: string; vi: string };
+}> = [
+  {
+    slug: "tax",
+    title: "Tax & Business",
+    cardSummary: {
+      en: "Tax preparation, extension filing, LLC setup, and full business registration services.",
+      vi: "Khai thuế, gia hạn nộp thuế, thành lập LLC và dịch vụ đăng ký kinh doanh đầy đủ.",
+    },
+    detailIntro: {
+      en: "Professional tax preparation, business registration, and compliance services for individuals and businesses.",
+      vi: "Dịch vụ khai thuế, đăng ký kinh doanh và tuân thủ hồ sơ chuyên nghiệp cho cá nhân và doanh nghiệp.",
+    },
+  },
+  {
+    slug: "insurance",
+    title: "Insurance & Finance",
+    cardSummary: {
+      en: "Life insurance, annuity, and retirement planning to protect your family's future.",
+      vi: "Bảo hiểm nhân thọ, niên kim và lập kế hoạch hưu trí để bảo vệ tương lai gia đình bạn.",
+    },
+    detailIntro: {
+      en: "Protect your family and secure your financial future with our licensed insurance services.",
+      vi: "Bảo vệ gia đình và xây dựng tương lai tài chính vững chắc với dịch vụ bảo hiểm có giấy phép.",
+    },
+  },
+  {
+    slug: "immigration",
+    title: "Immigration",
+    cardSummary: {
+      en: "N-400 citizenship, green card, visa renewal, and expert immigration consultation.",
+      vi: "Quốc tịch N-400, thẻ xanh, gia hạn visa và tư vấn di trú chuyên nghiệp.",
+    },
+    detailIntro: {
+      en: "Professional Vietnamese-language USCIS document preparation and consultation services. Bilingual support to help you navigate your immigration journey with confidence.",
+      vi: "Dịch vụ chuẩn bị hồ sơ USCIS và tư vấn di trú bằng tiếng Việt. Hỗ trợ song ngữ để bạn tự tin trong hành trình di trú.",
+    },
+  },
+  {
+    slug: "ai",
+    title: "AI / Automation",
+    cardSummary: {
+      en: "Workflow automation, AI tools for small businesses, and digital transformation.",
+      vi: "Tự động hóa quy trình, công cụ AI cho doanh nghiệp nhỏ và chuyển đổi số.",
+    },
+    detailIntro: {
+      en: "Workflow automation, AI tools for small businesses, and digital transformation.",
+      vi: "Tự động hóa quy trình, công cụ AI cho doanh nghiệp nhỏ và chuyển đổi số.",
+    },
+  },
+];
+
 export default function AdminContent() {
   const [activeSection, setActiveSection] = useState<ContentSection>("homepage");
   const [content, setContent] = useState<Record<string, any>>({});
@@ -142,6 +204,22 @@ export default function AdminContent() {
 
   const updateField = (key: string, value: any) => {
     setContent((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateServiceDescription = (
+    service: ServiceSlug,
+    group: "card_summary" | "detail_intro",
+    locale: ServiceLocale,
+    value: string,
+  ) => {
+    const next = updateServiceContentDescription(
+      content.service_content as ServiceContent | undefined,
+      service,
+      group,
+      locale,
+      value,
+    );
+    updateField("service_content", next);
   };
 
   return (
@@ -323,7 +401,12 @@ export default function AdminContent() {
               
               <div className="bg-white rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-bold text-charcoal">Tax & Business</h2>
-                <ServiceCategoryPanel 
+                <ServiceContentFields
+                  service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "tax")!}
+                  serviceContent={content.service_content}
+                  onChange={updateServiceDescription}
+                />
+                <ServiceCategoryPanel
                   title="What We Offer (Top List)" 
                   items={(content.tax_offerings && content.tax_offerings.length > 0) ? content.tax_offerings : DEFAULT_TAX_OFFERINGS}
                   onChange={(items) => updateField("tax_offerings", items)}
@@ -342,7 +425,12 @@ export default function AdminContent() {
 
               <div className="bg-white rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-bold text-charcoal">Insurance & Finance</h2>
-                <ServiceCategoryPanel 
+                <ServiceContentFields
+                  service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "insurance")!}
+                  serviceContent={content.service_content}
+                  onChange={updateServiceDescription}
+                />
+                <ServiceCategoryPanel
                   title="What We Offer (Top List)" 
                   items={(content.insurance_offerings && content.insurance_offerings.length > 0) ? content.insurance_offerings : DEFAULT_INSURANCE_OFFERINGS}
                   onChange={(items) => updateField("insurance_offerings", items)}
@@ -361,7 +449,12 @@ export default function AdminContent() {
 
               <div className="bg-white rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-bold text-charcoal">Immigration</h2>
-                <ServiceCategoryPanel 
+                <ServiceContentFields
+                  service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "immigration")!}
+                  serviceContent={content.service_content}
+                  onChange={updateServiceDescription}
+                />
+                <ServiceCategoryPanel
                   title="What We Offer (Top List)" 
                   items={(content.immigration_offerings && content.immigration_offerings.length > 0) ? content.immigration_offerings : DEFAULT_IMMIGRATION_OFFERINGS}
                   onChange={(items) => updateField("immigration_offerings", items)}
@@ -380,7 +473,12 @@ export default function AdminContent() {
 
               <div className="bg-white rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-bold text-charcoal">AI / Automation</h2>
-                <ServiceCategoryPanel 
+                <ServiceContentFields
+                  service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "ai")!}
+                  serviceContent={content.service_content}
+                  onChange={updateServiceDescription}
+                />
+                <ServiceCategoryPanel
                   title="What We Offer (Top List)" 
                   items={(content.ai_offerings && content.ai_offerings.length > 0) ? content.ai_offerings : DEFAULT_AI_OFFERINGS} 
                   onChange={(items) => updateField("ai_offerings", items)}
@@ -413,6 +511,47 @@ function ContentField({ label, value, onChange, multiline = false }: { label: st
       ) : (
         <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-full h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
       )}
+    </div>
+  );
+}
+
+function ServiceContentFields({
+  service,
+  serviceContent,
+  onChange,
+}: {
+  service: (typeof SERVICE_CONTENT_CONFIG)[number];
+  serviceContent?: ServiceContent;
+  onChange: (
+    service: ServiceSlug,
+    group: "card_summary" | "detail_intro",
+    locale: ServiceLocale,
+    value: string,
+  ) => void;
+}) {
+  const cardEn = serviceContent?.[service.slug]?.card_summary?.description?.en ?? service.cardSummary.en;
+  const cardVi = serviceContent?.[service.slug]?.card_summary?.description?.vi ?? service.cardSummary.vi;
+  const introEn = serviceContent?.[service.slug]?.detail_intro?.description?.en ?? service.detailIntro.en;
+  const introVi = serviceContent?.[service.slug]?.detail_intro?.description?.vi ?? service.detailIntro.vi;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="rounded-xl border border-teal-100 bg-teal-50/40 p-4 space-y-3">
+        <div>
+          <h3 className="text-sm font-bold text-charcoal">Card Summary (Homepage + Services Page)</h3>
+          <p className="text-xs text-muted-foreground mt-1">Shown in the four service cards on the homepage and /services.</p>
+        </div>
+        <ContentField label="Description (English)" value={cardEn} onChange={(v) => onChange(service.slug, "card_summary", "en", v)} multiline />
+        <ContentField label="Description (Vietnamese)" value={cardVi} onChange={(v) => onChange(service.slug, "card_summary", "vi", v)} multiline />
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+        <div>
+          <h3 className="text-sm font-bold text-charcoal">Service Detail Intro</h3>
+          <p className="text-xs text-muted-foreground mt-1">Shown at the top of this service detail page only.</p>
+        </div>
+        <ContentField label="Description (English)" value={introEn} onChange={(v) => onChange(service.slug, "detail_intro", "en", v)} multiline />
+        <ContentField label="Description (Vietnamese)" value={introVi} onChange={(v) => onChange(service.slug, "detail_intro", "vi", v)} multiline />
+      </div>
     </div>
   );
 }
