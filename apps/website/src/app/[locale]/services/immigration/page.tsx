@@ -24,8 +24,7 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
             Immigration Services / Dịch Vụ Di Trú
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
-            Professional Vietnamese-language USCIS document preparation and consultation services. 
-            Bilingual support to help you navigate your immigration journey with confidence.
+            {d.immigration_desc}
           </p>
           <p className="text-primary font-semibold mt-2 text-sm">
             Bắt đầu từ $50 · Tư vấn miễn phí / Starting from $50 · Free consultation

@@ -1,6 +1,10 @@
 import "server-only";
 import type { Locale } from "./config";
 import { supabase } from "@/lib/supabase";
+import {
+  resolveLocalizedServiceText,
+  type ServiceContent,
+} from "@/lib/services/service-content";
 
 const dictionaries = {
   en: () => import("@/messages/en.json").then((module) => module.default),
@@ -25,6 +29,7 @@ export type Dictionary = Awaited<ReturnType<typeof dictionaries.en>> & {
   imm_visa_price?: string;
   imm_consult_price?: string;
   trust_badges?: { id: string; title: string; desc: string }[];
+  service_content?: ServiceContent;
 };
 
 export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
@@ -177,6 +182,69 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
           if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
           if (content.ai_desc) dbDict.ai_desc = content.ai_desc;
+
+          if (content.service_content) {
+            const serviceContent = content.service_content as ServiceContent;
+            dbDict.service_content = serviceContent;
+
+            dbDict.services_tax_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "tax",
+              "card_summary",
+              locale,
+              dbDict.services_tax_desc,
+            );
+            dbDict.services_insurance_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "insurance",
+              "card_summary",
+              locale,
+              dbDict.services_insurance_desc,
+            );
+            dbDict.services_immigration_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "immigration",
+              "card_summary",
+              locale,
+              dbDict.services_immigration_desc,
+            );
+            dbDict.services_ai_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "ai",
+              "card_summary",
+              locale,
+              dbDict.services_ai_desc,
+            );
+
+            dbDict.tax_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "tax",
+              "detail_intro",
+              locale,
+              dbDict.tax_desc,
+            );
+            dbDict.insurance_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "insurance",
+              "detail_intro",
+              locale,
+              dbDict.insurance_desc,
+            );
+            dbDict.immigration_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "immigration",
+              "detail_intro",
+              locale,
+              dbDict.immigration_desc,
+            );
+            dbDict.ai_desc = resolveLocalizedServiceText(
+              serviceContent,
+              "ai",
+              "detail_intro",
+              locale,
+              dbDict.ai_desc,
+            );
+          }
         }
 
         if (row.section === "immigration_pricing") {
