@@ -29,3 +29,8 @@ build/
 
 # Vercel
 .vercel
+
+# Local tooling
+.pnpm-store/
+.agents/
+AGENTS.md
