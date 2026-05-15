@@ -2,7 +2,16 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Generate ~1,300 MP3 audio files using Google Cloud TTS for all 128 questions and their correct answers, upload to Supabase Storage, and backfill `question_audio_url` / `answer_audio_url` in the DB.
+**Goal:** Generate ~700 MP3 audio files using Google Cloud TTS for all 128 questions, their correct answers (~500), and 100 senator names (Q23 × 50 states × 2 senators), upload to Supabase Storage, and backfill `question_audio_url` / `answer_audio_url` in the DB.
+
+**v1 audio scope (per spec §7 item 3):**
+- ✅ 128 question audios
+- ✅ ~500 correct-answer audios (`n400_answers` where `is_correct=true`)
+- ✅ 100 senator audios (`n400_location_answers` for Q23)
+- ❌ Q29 representatives — text-only in v1 (435 rows × short proper nouns; deferred to v2)
+- ❌ Q61 governor names + Q62 capital cities — text-only in v1 (deferred to v2)
+
+Rationale: rep/governor/capital names are short proper nouns that TTS pronounces poorly anyway. Skipping them keeps the batch under ~700 files / ~30-40MB and avoids ongoing rep-rotation churn.
 
 **Architecture:** One-time batch scripts in `apps/website/scripts/n400/`. Google Cloud TTS Neural2 voice (en-US-Neural2-F or similar). Files stored in Supabase Storage bucket `n400-audio/` with content-hashed filenames. Scripts are idempotent — safe to re-run.
 
@@ -106,10 +115,11 @@ async function main() {
   mkdirSync(OUTPUT_DIR, { recursive: true })
   mkdirSync(resolve(OUTPUT_DIR, 'questions'), { recursive: true })
   mkdirSync(resolve(OUTPUT_DIR, 'answers'), { recursive: true })
+  mkdirSync(resolve(OUTPUT_DIR, 'senators'), { recursive: true })
 
   const manifest: Record<string, string> = {}
 
-  // Fetch all questions
+  // ── Questions ──
   const { data: questions } = await supabase
     .from('n400_questions')
     .select('id, question_en')
@@ -127,11 +137,12 @@ async function main() {
     process.stdout.write(`\rQuestions: ${q.id}/${questions.length}`)
   }
 
-  // Fetch all correct answers
+  // ── Correct answers (excluding Q29 — its "correct" answers come from n400_representatives) ──
   const { data: answers } = await supabase
     .from('n400_answers')
     .select('id, question_id, answer_en')
     .eq('is_correct', true)
+    .neq('question_id', 29)
     .order('question_id')
 
   if (!answers) throw new Error('No answers found')
@@ -145,6 +156,25 @@ async function main() {
     await synthesize(a.answer_en, outputPath)
     manifest[`answer:${a.id}`] = `answers/${filename}`
     process.stdout.write(`\rAnswers: ${i + 1}/${answers.length}`)
+  }
+
+  // ── Q23 senator location answers (50 states × 2 senators = 100) ──
+  const { data: senators } = await supabase
+    .from('n400_location_answers')
+    .select('id, state_code, answer_en')
+    .eq('question_id', 23)
+
+  if (!senators) throw new Error('No senator rows found — run Phase 1 Task 7 Step 3 first')
+
+  console.log(`\nGenerating audio for ${senators.length} senator names (Q23)...`)
+  for (let i = 0; i < senators.length; i++) {
+    const s = senators[i]
+    const hash = contentHash(s.answer_en)
+    const filename = `q023-${s.state_code}-${hash}.mp3`
+    const outputPath = resolve(OUTPUT_DIR, 'senators', filename)
+    await synthesize(s.answer_en, outputPath)
+    manifest[`location_answer:${s.id}`] = `senators/${filename}`
+    process.stdout.write(`\rSenators: ${i + 1}/${senators.length}`)
   }
 
   // Save manifest
@@ -170,17 +200,19 @@ Generating audio for 128 questions...
 Questions: 128/128
 Generating audio for ~500 correct answers...
 Answers: 500/500
+Generating audio for 100 senator names (Q23)...
+Senators: 100/100
 Done. Manifest saved to audio-manifest.json
-Total files: ~628
+Total files: ~728
 ```
 
-This will take ~10-15 minutes. Google Cloud TTS free tier covers 1M characters/month — the full batch is well within this limit.
+This will take ~12-18 minutes. Google Cloud TTS free tier covers 1M characters/month — the full batch is well within this limit.
 
 - [ ] **Step 3: Commit script**
 
 ```bash
 git add apps/website/scripts/n400/generate-audio.ts
-git commit -m "feat(n400): add Google Cloud TTS audio generation script"
+git commit -m "feat(n400): add Google Cloud TTS audio generation script (questions + answers + senators)"
 ```
 
 ---
@@ -206,7 +238,7 @@ Create `apps/website/scripts/n400/upload-audio.ts`:
 ```typescript
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync, readdirSync } from 'fs'
-import { resolve, basename } from 'path'
+import { resolve } from 'path'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -232,44 +264,52 @@ async function main() {
     readFileSync(resolve(__dirname, 'audio-manifest.json'), 'utf-8')
   )
 
+  // Reverse lookup: storagePath -> manifest key
+  const pathToKey = new Map(Object.entries(manifest).map(([k, v]) => [v, k]))
+
   let uploaded = 0
   const total = Object.keys(manifest).length
 
-  // Upload questions
-  const questionFiles = readdirSync(resolve(OUTPUT_DIR, 'questions'))
-  for (const filename of questionFiles) {
-    const localPath = resolve(OUTPUT_DIR, 'questions', filename)
-    const storagePath = `questions/${filename}`
-    const publicUrl = await uploadFile(localPath, storagePath)
+  const dirs: Array<{ dir: string; prefix: string }> = [
+    { dir: 'questions', prefix: 'questions' },
+    { dir: 'answers', prefix: 'answers' },
+    { dir: 'senators', prefix: 'senators' },
+  ]
 
-    // Find question id from manifest
-    const entry = Object.entries(manifest).find(([k, v]) => v === storagePath)
-    if (entry) {
-      const questionId = parseInt(entry[0].replace('question:', ''), 10)
-      await supabase.from('n400_questions')
-        .update({ question_audio_url: publicUrl })
-        .eq('id', questionId)
+  for (const { dir, prefix } of dirs) {
+    let files: string[] = []
+    try { files = readdirSync(resolve(OUTPUT_DIR, dir)) } catch { continue }
+
+    for (const filename of files) {
+      const localPath = resolve(OUTPUT_DIR, dir, filename)
+      const storagePath = `${prefix}/${filename}`
+      const publicUrl = await uploadFile(localPath, storagePath)
+
+      const key = pathToKey.get(storagePath)
+      if (!key) {
+        console.warn(`\n⚠️  No manifest entry for ${storagePath} — skipping DB update`)
+        uploaded++
+        continue
+      }
+
+      const [kind, idRaw] = key.split(':')
+      if (kind === 'question') {
+        await supabase.from('n400_questions')
+          .update({ question_audio_url: publicUrl })
+          .eq('id', parseInt(idRaw, 10))
+      } else if (kind === 'answer') {
+        await supabase.from('n400_answers')
+          .update({ answer_audio_url: publicUrl })
+          .eq('id', idRaw)
+      } else if (kind === 'location_answer') {
+        await supabase.from('n400_location_answers')
+          .update({ answer_audio_url: publicUrl })
+          .eq('id', idRaw)
+      }
+
+      uploaded++
+      process.stdout.write(`\rUploaded ${uploaded}/${total}`)
     }
-    uploaded++
-    process.stdout.write(`\rUploaded ${uploaded}/${total}`)
-  }
-
-  // Upload answers
-  const answerFiles = readdirSync(resolve(OUTPUT_DIR, 'answers'))
-  for (const filename of answerFiles) {
-    const localPath = resolve(OUTPUT_DIR, 'answers', filename)
-    const storagePath = `answers/${filename}`
-    const publicUrl = await uploadFile(localPath, storagePath)
-
-    const entry = Object.entries(manifest).find(([k, v]) => v === storagePath)
-    if (entry) {
-      const answerId = entry[0].replace('answer:', '')
-      await supabase.from('n400_answers')
-        .update({ answer_audio_url: publicUrl })
-        .eq('id', answerId)
-    }
-    uploaded++
-    process.stdout.write(`\rUploaded ${uploaded}/${total}`)
   }
 
   console.log('\nDone. All audio uploaded and DB URLs backfilled.')
@@ -291,10 +331,28 @@ Expected: `Uploaded ~628/628 ... Done.`
 - [ ] **Step 4: Verify in DB**
 
 ```sql
-SELECT COUNT(*) FROM n400_questions WHERE question_audio_url IS NOT NULL;  -- expect 128
-SELECT COUNT(*) FROM n400_answers WHERE is_correct = true AND answer_audio_url IS NOT NULL;  -- expect ~500
+SELECT COUNT(*) FROM n400_questions WHERE question_audio_url IS NOT NULL;
+-- expect 128
+SELECT COUNT(*) FROM n400_answers WHERE is_correct = true AND question_id != 29 AND answer_audio_url IS NOT NULL;
+-- expect ~500
+SELECT COUNT(*) FROM n400_location_answers WHERE question_id = 23 AND answer_audio_url IS NOT NULL;
+-- expect 100
 -- Spot check
 SELECT id, question_audio_url FROM n400_questions WHERE id = 1;
+```
+
+⚠️ **Storage RLS for `n400-audio` bucket** — run once after bucket creation in Supabase SQL Editor:
+
+```sql
+-- Public read for n400-audio bucket
+CREATE POLICY "n400-audio public read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'n400-audio');
+
+-- Admin write only
+CREATE POLICY "n400-audio admin write" ON storage.objects
+  FOR ALL
+  USING      (bucket_id = 'n400-audio' AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (bucket_id = 'n400-audio' AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 ```
 
 - [ ] **Step 5: Commit**
@@ -308,6 +366,8 @@ git commit -m "feat(n400): add audio upload script with Supabase Storage backfil
 
 ## Phase 2 Complete ✅
 
-~1,300 MP3 files generated via Google Cloud TTS, uploaded to Supabase Storage `n400-audio/` bucket, and all `question_audio_url` / `answer_audio_url` fields populated in DB.
+~728 MP3 files generated via Google Cloud TTS (128 questions + ~500 answers + 100 senators), uploaded to Supabase Storage `n400-audio/` bucket, and all `question_audio_url` / `answer_audio_url` (+ Q23 `n400_location_answers.answer_audio_url`) fields populated in DB. Storage RLS applied (public read, admin write).
+
+Q29 reps + Q61 governors + Q62 capitals are intentionally text-only in v1.
 
 **Next:** Proceed to [Phase 3 — Auth + Setup Flow](2026-05-13-n400app-phase-3-auth-setup.md).

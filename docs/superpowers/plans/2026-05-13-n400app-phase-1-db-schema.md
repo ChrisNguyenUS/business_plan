@@ -8,7 +8,10 @@
 
 **Tech Stack:** Supabase Postgres, `@supabase/supabase-js`, `tsx`, `vitest`.
 
-**Prerequisite:** `docs/N400_questions_en.md` and `docs/N400_questions_vi.md` must be populated (both are ✅).
+**Prerequisites:**
+- `docs/N400_questions_en.md` and `docs/N400_questions_vi.md` must be populated (both are ✅).
+- **Migration `apps/internal_app/supabase/migrations/003_role_unification.sql` must already be applied** to the shared Supabase project (`ffsrlmtqzlidnuitkdvw`). This migration unifies `profiles.role` to `('admin','staff','client')` — every n400 admin RLS policy below depends on `role = 'admin'`. Verify with: `SELECT DISTINCT role FROM public.profiles;` (should not return `'user'` or `'ultimate_admin'`).
+- The shared `profiles` table exists with the auto-create trigger `on_auth_user_created`. New n400 user signups inherit role = `'client'`.
 
 ---
 
@@ -252,6 +255,7 @@ CREATE TABLE IF NOT EXISTS public.n400_questions (
   question_vi     TEXT NOT NULL,
   question_audio_url TEXT,
   is_location_based BOOLEAN NOT NULL DEFAULT FALSE,
+  deleted_at      TIMESTAMPTZ,            -- soft delete; preserves attempt history
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -264,6 +268,7 @@ CREATE TABLE IF NOT EXISTS public.n400_answers (
   is_correct      BOOLEAN NOT NULL DEFAULT FALSE,
   answer_audio_url TEXT,
   display_order   INT NOT NULL DEFAULT 0,
+  deleted_at      TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -274,7 +279,7 @@ CREATE TABLE IF NOT EXISTS public.n400_location_answers (
   answer_en       TEXT NOT NULL,
   answer_vi       TEXT NOT NULL,
   answer_audio_url TEXT,
-  UNIQUE (question_id, state_code)
+  UNIQUE (question_id, state_code, answer_en)  -- Q23 stores 2 rows per state (one per senator)
 );
 
 CREATE TABLE IF NOT EXISTS public.n400_state_data (
@@ -318,6 +323,7 @@ CREATE TABLE IF NOT EXISTS public.n400_quiz_attempts (
   score           INT NOT NULL DEFAULT 0,
   total_questions INT NOT NULL DEFAULT 0,
   passed          BOOLEAN,
+  slide_manifest  JSONB,                       -- server-built per-question correct-answer set, used for grading (mock_test only)
   started_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at    TIMESTAMPTZ
 );
@@ -349,50 +355,60 @@ ALTER TABLE public.n400_user_profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.n400_quiz_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.n400_question_attempts ENABLE ROW LEVEL SECURITY;
 
--- Public read for content tables
-CREATE POLICY "n400 questions public read" ON public.n400_questions FOR SELECT USING (true);
-CREATE POLICY "n400 answers public read" ON public.n400_answers FOR SELECT USING (true);
+-- Public read for content tables (only non-deleted)
+CREATE POLICY "n400 questions public read" ON public.n400_questions FOR SELECT USING (deleted_at IS NULL);
+CREATE POLICY "n400 answers public read" ON public.n400_answers FOR SELECT USING (deleted_at IS NULL);
 CREATE POLICY "n400 location answers public read" ON public.n400_location_answers FOR SELECT USING (true);
 CREATE POLICY "n400 state data public read" ON public.n400_state_data FOR SELECT USING (true);
 CREATE POLICY "n400 reps public read" ON public.n400_representatives FOR SELECT USING (true);
 
 -- Admin write for content tables (reuse profiles.role pattern)
-CREATE POLICY "n400 questions admin write" ON public.n400_questions FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
-CREATE POLICY "n400 answers admin write" ON public.n400_answers FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
-CREATE POLICY "n400 location answers admin write" ON public.n400_location_answers FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
-CREATE POLICY "n400 state data admin write" ON public.n400_state_data FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
-CREATE POLICY "n400 reps admin write" ON public.n400_representatives FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-);
+-- IMPORTANT: FOR ALL needs both USING (read/update/delete) and WITH CHECK (insert/update).
+CREATE POLICY "n400 questions admin write" ON public.n400_questions FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "n400 answers admin write" ON public.n400_answers FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "n400 location answers admin write" ON public.n400_location_answers FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "n400 state data admin write" ON public.n400_state_data FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "n400 reps admin write" ON public.n400_representatives FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
--- User profile: own row only
-CREATE POLICY "n400 user profile own read" ON public.n400_user_profile FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "n400 user profile own write" ON public.n400_user_profile FOR ALL USING (auth.uid() = user_id);
+-- User profile: own row only — both USING and WITH CHECK so INSERT cannot smuggle another user_id
+CREATE POLICY "n400 user profile own read" ON public.n400_user_profile FOR SELECT
+  USING (auth.uid() = user_id);
+CREATE POLICY "n400 user profile own write" ON public.n400_user_profile FOR ALL
+  USING      (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "n400 user profile admin read" ON public.n400_user_profile FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
--- Quiz attempts: user own + admin read
-CREATE POLICY "n400 attempts own" ON public.n400_quiz_attempts FOR ALL USING (auth.uid() = user_id);
+-- Quiz attempts: user own + admin read. WITH CHECK prevents user from inserting another user's row.
+CREATE POLICY "n400 attempts own" ON public.n400_quiz_attempts FOR ALL
+  USING      (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "n400 attempts admin read" ON public.n400_quiz_attempts FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
--- Question attempts: via attempt ownership
-CREATE POLICY "n400 question attempts own" ON public.n400_question_attempts FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.n400_quiz_attempts WHERE id = attempt_id AND user_id = auth.uid())
-);
+-- Question attempts: via attempt ownership. WITH CHECK runs the same subquery on insert.
+CREATE POLICY "n400 question attempts own" ON public.n400_question_attempts FOR ALL
+  USING      (EXISTS (SELECT 1 FROM public.n400_quiz_attempts WHERE id = attempt_id AND user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.n400_quiz_attempts WHERE id = attempt_id AND user_id = auth.uid()));
 CREATE POLICY "n400 question attempts admin read" ON public.n400_question_attempts FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
+
+-- ── Storage RLS for n400-audio bucket ──────────────────────────────────────
+-- Public read, admin write only. Run AFTER bucket is created in Phase 2.
+-- (Stub here for documentation; actual policy creation goes in Phase 2 Task 3.)
 ```
 
 - [ ] **Step 2: Run migration in Supabase SQL Editor**
@@ -513,6 +529,8 @@ git commit -m "feat(n400): add seed script for 128 questions and correct answers
 - Create: `apps/website/scripts/n400/generate-distractors.ts`
 - Output: `apps/website/scripts/n400/distractors-review.csv` (gitignored, user reviews this)
 
+**Targets:** ≥5 distractors per non-Q29 question (so the strict session-collision filter at quiz time has headroom). Q29 gets a curated pool of "Member of Congress" placeholders — see Step 6 below.
+
 - [ ] **Step 1: Add to .gitignore**
 
 Add to `apps/website/.gitignore` (or root `.gitignore`):
@@ -537,6 +555,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Q29 has its own curated pool — skip in the LLM generator (handled in Step 6).
+const SKIP_IDS = new Set([29])
+const DISTRACTORS_PER_QUESTION = 5
+
 async function generateDistractors(
   questionId: number,
   questionEn: string,
@@ -550,22 +572,22 @@ Question #${questionId} (Category: ${category}):
 
 Correct answers: ${correctAnswers.map(a => `"${a}"`).join(', ')}
 
-Generate exactly 3 WRONG answer choices (distractors) that:
+Generate exactly ${DISTRACTORS_PER_QUESTION} WRONG answer choices (distractors) that:
 1. Are plausible but clearly incorrect
 2. Are in the same format/style as the correct answers
 3. Do NOT overlap with any correct answer
-4. Are educational (help learners understand what is NOT correct)
+4. Are mutually exclusive with correct answers of related civics questions (e.g. don't use "Democracy" as a distractor since it overlaps with other questions)
+5. Are educational (help learners understand what is NOT correct)
 
 Respond with JSON only, no explanation:
 [
   {"en": "English distractor 1", "vi": "Vietnamese translation 1"},
-  {"en": "English distractor 2", "vi": "Vietnamese translation 2"},
-  {"en": "English distractor 3", "vi": "Vietnamese translation 3"}
+  ...
 ]`
 
   const msg = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 512,
+    max_tokens: 768,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -584,6 +606,11 @@ async function main() {
   const rows: string[] = ['question_id,question_en,distractor_en,distractor_vi,approved']
 
   for (const q of questions) {
+    if (SKIP_IDS.has(q.id)) {
+      process.stdout.write(`\rSkipping Q${q.id} (handled separately)`)
+      continue
+    }
+
     const { data: answers } = await supabase
       .from('n400_answers')
       .select('answer_en')
@@ -606,8 +633,7 @@ async function main() {
       rows.push(`${q.id},"${q.question_en}","ERROR","ERROR",`)
     }
 
-    // Rate limit: 1 req/sec to avoid API throttle
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 1000))  // 1 req/sec
   }
 
   const outPath = resolve(__dirname, 'distractors-review.csv')
@@ -627,7 +653,7 @@ ANTHROPIC_API_KEY=<key> NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY
   npx tsx scripts/n400/generate-distractors.ts
 ```
 
-Expected: `Saved to .../distractors-review.csv` with 384 rows (128 × 3).
+Expected: `Saved to .../distractors-review.csv` with 127 × 5 = 635 rows (Q29 skipped).
 
 - [ ] **Step 4: User reviews CSV**
 
@@ -636,13 +662,45 @@ Open `scripts/n400/distractors-review.csv` in Excel/Google Sheets. For each row:
 - If distractor needs editing → edit `distractor_en` and `distractor_vi`, then type `yes`
 - If distractor is bad → leave `approved` blank (will be skipped)
 
-**Goal:** every question should have at least 3 approved distractors.
+**Goal:** every non-Q29 question should have at least 5 approved distractors.
 
 - [ ] **Step 5: Commit generator script**
 
 ```bash
 git add apps/website/scripts/n400/generate-distractors.ts
-git commit -m "feat(n400): add distractor generator script using Claude API"
+git commit -m "feat(n400): add distractor generator script (≥5 per question, Q29 excluded)"
+```
+
+- [ ] **Step 6: Seed Q29 distractor pool**
+
+Q29 ("Name your U.S. Representative") cannot have a fixed correct answer — that's resolved per-user from `n400_representatives`. The 4-option UI still needs 3 distractors. Seed a curated pool of plausible "Member of Congress" placeholders that are NEVER actually anyone's rep AND won't collide with any state senator/governor name in `n400_state_data`.
+
+Run in Supabase SQL Editor:
+```sql
+-- Q29 distractor pool: 5 fictional "Representative" names with the right format.
+-- Quiz engine picks 3 at random; the correct answer is injected from n400_representatives at runtime.
+INSERT INTO public.n400_answers (question_id, answer_en, answer_vi, is_correct, display_order)
+VALUES
+  (29, 'Representative John Hartwell',  'Hạ nghị sĩ John Hartwell',  false, 100),
+  (29, 'Representative Maria Delgado',  'Hạ nghị sĩ Maria Delgado',  false, 101),
+  (29, 'Representative David Kim',      'Hạ nghị sĩ David Kim',      false, 102),
+  (29, 'Representative Susan Whitmore', 'Hạ nghị sĩ Susan Whitmore', false, 103),
+  (29, 'Representative Robert Chen',    'Hạ nghị sĩ Robert Chen',    false, 104)
+ON CONFLICT DO NOTHING;
+```
+
+Verify:
+```sql
+SELECT COUNT(*) FROM n400_answers WHERE question_id = 29;        -- expect 5
+SELECT COUNT(*) FROM n400_answers WHERE question_id = 29 AND is_correct = true;  -- expect 0
+```
+
+⚠️ **Q29 must have zero `is_correct=true` rows** — the correct answer is always injected from `n400_representatives` at quiz time. If the seed pipeline accidentally inserts one (e.g. from the markdown), delete it.
+
+- [ ] **Step 7: Commit Q29 pool**
+
+```bash
+git commit --allow-empty -m "db(n400): seed Q29 (Representative) distractor pool"
 ```
 
 ---
@@ -829,36 +887,38 @@ SELECT * FROM n400_state_data WHERE state_code = 'TX';
 
 Run in Supabase SQL Editor:
 ```sql
--- Q23: Who are your state's U.S. Senators?
+-- Q23: "Name one of your state's two U.S. Senators." — store TWO rows per state.
+-- USCIS accepts EITHER senator as a correct answer; combined "X and Y" string would be wrong.
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
-SELECT 23, state_code,
-  senator_1 || ' and ' || senator_2,
-  senator_1 || ' và ' || senator_2
-FROM public.n400_state_data
-ON CONFLICT (question_id, state_code) DO UPDATE SET
-  answer_en = EXCLUDED.answer_en,
+SELECT 23, state_code, senator_1, senator_1 FROM public.n400_state_data
+ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
+  answer_vi = EXCLUDED.answer_vi;
+
+INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
+SELECT 23, state_code, senator_2, senator_2 FROM public.n400_state_data
+ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 
 -- Q61: What is the name of the Governor of your state?
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 61, state_code, governor_name, governor_name
 FROM public.n400_state_data
-ON CONFLICT (question_id, state_code) DO UPDATE SET
-  answer_en = EXCLUDED.answer_en,
+ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 
 -- Q62: What is the capital of your state?
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 62, state_code, capital_city, capital_city
 FROM public.n400_state_data
-ON CONFLICT (question_id, state_code) DO UPDATE SET
-  answer_en = EXCLUDED.answer_en,
+ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 ```
 
 Verify:
 ```sql
-SELECT COUNT(*) FROM n400_location_answers;  -- expect 150 (50 × 3 questions)
+SELECT COUNT(*) FROM n400_location_answers;  -- expect 200 (50 × 2 senators + 50 governors + 50 capitals)
+SELECT question_id, COUNT(*) FROM n400_location_answers GROUP BY question_id ORDER BY question_id;
+-- expect: 23 → 100, 61 → 50, 62 → 50
 ```
 
 - [ ] **Step 4: Commit**
@@ -973,46 +1033,98 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const norm = (s: string) => s.trim().toLowerCase()
+
 async function main() {
   let errors = 0
+  const fail = (msg: string) => { console.error(`❌ ${msg}`); errors++ }
 
   // Check 128 questions exist
   const { count: qCount } = await supabase.from('n400_questions').select('*', { count: 'exact', head: true })
-  if (qCount !== 128) { console.error(`❌ Expected 128 questions, got ${qCount}`); errors++ }
+  if (qCount !== 128) fail(`Expected 128 questions, got ${qCount}`)
   else console.log('✅ 128 questions')
 
-  // Check every question has ≥1 correct answer
-  const { data: questions } = await supabase.from('n400_questions').select('id')
-  for (const q of questions ?? []) {
-    const { count } = await supabase.from('n400_answers')
-      .select('*', { count: 'exact', head: true })
-      .eq('question_id', q.id).eq('is_correct', true)
-    if (!count || count < 1) { console.error(`❌ Q${q.id} has no correct answers`); errors++ }
-  }
-  console.log('✅ All questions have ≥1 correct answer')
+  const { data: questions } = await supabase
+    .from('n400_questions')
+    .select('id, is_location_based')
+    .order('id')
 
-  // Check every question has ≥3 distractors
   for (const q of questions ?? []) {
-    const { count } = await supabase.from('n400_answers')
-      .select('*', { count: 'exact', head: true })
-      .eq('question_id', q.id).eq('is_correct', false)
-    if (!count || count < 3) { console.error(`❌ Q${q.id} has only ${count} distractors (need ≥3)`); errors++ }
+    const { data: ans } = await supabase
+      .from('n400_answers')
+      .select('answer_en, is_correct')
+      .eq('question_id', q.id)
+
+    const rows = ans ?? []
+    const correct = rows.filter(a => a.is_correct)
+    const distractors = rows.filter(a => !a.is_correct)
+
+    // Q29 special case: zero correct rows in n400_answers (correct comes from n400_representatives)
+    if (q.id === 29) {
+      if (correct.length !== 0) fail(`Q29 must have 0 correct answers in n400_answers (got ${correct.length})`)
+      if (distractors.length < 5) fail(`Q29 needs ≥5 distractors (got ${distractors.length})`)
+    } else {
+      if (correct.length < 1) fail(`Q${q.id}: no correct answer`)
+      if (distractors.length < 5) fail(`Q${q.id}: only ${distractors.length} distractors (need ≥5)`)
+    }
+
+    // Distinct: no distractor text equals any correct text (case-insensitive)
+    const correctNorm = new Set(correct.map(a => norm(a.answer_en)))
+    for (const d of distractors) {
+      if (correctNorm.has(norm(d.answer_en))) fail(`Q${q.id}: distractor "${d.answer_en}" duplicates a correct answer`)
+    }
+
+    // No duplicate distractor texts
+    const seen = new Set<string>()
+    for (const d of distractors) {
+      const k = norm(d.answer_en)
+      if (seen.has(k)) fail(`Q${q.id}: duplicate distractor "${d.answer_en}"`)
+      seen.add(k)
+    }
   }
-  console.log('✅ All questions have ≥3 distractors')
+  console.log('✅ Per-question answer integrity (correct ≥1, distractors ≥5, no overlap, no dups)')
 
   // Check 50 states
   const { count: stateCount } = await supabase.from('n400_state_data').select('*', { count: 'exact', head: true })
-  if (stateCount !== 50) { console.error(`❌ Expected 50 states, got ${stateCount}`); errors++ }
+  if (stateCount !== 50) fail(`Expected 50 states, got ${stateCount}`)
   else console.log('✅ 50 states')
 
-  // Check location answers (150 = 50 states × 3 questions)
-  const { count: locCount } = await supabase.from('n400_location_answers').select('*', { count: 'exact', head: true })
-  if (locCount !== 150) { console.error(`❌ Expected 150 location answers, got ${locCount}`); errors++ }
-  else console.log('✅ 150 location answers (Q23/61/62 × 50 states)')
+  // Check location answers — Q23: 100 (50×2), Q61: 50, Q62: 50 → total 200
+  const { data: locByQ } = await supabase
+    .from('n400_location_answers')
+    .select('question_id, state_code')
+
+  const expected: Record<number, number> = { 23: 100, 61: 50, 62: 50 }
+  const actual: Record<number, Set<string>> = { 23: new Set(), 61: new Set(), 62: new Set() }
+  for (const r of locByQ ?? []) {
+    if (!actual[r.question_id]) continue
+    actual[r.question_id].add(`${r.state_code}-${(r as any).id ?? Math.random()}`)
+  }
+  for (const [qId, total] of Object.entries(expected)) {
+    const { count } = await supabase
+      .from('n400_location_answers')
+      .select('*', { count: 'exact', head: true })
+      .eq('question_id', Number(qId))
+    if (count !== total) fail(`Q${qId} location_answers: expected ${total}, got ${count}`)
+  }
+
+  // Every state must have exactly 2 senator rows for Q23 + 1 governor for Q61 + 1 capital for Q62
+  const { data: states } = await supabase.from('n400_state_data').select('state_code')
+  for (const s of states ?? []) {
+    for (const [qId, perState] of Object.entries({ 23: 2, 61: 1, 62: 1 })) {
+      const { count } = await supabase
+        .from('n400_location_answers')
+        .select('*', { count: 'exact', head: true })
+        .eq('question_id', Number(qId))
+        .eq('state_code', s.state_code)
+      if (count !== perState) fail(`State ${s.state_code} Q${qId}: expected ${perState} row(s), got ${count}`)
+    }
+  }
+  console.log('✅ Location answer coverage (Q23 × 2 senators, Q61, Q62 across 50 states)')
 
   // Check reps
   const { count: repCount } = await supabase.from('n400_representatives').select('*', { count: 'exact', head: true })
-  if (!repCount || repCount < 430) { console.error(`❌ Expected ~435 reps, got ${repCount}`); errors++ }
+  if (!repCount || repCount < 430) fail(`Expected ~435 reps, got ${repCount}`)
   else console.log(`✅ ${repCount} representatives`)
 
   if (errors > 0) { console.error(`\n${errors} error(s) found. Fix before proceeding to Phase 2.`); process.exit(1) }
@@ -1033,10 +1145,9 @@ NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> \
 Expected output:
 ```
 ✅ 128 questions
-✅ All questions have ≥1 correct answer
-✅ All questions have ≥3 distractors
+✅ Per-question answer integrity (correct ≥1, distractors ≥5, no overlap, no dups)
 ✅ 50 states
-✅ 150 location answers (Q23/61/62 × 50 states)
+✅ Location answer coverage (Q23 × 2 senators, Q61, Q62 across 50 states)
 ✅ 435 representatives
 ✅ All checks passed. Phase 1 complete.
 ```

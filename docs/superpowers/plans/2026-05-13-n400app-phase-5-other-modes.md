@@ -4,11 +4,15 @@
 
 **Goal:** Build Daily Practice, Flashcards, and View All 128 modes, reusing `QuestionCard` and `AudioButton` from Phase 4.
 
-**Architecture:** Daily Practice reuses the full quiz engine with no stop conditions. Flashcards use a flip-card UI with `AudioButton`. View All 128 is a server-rendered accordion with search. All three modes save attempts to DB for streak tracking (Phase 6).
+**Architecture:**
+- Daily Practice reuses the full quiz engine with no early-stop. It also persists a slide manifest in `n400_quiz_attempts.slide_manifest` and uses the **shared `submitAnswer`** (extracted to `src/lib/n400/quiz-actions.ts` to avoid Phase 5 importing from Phase 4's mock-test route).
+- Flashcards use a flip-card UI with `AudioButton`. No quiz engine needed.
+- View All 128 is server-rendered with **client-side search** + a **"Câu yếu của tôi" (My weakest)** filter chip computed from `n400_question_attempts`.
+- All three modes save attempts to DB for streak tracking (Phase 6).
 
 **Tech Stack:** Next.js 16, React 19, Supabase, Tailwind CSS, Radix UI Accordion (already in package.json).
 
-**Prerequisite:** Phase 4 complete (`QuestionCard`, `AudioButton`, quiz engine, server actions pattern established).
+**Prerequisite:** Phase 4 complete (`QuestionCard`, `AudioButton`, quiz engine). Phase 4 server actions in `mock-test/[attemptId]/actions.ts` will be **partially refactored** in Task 0 below to extract `submitAnswer` to a shared module.
 
 ---
 
@@ -16,12 +20,114 @@
 
 | File | Action | Purpose |
 |---|---|---|
+| `src/lib/n400/quiz-actions.ts` | Create | Shared `submitAnswer` server action used by Phase 4 mock-test AND Phase 5 practice |
+| `src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts` | Modify | Re-export `submitAnswer` from shared module |
 | `src/app/[locale]/n400app/practice/page.tsx` | Create | Practice mode: slider + quiz |
 | `src/app/[locale]/n400app/practice/actions.ts` | Create | Start practice attempt, finalize |
 | `src/app/[locale]/n400app/flashcards/page.tsx` | Create | Flashcard mode UI |
 | `src/app/[locale]/n400app/flashcards/actions.ts` | Create | Save flashcard session attempt |
-| `src/app/[locale]/n400app/all-questions/page.tsx` | Create | Server-rendered accordion + search |
+| `src/app/[locale]/n400app/all-questions/page.tsx` | Create | Server-rendered accordion + search + weakest filter |
+| `src/app/[locale]/n400app/all-questions/AllQuestionsClient.tsx` | Create | Client component: search input + filter chip |
 | `src/components/n400/FlashCard.tsx` | Create | Flip card component |
+
+---
+
+## Task 0: Extract shared submitAnswer
+
+**Files:**
+- Create: `apps/website/src/lib/n400/quiz-actions.ts`
+- Modify: `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts`
+
+- [ ] **Step 1: Move submitAnswer to shared module**
+
+Create `apps/website/src/lib/n400/quiz-actions.ts`:
+
+```typescript
+'use server'
+
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+type SlideManifest = Record<string, { correctAnswerIds: string[] }>
+
+async function getSupabase() {
+  const cookieStore = await cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+  )
+}
+
+/**
+ * Server-side wasCorrect derivation. Used by mock_test AND practice modes.
+ * Client posts only (attemptId, questionId, selectedAnswerId).
+ * Server reads slide_manifest and computes correctness — client guesses are ignored.
+ */
+export async function submitAnswer(params: {
+  attemptId: string
+  questionId: number
+  selectedAnswerId: string
+}): Promise<{ wasCorrect: boolean; correctAnswerIds: string[] }> {
+  const supabase = await getSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: attempt } = await supabase
+    .from('n400_quiz_attempts')
+    .select('slide_manifest, completed_at')
+    .eq('id', params.attemptId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!attempt) throw new Error('Attempt not found')
+  if (attempt.completed_at) throw new Error('Attempt already finalized')
+
+  const manifest = (attempt.slide_manifest ?? {}) as SlideManifest
+  const slide = manifest[String(params.questionId)]
+  if (!slide) throw new Error(`Question ${params.questionId} not part of this attempt`)
+
+  // Idempotency: if a row already exists, return its truth (no double-insert).
+  const { data: existing } = await supabase
+    .from('n400_question_attempts')
+    .select('was_correct')
+    .eq('attempt_id', params.attemptId)
+    .eq('question_id', params.questionId)
+    .maybeSingle()
+  if (existing) return { wasCorrect: existing.was_correct, correctAnswerIds: slide.correctAnswerIds }
+
+  const wasCorrect = slide.correctAnswerIds.includes(params.selectedAnswerId)
+
+  await supabase.from('n400_question_attempts').insert({
+    attempt_id: params.attemptId,
+    question_id: params.questionId,
+    was_correct: wasCorrect,
+  })
+
+  return { wasCorrect, correctAnswerIds: slide.correctAnswerIds }
+}
+```
+
+- [ ] **Step 2: Re-export from mock-test/actions.ts**
+
+In `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts`:
+- DELETE the local `submitAnswer` function.
+- Add at top of the file:
+
+```typescript
+export { submitAnswer } from '@/lib/n400/quiz-actions'
+```
+
+(`startMockTest` and `finalizeAttempt` stay where they are — they're route-specific.)
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add apps/website/src/lib/n400/quiz-actions.ts \
+        apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts
+git commit -m "refactor(n400): extract submitAnswer to shared lib for practice mode reuse"
+```
 
 ---
 
@@ -41,8 +147,10 @@ Create `apps/website/src/app/[locale]/n400app/practice/actions.ts`:
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { buildQuizSlide, selectRandomQuestions } from '@/lib/n400/quiz-engine'
-import type { QuizSlide } from '@/lib/n400/quiz-types'
+import { buildQuizSlide, pickRandomSubset } from '@/lib/n400/quiz-engine'
+import type { QuizSlide, QuizQuestion } from '@/lib/n400/quiz-types'
+
+type SlideManifest = Record<string, { correctAnswerIds: string[] }>
 
 async function getSupabase() {
   const cookieStore = await cookies()
@@ -69,10 +177,11 @@ export async function startPractice(count: number): Promise<{ attemptId: string;
   const { data: questions } = await supabase
     .from('n400_questions')
     .select('id, question_en, question_vi, question_audio_url, is_location_based, category')
+    .is('deleted_at', null)
 
   if (!questions) throw new Error('No questions found')
 
-  const selected = selectRandomQuestions(questions, safeCount)
+  const selected = pickRandomSubset(questions as QuizQuestion[], safeCount)
   const questionIds = selected.map(q => q.id)
 
   const { data: allAnswers } = await supabase
@@ -80,55 +189,83 @@ export async function startPractice(count: number): Promise<{ attemptId: string;
     .select('id, question_id, answer_en, answer_vi, answer_audio_url, is_correct')
     .in('question_id', questionIds)
 
-  // Location answers (same logic as mock test)
+  // Same location-answer expansion as Phase 4 startMockTest. Q23 returns 2 senator rows.
   const locationQuestionIds = selected.filter(q => q.is_location_based).map(q => q.id)
-  const locationAnswers: Record<number, { answer_en: string; answer_vi: string; answer_audio_url: string | null }> = {}
+  const locationAnswers: Record<number, Array<{ id: string; answer_en: string; answer_vi: string; answer_audio_url: string | null }>> = {}
 
   if (locationQuestionIds.length > 0 && profile?.state_code) {
     const { data: locData } = await supabase
       .from('n400_location_answers')
-      .select('question_id, answer_en, answer_vi, answer_audio_url')
+      .select('id, question_id, answer_en, answer_vi, answer_audio_url')
       .in('question_id', locationQuestionIds)
       .eq('state_code', profile.state_code)
 
-    if (profile.district_number) {
+    for (const loc of locData ?? []) {
+      if (!locationAnswers[loc.question_id]) locationAnswers[loc.question_id] = []
+      locationAnswers[loc.question_id].push(loc)
+    }
+
+    if (profile.district_number && selected.some(q => q.id === 29)) {
       const { data: repData } = await supabase
         .from('n400_representatives')
         .select('rep_name, rep_audio_url')
         .eq('state_code', profile.state_code)
         .eq('district_number', profile.district_number)
         .single()
-      if (repData) locationAnswers[29] = { answer_en: repData.rep_name, answer_vi: repData.rep_name, answer_audio_url: repData.rep_audio_url }
+      if (repData) {
+        locationAnswers[29] = [{
+          id: 'loc-rep-29',
+          answer_en: repData.rep_name,
+          answer_vi: repData.rep_name,
+          answer_audio_url: repData.rep_audio_url,
+        }]
+      }
     }
-
-    for (const loc of locData ?? []) locationAnswers[loc.question_id] = loc
   }
 
   const sessionCorrectTexts: string[] = []
   for (const q of selected) {
-    const qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id && a.is_correct)
-    sessionCorrectTexts.push(...qAnswers.map(a => a.answer_en))
-    if (locationAnswers[q.id]) sessionCorrectTexts.push(locationAnswers[q.id].answer_en)
+    if (q.is_location_based) {
+      sessionCorrectTexts.push(...(locationAnswers[q.id] ?? []).map(l => l.answer_en))
+    } else {
+      const qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id && a.is_correct)
+      sessionCorrectTexts.push(...qAnswers.map(a => a.answer_en))
+    }
   }
 
+  const manifest: SlideManifest = {}
   const slides: QuizSlide[] = selected.map(q => {
     let qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id)
-    if (q.is_location_based && locationAnswers[q.id]) {
-      const loc = locationAnswers[q.id]
-      qAnswers = [
-        { id: `loc-${q.id}`, question_id: q.id, answer_en: loc.answer_en, answer_vi: loc.answer_vi, answer_audio_url: loc.answer_audio_url, is_correct: true },
-        ...qAnswers.filter(a => !a.is_correct),
-      ]
+    if (q.is_location_based && (locationAnswers[q.id]?.length ?? 0) > 0) {
+      const correctRows = (locationAnswers[q.id] ?? []).map(loc => ({
+        id: loc.id,
+        question_id: q.id,
+        answer_en: loc.answer_en,
+        answer_vi: loc.answer_vi,
+        answer_audio_url: loc.answer_audio_url,
+        is_correct: true as const,
+      }))
+      qAnswers = [...correctRows, ...qAnswers.filter(a => !a.is_correct)]
     }
     const otherCorrectTexts = sessionCorrectTexts.filter(t =>
       !qAnswers.filter(a => a.is_correct).map(a => a.answer_en).includes(t)
     )
-    return buildQuizSlide(q, qAnswers, otherCorrectTexts)
+    const slide = buildQuizSlide(q, qAnswers, otherCorrectTexts)
+    manifest[String(q.id)] = { correctAnswerIds: slide.correctAnswerIds }
+    return slide
   })
 
+  // Persist manifest so the shared submitAnswer can grade server-side.
   const { data: attempt } = await supabase
     .from('n400_quiz_attempts')
-    .insert({ user_id: user.id, mode: 'practice', score: 0, total_questions: safeCount, started_at: new Date().toISOString() })
+    .insert({
+      user_id: user.id,
+      mode: 'practice',
+      score: 0,
+      total_questions: safeCount,
+      slide_manifest: manifest,
+      started_at: new Date().toISOString(),
+    })
     .select('id')
     .single()
 
@@ -143,8 +280,9 @@ export async function finalizePractice(attemptId: string): Promise<{ score: numb
 
   const { data: questionAttempts } = await supabase
     .from('n400_question_attempts')
-    .select('was_correct')
+    .select('was_correct, attempt_id, n400_quiz_attempts!inner(user_id)')
     .eq('attempt_id', attemptId)
+    .eq('n400_quiz_attempts.user_id', user.id)
 
   const score = (questionAttempts ?? []).filter(a => a.was_correct).length
   const total = (questionAttempts ?? []).length
@@ -166,9 +304,9 @@ Create `apps/website/src/app/[locale]/n400app/practice/page.tsx`:
 
 import { useState, useCallback } from 'react'
 import { QuestionCard } from '@/components/n400/QuestionCard'
-import { submitAnswer } from '../mock-test/[attemptId]/actions'
+import { submitAnswer } from '@/lib/n400/quiz-actions'
 import { startPractice, finalizePractice } from './actions'
-import type { QuizSlide, QuizState } from '@/lib/n400/quiz-types'
+import type { QuizState } from '@/lib/n400/quiz-types'
 
 type Phase = 'setup' | 'quiz' | 'result'
 
@@ -189,10 +327,14 @@ export default function PracticePage() {
     setPhase('quiz')
   }
 
-  const handleAnswer = useCallback(async (selectedId: string, wasCorrect: boolean) => {
+  const handleAnswer = useCallback(async (selectedId: string) => {
     if (!state) return
     const slide = state.slides[state.currentIndex]
-    await submitAnswer({ attemptId: state.attemptId, questionId: slide.question.id, selectedAnswerId: selectedId, wasCorrect })
+    const { wasCorrect } = await submitAnswer({
+      attemptId: state.attemptId,
+      questionId: slide.question.id,
+      selectedAnswerId: selectedId,
+    })
     setState(s => s ? { ...s, correctCount: s.correctCount + (wasCorrect ? 1 : 0), wrongCount: s.wrongCount + (wasCorrect ? 0 : 1) } : s)
     setShowNext(true)
   }, [state])
@@ -366,7 +508,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export async function saveFlaschardSession(params: {
+export async function saveFlashcardSession(params: {
   questionIds: number[]
   markedKnew: number[]
 }) {
@@ -392,13 +534,15 @@ export async function saveFlaschardSession(params: {
 
   if (!attempt) return
 
+  const knewSet = new Set(params.markedKnew)
   const rows = params.questionIds.map(qId => ({
     attempt_id: attempt.id,
     question_id: qId,
-    was_correct: params.markedKnew.includes(qId),
+    was_correct: knewSet.has(qId),
   }))
 
   await supabase.from('n400_question_attempts').insert(rows)
+  return { attemptId: attempt.id }
 }
 ```
 
@@ -411,7 +555,7 @@ Create `apps/website/src/app/[locale]/n400app/flashcards/page.tsx`:
 
 import { useEffect, useState } from 'react'
 import { FlashCard } from '@/components/n400/FlashCard'
-import { saveFlaschardSession } from './actions'
+import { saveFlashcardSession } from './actions'
 import type { QuizQuestion, QuizAnswer } from '@/lib/n400/quiz-types'
 import Link from 'next/link'
 
@@ -439,7 +583,7 @@ export default function FlashcardsPage() {
     setKnew(newKnew)
 
     if (index + 1 >= cards.length) {
-      await saveFlaschardSession({ questionIds: cards.map(c => c.question.id), markedKnew: newKnew })
+      await saveFlashcardSession({ questionIds: cards.map(c => c.question.id), markedKnew: newKnew })
       setDone(true)
       return
     }
@@ -522,23 +666,37 @@ git commit -m "feat(n400): add Flashcard mode with flip UI and session tracking"
 
 ---
 
-## Task 3: View All 128 Questions
+- [ ] **Step 5: Commit**
+
+```bash
+git add apps/website/src/components/n400/FlashCard.tsx \
+        apps/website/src/app/[locale]/n400app/flashcards/ \
+        apps/website/src/app/api/n400/questions-with-answers/
+git commit -m "feat(n400): add Flashcard mode with flip UI and session tracking"
+```
+
+---
+
+## Task 3: View All 128 Questions (with search + weakest filter)
 
 **Files:**
 - Create: `apps/website/src/app/[locale]/n400app/all-questions/page.tsx`
+- Create: `apps/website/src/app/[locale]/n400app/all-questions/AllQuestionsClient.tsx`
 
-- [ ] **Step 1: Create page**
+Spec §4.6 requires both a debounced search box AND a "Câu yếu của tôi" filter chip — both shipped in v1.
+
+- [ ] **Step 1: Create server page (loads data, computes weakest set)**
 
 Create `apps/website/src/app/[locale]/n400app/all-questions/page.tsx`:
 
 ```typescript
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import * as Accordion from '@radix-ui/react-accordion'
+import { AllQuestionsClient } from './AllQuestionsClient'
 
 export const revalidate = 3600
 
-async function getAllQuestions() {
+async function getData() {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -549,33 +707,145 @@ async function getAllQuestions() {
   const { data: questions } = await supabase
     .from('n400_questions')
     .select('id, question_en, question_vi, category, question_audio_url')
+    .is('deleted_at', null)
     .order('id')
 
   const { data: answers } = await supabase
     .from('n400_answers')
     .select('question_id, answer_en, answer_vi, answer_audio_url')
     .eq('is_correct', true)
+    .is('deleted_at', null)
 
-  return { questions: questions ?? [], answers: answers ?? [] }
+  // Per-user weakest 20: only available to authenticated users with attempts.
+  let weakestIds: number[] = []
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    // Aggregate `wrong` count per question for this user. We keep the SQL simple by
+    // reading per-question rows (small N — 128 questions max) and counting in JS.
+    const { data: wrongRows } = await supabase
+      .from('n400_question_attempts')
+      .select('question_id, attempt_id, n400_quiz_attempts!inner(user_id)')
+      .eq('was_correct', false)
+      .eq('n400_quiz_attempts.user_id', user.id)
+      .limit(5000)
+
+    const counts = new Map<number, number>()
+    for (const r of wrongRows ?? []) counts.set(r.question_id, (counts.get(r.question_id) ?? 0) + 1)
+    weakestIds = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([id]) => id)
+  }
+
+  return { questions: questions ?? [], answers: answers ?? [], weakestIds, hasUser: !!user }
 }
 
 export default async function AllQuestionsPage() {
-  const { questions, answers } = await getAllQuestions()
+  const { questions, answers, weakestIds, hasUser } = await getData()
+  return (
+    <AllQuestionsClient
+      questions={questions}
+      answers={answers}
+      weakestIds={weakestIds}
+      hasUser={hasUser}
+    />
+  )
+}
+```
 
-  // Group by category
-  const categories = [...new Set(questions.map(q => q.category))]
+- [ ] **Step 2: Create client component**
+
+Create `apps/website/src/app/[locale]/n400app/all-questions/AllQuestionsClient.tsx`:
+
+```typescript
+'use client'
+
+import { useMemo, useState, useDeferredValue } from 'react'
+import * as Accordion from '@radix-ui/react-accordion'
+
+interface Question {
+  id: number
+  question_en: string
+  question_vi: string
+  category: string
+  question_audio_url: string | null
+}
+interface Answer {
+  question_id: number
+  answer_en: string
+  answer_vi: string
+  answer_audio_url: string | null
+}
+
+interface Props {
+  questions: Question[]
+  answers: Answer[]
+  weakestIds: number[]
+  hasUser: boolean
+}
+
+export function AllQuestionsClient({ questions, answers, weakestIds, hasUser }: Props) {
+  const [search, setSearch] = useState('')
+  const [showWeakest, setShowWeakest] = useState(false)
+  const deferred = useDeferredValue(search)
+
+  const answersByQ = useMemo(() => {
+    const map = new Map<number, Answer[]>()
+    for (const a of answers) {
+      if (!map.has(a.question_id)) map.set(a.question_id, [])
+      map.get(a.question_id)!.push(a)
+    }
+    return map
+  }, [answers])
+
+  const filtered = useMemo(() => {
+    let pool = questions
+    if (showWeakest && weakestIds.length > 0) {
+      const wid = new Set(weakestIds)
+      pool = pool.filter(q => wid.has(q.id))
+    }
+    const q = deferred.trim().toLowerCase()
+    if (!q) return pool
+    return pool.filter(qq => {
+      if (qq.question_en.toLowerCase().includes(q) || qq.question_vi.toLowerCase().includes(q)) return true
+      const ans = answersByQ.get(qq.id) ?? []
+      return ans.some(a => a.answer_en.toLowerCase().includes(q) || a.answer_vi.toLowerCase().includes(q))
+    })
+  }, [questions, deferred, showWeakest, weakestIds, answersByQ])
 
   return (
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-2">128 Câu Hỏi Thi Quốc Tịch</h1>
-      <p className="text-gray-500 mb-6">128 U.S. Citizenship Test Questions</p>
+      <p className="text-gray-500 mb-4">128 U.S. Citizenship Test Questions</p>
+
+      <div className="flex flex-col gap-2 mb-4">
+        <input
+          type="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Tìm câu hỏi hoặc đáp án... / Search questions or answers..."
+          aria-label="Search"
+          className="w-full border rounded-lg px-4 py-3 text-base"
+        />
+
+        {hasUser && weakestIds.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowWeakest(s => !s)}
+            aria-pressed={showWeakest}
+            className={`self-start text-sm rounded-full px-4 py-2 border ${showWeakest ? 'bg-orange-100 border-orange-300 text-orange-800' : 'bg-white border-gray-300 text-gray-700'}`}
+          >
+            {showWeakest ? '✓ ' : ''}Câu yếu của tôi / My weakest ({weakestIds.length})
+          </button>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-400 mb-3">
+        Hiển thị {filtered.length}/{questions.length} câu
+      </p>
 
       <Accordion.Root type="multiple" className="space-y-2">
-        {questions.map(q => {
-          const qAnswers = answers.filter(a => a.question_id === q.id)
+        {filtered.map(q => {
+          const qAnswers = answersByQ.get(q.id) ?? []
           return (
-            <Accordion.Item key={q.id} value={String(q.id)}
-              className="border rounded-xl overflow-hidden">
+            <Accordion.Item key={q.id} value={String(q.id)} className="border rounded-xl overflow-hidden">
               <Accordion.Trigger className="w-full text-left px-4 py-4 hover:bg-gray-50 flex justify-between items-start gap-2">
                 <div>
                   <span className="text-xs text-gray-400 font-mono">#{q.id}</span>
@@ -608,11 +878,11 @@ export default async function AllQuestionsPage() {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add apps/website/src/app/[locale]/n400app/all-questions/page.tsx
-git commit -m "feat(n400): add View All 128 Questions page with accordion"
+git add apps/website/src/app/[locale]/n400app/all-questions/
+git commit -m "feat(n400): add View All 128 with debounced search and 'my weakest' filter"
 ```
 
 ---

@@ -213,12 +213,12 @@ const MOCK_AMBIGUOUS = {
 const MOCK_EMPTY = { results: [] }
 
 describe('parseGeocodioResponse', () => {
-  it('returns district number on success', () => {
+  it('returns district number on unambiguous success', () => {
     expect(parseGeocodioResponse(MOCK_SUCCESS)).toEqual({ districtNumber: 9, stateCode: 'TX' })
   })
 
-  it('returns first district when ambiguous', () => {
-    expect(parseGeocodioResponse(MOCK_AMBIGUOUS)).toEqual({ districtNumber: 7, stateCode: 'TX' })
+  it('returns null when ambiguous (>1 district returned)', () => {
+    expect(parseGeocodioResponse(MOCK_AMBIGUOUS)).toBeNull()
   })
 
   it('returns null when no results', () => {
@@ -247,13 +247,21 @@ export interface GeocodeResult {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseGeocodioResponse(data: any): GeocodeResult | null {
-  const result = data?.results?.[0]
-  const district = result?.fields?.congressional_districts?.[0]
-  if (!district) return null
+  const districts = data?.results?.[0]?.fields?.congressional_districts
+  if (!districts || districts.length === 0) return null
+  // Spec §5.1: ambiguous (>1 district) → null. Saving the first match silently is wrong.
+  if (districts.length > 1) return null
+  const d = districts[0]
+  if (typeof d.district_number !== 'number' || typeof d.state_abbreviation !== 'string') return null
   return {
-    districtNumber: district.district_number,
-    stateCode: district.state_abbreviation,
+    districtNumber: d.district_number,
+    stateCode: d.state_abbreviation,
   }
+}
+
+export class GeocodioError extends Error {
+  // Generic message only — never include the input address. Caller scrubs further before Sentry.
+  constructor(public readonly status: number) { super(`Geocodio request failed (${status})`) }
 }
 
 export async function geocodeAddress(params: {
@@ -263,11 +271,18 @@ export async function geocodeAddress(params: {
   zip: string
   apiKey: string
 }): Promise<GeocodeResult | null> {
-  const query = encodeURIComponent(`${params.street}, ${params.city}, ${params.state} ${params.zip}`)
-  const url = `https://api.geocod.io/v1.7/geocode?q=${query}&fields=cd&api_key=${params.apiKey}`
+  // Build the query but DO NOT include it in any thrown error message.
+  const query = `${params.street}, ${params.city}, ${params.state} ${params.zip}`
+  const url = new URL('https://api.geocod.io/v1.7/geocode')
+  url.searchParams.set('q', query)
+  url.searchParams.set('fields', 'cd')
 
-  const res = await fetch(url, { cache: 'no-store' })
-  if (!res.ok) throw new Error(`Geocodio error: ${res.status}`)
+  // Auth via header — keeps the API key out of any incidental URL/query logging.
+  const res = await fetch(url.toString(), {
+    cache: 'no-store',
+    headers: { Authorization: `Bearer ${params.apiKey}` },
+  })
+  if (!res.ok) throw new GeocodioError(res.status)
 
   const data = await res.json()
   return parseGeocodioResponse(data)
@@ -306,8 +321,15 @@ Create `apps/website/src/app/[locale]/n400app/setup/actions.ts`:
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { geocodeAddress } from '@/lib/n400/geocodio'
+import { geocodeAddress, GeocodioError } from '@/lib/n400/geocodio'
 import { geocodioIpLimiter, geocodioUserLimiter } from '@/lib/n400/rate-limit'
+
+function extractClientIp(forwardedFor: string | null): string {
+  // Vercel's edge populates x-forwarded-for and strips/normalizes client-supplied values.
+  // Take the first comma-separated token. Combined with user.id below so a spoofed IP still hits per-user caps.
+  if (!forwardedFor) return 'unknown'
+  return forwardedFor.split(',')[0]?.trim() || 'unknown'
+}
 
 export async function saveSetupProfile(formData: FormData) {
   const cookieStore = await cookies()
@@ -327,9 +349,9 @@ export async function saveSetupProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Rate limiting
-  const ip = headerStore.get('x-forwarded-for') ?? 'unknown'
-  const { success: ipOk } = await geocodioIpLimiter.limit(ip)
+  // Rate limiting — IP key is `<ip>:<user.id>` so spoofed XFF values still count against the user.
+  const ip = extractClientIp(headerStore.get('x-forwarded-for'))
+  const { success: ipOk } = await geocodioIpLimiter.limit(`${ip}:${user.id}`)
   if (!ipOk) {
     return { error: 'Quá nhiều yêu cầu. Vui lòng thử lại sau 1 giờ. / Too many requests. Please try again in 1 hour.' }
   }
@@ -355,21 +377,29 @@ export async function saveSetupProfile(formData: FormData) {
 
   // Geocode (street address used in-memory only, not persisted)
   let districtNumber: number | null = null
+  let stateFromGeo: string | null = null
   try {
     const result = await geocodeAddress({
       street, city, state, zip,
       apiKey: process.env.GEOCODIO_API_KEY!,
     })
     districtNumber = result?.districtNumber ?? null
-  } catch {
+    stateFromGeo  = result?.stateCode ?? null
+  } catch (err) {
+    if (err instanceof GeocodioError) {
+      // err.message is generic — never includes the input address. Safe to log/Sentry.
+      // (Phase 8 wraps this with Sentry.captureException; the GeocodioError class guarantees no PII leakage.)
+    }
     return { error: 'Không thể xác định khu vực. Vui lòng kiểm tra lại địa chỉ. / Could not determine your district. Please check your address.' }
   }
 
+  // Ambiguous (parser returned null because >1 district) — save profile but mark district unresolved.
+  // UI will show "Chưa xác định được đại biểu của bạn" for Q29 and prompt user to retry with more specific address.
   // Save profile (no street_address field)
   const { error: dbError } = await supabase.from('n400_user_profile').upsert({
     user_id: user.id,
     city,
-    state_code: state,
+    state_code: stateFromGeo ?? state,
     zipcode: zip,
     district_number: districtNumber,
     district_resolved_at: districtNumber ? new Date().toISOString() : null,
@@ -403,6 +433,9 @@ git commit -m "feat(n400): add setup form server action with Geocodio + rate lim
 Create `apps/website/src/app/[locale]/n400app/setup/page.tsx`:
 
 ```typescript
+'use client'
+
+import { useFormStatus } from 'react-dom'
 import { saveSetupProfile } from './actions'
 
 const US_STATES = [
@@ -418,13 +451,28 @@ const US_STATES = [
   ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
 ]
 
-export default function SetupPage() {
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className="w-full bg-blue-600 text-white rounded-lg px-4 py-4 text-lg font-semibold mt-2 disabled:opacity-60"
+    >
+      {pending ? 'Đang xác định khu vực... / Resolving district...' : 'Tiếp tục / Continue →'}
+    </button>
+  )
+}
+
+export default function SetupPage({ searchParams }: { searchParams?: { city?: string; state?: string; zip?: string } }) {
+  // searchParams pre-fill the form when the user arrives via the dashboard "Đổi địa chỉ" link.
+  const prefill = searchParams ?? {}
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-2">
-          Cho biết bạn đang ở đâu
-        </h1>
+        <h1 className="text-2xl font-bold mb-2">Cho biết bạn đang ở đâu</h1>
         <p className="text-lg font-semibold text-gray-600 mb-1">Where do you live?</p>
 
         <p className="text-sm text-gray-500 mb-6">
@@ -434,7 +482,9 @@ export default function SetupPage() {
         </p>
 
         <p className="text-xs text-gray-400 mb-6">
-          Địa chỉ chỉ dùng để xác định đại biểu của bạn, không lưu trữ hay chia sẻ với bên thứ ba. / Address is used only to identify your representative and is not stored or shared.
+          Địa chỉ đầy đủ được gửi đến Geocodio (dịch vụ tra cứu khu vực bầu cử) chỉ để xác định Hạ nghị sĩ của bạn — không lưu trữ trên hệ thống của chúng tôi.
+          <br />
+          Your full address is sent to Geocodio (a districting lookup service) solely to identify your Representative — it is not stored on our servers.
         </p>
 
         <form action={saveSetupProfile} className="space-y-4">
@@ -446,6 +496,7 @@ export default function SetupPage() {
               name="street"
               type="text"
               required
+              autoComplete="street-address"
               placeholder="123 Main St"
               className="w-full border rounded-lg px-4 py-3 text-lg"
             />
@@ -460,6 +511,8 @@ export default function SetupPage() {
                 name="city"
                 type="text"
                 required
+                autoComplete="address-level2"
+                defaultValue={prefill.city ?? ''}
                 placeholder="Houston"
                 className="w-full border rounded-lg px-4 py-3 text-lg"
               />
@@ -471,9 +524,12 @@ export default function SetupPage() {
               <input
                 name="zip"
                 type="text"
+                inputMode="numeric"
                 required
                 pattern="\d{5}"
                 maxLength={5}
+                autoComplete="postal-code"
+                defaultValue={prefill.zip ?? ''}
                 placeholder="77083"
                 className="w-full border rounded-lg px-4 py-3 text-lg"
               />
@@ -487,7 +543,7 @@ export default function SetupPage() {
             <select
               name="state"
               required
-              defaultValue="TX"
+              defaultValue={prefill.state ?? 'TX'}
               className="w-full border rounded-lg px-4 py-3 text-lg"
             >
               <option value="">-- Chọn tiểu bang / Select state --</option>
@@ -497,12 +553,7 @@ export default function SetupPage() {
             </select>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white rounded-lg px-4 py-4 text-lg font-semibold mt-2"
-          >
-            Tiếp tục / Continue →
-          </button>
+          <SubmitButton />
         </form>
       </div>
     </div>
@@ -564,7 +615,7 @@ async function getUser() {
 
   const { data: profile } = await supabase
     .from('n400_user_profile')
-    .select('current_streak, longest_streak, state_code')
+    .select('current_streak, longest_streak, state_code, city, zipcode, district_number')
     .eq('user_id', user.id)
     .single()
 
@@ -632,6 +683,24 @@ export default async function N400Page() {
           </Link>
         ))}
       </div>
+
+      {/* Change-address link — re-runs setup with city/state/zip pre-filled (street empty) */}
+      {profile?.state_code && (
+        <div className="text-center mt-6 text-sm">
+          <Link
+            href={{
+              pathname: '/n400app/setup',
+              query: { city: profile.city ?? '', state: profile.state_code, zip: profile.zipcode ?? '' },
+            }}
+            className="text-blue-600 hover:underline"
+          >
+            Đổi địa chỉ / Change address
+          </Link>
+          <p className="text-gray-400 text-xs mt-1">
+            Dùng cho câu hỏi về Hạ nghị sĩ khu vực / Used for the U.S. Representative question
+          </p>
+        </div>
+      )}
     </div>
   )
 }

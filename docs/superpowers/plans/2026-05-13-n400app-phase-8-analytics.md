@@ -4,11 +4,11 @@
 
 **Goal:** Wire GA4 events, Meta CAPI server-side for conversion events, Service Worker with content-version cache busting, and Sentry error tracking.
 
-**Architecture:** Client-side GA4 + Pixel for funnel events. Server-side CAPI (via existing `lib/analytics/meta-capi.ts`) for `n400_mock_test_pass` and `n400_setup_complete` — these are high-value conversion events that must not be spoofable. Service Worker scoped to `/n400app/*` with version hash check.
+**Architecture:** Client-side GA4 + Pixel for funnel events. Server-side CAPI (via a generalized helper extracted from the existing `lib/analytics/meta-capi.ts`) for `n400_mock_test_pass` and `n400_setup_complete`. **Deterministic event_id** so retries dedupe in Meta. Service Worker registered at root scope so it can intercept `/api/n400/*` cache-busting paths. Public content reads use `unstable_cache` with `next-tag` `n400-content` so admin saves actually invalidate.
 
-**Tech Stack:** Existing `lib/analytics/events.ts` + `lib/analytics/meta-capi.ts` patterns, Next.js Service Worker via `public/sw-n400.js`, Sentry (already configured or add via `@sentry/nextjs`).
+**Tech Stack:** Existing `lib/analytics/events.ts` + extension to `lib/analytics/meta-capi.ts`, Next.js Service Worker via `public/sw-n400.js` registered at root scope, Sentry (already configured or add via `@sentry/nextjs`).
 
-**Prerequisite:** Phase 4 complete (mock test finalization), Phase 3 complete (setup action). Existing Meta CAPI pattern from Phase 4 website.
+**Prerequisite:** Phase 4 complete (mock test finalization), Phase 3 complete (setup action). The existing `sendCapiLead` only fires `event_name: "Lead"` — Task 0 below generalizes it to a parameterized `sendCapiEvent`.
 
 ---
 
@@ -16,12 +16,91 @@
 
 | File | Action | Purpose |
 |---|---|---|
+| `src/lib/analytics/meta-capi.ts` | Modify | Add generalized `sendCapiEvent({ eventName, ... })` alongside existing `sendCapiLead` |
 | `src/lib/n400/analytics.ts` | Create | N400-specific analytics event helpers |
+| `src/lib/n400/cached-content.ts` | Create | `unstable_cache` wrappers with tag `n400-content` for public content reads |
 | `src/app/api/n400/content-version/route.ts` | Create | Returns content hash for SW cache busting |
-| `public/sw-n400.js` | Create | Service Worker scoped to /n400app/* |
+| `public/sw-n400.js` | Create | Service Worker (registered at root scope) |
 | `src/app/[locale]/n400app/layout.tsx` | Modify | Register SW on mount |
-| `src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts` | Modify | Fire CAPI on pass |
-| `src/app/[locale]/n400app/setup/actions.ts` | Modify | Fire CAPI on setup complete |
+| `src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts` | Modify | Fire CAPI on pass with deterministic event_id |
+| `src/app/[locale]/n400app/setup/actions.ts` | Modify | Fire CAPI on setup complete with deterministic event_id |
+
+---
+
+## Task 0: Generalize Meta CAPI helper
+
+**Files:**
+- Modify: `apps/website/src/lib/analytics/meta-capi.ts`
+
+The existing `sendCapiLead` hardcodes `event_name: "Lead"` and a fixed user-data shape. We need it to fire arbitrary event names (`n400_mock_test_pass`, `n400_setup_complete`) while preserving the existing Lead behavior used by the contact form.
+
+- [ ] **Step 1: Add `sendCapiEvent` alongside the existing function**
+
+Edit `apps/website/src/lib/analytics/meta-capi.ts`. Keep `sendCapiLead` as a thin wrapper, add a generalized helper:
+
+```typescript
+// ── existing imports/types/buildHashedUserData stay unchanged ──
+
+type CapiEventInput = {
+  eventName: string                // 'Lead' | 'n400_mock_test_pass' | 'n400_setup_complete' | ...
+  eventId: string
+  eventSourceUrl: string
+  user: CapiUserData
+  customData?: Record<string, unknown>
+}
+
+export async function sendCapiEvent(input: CapiEventInput): Promise<void> {
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID
+  const accessToken = process.env.META_CAPI_ACCESS_TOKEN
+  if (!pixelId || !accessToken) return
+
+  const userData = await buildHashedUserData(input.user)
+  const payload = {
+    data: [
+      {
+        event_name: input.eventName,
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: input.eventId,
+        event_source_url: input.eventSourceUrl,
+        action_source: 'website',
+        user_data: userData,
+        custom_data: input.customData ?? {},
+      },
+    ],
+    ...(process.env.META_CAPI_TEST_EVENT_CODE
+      ? { test_event_code: process.env.META_CAPI_TEST_EVENT_CODE }
+      : {}),
+  }
+
+  const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${pixelId}/events?access_token=${encodeURIComponent(accessToken)}`
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const body = await res.text()
+      console.error(`Meta CAPI non-OK (${input.eventName}):`, res.status, body)
+    }
+  } catch (err) {
+    console.error(`Meta CAPI fetch failed (${input.eventName}):`, err)
+  }
+}
+
+// Existing function: thin wrapper for backwards compat with the contact form code path.
+export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
+  return sendCapiEvent({ eventName: 'Lead', ...input })
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add apps/website/src/lib/analytics/meta-capi.ts
+git commit -m "refactor(analytics): generalize sendCapiEvent for n400 conversion events"
+```
 
 ---
 
@@ -107,23 +186,31 @@ git commit -m "feat(n400): add client-side analytics helpers for GA4 and Meta Pi
 
 Read `apps/website/src/lib/analytics/meta-capi.ts` to understand the existing `sendCapiEvent` function signature and required payload fields.
 
-- [ ] **Step 2: Fire CAPI on mock test pass**
+- [ ] **Step 2: Fire CAPI on mock test pass (deterministic event_id)**
 
 In `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts`, add to `finalizeAttempt` after computing `passed`:
 
 ```typescript
-// Add import at top of file:
+// Add imports at top of file:
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
-import { generateEventId } from '@/lib/analytics/events'
+import { headers } from 'next/headers'
+import { createHash } from 'crypto'
 
-// Add inside finalizeAttempt, after the DB update, only when passed === true:
+// Inside finalizeAttempt, after the DB update — only when passed === true:
 if (passed) {
   try {
+    const hdrs = await headers()
+    // Deterministic event_id: same attempt → same id → Meta dedupes if finalize is retried.
+    const eventId = createHash('sha256').update(`n400-pass:${attemptId}`).digest('hex').slice(0, 32)
     await sendCapiEvent({
       eventName: 'n400_mock_test_pass',
-      eventId: generateEventId(),
-      userId: user.id,
-      userEmail: user.email,
+      eventId,
+      eventSourceUrl: hdrs.get('referer') ?? 'https://mannaos.com/n400app',
+      user: {
+        emails: user.email ? [user.email] : undefined,
+        clientIp: hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+        clientUserAgent: hdrs.get('user-agent') ?? null,
+      },
       customData: { score, total_questions: total },
     })
   } catch {
@@ -132,23 +219,30 @@ if (passed) {
 }
 ```
 
-- [ ] **Step 3: Fire CAPI on setup complete**
+- [ ] **Step 3: Fire CAPI on setup complete (deterministic event_id)**
 
 In `apps/website/src/app/[locale]/n400app/setup/actions.ts`, add after successful profile save:
 
 ```typescript
-// Add import at top:
+// Add imports at top:
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
-import { generateEventId } from '@/lib/analytics/events'
+import { createHash } from 'crypto'
 
 // Add after successful supabase upsert, before redirect:
 try {
+  // Deterministic event_id: same user + same resolved location → same id, dedupe-safe on retry.
+  const idInput = `n400-setup:${user.id}:${stateFromGeo ?? state}:${districtNumber ?? 'na'}`
+  const eventId = createHash('sha256').update(idInput).digest('hex').slice(0, 32)
   await sendCapiEvent({
     eventName: 'n400_setup_complete',
-    eventId: generateEventId(),
-    userId: user.id,
-    userEmail: user.email,
-    customData: { state_code: state },
+    eventId,
+    eventSourceUrl: 'https://mannaos.com/n400app/setup',
+    user: {
+      emails: user.email ? [user.email] : undefined,
+      clientIp: extractClientIp(headerStore.get('x-forwarded-for')),
+      clientUserAgent: headerStore.get('user-agent') ?? null,
+    },
+    customData: { state_code: stateFromGeo ?? state, district_resolved: districtNumber !== null },
   })
 } catch {
   // Non-blocking
@@ -165,61 +259,116 @@ git commit -m "feat(n400): fire server-side Meta CAPI for mock test pass and set
 
 ---
 
-## Task 3: Content version API route (for SW cache busting)
+## Task 3: Content version API route + cached content reads
 
 **Files:**
 - Create: `apps/website/src/app/api/n400/content-version/route.ts`
+- Create: `apps/website/src/lib/n400/cached-content.ts`
 
-- [ ] **Step 1: Create route**
+The master plan promised that admin saves invalidate via `revalidateTag('n400-content')`. Direct `supabase.from(...)` calls are NOT in Next's data cache, so the tag never matches anything. Wrap public reads in `unstable_cache` with the tag.
 
-Create `apps/website/src/app/api/n400/content-version/route.ts`:
+- [ ] **Step 1: Create cached-content helpers**
+
+Create `apps/website/src/lib/n400/cached-content.ts`:
 
 ```typescript
+import { unstable_cache } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 
-export const revalidate = 60  // cache for 1 minute
-
-export async function GET() {
+async function publicSupabase() {
   const cookieStore = await cookies()
-  const supabase = createServerClient(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   )
+}
 
-  // Get latest updated_at across all content tables
-  const { data: questions } = await supabase
-    .from('n400_questions')
-    .select('updated_at')
-    .order('updated_at', { ascending: false })
-    .limit(1)
+/**
+ * Cached read of all 128 questions + correct answers (for Flashcards / View All).
+ * Tagged 'n400-content' so admin saves invalidate it via revalidateTag.
+ * 1h soft revalidate as a safety net.
+ */
+export const getAllQuestionsCached = unstable_cache(
+  async () => {
+    const supabase = await publicSupabase()
+    const [questionsRes, answersRes] = await Promise.all([
+      supabase
+        .from('n400_questions')
+        .select('id, question_en, question_vi, question_audio_url, is_location_based, category')
+        .is('deleted_at', null)
+        .order('id'),
+      supabase
+        .from('n400_answers')
+        .select('id, question_id, answer_en, answer_vi, answer_audio_url, is_correct')
+        .is('deleted_at', null),
+    ])
+    return { questions: questionsRes.data ?? [], answers: answersRes.data ?? [] }
+  },
+  ['n400-all-questions-with-answers'],
+  { tags: ['n400-content'], revalidate: 3600 }
+)
 
-  const latestUpdate = questions?.[0]?.updated_at ?? '0'
-  const hash = createHash('sha256').update(latestUpdate).digest('hex').slice(0, 8)
+/** Latest updated_at across content tables — used by content-version endpoint. */
+export const getContentVersion = unstable_cache(
+  async () => {
+    const supabase = await publicSupabase()
+    const { data } = await supabase
+      .from('n400_questions')
+      .select('updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+    return data?.[0]?.updated_at ?? '0'
+  },
+  ['n400-content-version'],
+  { tags: ['n400-content'], revalidate: 60 }
+)
+```
 
+Update Phase 5's `/api/n400/questions-with-answers/route.ts` and Phase 5's All-Questions server page to call `getAllQuestionsCached()` instead of inline `supabase.from(...)` queries. (Phase 7 admin actions already call `revalidateTag('n400-content')`.)
+
+- [ ] **Step 2: Create content-version route**
+
+Create `apps/website/src/app/api/n400/content-version/route.ts`:
+
+```typescript
+import { NextResponse } from 'next/server'
+import { createHash } from 'crypto'
+import { getContentVersion } from '@/lib/n400/cached-content'
+
+export async function GET() {
+  const latest = await getContentVersion()
+  const hash = createHash('sha256').update(String(latest)).digest('hex').slice(0, 8)
   return NextResponse.json({ version_hash: hash }, {
     headers: { 'Cache-Control': 'public, max-age=60' }
   })
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add apps/website/src/app/api/n400/content-version/route.ts
-git commit -m "feat(n400): add content-version API route for Service Worker cache busting"
+git add apps/website/src/lib/n400/cached-content.ts \
+        apps/website/src/app/api/n400/content-version/route.ts \
+        apps/website/src/app/[locale]/n400app/all-questions/ \
+        apps/website/src/app/api/n400/questions-with-answers/
+git commit -m "feat(n400): tag-based cache for content + content-version API"
 ```
 
 ---
 
-## Task 4: Service Worker
+## Task 4: Service Worker (root scope)
 
 **Files:**
 - Create: `apps/website/public/sw-n400.js`
+- Create: `apps/website/src/components/n400/RegisterSW.tsx`
+- Modify: `apps/website/next.config.ts` — add `Service-Worker-Allowed: /` header for `/sw-n400.js`
 - Modify: `apps/website/src/app/[locale]/n400app/layout.tsx`
+
+⚠️ **Why root scope:** a Service Worker can only intercept requests under its registered scope. We need to intercept BOTH `/n400app/*` (audio fetched from Supabase, UI navigations) AND `/api/n400/*` (questions API + content-version). The SW file lives at `/sw-n400.js` (already root) but the registration scope must be `/`. Browsers reject root-scope registrations from a non-root file unless the response carries `Service-Worker-Allowed: /`.
+
+The SW's fetch handler is path-filtered so it never touches anything outside `/n400app` or `/api/n400` — non-n400 routes are unaffected.
 
 - [ ] **Step 1: Create Service Worker**
 
@@ -227,76 +376,98 @@ Create `apps/website/public/sw-n400.js`:
 
 ```javascript
 const CACHE_NAME = 'n400-v1'
-const CONTENT_VERSION_URL = '/api/n400/content-version'
-const QUESTIONS_URL = '/api/n400/questions-with-answers'
+const VERSION_REQ_URL = '/n400-content-version-cache-key' // synthetic key for the version blob inside the cache
 
-// Cache audio files and question data
-self.addEventListener('install', (event) => {
-  self.skipWaiting()
-})
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim())
-})
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
+  const sameOrigin = url.origin === self.location.origin
 
-  // Only handle n400app routes and n400 API routes
-  if (!url.pathname.startsWith('/n400app') && !url.pathname.startsWith('/api/n400')) {
+  // Audio (Supabase Storage CDN): cache-first.
+  // No path filter on origin — Supabase URL — but we only handle GETs to the n400-audio bucket.
+  if (event.request.method === 'GET' && url.hostname.includes('supabase') && url.pathname.includes('n400-audio')) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME)
+      const cached = await cache.match(event.request)
+      if (cached) return cached
+      const response = await fetch(event.request)
+      if (response.ok) cache.put(event.request, response.clone())
+      return response
+    })())
     return
   }
 
-  // Never cache content-version endpoint
-  if (url.pathname === CONTENT_VERSION_URL) return
+  // Anything outside our app paths — let the network handle it.
+  if (!sameOrigin) return
+  if (!url.pathname.startsWith('/n400app') && !url.pathname.startsWith('/api/n400')) return
 
-  // For audio files (Supabase Storage): cache-first
-  if (url.hostname.includes('supabase') && url.pathname.includes('n400-audio')) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
+  // Never cache content-version itself.
+  if (url.pathname === '/api/n400/content-version') return
+
+  // Questions API: version-aware cache.
+  if (url.pathname === '/api/n400/questions-with-answers' && event.request.method === 'GET') {
+    event.respondWith((async () => {
+      try {
+        const versionRes = await fetch('/api/n400/content-version', { cache: 'no-store' })
+        const { version_hash } = await versionRes.json()
+        const cache = await caches.open(CACHE_NAME)
+
+        // Stored version blob lives under a synthetic Request URL so cache.match works deterministically.
+        const versionKey = new Request(VERSION_REQ_URL)
+        const cachedVersion = await cache.match(versionKey)
+        const cachedVersionData = cachedVersion ? await cachedVersion.json() : null
+
+        if (cachedVersionData?.version_hash !== version_hash) {
+          await cache.delete(event.request)
+          await cache.put(versionKey, new Response(JSON.stringify({ version_hash }), {
+            headers: { 'Content-Type': 'application/json' },
+          }))
+        }
+
         const cached = await cache.match(event.request)
         if (cached) return cached
+
         const response = await fetch(event.request)
         if (response.ok) cache.put(event.request, response.clone())
         return response
-      })
-    )
+      } catch {
+        const cache = await caches.open(CACHE_NAME)
+        const cached = await cache.match(event.request)
+        if (cached) return cached
+        return fetch(event.request)
+      }
+    })())
     return
   }
 
-  // For questions API: network-first with version check
-  if (url.pathname === QUESTIONS_URL) {
-    event.respondWith(
-      fetch(CONTENT_VERSION_URL)
-        .then(async (versionRes) => {
-          const { version_hash } = await versionRes.json()
-          const cache = await caches.open(CACHE_NAME)
-          const cachedVersion = await cache.match('n400-content-version')
-          const cachedVersionData = cachedVersion ? await cachedVersion.json() : null
-
-          // If version changed, clear question cache
-          if (cachedVersionData?.version_hash !== version_hash) {
-            await cache.delete(QUESTIONS_URL)
-            await cache.put('n400-content-version', new Response(JSON.stringify({ version_hash })))
-          }
-
-          const cached = await cache.match(QUESTIONS_URL)
-          if (cached) return cached
-
-          const response = await fetch(event.request)
-          if (response.ok) cache.put(event.request, response.clone())
-          return response
-        })
-        .catch(() => caches.match(QUESTIONS_URL))
-    )
-    return
-  }
+  // Other /n400app/* and /api/n400/* requests: pass through (no caching).
 })
 ```
 
-- [ ] **Step 2: Register SW in N400 layout**
+- [ ] **Step 2: Allow root-scope registration via Next config**
 
-Add SW registration to `apps/website/src/app/[locale]/n400app/layout.tsx`. Add a client component for SW registration:
+Add to `apps/website/next.config.ts` `headers()`:
+
+```typescript
+async headers() {
+  return [
+    {
+      source: '/sw-n400.js',
+      headers: [
+        // Allow registering this SW at root scope from any route.
+        { key: 'Service-Worker-Allowed', value: '/' },
+        // Don't cache the SW itself — we want updates to roll out fast.
+        { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+      ],
+    },
+    // ...existing headers
+  ]
+}
+```
+
+- [ ] **Step 3: Register SW at root scope**
 
 Create `apps/website/src/components/n400/RegisterSW.tsx`:
 
@@ -308,7 +479,8 @@ import { useEffect } from 'react'
 export function RegisterSW() {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw-n400.js', { scope: '/n400app/' })
+      // Root scope is required so the SW can intercept /api/n400/* (which lives outside /n400app/).
+      navigator.serviceWorker.register('/sw-n400.js', { scope: '/' })
         .catch(() => {/* SW registration failure is non-critical */})
     }
   }, [])
@@ -316,23 +488,16 @@ export function RegisterSW() {
 }
 ```
 
-Add `<RegisterSW />` to the N400 layout (inside the `<div>` wrapper, before `<header>`):
+Add `<RegisterSW />` to `apps/website/src/app/[locale]/n400app/layout.tsx` inside the wrapper, before `<header>`.
 
-```typescript
-// Add import:
-import { RegisterSW } from '@/components/n400/RegisterSW'
-
-// Add inside layout JSX, before <header>:
-<RegisterSW />
-```
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add apps/website/public/sw-n400.js \
         apps/website/src/components/n400/RegisterSW.tsx \
-        apps/website/src/app/[locale]/n400app/layout.tsx
-git commit -m "feat(n400): add Service Worker with content-version cache busting"
+        apps/website/src/app/[locale]/n400app/layout.tsx \
+        apps/website/next.config.ts
+git commit -m "feat(n400): root-scope Service Worker with content-version cache busting"
 ```
 
 ---
@@ -430,19 +595,28 @@ cd apps/website && npm install --save @sentry/nextjs@8.54.0
 npx @sentry/wizard@latest -i nextjs
 ```
 
-- [ ] **Step 2: Add Sentry capture to Geocodio errors**
+- [ ] **Step 2: Add Sentry capture to Geocodio errors (PII-safe)**
 
-In `apps/website/src/lib/n400/geocodio.ts`, wrap the fetch call:
+In `apps/website/src/lib/n400/geocodio.ts`, wrap the fetch — but **never include the input address in the captured exception**. The custom `GeocodioError` class from Phase 3 already carries only the HTTP status; we capture that, and explicitly scrub any extra context.
 
 ```typescript
 import * as Sentry from '@sentry/nextjs'
+import { GeocodioError } from './geocodio'  // self-import OK or just inline
 
-// In geocodeAddress, update the catch:
+// In geocodeAddress, replace the catch:
 } catch (err) {
-  Sentry.captureException(err, { tags: { feature: 'n400-geocodio' } })
-  throw err
+  // Re-package as GeocodioError (no PII) before reporting.
+  const safe = err instanceof GeocodioError ? err : new GeocodioError(0)
+  Sentry.captureException(safe, {
+    tags: { feature: 'n400-geocodio' },
+    // Explicitly empty extra/contexts — guarantees no address fragment leaks.
+    extra: {},
+  })
+  throw safe
 }
 ```
+
+Sentry's default `beforeSend` should also be configured (`apps/website/sentry.server.config.ts`) to scrub `request.url` for any path under `/n400app/setup` — defense in depth in case a future code path accidentally puts the address into a thrown message or breadcrumb.
 
 - [ ] **Step 3: Add Sentry capture to quiz finalization errors**
 

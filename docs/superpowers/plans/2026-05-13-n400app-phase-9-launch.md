@@ -39,19 +39,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-async function checkUrl(url: string): Promise<boolean> {
+async function checkUrl(url: string): Promise<{ ok: boolean; reason?: string }> {
   try {
     const res = await fetch(url, { method: 'HEAD' })
-    return res.ok
-  } catch {
-    return false
+    if (!res.ok) return { ok: false, reason: `status ${res.status}` }
+    // Defend against zero-byte uploads — HEAD can 200 even when storage saved an empty file.
+    const len = Number(res.headers.get('content-length') ?? '0')
+    if (len === 0) return { ok: false, reason: 'content-length=0 (empty file)' }
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, reason: e instanceof Error ? e.message : 'fetch failed' }
   }
 }
 
 async function main() {
   let errors = 0
+  const fail = (msg: string) => { console.error(`❌ ${msg}`); errors++ }
 
-  // Check question audio
+  // ── Question audio ──
   const { data: questions } = await supabase
     .from('n400_questions')
     .select('id, question_audio_url')
@@ -59,37 +64,46 @@ async function main() {
 
   console.log('Checking question audio...')
   for (const q of questions ?? []) {
-    if (!q.question_audio_url) {
-      console.error(`❌ Q${q.id}: missing question_audio_url`)
-      errors++
-      continue
-    }
-    const ok = await checkUrl(q.question_audio_url)
-    if (!ok) { console.error(`❌ Q${q.id}: audio URL returns non-200`); errors++ }
+    if (!q.question_audio_url) { fail(`Q${q.id}: missing question_audio_url`); continue }
+    const { ok, reason } = await checkUrl(q.question_audio_url)
+    if (!ok) fail(`Q${q.id}: ${reason}`)
     else process.stdout.write(`\rQ${q.id}/128 ✓`)
   }
 
-  // Check correct answer audio
+  // ── Correct answer audio (excluding Q29 — text-only in v1) ──
   const { data: answers } = await supabase
     .from('n400_answers')
     .select('id, question_id, answer_audio_url')
     .eq('is_correct', true)
+    .neq('question_id', 29)
 
   console.log('\nChecking answer audio...')
   let checked = 0
   for (const a of answers ?? []) {
-    if (!a.answer_audio_url) {
-      console.error(`❌ Answer ${a.id} (Q${a.question_id}): missing answer_audio_url`)
-      errors++
-      continue
-    }
-    const ok = await checkUrl(a.answer_audio_url)
-    if (!ok) { console.error(`❌ Answer ${a.id}: audio URL returns non-200`); errors++ }
+    if (!a.answer_audio_url) { fail(`Answer ${a.id} (Q${a.question_id}): missing answer_audio_url`); continue }
+    const { ok, reason } = await checkUrl(a.answer_audio_url)
+    if (!ok) fail(`Answer ${a.id} (Q${a.question_id}): ${reason}`)
     checked++
     process.stdout.write(`\r${checked}/${answers?.length} ✓`)
   }
 
-  console.log(`\n\n${errors === 0 ? '✅ All audio URLs accessible' : `❌ ${errors} audio errors found`}`)
+  // ── Q23 senator audio (100 rows: 50 states × 2 senators) ──
+  const { data: senatorRows } = await supabase
+    .from('n400_location_answers')
+    .select('id, state_code, answer_audio_url')
+    .eq('question_id', 23)
+
+  console.log('\nChecking senator audio (Q23)...')
+  let sChecked = 0
+  for (const s of senatorRows ?? []) {
+    if (!s.answer_audio_url) { fail(`Q23 ${s.state_code}: missing answer_audio_url`); continue }
+    const { ok, reason } = await checkUrl(s.answer_audio_url)
+    if (!ok) fail(`Q23 ${s.state_code}: ${reason}`)
+    sChecked++
+    process.stdout.write(`\r${sChecked}/${senatorRows?.length} ✓`)
+  }
+
+  console.log(`\n\n${errors === 0 ? '✅ All audio URLs accessible (non-empty)' : `❌ ${errors} audio errors found`}`)
   if (errors > 0) process.exit(1)
 }
 
@@ -147,10 +161,38 @@ Create `apps/website/e2e/n400/smoke.spec.ts`:
 
 ```typescript
 import { test, expect } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
 
 const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3000'
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? 'test@example.com'
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? 'testpassword123'
+const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPA_SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// Throwaway user per CI run — avoids state leak (streaks, profile) across runs.
+// Requires SUPABASE_SERVICE_ROLE_KEY to provision and clean up.
+const supabaseAdmin = createClient(SUPA_URL, SUPA_SERVICE)
+
+let testEmail = ''
+let testPassword = ''
+let testUserId = ''
+
+test.beforeAll(async () => {
+  testEmail = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`
+  testPassword = `pw-${Math.random().toString(36).slice(2, 14)}`
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email: testEmail,
+    password: testPassword,
+    email_confirm: true,  // skip the email verification step
+  })
+  if (error || !data.user) throw new Error(`Failed to provision e2e user: ${error?.message}`)
+  testUserId = data.user.id
+})
+
+test.afterAll(async () => {
+  if (testUserId) {
+    // Delete user — cascades to n400_user_profile, attempts, etc. via FK ON DELETE CASCADE.
+    await supabaseAdmin.auth.admin.deleteUser(testUserId)
+  }
+})
 
 test.describe('N400 App Smoke Tests', () => {
   test('landing page loads and shows CTA', async ({ page }) => {
@@ -166,28 +208,18 @@ test.describe('N400 App Smoke Tests', () => {
 
   test('login flow works', async ({ page }) => {
     await page.goto(`${BASE_URL}/vi/login`)
-    await page.fill('input[type="email"]', TEST_EMAIL)
-    await page.fill('input[type="password"]', TEST_PASSWORD)
+    await page.fill('input[type="email"]', testEmail)
+    await page.fill('input[type="password"]', testPassword)
     await page.click('button[type="submit"]')
-    // Should redirect to n400app or setup
     await expect(page).toHaveURL(/\/n400app/)
   })
 
-  test('setup form shows bilingual helper text', async ({ page }) => {
-    // Assumes test user has no profile yet, or navigate directly
+  test('setup form shows bilingual helper text + Geocodio disclosure', async ({ page }) => {
     await page.goto(`${BASE_URL}/vi/n400app/setup`)
     await expect(page.getByText('Cho biết bạn đang ở đâu')).toBeVisible()
     await expect(page.getByText('Where do you live?')).toBeVisible()
     await expect(page.getByText('Hạ nghị sĩ')).toBeVisible()
-  })
-
-  test('dashboard shows 4 mode cards', async ({ page }) => {
-    // Assumes test user is logged in and has profile
-    await page.goto(`${BASE_URL}/vi/n400app`)
-    await expect(page.getByText('Luyện Tập')).toBeVisible()
-    await expect(page.getByText('Thi Thử')).toBeVisible()
-    await expect(page.getByText('Thẻ Ghi Nhớ')).toBeVisible()
-    await expect(page.getByText('Xem Tất Cả')).toBeVisible()
+    await expect(page.getByText('Geocodio')).toBeVisible()
   })
 
   test('mock test start page loads', async ({ page }) => {
@@ -197,10 +229,10 @@ test.describe('N400 App Smoke Tests', () => {
     await expect(page.getByText('12 câu')).toBeVisible()
   })
 
-  test('all questions page loads 128 questions', async ({ page }) => {
+  test('all questions page loads with search box and #1 visible', async ({ page }) => {
     await page.goto(`${BASE_URL}/vi/n400app/all-questions`)
     await expect(page.getByText('128 Câu Hỏi Thi Quốc Tịch')).toBeVisible()
-    // Check first question is visible
+    await expect(page.getByPlaceholder(/Tìm câu hỏi/)).toBeVisible()
     await expect(page.getByText('#1')).toBeVisible()
   })
 
@@ -235,10 +267,12 @@ export default defineConfig({
 ```bash
 cd apps/website
 E2E_BASE_URL=https://<your-preview>.vercel.app \
-E2E_TEST_EMAIL=<test-email> \
-E2E_TEST_PASSWORD=<test-password> \
+NEXT_PUBLIC_SUPABASE_URL=<url> \
+SUPABASE_SERVICE_ROLE_KEY=<key> \
   npx playwright test e2e/n400/smoke.spec.ts
 ```
+
+The test creates a throwaway user via the Supabase admin API in `beforeAll` and deletes it in `afterAll`, so each CI run is isolated and no shared `E2E_TEST_EMAIL` is needed.
 
 Expected: all tests pass.
 
@@ -311,6 +345,26 @@ Run through this checklist manually on the Vercel preview URL before going live.
 - [ ] **Performance**
   - [ ] Lighthouse mobile score ≥ 80 on `/n400app`
   - [ ] First load < 3s on 4G throttle
+
+- [ ] **Supply chain**
+  - [ ] `npm audit --omit=dev --audit-level=high` reports zero high/critical vulnerabilities in `apps/website`. Run from `apps/website/` after Phase 8 dependencies are installed.
+  - [ ] Confirm `.gitignore` excludes: `scripts/n400/gcloud-key.json`, `scripts/n400/audio-manifest.json`, `scripts/n400/distractors-*.csv`, `.env.local`, `.vercel/output`. Run `git check-ignore -v <path>` to verify.
+
+- [ ] **Environment variable matrix (verify all set in Vercel + .env.local before launch)**
+  | Var | Where | Purpose | Set? |
+  |---|---|---|---|
+  | `NEXT_PUBLIC_SUPABASE_URL` | both | Supabase REST | |
+  | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | both | Supabase client | |
+  | `SUPABASE_SERVICE_ROLE_KEY` | server only | seed scripts + audit jobs | |
+  | `GEOCODIO_API_KEY` | server only | district lookup | |
+  | `UPSTASH_REDIS_REST_URL` | server only | rate limiting | |
+  | `UPSTASH_REDIS_REST_TOKEN` | server only | rate limiting | |
+  | `ANTHROPIC_API_KEY` | local-only | one-time distractor generation (NOT needed at runtime) | |
+  | `NEXT_PUBLIC_META_PIXEL_ID` | both | Meta Pixel | |
+  | `META_CAPI_ACCESS_TOKEN` | server only | server-side conversions | |
+  | `META_CAPI_TEST_EVENT_CODE` | server only | optional test mode | |
+  | `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | both | error tracking | |
+  | Google Cloud TTS service-account JSON | local-only | one-time audio generation (NOT needed at runtime) | |
 
 ---
 

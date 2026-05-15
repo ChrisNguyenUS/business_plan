@@ -266,7 +266,11 @@ export async function updateStreak(attemptId: string): Promise<{ milestoneReache
 
   if (!update) return null  // same day, no-op
 
-  await supabase
+  // Idempotency guard: only update if last_activity_date hasn't changed since we read it.
+  // ⚠️ PostgreSQL `=` returns NULL (not true) when comparing to NULL — so first-time users
+  // (last_activity_date IS NULL) need an `is.null` guard, not `eq('', '')`. Using a query
+  // builder with `.is(...)` for the null branch and `.eq(...)` for the value branch.
+  const updateBuilder = supabase
     .from('n400_user_profile')
     .update({
       current_streak: update.currentStreak,
@@ -275,8 +279,16 @@ export async function updateStreak(attemptId: string): Promise<{ milestoneReache
       updated_at: new Date().toISOString(),
     })
     .eq('user_id', user.id)
-    // Idempotency guard: only update if last_activity_date hasn't changed since we read it
-    .eq('last_activity_date', profile.last_activity_date ?? '')
+
+  const { error } = profile.last_activity_date === null
+    ? await updateBuilder.is('last_activity_date', null)
+    : await updateBuilder.eq('last_activity_date', profile.last_activity_date)
+
+  if (error) {
+    // If the row was already updated by a concurrent request, the WHERE matched 0 rows
+    // and Supabase returns no error — but if a real error occurred, swallow it (analytics-style).
+    return null
+  }
 
   return { milestoneReached: update.milestoneReached }
 }
@@ -511,6 +523,93 @@ export default async function N400Layout({ children }: { children: React.ReactNo
 git add apps/website/src/components/n400/ \
         apps/website/src/app/[locale]/n400app/layout.tsx
 git commit -m "feat(n400): add streak UI — badge, dashboard card, milestone modal"
+```
+
+---
+
+## Task 4: Wire MilestoneModal into mock-test result + dashboard
+
+The `MilestoneModal` component exists but nothing renders it yet. Spec §4.7 says the modal fires "at milestones 3/7/14/30/100" — that's after a session that updates the streak.
+
+**Files:**
+- Modify: `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/page.tsx`
+- Modify: `apps/website/src/app/[locale]/n400app/practice/page.tsx`
+- Modify: `apps/website/src/app/[locale]/n400app/flashcards/page.tsx`
+- Modify: `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts` — `finalizeAttempt` returns `milestoneReached`
+- Modify: `apps/website/src/app/[locale]/n400app/practice/actions.ts` — `finalizePractice` returns `milestoneReached`
+- Modify: `apps/website/src/app/[locale]/n400app/flashcards/actions.ts` — `saveFlashcardSession` returns `milestoneReached`
+
+- [ ] **Step 1: Make finalize actions return milestoneReached**
+
+In each finalize action, after calling `updateStreak`, propagate the milestone:
+
+```typescript
+// finalizeAttempt (mock-test)
+const streak = await updateStreak(attemptId)
+return { passed, score, total, milestoneReached: streak?.milestoneReached ?? null }
+
+// finalizePractice (practice)
+const streak = await updateStreak(attemptId)
+return { score, total, milestoneReached: streak?.milestoneReached ?? null }
+
+// saveFlashcardSession (flashcards) — replace existing return:
+if (attempt) {
+  const streak = await updateStreak(attempt.id)
+  return { attemptId: attempt.id, milestoneReached: streak?.milestoneReached ?? null }
+}
+return { attemptId: null, milestoneReached: null }
+```
+
+(Update each function's return-type annotation accordingly.)
+
+- [ ] **Step 2: Render the modal in result/end-of-session screens**
+
+In **mock-test** `[attemptId]/result/page.tsx`, the result page is a Server Component and reads from DB. The cleanest mount point for the modal is the mock-test quiz page itself — render it before pushing to /result. Alternative: keep a small client wrapper in the result page that reads `milestoneReached` from a query string.
+
+Simplest approach: store `milestoneReached` in `localStorage` keyed by attemptId before the redirect, and let a small client component on the result page read+clear it.
+
+In `mock-test/[attemptId]/page.tsx`, replace both `finalizeAttempt(attemptId)` calls:
+
+```typescript
+const result = await finalizeAttempt(attemptId)
+if (result.milestoneReached) {
+  localStorage.setItem(`milestone-${attemptId}`, String(result.milestoneReached))
+}
+```
+
+Create `apps/website/src/components/n400/MilestoneToast.tsx`:
+
+```typescript
+'use client'
+
+import { useEffect, useState } from 'react'
+import { MilestoneModal } from './MilestoneModal'
+
+export function MilestoneToast({ attemptId }: { attemptId: string }) {
+  const [milestone, setMilestone] = useState<number | null>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(`milestone-${attemptId}`)
+    if (stored) {
+      setMilestone(Number(stored))
+      localStorage.removeItem(`milestone-${attemptId}`)
+    }
+  }, [attemptId])
+
+  return <MilestoneModal milestone={milestone} onClose={() => setMilestone(null)} />
+}
+```
+
+Render `<MilestoneToast attemptId={params.attemptId} />` inside the mock-test result page. Do the same for the practice result screen and the flashcards "done" screen (those are client components — read from a state set by the finalize call directly, no localStorage hop needed).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add apps/website/src/components/n400/MilestoneToast.tsx \
+        apps/website/src/app/[locale]/n400app/mock-test/ \
+        apps/website/src/app/[locale]/n400app/practice/ \
+        apps/website/src/app/[locale]/n400app/flashcards/
+git commit -m "feat(n400): mount MilestoneModal at end of every quiz mode"
 ```
 
 ---

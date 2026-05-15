@@ -2,9 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the core quiz engine and Mock Test mode — random question selection, distractor collision prevention, 4-option multiple choice UI, audio playback, server-side pass/fail scoring, and shareable certificate.
+**Goal:** Build the core quiz engine and Mock Test mode — random question selection, distractor collision prevention, 4-option multiple choice UI, audio playback, server-side pass/fail scoring, server-side `was_correct` derivation (no client-trusted flags), and shareable certificate.
 
-**Architecture:** Pure quiz engine in `src/lib/n400/quiz-engine.ts` (testable, no React). Server action finalizes attempt and computes pass/fail server-side. Client component handles question rendering + audio. Certificate is a static page rendered from attempt data.
+**Architecture:** Pure quiz engine in `src/lib/n400/quiz-engine.ts` (testable, no React). When the mock test starts, the server builds a **slide manifest** (`{ questionId → correctAnswerIdSet }`) and persists it to `n400_quiz_attempts.slide_manifest` (jsonb). `submitAnswer` looks up the manifest server-side and computes `was_correct` itself — the client only sends `selectedAnswerId`. `finalizeAttempt` then sums `n400_question_attempts` rows. Client component handles question rendering + audio. Certificate is a static page rendered from attempt data.
+
+**Resume across tab close:** the slide payload AND in-progress state both go to **localStorage** (keyed by `attemptId`). `sessionStorage` was previously planned but is wrong — it dies with the tab.
 
 **Tech Stack:** Next.js 16 Server Actions, React 19 client components, Supabase, Web Audio API (HTMLAudioElement), Tailwind CSS.
 
@@ -209,17 +211,20 @@ Create `apps/website/src/lib/n400/quiz-engine.ts`:
 ```typescript
 import type { QuizQuestion, QuizAnswer, QuizSlide } from './quiz-types'
 
-export function selectRandomQuestions(questions: QuizQuestion[], count: number): QuizQuestion[] {
-  const pool = [...questions]
-  const selected: QuizQuestion[] = []
+export function pickRandomSubset<T>(items: T[], count: number): T[] {
+  const pool = [...items]
+  const out: T[] = []
   const take = Math.min(count, pool.length)
   for (let i = 0; i < take; i++) {
     const idx = Math.floor(Math.random() * (pool.length - i))
-    selected.push(pool[idx])
+    out.push(pool[idx])
     pool[idx] = pool[pool.length - 1 - i]
   }
-  return selected
+  return out
 }
+
+// Backwards-compatible alias for selectRandomQuestions used in tests.
+export const selectRandomQuestions = pickRandomSubset<QuizQuestion>
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -236,19 +241,25 @@ export function buildQuizSlide(
   sessionCorrectAnswerTexts: string[]  // correct answer texts from OTHER questions in this session
 ): QuizSlide {
   const correctAnswers = allAnswers.filter(a => a.is_correct)
-  const distractors = allAnswers.filter(a =>
-    !a.is_correct && !sessionCorrectAnswerTexts.includes(a.answer_en)
+  const ownCorrectTexts = new Set(correctAnswers.map(a => a.answer_en.trim().toLowerCase()))
+  const sessionSet = new Set(sessionCorrectAnswerTexts.map(t => t.trim().toLowerCase()))
+
+  const distractorsStrict = allAnswers.filter(a =>
+    !a.is_correct &&
+    !sessionSet.has(a.answer_en.trim().toLowerCase()) &&
+    !ownCorrectTexts.has(a.answer_en.trim().toLowerCase())
   )
 
-  // Pick 1 random correct answer to display
+  // With ≥5 authored distractors per question (Phase 1), the strict pool should
+  // almost always have ≥3. If not, log and fall back to non-strict (own-correct still excluded).
+  let distractorPool = distractorsStrict
+  if (distractorPool.length < 3) {
+    console.warn(`[n400 quiz] Q${question.id}: strict distractor pool has only ${distractorPool.length}; falling back`)
+    distractorPool = allAnswers.filter(a => !a.is_correct && !ownCorrectTexts.has(a.answer_en.trim().toLowerCase()))
+  }
+
   const displayCorrect = correctAnswers[Math.floor(Math.random() * correctAnswers.length)]
-
-  // Pick 3 distractors (fallback: use any distractor if collision-filtered pool is small)
-  const distractorPool = distractors.length >= 3 ? distractors : allAnswers.filter(a => !a.is_correct)
-  const selectedDistractors = selectRandomQuestions(
-    distractorPool as unknown as QuizQuestion[], 3
-  ) as unknown as QuizAnswer[]
-
+  const selectedDistractors = pickRandomSubset(distractorPool, 3)
   const options = shuffle([displayCorrect, ...selectedDistractors])
 
   return {
@@ -303,8 +314,8 @@ Create `apps/website/src/app/[locale]/n400app/mock-test/[attemptId]/actions.ts`:
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { buildQuizSlide, selectRandomQuestions, checkMockTestStop } from '@/lib/n400/quiz-engine'
-import type { QuizSlide } from '@/lib/n400/quiz-types'
+import { buildQuizSlide, pickRandomSubset } from '@/lib/n400/quiz-engine'
+import type { QuizSlide, QuizQuestion } from '@/lib/n400/quiz-types'
 
 async function getSupabase() {
   const cookieStore = await cookies()
@@ -314,6 +325,9 @@ async function getSupabase() {
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   )
 }
+
+// Slide manifest: persisted to n400_quiz_attempts.slide_manifest. Source of truth for grading.
+type SlideManifest = Record<string, { correctAnswerIds: string[] }>  // keyed by question_id (as string)
 
 export async function startMockTest(): Promise<{ attemptId: string; slides: QuizSlide[] }> {
   const supabase = await getSupabase()
@@ -327,15 +341,16 @@ export async function startMockTest(): Promise<{ attemptId: string; slides: Quiz
     .eq('user_id', user.id)
     .single()
 
-  // Fetch all questions
+  // Fetch all questions (only non-deleted)
   const { data: questions } = await supabase
     .from('n400_questions')
     .select('id, question_en, question_vi, question_audio_url, is_location_based, category')
+    .is('deleted_at', null)
 
   if (!questions) throw new Error('No questions found')
 
   // Select 20 random questions
-  const selected = selectRandomQuestions(questions, 20)
+  const selected = pickRandomSubset(questions as QuizQuestion[], 20)
 
   // Fetch answers for selected questions
   const questionIds = selected.map(q => q.id)
@@ -346,17 +361,23 @@ export async function startMockTest(): Promise<{ attemptId: string; slides: Quiz
 
   // For location-based questions, fetch location answers
   const locationQuestionIds = selected.filter(q => q.is_location_based).map(q => q.id)
-  let locationAnswers: Record<number, { answer_en: string; answer_vi: string; answer_audio_url: string | null }> = {}
+  // Q23 has 2 senator rows per state — both are correct.
+  const locationAnswers: Record<number, Array<{ id: string; answer_en: string; answer_vi: string; answer_audio_url: string | null }>> = {}
 
   if (locationQuestionIds.length > 0 && profile?.state_code) {
     const { data: locData } = await supabase
       .from('n400_location_answers')
-      .select('question_id, answer_en, answer_vi, answer_audio_url')
+      .select('id, question_id, answer_en, answer_vi, answer_audio_url')
       .in('question_id', locationQuestionIds)
       .eq('state_code', profile.state_code)
 
-    // Q29: get rep by district
-    if (profile.district_number) {
+    for (const loc of locData ?? []) {
+      if (!locationAnswers[loc.question_id]) locationAnswers[loc.question_id] = []
+      locationAnswers[loc.question_id].push(loc)
+    }
+
+    // Q29: get rep by district. Synthetic id `loc-rep-29` so manifest can match.
+    if (profile.district_number && selected.some(q => q.id === 29)) {
       const { data: repData } = await supabase
         .from('n400_representatives')
         .select('rep_name, rep_audio_url')
@@ -365,47 +386,67 @@ export async function startMockTest(): Promise<{ attemptId: string; slides: Quiz
         .single()
 
       if (repData) {
-        locationAnswers[29] = { answer_en: repData.rep_name, answer_vi: repData.rep_name, answer_audio_url: repData.rep_audio_url }
+        locationAnswers[29] = [{
+          id: `loc-rep-29`,
+          answer_en: repData.rep_name,
+          answer_vi: repData.rep_name,
+          answer_audio_url: repData.rep_audio_url,
+        }]
       }
-    }
-
-    for (const loc of locData ?? []) {
-      locationAnswers[loc.question_id] = loc
     }
   }
 
   // Collect all correct answer texts across session (for distractor collision check)
   const sessionCorrectTexts: string[] = []
   for (const q of selected) {
-    const qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id && a.is_correct)
-    sessionCorrectTexts.push(...qAnswers.map(a => a.answer_en))
-    if (locationAnswers[q.id]) sessionCorrectTexts.push(locationAnswers[q.id].answer_en)
+    if (q.is_location_based) {
+      sessionCorrectTexts.push(...(locationAnswers[q.id] ?? []).map(l => l.answer_en))
+    } else {
+      const qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id && a.is_correct)
+      sessionCorrectTexts.push(...qAnswers.map(a => a.answer_en))
+    }
   }
 
-  // Build slides
+  // Build slides + manifest in one pass
+  const manifest: SlideManifest = {}
   const slides: QuizSlide[] = selected.map(q => {
     let qAnswers = (allAnswers ?? []).filter(a => a.question_id === q.id)
 
-    // Override correct answer for location-based questions
-    if (q.is_location_based && locationAnswers[q.id]) {
-      const loc = locationAnswers[q.id]
-      qAnswers = [
-        { id: `loc-${q.id}`, question_id: q.id, answer_en: loc.answer_en, answer_vi: loc.answer_vi, answer_audio_url: loc.answer_audio_url, is_correct: true },
-        ...qAnswers.filter(a => !a.is_correct),
-      ]
+    // Location-based: replace correct rows with the per-state/per-district correct rows.
+    // Distractors keep the seeded pool from n400_answers (Q29 has its curated pool, Q23/61/62 have generic distractors).
+    if (q.is_location_based && (locationAnswers[q.id]?.length ?? 0) > 0) {
+      const correctRows = (locationAnswers[q.id] ?? []).map(loc => ({
+        id: loc.id,
+        question_id: q.id,
+        answer_en: loc.answer_en,
+        answer_vi: loc.answer_vi,
+        answer_audio_url: loc.answer_audio_url,
+        is_correct: true as const,
+      }))
+      qAnswers = [...correctRows, ...qAnswers.filter(a => !a.is_correct)]
     }
 
     const otherCorrectTexts = sessionCorrectTexts.filter(t =>
       !qAnswers.filter(a => a.is_correct).map(a => a.answer_en).includes(t)
     )
 
-    return buildQuizSlide(q, qAnswers, otherCorrectTexts)
+    const slide = buildQuizSlide(q, qAnswers, otherCorrectTexts)
+    manifest[String(q.id)] = { correctAnswerIds: slide.correctAnswerIds }
+    return slide
   })
 
-  // Create attempt record
+  // Create attempt record WITH manifest persisted server-side.
+  // submitAnswer reads back this manifest to grade — client cannot influence.
   const { data: attempt } = await supabase
     .from('n400_quiz_attempts')
-    .insert({ user_id: user.id, mode: 'mock_test', score: 0, total_questions: 20, started_at: new Date().toISOString() })
+    .insert({
+      user_id: user.id,
+      mode: 'mock_test',
+      score: 0,
+      total_questions: 20,
+      slide_manifest: manifest,
+      started_at: new Date().toISOString(),
+    })
     .select('id')
     .single()
 
@@ -414,21 +455,55 @@ export async function startMockTest(): Promise<{ attemptId: string; slides: Quiz
   return { attemptId: attempt.id, slides }
 }
 
+/**
+ * Server-side wasCorrect derivation.
+ * Client posts only (attemptId, questionId, selectedAnswerId). Server looks up the manifest and decides.
+ * Returns the truth so the UI can render feedback consistently.
+ */
 export async function submitAnswer(params: {
   attemptId: string
   questionId: number
   selectedAnswerId: string
-  wasCorrect: boolean
-}) {
+}): Promise<{ wasCorrect: boolean; correctAnswerIds: string[] }> {
   const supabase = await getSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Load manifest for this attempt — RLS guarantees ownership.
+  const { data: attempt } = await supabase
+    .from('n400_quiz_attempts')
+    .select('slide_manifest, completed_at')
+    .eq('id', params.attemptId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!attempt) throw new Error('Attempt not found')
+  if (attempt.completed_at) throw new Error('Attempt already finalized')
+
+  const manifest = (attempt.slide_manifest ?? {}) as SlideManifest
+  const slide = manifest[String(params.questionId)]
+  if (!slide) throw new Error(`Question ${params.questionId} not part of this attempt`)
+
+  // Idempotency: if a row already exists for this (attempt, question), return its stored truth.
+  const { data: existing } = await supabase
+    .from('n400_question_attempts')
+    .select('was_correct')
+    .eq('attempt_id', params.attemptId)
+    .eq('question_id', params.questionId)
+    .maybeSingle()
+  if (existing) {
+    return { wasCorrect: existing.was_correct, correctAnswerIds: slide.correctAnswerIds }
+  }
+
+  const wasCorrect = slide.correctAnswerIds.includes(params.selectedAnswerId)
+
   await supabase.from('n400_question_attempts').insert({
     attempt_id: params.attemptId,
     question_id: params.questionId,
-    was_correct: params.wasCorrect,
+    was_correct: wasCorrect,
   })
+
+  return { wasCorrect, correctAnswerIds: slide.correctAnswerIds }
 }
 
 export async function finalizeAttempt(attemptId: string): Promise<{ passed: boolean; score: number; total: number }> {
@@ -439,8 +514,9 @@ export async function finalizeAttempt(attemptId: string): Promise<{ passed: bool
   // Server-side: count correct answers from DB (not from client)
   const { data: questionAttempts } = await supabase
     .from('n400_question_attempts')
-    .select('was_correct')
+    .select('was_correct, attempt_id, n400_quiz_attempts!inner(user_id)')
     .eq('attempt_id', attemptId)
+    .eq('n400_quiz_attempts.user_id', user.id)
 
   const score = (questionAttempts ?? []).filter(a => a.was_correct).length
   const total = (questionAttempts ?? []).length
@@ -563,7 +639,12 @@ interface QuestionCardProps {
   totalQuestions: number
   correctCount: number
   wrongCount: number
-  onAnswer: (selectedId: string, wasCorrect: boolean) => void
+  /**
+   * Server is authoritative for grading. Caller submits selectedId to the server,
+   * the server returns wasCorrect, and the parent component updates its counters.
+   * QuestionCard only displays — it does NOT decide correctness.
+   */
+  onAnswer: (selectedId: string) => Promise<void> | void
 }
 
 export function QuestionCard({
@@ -574,9 +655,8 @@ export function QuestionCard({
 
   const handleSelect = (optionId: string) => {
     if (revealed) return
-    const wasCorrect = slide.correctAnswerIds.includes(optionId)
     setSelected(optionId)
-    onAnswer(optionId, wasCorrect)
+    void onAnswer(optionId)
   }
 
   return (
@@ -594,7 +674,7 @@ export function QuestionCard({
         <AudioButton src={slide.question.question_audio_url} autoPlay={!revealed} label="🔊 Nghe lại câu hỏi" />
       </div>
 
-      {/* Options */}
+      {/* Options. Visual reveal uses slide.correctAnswerIds — same set the server will use. */}
       <div className="space-y-3">
         {slide.options.map((opt) => {
           const isSelected = selected === opt.id
@@ -620,7 +700,7 @@ export function QuestionCard({
         })}
       </div>
 
-      {/* Post-answer: show correct answer audio */}
+      {/* Post-answer: correct-answer audio */}
       {revealed && (
         <div className="mt-4 p-4 bg-gray-50 rounded-xl">
           <p className="text-sm text-gray-600 mb-2">Đáp án đúng / Correct answer:</p>
@@ -671,8 +751,12 @@ export default function MockTestStartPage() {
     setLoading(true)
     try {
       const { attemptId, slides } = await startMockTest()
-      // Store slides in sessionStorage to avoid re-fetching
-      sessionStorage.setItem(`quiz-${attemptId}`, JSON.stringify({ slides, startedAt: new Date().toISOString() }))
+      // Persist slides + startedAt to localStorage (NOT sessionStorage —
+      // sessionStorage dies with the tab and breaks the resume-on-refresh promise in spec §5.5).
+      localStorage.setItem(`quiz-slides-${attemptId}`, JSON.stringify({
+        slides,
+        startedAt: new Date().toISOString(),
+      }))
       router.push(`/n400app/mock-test/${attemptId}`)
     } catch {
       setLoading(false)
@@ -724,11 +808,12 @@ export default function MockTestPage() {
   const [showNext, setShowNext] = useState(false)
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(`quiz-${attemptId}`)
+    // Slides live in localStorage so they survive tab close (spec §5.5).
+    const stored = localStorage.getItem(`quiz-slides-${attemptId}`)
     if (!stored) { router.replace('/n400app/mock-test'); return }
-    const { slides, startedAt } = JSON.parse(stored)
+    const { slides, startedAt } = JSON.parse(stored) as { slides: QuizSlide[]; startedAt: string }
 
-    // Resume from localStorage if mid-quiz
+    // Resume in-progress state if it exists.
     const savedState = localStorage.getItem(`quiz-state-${attemptId}`)
     if (savedState) {
       setState(JSON.parse(savedState))
@@ -747,15 +832,15 @@ export default function MockTestPage() {
     }
   }, [attemptId, router])
 
-  const handleAnswer = useCallback(async (selectedId: string, wasCorrect: boolean) => {
+  const handleAnswer = useCallback(async (selectedId: string) => {
     if (!state) return
     const slide = state.slides[state.currentIndex]
 
-    await submitAnswer({
+    // Server decides wasCorrect — we never trust the client guess.
+    const { wasCorrect } = await submitAnswer({
       attemptId,
       questionId: slide.question.id,
       selectedAnswerId: selectedId,
-      wasCorrect,
     })
 
     const newCorrect = state.correctCount + (wasCorrect ? 1 : 0)
@@ -770,11 +855,11 @@ export default function MockTestPage() {
     localStorage.setItem(`quiz-state-${attemptId}`, JSON.stringify(newState))
     setShowNext(true)
 
-    // Check stop conditions
     const stop = checkMockTestStop(newCorrect, newWrong)
     if (stop) {
-      const result = await finalizeAttempt(attemptId)
+      await finalizeAttempt(attemptId)
       localStorage.removeItem(`quiz-state-${attemptId}`)
+      localStorage.removeItem(`quiz-slides-${attemptId}`)
       router.push(`/n400app/mock-test/${attemptId}/result`)
     }
   }, [state, attemptId, router])
@@ -786,6 +871,7 @@ export default function MockTestPage() {
     if (nextIndex >= state.slides.length) {
       await finalizeAttempt(attemptId)
       localStorage.removeItem(`quiz-state-${attemptId}`)
+      localStorage.removeItem(`quiz-slides-${attemptId}`)
       router.push(`/n400app/mock-test/${attemptId}/result`)
       return
     }
