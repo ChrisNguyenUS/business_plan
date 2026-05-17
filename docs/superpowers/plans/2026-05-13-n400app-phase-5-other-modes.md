@@ -511,6 +511,7 @@ import { redirect } from 'next/navigation'
 export async function saveFlashcardSession(params: {
   questionIds: number[]
   markedKnew: number[]
+  startedAt: string
 }) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -527,7 +528,7 @@ export async function saveFlashcardSession(params: {
       user_id: user.id, mode: 'flashcard',
       score: params.markedKnew.length,
       total_questions: params.questionIds.length,
-      started_at: new Date().toISOString(),
+      started_at: params.startedAt,
       completed_at: new Date().toISOString(),
     })
     .select('id').single()
@@ -553,7 +554,7 @@ Create `apps/website/src/app/[locale]/n400app/flashcards/page.tsx`:
 ```typescript
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FlashCard } from '@/components/n400/FlashCard'
 import { saveFlashcardSession } from './actions'
 import type { QuizQuestion, QuizAnswer } from '@/lib/n400/quiz-types'
@@ -570,6 +571,7 @@ export default function FlashcardsPage() {
   const [knew, setKnew] = useState<number[]>([])
   const [done, setDone] = useState(false)
   const [loading, setLoading] = useState(true)
+  const startedAt = useRef(new Date().toISOString())
 
   useEffect(() => {
     fetch('/api/n400/questions-with-answers')
@@ -583,7 +585,7 @@ export default function FlashcardsPage() {
     setKnew(newKnew)
 
     if (index + 1 >= cards.length) {
-      await saveFlashcardSession({ questionIds: cards.map(c => c.question.id), markedKnew: newKnew })
+      await saveFlashcardSession({ questionIds: cards.map(c => c.question.id), markedKnew: newKnew, startedAt: startedAt.current })
       setDone(true)
       return
     }
@@ -654,17 +656,6 @@ export async function GET() {
   return NextResponse.json(cards)
 }
 ```
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add apps/website/src/components/n400/FlashCard.tsx \
-        apps/website/src/app/[locale]/n400app/flashcards/ \
-        apps/website/src/app/api/n400/questions-with-answers/
-git commit -m "feat(n400): add Flashcard mode with flip UI and session tracking"
-```
-
----
 
 - [ ] **Step 5: Commit**
 

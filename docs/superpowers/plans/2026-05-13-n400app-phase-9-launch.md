@@ -341,6 +341,7 @@ Run through this checklist manually on the Vercel preview URL before going live.
   - [ ] `n400_mock_test_start` fires on test start
   - [ ] `n400_mock_test_pass` fires via CAPI when passing
   - [ ] `n400_setup_complete` fires via CAPI after setup
+  - [ ] `n400_signup_complete` fires in GA4 DebugView after setup completion (client-side only)
 
 - [ ] **Performance**
   - [ ] Lighthouse mobile score ≥ 80 on `/n400app`

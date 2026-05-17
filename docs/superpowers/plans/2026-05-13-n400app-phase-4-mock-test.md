@@ -223,8 +223,9 @@ export function pickRandomSubset<T>(items: T[], count: number): T[] {
   return out
 }
 
-// Backwards-compatible alias for selectRandomQuestions used in tests.
-export const selectRandomQuestions = pickRandomSubset<QuizQuestion>
+export function selectRandomQuestions(questions: QuizQuestion[], count: number): QuizQuestion[] {
+  return pickRandomSubset(questions, count)
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -295,6 +296,138 @@ Expected: `all tests passed`
 ```bash
 git add apps/website/src/lib/n400/quiz-engine.ts
 git commit -m "feat(n400): implement quiz engine with distractor collision prevention"
+```
+
+---
+
+## Task 2.5: SECURITY DEFINER RPCs for attempt finalization
+
+**Files:**
+- Migration: `supabase/migrations/<timestamp>_n400_finalize_rpcs.sql`
+
+These RPCs are the ONLY path that can write `score`, `passed`, and `completed_at` to `n400_quiz_attempts`. The table has no UPDATE RLS policy — all finalization goes through these functions.
+
+- [ ] **Step 1: Create migration**
+
+```sql
+-- finalize_mock_attempt: sums n400_question_attempts rows, writes result.
+-- SECURITY DEFINER so it can UPDATE n400_quiz_attempts without a client UPDATE policy.
+CREATE OR REPLACE FUNCTION public.finalize_mock_attempt(p_attempt_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id uuid;
+  v_score   int;
+  v_total   int;
+  v_passed  boolean;
+BEGIN
+  -- Verify ownership
+  SELECT user_id INTO v_user_id
+  FROM n400_quiz_attempts
+  WHERE id = p_attempt_id;
+
+  IF v_user_id IS DISTINCT FROM auth.uid() THEN
+    RAISE EXCEPTION 'unauthorized';
+  END IF;
+
+  -- Idempotency: already finalized → return stored result
+  PERFORM 1 FROM n400_quiz_attempts
+  WHERE id = p_attempt_id AND completed_at IS NOT NULL;
+  IF FOUND THEN
+    SELECT score, total_questions, passed
+    INTO v_score, v_total, v_passed
+    FROM n400_quiz_attempts WHERE id = p_attempt_id;
+    RETURN jsonb_build_object('score', v_score, 'total', v_total, 'passed', v_passed);
+  END IF;
+
+  SELECT
+    COUNT(*) FILTER (WHERE was_correct = true),
+    COUNT(*)
+  INTO v_score, v_total
+  FROM n400_question_attempts
+  WHERE attempt_id = p_attempt_id;
+
+  v_passed := v_score >= 12;
+
+  UPDATE n400_quiz_attempts
+  SET score = v_score,
+      total_questions = v_total,
+      passed = v_passed,
+      completed_at = now()
+  WHERE id = p_attempt_id;
+
+  RETURN jsonb_build_object('score', v_score, 'total', v_total, 'passed', v_passed);
+END;
+$$;
+
+-- finalize_practice_attempt: same pattern, no pass/fail threshold.
+CREATE OR REPLACE FUNCTION public.finalize_practice_attempt(p_attempt_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id uuid;
+  v_score   int;
+  v_total   int;
+BEGIN
+  SELECT user_id INTO v_user_id
+  FROM n400_quiz_attempts
+  WHERE id = p_attempt_id;
+
+  IF v_user_id IS DISTINCT FROM auth.uid() THEN
+    RAISE EXCEPTION 'unauthorized';
+  END IF;
+
+  PERFORM 1 FROM n400_quiz_attempts
+  WHERE id = p_attempt_id AND completed_at IS NOT NULL;
+  IF FOUND THEN
+    SELECT score, total_questions INTO v_score, v_total
+    FROM n400_quiz_attempts WHERE id = p_attempt_id;
+    RETURN jsonb_build_object('score', v_score, 'total', v_total);
+  END IF;
+
+  SELECT
+    COUNT(*) FILTER (WHERE was_correct = true),
+    COUNT(*)
+  INTO v_score, v_total
+  FROM n400_question_attempts
+  WHERE attempt_id = p_attempt_id;
+
+  UPDATE n400_quiz_attempts
+  SET score = v_score,
+      total_questions = v_total,
+      completed_at = now()
+  WHERE id = p_attempt_id;
+
+  RETURN jsonb_build_object('score', v_score, 'total', v_total);
+END;
+$$;
+
+-- Revoke direct execute from public; only authenticated users may call these.
+REVOKE EXECUTE ON FUNCTION public.finalize_mock_attempt(uuid) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION public.finalize_mock_attempt(uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.finalize_practice_attempt(uuid) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION public.finalize_practice_attempt(uuid) TO authenticated;
+```
+
+- [ ] **Step 2: Apply migration**
+
+```bash
+supabase migration new n400_finalize_rpcs
+# paste SQL above into the generated file, then:
+supabase db push
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add supabase/migrations/
+git commit -m "feat(n400): add SECURITY DEFINER RPCs for attempt finalization (no client UPDATE policy)"
 ```
 
 ---
@@ -511,25 +644,16 @@ export async function finalizeAttempt(attemptId: string): Promise<{ passed: bool
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Server-side: count correct answers from DB (not from client)
-  const { data: questionAttempts } = await supabase
-    .from('n400_question_attempts')
-    .select('was_correct, attempt_id, n400_quiz_attempts!inner(user_id)')
-    .eq('attempt_id', attemptId)
-    .eq('n400_quiz_attempts.user_id', user.id)
+  // SECURITY DEFINER RPC — the only path that can write score/passed/completed_at.
+  // No UPDATE RLS policy exists on n400_quiz_attempts; direct .update() would fail.
+  const { data, error } = await supabase.rpc('finalize_mock_attempt', { p_attempt_id: attemptId })
+  if (error) throw new Error(`finalize_mock_attempt failed: ${error.message}`)
 
-  const score = (questionAttempts ?? []).filter(a => a.was_correct).length
-  const total = (questionAttempts ?? []).length
-  const passed = score >= 12
-
-  await supabase.from('n400_quiz_attempts').update({
-    score,
-    total_questions: total,
-    passed,
-    completed_at: new Date().toISOString(),
-  }).eq('id', attemptId).eq('user_id', user.id)
-
-  return { passed, score, total }
+  return {
+    passed: data.passed,
+    score: data.score,
+    total: data.total,
+  }
 }
 ```
 
@@ -830,6 +954,14 @@ export default function MockTestPage() {
         completed: false,
       })
     }
+
+    // Warn before accidental navigation away mid-test.
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [attemptId, router])
 
   const handleAnswer = useCallback(async (selectedId: string) => {

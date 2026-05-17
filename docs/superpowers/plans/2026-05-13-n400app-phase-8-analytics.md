@@ -89,9 +89,16 @@ export async function sendCapiEvent(input: CapiEventInput): Promise<void> {
   }
 }
 
-// Existing function: thin wrapper for backwards compat with the contact form code path.
+// Thin wrapper preserving the existing contact-form call signature.
+// Maps CapiLeadInput fields to the generalized CapiEventInput shape.
 export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
-  return sendCapiEvent({ eventName: 'Lead', ...input })
+  return sendCapiEvent({
+    eventName: 'Lead',
+    eventId: input.eventId,
+    eventSourceUrl: input.eventSourceUrl,
+    user: input.user,
+    customData: input.customData,
+  })
 }
 ```
 
@@ -572,6 +579,44 @@ if (result.milestoneReached) trackStreakMilestone(result.milestoneReached)
 ```bash
 git add apps/website/src/app/[locale]/n400app/
 git commit -m "feat(n400): wire client-side analytics events across all quiz modes"
+```
+
+---
+
+## Task 5.5: Track n400_signup_complete in GA4
+
+**Files:**
+- Modify: `apps/website/src/app/[locale]/n400app/setup/page.tsx` (or the auth callback)
+
+The PRD requires a `n400_signup_complete` GA4 event fired once when a new user completes the setup flow. This is a client-side event (not a CAPI conversion) — it fires on the setup page's `onSuccess` callback or on mount of the post-setup dashboard redirect.
+
+- [ ] **Step 1: Add event to analytics helpers**
+
+In `apps/website/src/lib/n400/analytics.ts`, add:
+
+```typescript
+export function trackSignupComplete(stateCode: string) {
+  trackN400Event('n400_signup_complete', { state_code: stateCode })
+}
+```
+
+- [ ] **Step 2: Fire on setup completion**
+
+In the setup page client component, after the `saveSetup` server action returns successfully, call:
+
+```typescript
+import { trackSignupComplete } from '@/lib/n400/analytics'
+
+// After successful saveSetup:
+trackSignupComplete(stateCode)
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add apps/website/src/lib/n400/analytics.ts \
+        apps/website/src/app/[locale]/n400app/setup/
+git commit -m "feat(n400): fire n400_signup_complete GA4 event on setup completion"
 ```
 
 ---

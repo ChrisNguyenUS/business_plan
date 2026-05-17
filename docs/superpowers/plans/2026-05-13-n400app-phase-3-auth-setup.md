@@ -18,9 +18,10 @@
 |---|---|---|
 | `src/middleware.ts` | Modify | Add N400_RE guard for `/n400app/*` |
 | `src/app/[locale]/n400app/page.tsx` | Create | Landing page (public) + dashboard (auth-gated) |
-| `src/app/[locale]/n400app/layout.tsx` | Create | N400 layout shell with header streak badge + disclaimer footer |
+| `src/app/[locale]/n400app/layout.tsx` | Create | N400 layout shell with header streak badge + disclaimer footer + Trợ giúp link |
 | `src/app/[locale]/n400app/setup/page.tsx` | Create | Setup form UI |
 | `src/app/[locale]/n400app/setup/actions.ts` | Create | Server action: Geocodio call + save profile |
+| `src/app/[locale]/n400app/help/page.tsx` | Create | Help page stub (bilingual FAQ + contact placeholder) |
 | `src/lib/n400/geocodio.ts` | Create | Geocodio API client (pure, testable) |
 | `src/lib/n400/geocodio.test.ts` | Create | Unit tests for Geocodio response parsing |
 | `src/lib/n400/rate-limit.ts` | Create | Upstash Redis rate limiter wrapper |
@@ -179,6 +180,19 @@ git commit -m "feat(n400): add Upstash Redis rate limiter for Geocodio calls"
 **Files:**
 - Create: `apps/website/src/lib/n400/geocodio.ts`
 - Create: `apps/website/src/lib/n400/geocodio.test.ts`
+
+- [ ] **Step 0: Verify Geocodio v1.7 response shape (pre-task)**
+
+Before writing the parser, run a live test call with a known Houston address to confirm the exact field path for congressional districts:
+
+```bash
+curl -s "https://api.geocod.io/v1.7/geocode?q=9800+Bellaire+Blvd,+Houston,+TX+77036&fields=cd&api_key=<YOUR_KEY>" | jq '.results[0].fields'
+```
+
+Confirm:
+- The congressional district data lives at `results[0].fields.congressional_districts` (not `cd` or another key)
+- Each district object has `district_number` (int) and `state_abbreviation` (string)
+- If the field path differs, update the parser and tests below before proceeding
 
 - [ ] **Step 1: Write failing tests**
 
@@ -715,8 +729,84 @@ git commit -m "feat(n400): add N400 layout, landing page, and dashboard"
 
 ---
 
+## Task 8: Help page stub
+
+**Files:**
+- Create: `apps/website/src/app/[locale]/n400app/help/page.tsx`
+
+- [ ] **Step 1: Create help page**
+
+Create `apps/website/src/app/[locale]/n400app/help/page.tsx`:
+
+```typescript
+import Link from 'next/link'
+
+const faqs = [
+  {
+    q_vi: 'Bài thi quốc tịch N-400 là gì?',
+    q_en: 'What is the N-400 civics test?',
+    a_vi: 'Đây là bài thi kiến thức công dân do USCIS tổ chức trong buổi phỏng vấn xin nhập tịch. Bạn cần trả lời đúng 12 trong 20 câu hỏi để đạt.',
+    a_en: 'This is a civics knowledge test administered by USCIS during the naturalization interview. You need to answer 12 out of 20 questions correctly to pass.',
+  },
+  {
+    q_vi: 'App này hoạt động như thế nào?',
+    q_en: 'How does this app work?',
+    a_vi: 'App có 4 chế độ học: Thi Thử (giả lập phỏng vấn thật), Luyện Tập hàng ngày, Thẻ Ghi Nhớ, và Xem Tất Cả 128 câu. Tất cả câu hỏi và đáp án đều song ngữ Anh-Việt với audio phát âm.',
+    a_en: 'The app has 4 study modes: Mock Test (simulates the real interview), Daily Practice, Flashcards, and View All 128 questions. All questions and answers are bilingual EN/VI with pronunciation audio.',
+  },
+  {
+    q_vi: 'Tôi cần hỗ trợ hoặc muốn nộp đơn N-400?',
+    q_en: 'Need help or want to file your N-400?',
+    a_vi: 'Liên hệ Manna One Solution để được tư vấn và hỗ trợ nộp đơn N-400.',
+    a_en: 'Contact Manna One Solution for N-400 filing assistance and consultation.',
+  },
+]
+
+export default function HelpPage() {
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <Link href="/n400app" className="text-sm text-muted-foreground hover:underline">← Về trang chủ / Home</Link>
+      </div>
+
+      <h1 className="text-2xl font-bold mb-1">Trợ Giúp</h1>
+      <p className="text-muted-foreground mb-8">Help & FAQ</p>
+
+      <div className="space-y-6">
+        {faqs.map((faq, i) => (
+          <div key={i} className="border rounded-xl p-5">
+            <p className="font-semibold text-base mb-1">{faq.q_vi}</p>
+            <p className="text-sm text-muted-foreground mb-3">{faq.q_en}</p>
+            <p className="text-base">{faq.a_vi}</p>
+            <p className="text-sm text-muted-foreground mt-1">{faq.a_en}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-10 border rounded-xl p-5 bg-accent">
+        <p className="font-semibold mb-1">Liên hệ / Contact</p>
+        <p className="text-sm text-muted-foreground mb-3">Manna One Solution</p>
+        {/* TODO: replace with real contact info before launch */}
+        <p className="text-base">📞 [Số điện thoại / Phone number]</p>
+        <p className="text-base">📧 [Email]</p>
+        <p className="text-base">📍 Houston, TX</p>
+      </div>
+    </div>
+  )
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add apps/website/src/app/[locale]/n400app/help/page.tsx
+git commit -m "feat(n400): add help page stub with bilingual FAQ"
+```
+
+---
+
 ## Phase 3 Complete ✅
 
-OAuth providers configured, middleware guards `/n400app/*`, setup form collects address → Geocodio → saves district, dashboard shows 4 mode cards + streak.
+OAuth providers configured, middleware guards `/n400app/*`, setup form collects address → Geocodio → saves district, dashboard shows 4 mode cards + streak, help page stub live.
 
 **Next:** Proceed to [Phase 4 — Mock Test](2026-05-13-n400app-phase-4-mock-test.md).

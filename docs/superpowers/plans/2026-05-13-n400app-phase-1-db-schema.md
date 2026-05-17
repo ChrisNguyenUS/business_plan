@@ -390,10 +390,13 @@ CREATE POLICY "n400 user profile admin read" ON public.n400_user_profile FOR SEL
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
--- Quiz attempts: user own + admin read. WITH CHECK prevents user from inserting another user's row.
-CREATE POLICY "n400 attempts own" ON public.n400_quiz_attempts FOR ALL
-  USING      (auth.uid() = user_id)
+-- Quiz attempts: INSERT + SELECT only for users. No UPDATE — finalization goes through
+-- the finalize_mock_attempt / finalize_practice_attempt SECURITY DEFINER RPCs (added in Phase 4).
+-- This prevents a client from calling supabase.update({ passed: true }) to spoof a pass.
+CREATE POLICY "n400 attempts own insert" ON public.n400_quiz_attempts FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "n400 attempts own select" ON public.n400_quiz_attempts FOR SELECT
+  USING (auth.uid() = user_id);
 CREATE POLICY "n400 attempts admin read" ON public.n400_quiz_attempts FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
