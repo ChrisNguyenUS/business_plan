@@ -287,9 +287,9 @@ CREATE TABLE IF NOT EXISTS public.n400_state_data (
   state_name_en   TEXT NOT NULL,
   state_name_vi   TEXT NOT NULL,
   governor_name   TEXT NOT NULL,
-  capital_city    TEXT NOT NULL,
-  senator_1       TEXT NOT NULL,
-  senator_2       TEXT NOT NULL
+  capital_city    TEXT,                      -- NULL for territories (no recorded capital in v1)
+  senator_1       TEXT,                      -- NULL for territories (no voting senators)
+  senator_2       TEXT                       -- NULL for territories (no voting senators)
 );
 
 CREATE TABLE IF NOT EXISTS public.n400_representatives (
@@ -870,7 +870,14 @@ INSERT INTO public.n400_state_data (state_code, state_name_en, state_name_vi, go
 ('WA','Washington','Washington','Bob Ferguson','Olympia','Patty Murray','Maria Cantwell'),
 ('WV','West Virginia','West Virginia','Patrick Morrisey','Charleston','Joe Manchin','Shelley Moore Capito'),
 ('WI','Wisconsin','Wisconsin','Tony Evers','Madison','Tammy Baldwin','Ron Johnson'),
-('WY','Wyoming','Wyoming','Mark Gordon','Cheyenne','John Barrasso','Cynthia Lummis')
+('WY','Wyoming','Wyoming','Mark Gordon','Cheyenne','John Barrasso','Cynthia Lummis'),
+-- 6 territories: governor recorded for Q61; no senators (Q23) or capital recordings (Q62) in v1.
+('AS','American Samoa','Samoa thuộc Mỹ','Lemanu Peleti Mauga',NULL,NULL,NULL),
+('DC','District of Columbia','Washington, D.C.','Muriel Bowser',NULL,NULL,NULL),
+('GU','Guam','Guam','Lou Leon Guerrero',NULL,NULL,NULL),
+('MP','Northern Mariana Islands','Quần đảo Bắc Mariana','Arnold Palacios',NULL,NULL,NULL),
+('PR','Puerto Rico','Puerto Rico','Jenniffer González-Colón',NULL,NULL,NULL),
+('VI','Virgin Islands','Quần đảo Virgin Mỹ','Albert Bryan',NULL,NULL,NULL)
 ON CONFLICT (state_code) DO UPDATE SET
   governor_name = EXCLUDED.governor_name,
   senator_1 = EXCLUDED.senator_1,
@@ -881,9 +888,11 @@ ON CONFLICT (state_code) DO UPDATE SET
 
 Verify:
 ```sql
-SELECT COUNT(*) FROM n400_state_data;  -- expect 50
+SELECT COUNT(*) FROM n400_state_data;  -- expect 56 (50 states + 6 territories)
 SELECT * FROM n400_state_data WHERE state_code = 'TX';
 -- expect: Greg Abbott, Austin, John Cornyn, Ted Cruz
+SELECT state_code, governor_name FROM n400_state_data WHERE senator_1 IS NULL;
+-- expect 6 territory rows (AS, DC, GU, MP, PR, VI) with governor populated
 ```
 
 - [ ] **Step 3: Seed location_answers for Q23, Q61, Q62 from state_data**
@@ -892,17 +901,21 @@ Run in Supabase SQL Editor:
 ```sql
 -- Q23: "Name one of your state's two U.S. Senators." — store TWO rows per state.
 -- USCIS accepts EITHER senator as a correct answer; combined "X and Y" string would be wrong.
+-- Skip territories (DC, AS, GU, MP, PR, VI) — no voting senators.
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 23, state_code, senator_1, senator_1 FROM public.n400_state_data
+WHERE senator_1 IS NOT NULL
 ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 23, state_code, senator_2, senator_2 FROM public.n400_state_data
+WHERE senator_2 IS NOT NULL
 ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 
 -- Q61: What is the name of the Governor of your state?
+-- All 56 jurisdictions have a governor (50 states + 6 territories).
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 61, state_code, governor_name, governor_name
 FROM public.n400_state_data
@@ -910,25 +923,27 @@ ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 
 -- Q62: What is the capital of your state?
+-- Skip territories — capital not part of v1 audio scope.
 INSERT INTO public.n400_location_answers (question_id, state_code, answer_en, answer_vi)
 SELECT 62, state_code, capital_city, capital_city
 FROM public.n400_state_data
+WHERE capital_city IS NOT NULL
 ON CONFLICT (question_id, state_code, answer_en) DO UPDATE SET
   answer_vi = EXCLUDED.answer_vi;
 ```
 
 Verify:
 ```sql
-SELECT COUNT(*) FROM n400_location_answers;  -- expect 200 (50 × 2 senators + 50 governors + 50 capitals)
+SELECT COUNT(*) FROM n400_location_answers;  -- expect 206 (100 senators + 56 governors + 50 capitals)
 SELECT question_id, COUNT(*) FROM n400_location_answers GROUP BY question_id ORDER BY question_id;
--- expect: 23 → 100, 61 → 50, 62 → 50
+-- expect: 23 → 100, 61 → 56, 62 → 50
 ```
 
 - [ ] **Step 4: Commit**
 
 ```bash
 git add apps/website/supabase/migrations/n400_02_state_data.sql
-git commit -m "db(n400): seed 50-state data and location answers for Q23, Q61, Q62"
+git commit -m "db(n400): seed 50 states + 6 territories and location answers for Q23, Q61, Q62"
 ```
 
 ---
@@ -954,9 +969,15 @@ AL,3,Mike Rogers
 TX,7,Lucy McBath
 TX,9,Al Green
 ...
+AS,0,Aumua Amata Coleman Radewagen
+DC,0,Eleanor Holmes Norton
+GU,0,James Moylan
+MP,0,Kimberlyn King-Hinds
+PR,0,Pablo José Hernández
+VI,0,Stacey Plaskett
 ```
 
-Note: At-large districts (states with 1 rep) use `district_number = 0`.
+Note: At-large districts (states with 1 rep) and the 6 non-voting territorial delegates (DC, AS, GU, MP, PR, VI) all use `district_number = 0`.
 
 - [ ] **Step 2: Create seed script**
 
@@ -1001,20 +1022,22 @@ NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> \
   npx tsx scripts/n400/seed-reps.ts
 ```
 
-Expected: `Seeding 435 representatives... Done.`
+Expected: `Seeding 441 representatives... Done.` (435 voting House members + 6 non-voting territorial delegates)
 
 - [ ] **Step 4: Verify**
 
 ```sql
-SELECT COUNT(*) FROM n400_representatives;  -- expect 435
+SELECT COUNT(*) FROM n400_representatives;  -- expect 441 (435 House + 6 territorial delegates)
 SELECT * FROM n400_representatives WHERE state_code = 'TX' ORDER BY district_number LIMIT 5;
+SELECT state_code, rep_name FROM n400_representatives WHERE district_number = 0 ORDER BY state_code;
+-- expect 6 territory delegates + any single-rep state at-large entries
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add apps/website/scripts/n400/seed-reps.ts apps/website/scripts/n400/reps-2025.csv
-git commit -m "db(n400): seed 435 congressional representatives for Q29"
+git commit -m "db(n400): seed 441 representatives (435 House + 6 territorial delegates) for Q29"
 ```
 
 ---
@@ -1087,17 +1110,17 @@ async function main() {
   }
   console.log('✅ Per-question answer integrity (correct ≥1, distractors ≥5, no overlap, no dups)')
 
-  // Check 50 states
+  // Check 56 jurisdictions (50 states + 6 territories)
   const { count: stateCount } = await supabase.from('n400_state_data').select('*', { count: 'exact', head: true })
-  if (stateCount !== 50) fail(`Expected 50 states, got ${stateCount}`)
-  else console.log('✅ 50 states')
+  if (stateCount !== 56) fail(`Expected 56 state_data rows (50 states + 6 territories), got ${stateCount}`)
+  else console.log('✅ 56 jurisdictions (50 states + 6 territories)')
 
-  // Check location answers — Q23: 100 (50×2), Q61: 50, Q62: 50 → total 200
+  // Check location answers — Q23: 100 (50×2 senators, territories skipped), Q61: 56 (all jurisdictions), Q62: 50 (states only) → total 206
   const { data: locByQ } = await supabase
     .from('n400_location_answers')
     .select('question_id, state_code')
 
-  const expected: Record<number, number> = { 23: 100, 61: 50, 62: 50 }
+  const expected: Record<number, number> = { 23: 100, 61: 56, 62: 50 }
   const actual: Record<number, Set<string>> = { 23: new Set(), 61: new Set(), 62: new Set() }
   for (const r of locByQ ?? []) {
     if (!actual[r.question_id]) continue
@@ -1111,10 +1134,20 @@ async function main() {
     if (count !== total) fail(`Q${qId} location_answers: expected ${total}, got ${count}`)
   }
 
-  // Every state must have exactly 2 senator rows for Q23 + 1 governor for Q61 + 1 capital for Q62
+  // Per-jurisdiction coverage:
+  //   Q23 senators: 2 rows for the 50 states, 0 for territories
+  //   Q61 governor: 1 row for every jurisdiction (56)
+  //   Q62 capital:  1 row for the 50 states, 0 for territories
+  const TERRITORIES = new Set(['AS', 'DC', 'GU', 'MP', 'PR', 'VI'])
   const { data: states } = await supabase.from('n400_state_data').select('state_code')
   for (const s of states ?? []) {
-    for (const [qId, perState] of Object.entries({ 23: 2, 61: 1, 62: 1 })) {
+    const isTerritory = TERRITORIES.has(s.state_code)
+    const expectedPerState: Record<number, number> = {
+      23: isTerritory ? 0 : 2,
+      61: 1,
+      62: isTerritory ? 0 : 1,
+    }
+    for (const [qId, perState] of Object.entries(expectedPerState)) {
       const { count } = await supabase
         .from('n400_location_answers')
         .select('*', { count: 'exact', head: true })
@@ -1123,11 +1156,11 @@ async function main() {
       if (count !== perState) fail(`State ${s.state_code} Q${qId}: expected ${perState} row(s), got ${count}`)
     }
   }
-  console.log('✅ Location answer coverage (Q23 × 2 senators, Q61, Q62 across 50 states)')
+  console.log('✅ Location answer coverage (Q23 × 2 senators × 50 states, Q61 × 56 jurisdictions, Q62 × 50 states)')
 
   // Check reps
   const { count: repCount } = await supabase.from('n400_representatives').select('*', { count: 'exact', head: true })
-  if (!repCount || repCount < 430) fail(`Expected ~435 reps, got ${repCount}`)
+  if (!repCount || repCount < 435) fail(`Expected ~441 reps (435 House + 6 territorial delegates), got ${repCount}`)
   else console.log(`✅ ${repCount} representatives`)
 
   if (errors > 0) { console.error(`\n${errors} error(s) found. Fix before proceeding to Phase 2.`); process.exit(1) }
@@ -1149,9 +1182,9 @@ Expected output:
 ```
 ✅ 128 questions
 ✅ Per-question answer integrity (correct ≥1, distractors ≥5, no overlap, no dups)
-✅ 50 states
-✅ Location answer coverage (Q23 × 2 senators, Q61, Q62 across 50 states)
-✅ 435 representatives
+✅ 56 jurisdictions (50 states + 6 territories)
+✅ Location answer coverage (Q23 × 2 senators × 50 states, Q61 × 56 jurisdictions, Q62 × 50 states)
+✅ 441 representatives
 ✅ All checks passed. Phase 1 complete.
 ```
 
@@ -1166,7 +1199,7 @@ git commit -m "feat(n400): add seed verification script"
 
 ## Phase 1 Complete ✅
 
-All DB tables created, RLS applied, 128 questions seeded with correct answers and distractors, 50-state data seeded, 435 reps seeded, verification passing.
+All DB tables created, RLS applied, 128 questions seeded with correct answers and distractors, 56-jurisdiction state_data seeded (50 states + 6 territories), 441 reps seeded (435 House + 6 territorial delegates), verification passing.
 
 **Next:** Proceed to [Phase 2 — Audio Pipeline](2026-05-13-n400app-phase-2-audio-pipeline.md).
 

@@ -103,6 +103,54 @@ async function main() {
     process.stdout.write(`\r${sChecked}/${senatorRows?.length} ✓`)
   }
 
+  // ── Q61 governor audio (56 rows: 50 states + 6 territories) ──
+  const { data: governorRows } = await supabase
+    .from('n400_location_answers')
+    .select('id, state_code, answer_audio_url')
+    .eq('question_id', 61)
+
+  console.log('\nChecking governor audio (Q61)...')
+  let gChecked = 0
+  for (const g of governorRows ?? []) {
+    if (!g.answer_audio_url) { fail(`Q61 ${g.state_code}: missing answer_audio_url`); continue }
+    const { ok, reason } = await checkUrl(g.answer_audio_url)
+    if (!ok) fail(`Q61 ${g.state_code}: ${reason}`)
+    gChecked++
+    process.stdout.write(`\r${gChecked}/${governorRows?.length} ✓`)
+  }
+
+  // ── Q62 capital audio (50 rows: 50 states) ──
+  const { data: capitalRows } = await supabase
+    .from('n400_location_answers')
+    .select('id, state_code, answer_audio_url')
+    .eq('question_id', 62)
+
+  console.log('\nChecking capital audio (Q62)...')
+  let cChecked = 0
+  for (const c of capitalRows ?? []) {
+    if (!c.answer_audio_url) { fail(`Q62 ${c.state_code}: missing answer_audio_url`); continue }
+    const { ok, reason } = await checkUrl(c.answer_audio_url)
+    if (!ok) fail(`Q62 ${c.state_code}: ${reason}`)
+    cChecked++
+    process.stdout.write(`\r${cChecked}/${capitalRows?.length} ✓`)
+  }
+
+  // ── Q29 representative audio (441 rows: 435 House + 6 territorial delegates) ──
+  const { data: repRows } = await supabase
+    .from('n400_representatives')
+    .select('state_code, district_number, rep_audio_url')
+
+  console.log('\nChecking representative audio (Q29)...')
+  let rChecked = 0
+  for (const r of repRows ?? []) {
+    const tag = `${r.state_code}-${r.district_number}`
+    if (!r.rep_audio_url) { fail(`Q29 ${tag}: missing rep_audio_url`); continue }
+    const { ok, reason } = await checkUrl(r.rep_audio_url)
+    if (!ok) fail(`Q29 ${tag}: ${reason}`)
+    rChecked++
+    process.stdout.write(`\r${rChecked}/${repRows?.length} ✓`)
+  }
+
   console.log(`\n\n${errors === 0 ? '✅ All audio URLs accessible (non-empty)' : `❌ ${errors} audio errors found`}`)
   if (errors > 0) process.exit(1)
 }
@@ -349,7 +397,7 @@ Run through this checklist manually on the Vercel preview URL before going live.
 
 - [ ] **Supply chain**
   - [ ] `npm audit --omit=dev --audit-level=high` reports zero high/critical vulnerabilities in `apps/website`. Run from `apps/website/` after Phase 8 dependencies are installed.
-  - [ ] Confirm `.gitignore` excludes: `scripts/n400/gcloud-key.json`, `scripts/n400/audio-manifest.json`, `scripts/n400/distractors-*.csv`, `.env.local`, `.vercel/output`. Run `git check-ignore -v <path>` to verify.
+  - [ ] Confirm `.gitignore` excludes: `scripts/n400/audio-manifest.json`, `scripts/n400/distractors-*.csv`, `.env.local`, `.vercel/output`. Run `git check-ignore -v <path>` to verify.
 
 - [ ] **Environment variable matrix (verify all set in Vercel + .env.local before launch)**
   | Var | Where | Purpose | Set? |
@@ -365,7 +413,6 @@ Run through this checklist manually on the Vercel preview URL before going live.
   | `META_CAPI_ACCESS_TOKEN` | server only | server-side conversions | |
   | `META_CAPI_TEST_EVENT_CODE` | server only | optional test mode | |
   | `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | both | error tracking | |
-  | Google Cloud TTS service-account JSON | local-only | one-time audio generation (NOT needed at runtime) | |
 
 ---
 
@@ -376,7 +423,7 @@ Run through this checklist manually on the Vercel preview URL before going live.
 In `docs/ROADMAP.md`, add under Track 2:
 
 ```markdown
-- [x] **Website Phase 3B — N400 Civics Test App** — Bilingual practice app at mannaos.com/n400app. Mock test (12/20 pass), Daily Practice, Flashcards, View All 128. Google OAuth + Facebook OAuth. Geocodio district lookup. Google Cloud TTS audio. Streak system. Server-side Meta CAPI for conversions.
+- [x] **Website Phase 3B — N400 Civics Test App** — Bilingual practice app at mannaos.com/n400app. Mock test (12/20 pass), Daily Practice, Flashcards, View All 128. Google OAuth + Facebook OAuth. Geocodio district lookup. Owner-recorded MP3 audio (~854 files: questions, canonical answers, Q23 senators, Q29 reps, Q61 governors, Q62 capitals). Streak system. Server-side Meta CAPI for conversions.
 ```
 
 - [ ] **Step 2: Commit**
