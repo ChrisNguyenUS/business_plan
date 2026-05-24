@@ -33,6 +33,11 @@ const nextConfig: NextConfig = {
         hostname: "ffsrlmtqzlidnuitkdvw.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
     ],
   },
   async headers() {

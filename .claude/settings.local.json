@@ -33,7 +33,9 @@
       "Bash(supabase db *)",
       "Bash(node -e ' *)",
       "Bash(node *)",
-      "WebFetch(domain:mannaos.com)"
+      "WebFetch(domain:mannaos.com)",
+      "Read(//private/tmp/**)",
+      "Bash(python3 -c ' *)"
     ]
   },
   "enableAllProjectMcpServers": true,

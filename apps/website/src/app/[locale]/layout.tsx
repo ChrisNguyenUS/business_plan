@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingButtons from "@/components/layout/FloatingButtons";
+import { ConditionalChrome } from "@/components/layout/ConditionalChrome";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
 export const revalidate = 30;
@@ -33,12 +34,13 @@ export default async function LocaleLayout({
       <html lang={locale} suppressHydrationWarning>
         <body>
           <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar dictionary={dictionary} locale={locale as Locale} />
-              <main className="flex-1 pt-16 lg:pt-20">{children}</main>
-              <Footer dictionary={dictionary} locale={locale as Locale} />
-              <FloatingButtons />
-            </div>
+            <ConditionalChrome
+              navbar={<Navbar dictionary={dictionary} locale={locale as Locale} />}
+              footer={<Footer dictionary={dictionary} locale={locale as Locale} />}
+              floating={<FloatingButtons />}
+            >
+              {children}
+            </ConditionalChrome>
           </AuthProvider>
         </body>
       </html>
