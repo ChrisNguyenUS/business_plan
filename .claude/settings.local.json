@@ -35,7 +35,12 @@
       "Bash(node *)",
       "WebFetch(domain:mannaos.com)",
       "Read(//private/tmp/**)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(cp \"3 ngày liên tiếp.png\"     \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-3.png\")",
+      "Bash(cp \"7 ngày liên tiếp.png\"     \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-7.png\")",
+      "Bash(cp \"14 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-14.png\")",
+      "Bash(cp \"30 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-30.png\")",
+      "Bash(cp \"60 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-60.png\")"
     ]
   },
   "enableAllProjectMcpServers": true,
