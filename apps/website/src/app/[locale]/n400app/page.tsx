@@ -15,12 +15,12 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import { MOCK_TEST_PASS_THRESHOLD, MOCK_TEST_QUESTION_COUNT } from '@/lib/n400/quiz-engine';
 
 export default function DashboardPage() {
-  const { state, hydrated, stats } = useN400State();
+  const { state, hydrated, stats } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
 
