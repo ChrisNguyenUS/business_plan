@@ -40,7 +40,14 @@
       "Bash(cp \"7 ngày liên tiếp.png\"     \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-7.png\")",
       "Bash(cp \"14 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-14.png\")",
       "Bash(cp \"30 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-30.png\")",
-      "Bash(cp \"60 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-60.png\")"
+      "Bash(cp \"60 ngày liên tiếp.png\"    \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/images/n400/badges/streak-60.png\")",
+      "Bash(ln -sfn \"../N400_voice\" \"/Users/anhnguyen/Obsidian/Business planning/apps/website/public/n400-audio\")",
+      "Bash(echo \"tsc exit: $?\")",
+      "Bash(echo \"tsc: $?\")",
+      "mcp__supabase__execute_sql",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm ls *)"
     ]
   },
   "enableAllProjectMcpServers": true,
