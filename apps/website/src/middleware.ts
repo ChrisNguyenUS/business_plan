@@ -6,6 +6,8 @@ const SKIP_PREFIXES = ['/_next', '/api', '/images'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
+// Whole /n400app surface is auth-gated for v1 (dashboard lives at the root, no public landing yet).
+const N400_RE = /^\/[a-z]{2}\/n400app(\/|$)/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -35,11 +37,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── Step 2: Auth guard — only /admin and /portal need protection ──
+  // ── Step 2: Auth guard — /admin, /portal, /n400app need protection ──
   const isAdminPath = ADMIN_RE.test(pathname);
   const isPortalPath = PORTAL_RE.test(pathname);
+  const isN400Path = N400_RE.test(pathname);
 
-  if (!isAdminPath && !isPortalPath) {
+  if (!isAdminPath && !isPortalPath && !isN400Path) {
     return NextResponse.next();
   }
 
@@ -88,6 +91,11 @@ export async function middleware(request: NextRequest) {
 
   // Portal paths: allow 'client' role; admins may also access portal
   if (isPortalPath && role !== 'client' && role !== 'admin') {
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  }
+
+  // N400 paths: any signed-in user (client or admin). Anonymous already redirected above.
+  if (isN400Path && role !== 'client' && role !== 'admin') {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
