@@ -82,13 +82,14 @@ async function loadAll(userId: string): Promise<N400State> {
       at: r.answered_at,
     }));
 
-  const flashcardKnown = Array.from(
-    new Set(
-      attempts
-        .filter((a) => a.mode === 'flashcard' && a.wasCorrect)
-        .map((a) => a.questionId)
-    )
-  );
+  const flashcardKnown = (() => {
+    // last-wins per question, so toggling known→unknown actually unmarks.
+    const lastFlashcard = new Map<number, boolean>();
+    for (const a of attempts) {
+      if (a.mode === 'flashcard') lastFlashcard.set(a.questionId, a.wasCorrect);
+    }
+    return [...lastFlashcard.entries()].filter(([, ok]) => ok).map(([id]) => id);
+  })();
 
   const mockResults: MockResult[] = quizzes
     .filter((q) => q.mode === 'mock_test' && q.completed_at)
@@ -219,17 +220,24 @@ export function useN400UserState() {
       if (!user) return;
       const today = TODAY_LOCAL();
       const newStreak = nextStreak(state.streak, today);
-      setState((s) => ({
-        ...s,
-        attempts: [
+      setState((s) => {
+        const nextAttempts = [
           ...s.attempts,
           { questionId, wasCorrect, mode, at: new Date().toISOString() },
-        ].slice(-2000),
-        streak: newStreak,
-      }));
+        ].slice(-2000);
+        // Mirror flashcardKnown to match the canonical derivation in loadAll.
+        let nextFlashcard = s.flashcardKnown;
+        if (mode === 'flashcard') {
+          const set = new Set(s.flashcardKnown);
+          if (wasCorrect) set.add(questionId);
+          else set.delete(questionId);
+          nextFlashcard = [...set];
+        }
+        return { ...s, attempts: nextAttempts, flashcardKnown: nextFlashcard, streak: newStreak };
+      });
 
       // Practice/flashcard answers persist via a one-row quiz attempt envelope.
-      // Mock test uses a different finalize path (added in Phase 4).
+      // Mock test uses recordMockResult below, which writes a single attempt row.
       const { data: quiz, error: qErr } = await supabase
         .from('n400_quiz_attempts')
         .insert({
@@ -265,6 +273,87 @@ export function useN400UserState() {
     [user, state.streak]
   );
 
+  const setFlashcardKnown = useCallback(
+    (questionId: number, known: boolean) => {
+      // Reuse recordAnswer so mastery state, streak, and DB stay consistent.
+      void recordAnswer(questionId, known, 'flashcard');
+    },
+    [recordAnswer]
+  );
+
+  const recordMockResult = useCallback(
+    async (result: MockResult) => {
+      if (!user) return;
+      const today = TODAY_LOCAL();
+      const newStreak = nextStreak(state.streak, today);
+      setState((s) => ({
+        ...s,
+        mockResults: [...s.mockResults, result].slice(-100),
+        streak: newStreak,
+      }));
+
+      const { data: quiz, error: qErr } = await supabase
+        .from('n400_quiz_attempts')
+        .insert({
+          user_id: user.id,
+          mode: 'mock_test',
+          score: result.score,
+          total_questions: result.total,
+          passed: result.passed,
+          started_at: result.startedAt,
+          completed_at: result.completedAt,
+        })
+        .select('id')
+        .single();
+      if (qErr || !quiz) {
+        console.error('n400: recordMockResult (quiz) failed', qErr);
+        return;
+      }
+      if (result.questionResults.length > 0) {
+        const rows = result.questionResults.map((r) => ({
+          attempt_id: quiz.id,
+          question_id: r.questionId,
+          was_correct: r.wasCorrect,
+        }));
+        const { error: aErr } = await supabase.from('n400_question_attempts').insert(rows);
+        if (aErr) console.error('n400: recordMockResult (answers) failed', aErr);
+      }
+      await supabase.from('n400_user_profile').upsert(
+        {
+          user_id: user.id,
+          current_streak: newStreak.current,
+          longest_streak: newStreak.longest,
+          last_activity_date: newStreak.lastActivityDate,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
+    },
+    [user, state.streak]
+  );
+
+  const resetAll = useCallback(async () => {
+    if (!user) return;
+    setState(DEFAULT_STATE);
+    // Best-effort wipe. RLS scopes each delete to the current user.
+    await Promise.all([
+      supabase.from('n400_quiz_attempts').delete().eq('user_id', user.id),
+      supabase.from('n400_bookmarks').delete().eq('user_id', user.id),
+      supabase
+        .from('n400_user_profile')
+        .upsert(
+          {
+            user_id: user.id,
+            current_streak: 0,
+            longest_streak: 0,
+            last_activity_date: null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        ),
+    ]);
+  }, [user]);
+
   return {
     hydrated: hydrated && !authLoading,
     state,
@@ -272,6 +361,9 @@ export function useN400UserState() {
     toggleBookmark,
     updateSettings,
     recordAnswer,
+    setFlashcardKnown,
+    recordMockResult,
+    resetAll,
     user,
   };
 }
