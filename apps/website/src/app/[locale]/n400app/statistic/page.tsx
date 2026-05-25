@@ -1,35 +1,135 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
-import { Card, ProgressBar, SKILL_DATA } from '@/components/n400/ui';
-
-const KPIS = [
-  { title: 'Tổng số câu hỏi đã làm', val: '1,248', inc: '↑ 12%', icon: '📚', bg: 'bg-teal-50', text: 'text-teal-600' },
-  { title: 'Độ chính xác trung bình', val: '72%', inc: '↑ 8%', icon: '🎯', bg: 'bg-teal-50', text: 'text-teal-600' },
-  { title: 'Thời gian học trung bình', val: '28', unit: 'phút/ngày', inc: '↑ 15%', icon: '⏱️', bg: 'bg-orange-50', text: 'text-orange-500' },
-  { title: 'Chuỗi học tập hiện tại', val: '7', unit: 'ngày', inc: 'Cao nhất: 21 ngày', icon: '🔥', bg: 'bg-orange-50', text: 'text-orange-500' },
-  { title: 'Điểm XP tích lũy', val: '2,450', inc: '↑ 320 điểm so với kỳ trước', icon: '🏅', bg: 'bg-yellow-50', text: 'text-yellow-500' },
-];
-
-const TOPICS = [
-  { n: '1. The United States', v: 85 },
-  { n: '2. Education', v: 75 },
-  { n: '3. Work & Careers', v: 60 },
-  { n: '4. Environment', v: 50 },
-  { n: '5. Technology', v: 40 },
-];
-
-const HEAT_GRID = [
-  [1, 1, 0, 2, 3, 4, 0],
-  [0, 1, 2, 3, 4, 2, 0],
-  [1, 0, 2, 1, 3, 4, 0],
-  [2, 3, 1, 2, 0, 3, 1],
-  [0, 1, 2, 3, 1, 4, 0],
-];
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useMemo } from 'react';
+import { ChevronDown, ArrowRight } from 'lucide-react';
+import { Card, ProgressBar } from '@/components/n400/ui';
+import { useN400State } from '@/lib/n400/storage';
+import {
+  N400_CATEGORY_LABELS,
+  N400_QUESTIONS,
+  type N400CategoryKey,
+} from '@/lib/n400/questions-data';
 
 const HEAT_COLORS = ['bg-teal-50', 'bg-teal-100', 'bg-teal-300', 'bg-teal-500', 'bg-teal-700'];
 
+function buildHeatGrid(attempts: { at: string }[]): { grid: number[][]; busiestDay: string; totalDays: number } {
+  // Last 5 weeks (35 days), grouped by week-of-month index x weekday (Mon-Sun).
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const buckets = new Map<string, number>();
+  const weekdayCount = [0, 0, 0, 0, 0, 0, 0]; // Mon..Sun
+
+  for (const a of attempts) {
+    const d = new Date(a.at);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    const dow = (d.getDay() + 6) % 7; // Mon=0
+    weekdayCount[dow] += 1;
+  }
+
+  const grid: number[][] = [];
+  for (let w = 4; w >= 0; w--) {
+    const row: number[] = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - (w * 7 + (6 - d)));
+      const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      const count = buckets.get(key) ?? 0;
+      let level = 0;
+      if (count > 0 && count <= 3) level = 1;
+      else if (count <= 8) level = 2;
+      else if (count <= 15) level = 3;
+      else if (count > 15) level = 4;
+      row.push(level);
+    }
+    grid.push(row);
+  }
+
+  const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+  let maxIdx = 0;
+  for (let i = 1; i < 7; i++) {
+    if (weekdayCount[i] > weekdayCount[maxIdx]) maxIdx = i;
+  }
+  const busiestDay = weekdayCount[maxIdx] === 0 ? '—' : days[maxIdx];
+  const totalDays = buckets.size;
+
+  return { grid, busiestDay, totalDays };
+}
+
 export default function StatisticPage() {
+  const { state, hydrated, stats } = useN400State();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+
+  const heat = useMemo(() => buildHeatGrid(state.attempts), [state.attempts]);
+
+  const categoryRows = useMemo(() => {
+    const lastSeen = new Map<number, boolean>();
+    for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
+    return (Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((key) => {
+      const total = N400_QUESTIONS.filter((q) => q.category === key).length;
+      const mastered = N400_QUESTIONS.filter(
+        (q) => q.category === key && lastSeen.get(q.id) === true
+      ).length;
+      const pct = total === 0 ? 0 : Math.round((mastered / total) * 100);
+      return { key, label: N400_CATEGORY_LABELS[key].vi, total, mastered, pct };
+    });
+  }, [state.attempts]);
+
+  const categoryAccuracy = useMemo(() => {
+    const acc: Record<N400CategoryKey, { correct: number; total: number; color: string }> = {
+      principles: { correct: 0, total: 0, color: 'bg-teal-600' },
+      system: { correct: 0, total: 0, color: 'bg-orange-500' },
+      rights: { correct: 0, total: 0, color: 'bg-yellow-500' },
+      history: { correct: 0, total: 0, color: 'bg-purple-600' },
+      symbols: { correct: 0, total: 0, color: 'bg-blue-600' },
+    };
+    const qById = new Map(N400_QUESTIONS.map((q) => [q.id, q.category]));
+    for (const a of state.attempts) {
+      const cat = qById.get(a.questionId);
+      if (!cat) continue;
+      acc[cat].total += 1;
+      if (a.wasCorrect) acc[cat].correct += 1;
+    }
+    return acc;
+  }, [state.attempts]);
+
+  const totalAnswered = stats.totalAttempts;
+
+  // Mock results timeline data — last 10
+  const mockTrend = state.mockResults.slice(-10);
+
+  if (!hydrated) {
+    return <div className="text-sm text-gray-500">Đang tải…</div>;
+  }
+
+  if (totalAnswered === 0) {
+    return (
+      <Card className="p-12 text-center max-w-xl mx-auto">
+        <h3 className="text-2xl font-bold text-gray-800 mb-2">Chưa có dữ liệu thống kê</h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Bắt đầu Luyện tập hoặc Thi thử để xem tiến độ và độ chính xác theo từng danh mục.
+        </p>
+        <Link
+          href={`/${locale}/n400app/practice`}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md"
+        >
+          Bắt đầu luyện tập <ArrowRight size={16} />
+        </Link>
+      </Card>
+    );
+  }
+
+  const KPIS = [
+    { title: 'Tổng số câu hỏi đã làm', val: stats.totalAttempts.toLocaleString(), inc: `${stats.distinctAnswered} câu khác nhau`, icon: '📚', bg: 'bg-teal-50', text: 'text-teal-600' },
+    { title: 'Độ chính xác trung bình', val: `${stats.accuracy}%`, inc: `${stats.correctCount} câu đúng`, icon: '🎯', bg: 'bg-teal-50', text: 'text-teal-600' },
+    { title: 'Phủ chương trình', val: `${stats.coverage}%`, inc: `Mục tiêu: 100%`, icon: '⏱️', bg: 'bg-orange-50', text: 'text-orange-500' },
+    { title: 'Chuỗi học tập hiện tại', val: state.streak.current.toString(), unit: 'ngày', inc: `Cao nhất: ${state.streak.longest} ngày`, icon: '🔥', bg: 'bg-orange-50', text: 'text-orange-500' },
+    { title: 'Số lần thi thử đạt', val: state.mockResults.filter((m) => m.passed).length.toString(), inc: `${state.mockResults.length} lần thi`, icon: '🏅', bg: 'bg-yellow-50', text: 'text-yellow-500' },
+  ];
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="grid grid-cols-5 gap-4">
@@ -44,7 +144,7 @@ export default function StatisticPage() {
             <div className="text-2xl font-bold text-gray-800">
               {kpi.val} {kpi.unit ? <span className="text-sm font-normal">{kpi.unit}</span> : null}
             </div>
-            <div className="text-[10px] text-gray-400">{kpi.inc} so với kỳ trước</div>
+            <div className="text-[10px] text-gray-400">{kpi.inc}</div>
           </Card>
         ))}
       </div>
@@ -52,136 +152,101 @@ export default function StatisticPage() {
       <div className="flex gap-6">
         <Card className="w-3/5 p-5">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-800">Tiến độ theo thời gian</h3>
+            <h3 className="font-bold text-gray-800">Kết quả thi thử gần đây</h3>
             <button
               type="button"
               className="text-xs border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-1 text-gray-600"
             >
-              Câu hỏi đã làm <ChevronDown size={14} />
+              {mockTrend.length} lần <ChevronDown size={14} />
             </button>
           </div>
-          <div className="h-64 relative w-full">
-            <svg className="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="#0d9488" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 0 180 Q 50 160 100 150 T 200 100 T 300 90 T 400 40 T 500 20 L 500 200 L 0 200 Z"
-                fill="url(#lineGrad)"
-              />
-              <path
-                d="M 0 180 Q 50 160 100 150 T 200 100 T 300 90 T 400 40 T 500 20"
-                fill="none"
-                stroke="#0d9488"
-                strokeWidth="3"
-              />
-              <circle cx="200" cy="100" r="5" fill="#0d9488" />
-              <circle cx="300" cy="90" r="5" fill="#0d9488" />
-              <circle cx="400" cy="40" r="5" fill="#0d9488" />
-              <circle cx="500" cy="20" r="5" fill="#0d9488" stroke="white" strokeWidth="2" />
-            </svg>
-            <div className="absolute top-10 right-32 bg-white border border-gray-100 shadow-md p-2 rounded text-xs text-center z-10">
-              <div className="text-gray-500 font-medium mb-1">16/05/2024</div>
-              <div className="font-bold text-teal-600">• Câu hỏi đã làm: 842</div>
+          {mockTrend.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center text-sm text-gray-500">
+              <div>Chưa có lần thi thử nào.</div>
+              <Link
+                href={`/${locale}/n400app/mock-test`}
+                className="mt-3 text-teal-600 font-semibold flex items-center gap-1"
+              >
+                Bắt đầu thi thử <ArrowRight size={14} />
+              </Link>
             </div>
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-gray-400 py-2">
-              <span>1,500</span>
-              <span>1,250</span>
-              <span>1,000</span>
-              <span>750</span>
-              <span>500</span>
-              <span>250</span>
-              <span>0</span>
+          ) : (
+            <div className="flex items-end justify-between h-64 gap-2 pl-8 pr-2 relative">
+              <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-gray-400 py-2">
+                <span>20</span>
+                <span>15</span>
+                <span>12</span>
+                <span>5</span>
+                <span>0</span>
+              </div>
+              {/* Pass threshold line */}
+              <div
+                className="absolute left-8 right-2 border-t border-dashed border-teal-300 pointer-events-none"
+                style={{ top: `${100 - (12 / 20) * 100}%` }}
+              >
+                <span className="absolute -top-4 right-0 text-[10px] text-teal-600 bg-teal-50 px-1 rounded">
+                  Đạt: 12
+                </span>
+              </div>
+              {mockTrend.map((m, i) => {
+                const pct = (m.score / m.total) * 100;
+                return (
+                  <div
+                    key={m.id}
+                    className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0"
+                    title={`${m.score}/${m.total} • ${new Date(m.completedAt).toLocaleDateString('vi-VN')}`}
+                  >
+                    <span className="text-[10px] text-gray-700 font-bold">{m.score}</span>
+                    <div className={`w-full rounded-t ${m.passed ? 'bg-teal-500' : 'bg-orange-400'}`} style={{ height: `${pct}%`, minHeight: 2 }} />
+                    <span className="text-[9px] text-gray-400">#{i + 1}</span>
+                  </div>
+                );
+              })}
             </div>
-            <div className="absolute bottom-0 left-8 right-0 flex justify-between text-[10px] text-gray-400 border-t border-gray-100 pt-2">
-              <span>01/05</span>
-              <span>06/05</span>
-              <span>11/05</span>
-              <span>16/05</span>
-              <span>21/05</span>
-              <span>26/05</span>
-              <span>31/05</span>
-            </div>
-          </div>
+          )}
         </Card>
 
         <Card className="w-2/5 p-5">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-800">Hiệu suất theo kỹ năng</h3>
-            <button
-              type="button"
-              className="text-xs border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-1 text-gray-600"
-            >
-              Độ chính xác <ChevronDown size={14} />
-            </button>
+            <h3 className="font-bold text-gray-800">Độ chính xác theo danh mục</h3>
           </div>
-          <div className="flex justify-center gap-4 text-[10px] text-gray-500 mb-6">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded bg-teal-600" /> Từ vựng
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded bg-orange-500" /> Ngữ pháp
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded bg-yellow-500" /> Đọc hiểu
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded bg-purple-600" /> Nghe hiểu
-            </span>
-          </div>
-          <div className="flex justify-between items-end h-40 pl-8 relative">
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-gray-400 pb-6">
-              <span>100%</span>
-              <span>75%</span>
-              <span>50%</span>
-              <span>25%</span>
-              <span>0%</span>
-            </div>
-            {SKILL_DATA.map((skill) => (
-              <div key={skill.name} className="flex flex-col items-center w-1/4">
-                <div className="w-12 bg-gray-50 rounded-t-sm h-32 relative flex items-end justify-center">
-                  <div
-                    className={`w-full rounded-t-sm transition-all duration-500 ${skill.color}`}
-                    style={{ height: `${skill.value}%` }}
-                  />
+          <div className="space-y-4">
+            {(Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((key) => {
+              const a = categoryAccuracy[key];
+              const pct = a.total === 0 ? 0 : Math.round((a.correct / a.total) * 100);
+              return (
+                <div key={key}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="text-gray-700 font-medium">
+                      {N400_CATEGORY_LABELS[key].vi}
+                    </span>
+                    <span className="font-bold text-gray-800">
+                      {pct}% <span className="text-xs font-normal text-gray-400">({a.correct}/{a.total})</span>
+                    </span>
+                  </div>
+                  <ProgressBar progress={pct} colorClass={a.color} />
                 </div>
-                <div className="text-center mt-3">
-                  <div className="text-[11px] font-medium text-gray-600 mb-0.5">{skill.name}</div>
-                  <div className="text-sm font-bold text-gray-800">{skill.value}%</div>
-                  <div className={`text-[10px] font-medium ${skill.text}`}>↑ {skill.trend}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
         <Card className="p-5">
-          <h3 className="font-bold text-gray-800 mb-6">Phân bổ mức độ câu hỏi</h3>
-          <div className="flex items-center gap-6 flex-1">
-            <div className="w-32 h-32 relative">
-              <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#f3f4f6" strokeWidth="8" />
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#0d9488" strokeWidth="8" strokeDasharray="25 75" />
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#f97316" strokeWidth="8" strokeDasharray="50 50" strokeDashoffset="-25" />
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#eab308" strokeWidth="8" strokeDasharray="20 80" strokeDashoffset="-75" />
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#a855f7" strokeWidth="8" strokeDasharray="5 95" strokeDashoffset="-95" />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-bold text-gray-800">1,248</span>
-                <span className="text-[10px] text-gray-500">câu hỏi</span>
+          <h3 className="font-bold text-gray-800 mb-6">Tiến độ theo danh mục</h3>
+          <div className="space-y-3">
+            {categoryRows.map((row) => (
+              <div key={row.key}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-700 font-medium">{row.label}</span>
+                  <span className="text-gray-500 text-xs">
+                    {row.mastered}/{row.total}
+                  </span>
+                </div>
+                <ProgressBar progress={row.pct} heightClass="h-1.5" colorClass="bg-teal-600" />
               </div>
-            </div>
-            <div className="space-y-3 text-sm">
-              <Legend color="bg-teal-600" label="Dễ" sub="25% (312 câu)" />
-              <Legend color="bg-orange-500" label="Trung bình" sub="50% (624 câu)" />
-              <Legend color="bg-yellow-500" label="Khó" sub="20% (250 câu)" />
-              <Legend color="bg-purple-600" label="Rất khó" sub="5% (62 câu)" />
-            </div>
+            ))}
           </div>
         </Card>
 
@@ -195,7 +260,7 @@ export default function StatisticPage() {
             ))}
           </div>
           <div className="space-y-1.5">
-            {HEAT_GRID.map((row, weekIdx) => (
+            {heat.grid.map((row, weekIdx) => (
               <div key={weekIdx} className="flex items-center gap-2">
                 <div className="w-10 text-[10px] text-gray-400">Tuần {weekIdx + 1}</div>
                 <div className="grid grid-cols-7 gap-1.5 flex-1">
@@ -217,52 +282,36 @@ export default function StatisticPage() {
           </div>
           <div className="flex justify-between items-center mt-4 text-xs">
             <span className="text-gray-500">Ngày học nhiều nhất:</span>
-            <span className="font-semibold text-gray-800">Thứ 6</span>
+            <span className="font-semibold text-gray-800">{heat.busiestDay}</span>
           </div>
           <div className="flex justify-between items-center mt-2 text-xs">
             <span className="text-gray-500">Tổng ngày đã học:</span>
-            <span className="font-semibold text-gray-800">18 ngày</span>
+            <span className="font-semibold text-gray-800">{heat.totalDays} ngày</span>
           </div>
         </Card>
 
         <Card className="p-5">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-800">Chủ đề đã luyện tập</h3>
+            <h3 className="font-bold text-gray-800">Đã đánh dấu</h3>
+            <Link href={`/${locale}/n400app/bookmark`} className="text-teal-600 text-xs font-bold">
+              Xem tất cả
+            </Link>
           </div>
-          <div className="flex justify-between text-[10px] text-gray-400 border-b border-gray-100 pb-2 mb-4">
-            <span>Chủ đề</span>
-            <span>Độ hoàn thành</span>
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="text-5xl font-extrabold text-gray-900 mb-1">
+              {state.bookmarks.length}
+            </div>
+            <div className="text-sm text-gray-500">câu đã lưu để ôn lại</div>
           </div>
-          <div className="space-y-4">
-            {TOPICS.map((t) => (
-              <div key={t.n} className="flex items-center gap-4 text-sm">
-                <div className="w-32 truncate text-gray-700 font-medium">{t.n}</div>
-                <div className="flex-1">
-                  <ProgressBar progress={t.v} heightClass="h-1.5" colorClass="bg-teal-600" />
-                </div>
-                <div className="w-8 text-right text-xs text-gray-500">{t.v}%</div>
-              </div>
-            ))}
+          <div className="flex flex-col items-center mt-2">
+            <div className="text-xs text-gray-500 mb-2">Đã thuộc trong flashcards</div>
+            <div className="text-3xl font-bold text-teal-600">
+              {state.flashcardKnown.length}
+              <span className="text-base font-normal text-gray-400"> / 128</span>
+            </div>
           </div>
-          <button
-            type="button"
-            className="w-full mt-6 py-2 border border-gray-200 rounded-lg text-sm text-teal-600 font-medium hover:bg-teal-50"
-          >
-            Xem tất cả chủ đề
-          </button>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function Legend({ color, label, sub }: { color: string; label: string; sub: string }) {
-  return (
-    <div>
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-0.5">
-        <span className={`w-3 h-3 rounded-full ${color}`} /> {label}
-      </div>
-      <div className="text-[11px] text-gray-500 ml-5">{sub}</div>
     </div>
   );
 }

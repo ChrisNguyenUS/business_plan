@@ -1,161 +1,169 @@
 'use client';
 
-import Image from 'next/image';
-import { Bookmark, MoreHorizontal, Search } from 'lucide-react';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { Bookmark, Search, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/n400/ui';
+import { AudioButton } from '@/components/n400/AudioButton';
+import { useN400State } from '@/lib/n400/storage';
+import {
+  N400_QUESTIONS,
+  N400_CATEGORY_LABELS,
+  type N400CategoryKey,
+} from '@/lib/n400/questions-data';
+import { questionAudioUrl, correctAnswersFor } from '@/lib/n400/quiz-engine';
 
-type Item = {
-  id: number;
-  kind: 'question' | 'note';
-  no?: string;
-  titleEn: string;
-  titleVi: string;
-  date: string;
-  accent: 'teal' | 'orange' | 'purple';
-};
-
-const ITEMS: Item[] = [
-  {
-    id: 1,
-    kind: 'question',
-    no: 'Q. 15',
-    titleEn: 'The Statue of Liberty is a symbol of ________.',
-    titleVi: 'Tượng Nữ thần Tự do là biểu tượng của ________.',
-    date: '10/05',
-    accent: 'teal',
-  },
-  {
-    id: 2,
-    kind: 'question',
-    no: 'Q. 47',
-    titleEn: 'He has lived in the U.S. ________ more than five years.',
-    titleVi: 'Anh ấy đã sống ở Hoa Kỳ hơn năm năm.',
-    date: '08/05',
-    accent: 'orange',
-  },
-  {
-    id: 3,
-    kind: 'note',
-    titleEn: 'Review vocabulary: government, citizen, naturalize',
-    titleVi: 'Ôn lại từ vựng: government, citizen, naturalize',
-    date: '08/05',
-    accent: 'purple',
-  },
-];
-
-const ACCENT: Record<Item['accent'], { bg: string; text: string; chip: string; chipText: string }> = {
-  teal: {
-    bg: 'bg-teal-50',
-    text: 'text-teal-600',
-    chip: 'bg-green-50',
-    chipText: 'text-green-600',
-  },
-  orange: {
-    bg: 'bg-orange-50',
-    text: 'text-orange-500',
-    chip: 'bg-orange-50',
-    chipText: 'text-orange-600',
-  },
-  purple: {
-    bg: 'bg-purple-50',
-    text: 'text-purple-600',
-    chip: 'bg-purple-50',
-    chipText: 'text-purple-600',
-  },
+const CATEGORY_TONE: Record<N400CategoryKey, { bg: string; text: string; chip: string; chipText: string }> = {
+  principles: { bg: 'bg-teal-50', text: 'text-teal-600', chip: 'bg-teal-50', chipText: 'text-teal-700' },
+  system: { bg: 'bg-orange-50', text: 'text-orange-500', chip: 'bg-orange-50', chipText: 'text-orange-600' },
+  rights: { bg: 'bg-yellow-50', text: 'text-yellow-500', chip: 'bg-yellow-50', chipText: 'text-yellow-600' },
+  history: { bg: 'bg-purple-50', text: 'text-purple-600', chip: 'bg-purple-50', chipText: 'text-purple-700' },
+  symbols: { bg: 'bg-blue-50', text: 'text-blue-600', chip: 'bg-blue-50', chipText: 'text-blue-700' },
 };
 
 export default function BookmarkPage() {
-  const [tab, setTab] = useState<'all' | 'question' | 'note'>('all');
-  const visible = ITEMS.filter((i) => (tab === 'all' ? true : i.kind === tab));
+  const { state, hydrated, toggleBookmark } = useN400State();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const [tab, setTab] = useState<'all' | N400CategoryKey>('all');
+  const [search, setSearch] = useState('');
+
+  const items = useMemo(() => {
+    let qs = N400_QUESTIONS.filter((q) => state.bookmarks.includes(q.id));
+    if (tab !== 'all') qs = qs.filter((q) => q.category === tab);
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      qs = qs.filter(
+        (q) =>
+          q.questionEn.toLowerCase().includes(s) ||
+          q.questionVi.toLowerCase().includes(s) ||
+          String(q.id) === s
+      );
+    }
+    return qs;
+  }, [state.bookmarks, tab, search]);
+
+  if (!hydrated) {
+    return <div className="text-sm text-gray-500">Đang tải…</div>;
+  }
+
+  const counts = N400_QUESTIONS.reduce(
+    (acc, q) => {
+      if (state.bookmarks.includes(q.id)) {
+        acc[q.category] = (acc[q.category] ?? 0) + 1;
+      }
+      return acc;
+    },
+    {} as Record<N400CategoryKey, number>
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-4xl mx-auto">
-      <div className="flex gap-8 border-b border-gray-200 px-4">
+      <div className="flex gap-6 border-b border-gray-200 px-4 overflow-x-auto">
         <TabButton active={tab === 'all'} onClick={() => setTab('all')}>
-          Tất cả ({ITEMS.length})
+          Tất cả ({state.bookmarks.length})
         </TabButton>
-        <TabButton active={tab === 'question'} onClick={() => setTab('question')}>
-          Câu hỏi ({ITEMS.filter((i) => i.kind === 'question').length})
-        </TabButton>
-        <TabButton active={tab === 'note'} onClick={() => setTab('note')}>
-          Ghi chú ({ITEMS.filter((i) => i.kind === 'note').length})
-        </TabButton>
+        {(Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((cat) => (
+          <TabButton key={cat} active={tab === cat} onClick={() => setTab(cat)}>
+            {N400_CATEGORY_LABELS[cat].vi} ({counts[cat] ?? 0})
+          </TabButton>
+        ))}
       </div>
 
-      <div className="flex justify-center">
-        <div className="relative w-full max-w-lg h-48">
-          <Image
-            src="/images/n400/illu-reading.png"
-            alt="Reading illustration"
-            fill
-            className="object-contain"
-            sizes="500px"
-            priority
-          />
-        </div>
-      </div>
+      <label className="relative block">
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          size={18}
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm trong câu đã đánh dấu..."
+          className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+        />
+      </label>
 
-      <div className="space-y-4">
-        {visible.map((item) => {
-          const a = ACCENT[item.accent];
-          return (
-            <Card
-              key={item.id}
-              className="flex gap-4 items-start p-6 hover:border-gray-300 transition-colors cursor-pointer"
-            >
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${a.bg} ${a.text}`}
-              >
-                <Bookmark size={24} fill="currentColor" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <h4 className={`font-bold mb-2 ${item.kind === 'note' ? a.text : 'text-gray-800'}`}>
-                    {item.kind === 'note' ? 'Ghi chú / Note' : item.no}
-                  </h4>
-                  <button type="button" className="text-gray-400 hover:text-gray-700">
-                    <MoreHorizontal size={20} />
-                  </button>
-                </div>
-                <p className="text-gray-800 font-medium mb-1">{item.titleEn}</p>
-                <p className="text-gray-500 text-sm mb-4">{item.titleVi}</p>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`px-3 py-1 ${a.chip} ${a.chipText} text-xs font-bold rounded-md`}
-                  >
-                    {item.kind === 'note' ? 'Ghi chú' : 'Câu hỏi'}
-                  </span>
-                  <span className="text-xs text-gray-400">Đánh dấu ngày {item.date}</span>
-                </div>
-              </div>
-              <button type="button" className={a.text}>
-                <Bookmark size={24} fill="currentColor" />
-              </button>
-            </Card>
-          );
-        })}
-
-        <Card className="bg-teal-50/50 border-dashed border-2 border-teal-200 flex justify-between items-center p-6">
+      {items.length === 0 ? (
+        <Card className="bg-teal-50/50 border-dashed border-2 border-teal-200 flex justify-between items-center p-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600">
               <Bookmark size={24} />
             </div>
             <div>
-              <h4 className="font-bold text-gray-800">Lưu lại những nội dung quan trọng</h4>
+              <h4 className="font-bold text-gray-800">
+                {state.bookmarks.length === 0
+                  ? 'Bạn chưa đánh dấu câu hỏi nào'
+                  : 'Không có kết quả phù hợp'}
+              </h4>
               <p className="text-sm text-gray-500">
-                Đánh dấu câu hỏi và ghi chú để ôn tập hiệu quả hơn mỗi ngày.
+                Vào Luyện tập, nhấn biểu tượng dấu trang để lưu câu cần ôn lại.
               </p>
             </div>
           </div>
-          <button
-            type="button"
+          <Link
+            href={`/${locale}/n400app/practice`}
             className="px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-lg text-sm flex items-center gap-2 hover:bg-teal-700"
           >
-            <Search size={16} /> Khám phá nội dung
-          </button>
+            <Search size={16} /> Vào luyện tập
+          </Link>
         </Card>
-      </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((q) => {
+            const tone = CATEGORY_TONE[q.category];
+            const correct = correctAnswersFor(q, state.settings.stateCode);
+            const answers = correct.length > 0
+              ? correct
+              : q.answersEn.slice(0, 1).map((en, i) => ({ en, vi: q.answersVi[i] ?? en }));
+            return (
+              <Card
+                key={q.id}
+                className="flex gap-4 items-start p-6 hover:border-gray-300 transition-colors"
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${tone.bg} ${tone.text}`}>
+                  <Bookmark size={24} fill="currentColor" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className={`font-bold mb-1 ${tone.text}`}>Q. {q.id}</h4>
+                      <p className="text-gray-800 font-medium">{q.questionEn}</p>
+                      <p className="text-gray-500 text-sm mt-0.5">{q.questionVi}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <AudioButton src={questionAudioUrl(q.id)} size="sm" label="Nghe câu hỏi" />
+                      <button
+                        type="button"
+                        onClick={() => toggleBookmark(q.id)}
+                        className="text-gray-400 hover:text-red-500 p-1"
+                        aria-label="Xóa đánh dấu"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-sm text-gray-700">
+                    <span className="text-gray-500">Đáp án: </span>
+                    {answers.map((a, i) => (
+                      <span key={i}>
+                        {i > 0 ? ', ' : ''}
+                        <span className="font-medium">{a.en}</span>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 mt-3">
+                    <span className={`px-3 py-1 ${tone.chip} ${tone.chipText} text-xs font-bold rounded-md`}>
+                      {N400_CATEGORY_LABELS[q.category].vi}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -173,7 +181,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`pb-3 px-2 transition-colors ${
+      className={`pb-3 px-2 transition-colors whitespace-nowrap text-sm ${
         active
           ? 'border-b-2 border-teal-600 text-teal-600 font-bold'
           : 'text-gray-500 font-medium hover:text-gray-800'

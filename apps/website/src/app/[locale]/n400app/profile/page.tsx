@@ -1,9 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import {
   CheckCircle,
-  Settings,
   User,
   Clock,
   MapPin,
@@ -12,19 +14,81 @@ import {
   Shield,
   Target,
   Flame,
+  RotateCcw,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { useN400State } from '@/lib/n400/storage';
+import { STATES, type StateCode } from '@/lib/n400/state-data';
+import { N400_CATEGORY_LABELS, N400_QUESTIONS, type N400CategoryKey } from '@/lib/n400/questions-data';
 
-const SKILL_ROWS = [
-  { label: 'Ngữ pháp / Grammar', value: 65, color: 'bg-orange-500' },
-  { label: 'Nghe hiểu / Listening', value: 75, color: 'bg-purple-600' },
-  { label: 'Từ vựng / Vocabulary', value: 60, color: 'bg-yellow-500' },
-  { label: 'Viết / Writing', value: 50, color: 'bg-blue-600' },
-  { label: 'Đọc hiểu / Reading', value: 70, color: 'bg-teal-600' },
-  { label: 'Nói / Speaking', value: 55, color: 'bg-teal-700' },
-];
+const SKILL_TONES: Record<N400CategoryKey, string> = {
+  principles: 'bg-teal-600',
+  system: 'bg-orange-500',
+  rights: 'bg-yellow-500',
+  history: 'bg-purple-600',
+  symbols: 'bg-blue-600',
+};
 
 export default function ProfilePage() {
+  const { state, hydrated, stats, updateSettings, resetAll } = useN400State();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const categoryRows = useMemo(() => {
+    const lastSeen = new Map<number, boolean>();
+    for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
+    return (Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((key) => {
+      const total = N400_QUESTIONS.filter((q) => q.category === key).length;
+      const mastered = N400_QUESTIONS.filter(
+        (q) => q.category === key && lastSeen.get(q.id) === true
+      ).length;
+      const value = total === 0 ? 0 : Math.round((mastered / total) * 100);
+      return {
+        key,
+        label: `${N400_CATEGORY_LABELS[key].vi} / ${N400_CATEGORY_LABELS[key].en}`,
+        value,
+        color: SKILL_TONES[key],
+      };
+    });
+  }, [state.attempts]);
+
+  const weekActivity = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(today);
+    start.setDate(today.getDate() - 6);
+    const days: { label: string; active: boolean }[] = [];
+    const labels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const buckets = new Set<string>();
+    for (const a of state.attempts) {
+      const d = new Date(a.at);
+      buckets.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    }
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      days.push({ label: labels[d.getDay()], active: buckets.has(key) });
+    }
+    return days;
+  }, [state.attempts]);
+
+  if (!hydrated) {
+    return <div className="text-sm text-gray-500">Đang tải…</div>;
+  }
+
+  const stateInfo = STATES.find((s) => s.code === state.settings.stateCode);
+  const passedMocks = state.mockResults.filter((m) => m.passed).length;
+  const totalMocks = state.mockResults.length;
+
+  const onResetConfirm = () => {
+    resetAll();
+    setConfirmReset(false);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <Card className="flex items-center gap-8 p-6">
@@ -37,13 +101,6 @@ export default function ProfilePage() {
             sizes="128px"
             priority
           />
-          <button
-            type="button"
-            className="absolute bottom-0 right-0 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-500 shadow-sm hover:text-teal-600"
-            aria-label="Edit avatar"
-          >
-            <Settings size={14} />
-          </button>
         </div>
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Liberty Learner</h2>
@@ -53,22 +110,22 @@ export default function ProfilePage() {
           <p className="text-sm text-gray-600 max-w-md mb-4">
             Mục tiêu của tôi là chinh phục kỳ thi N400 để hiện thực hóa giấc mơ trở thành công dân Mỹ.
           </p>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
+          <div className="flex items-center gap-6 text-sm text-gray-500 flex-wrap">
             <div className="flex items-center gap-2">
               <User size={16} /> liberty.learner@email.com
             </div>
             <div className="flex items-center gap-2">
-              <Clock size={16} /> Tham gia: 15/02/2024
+              <Clock size={16} /> Ghi nhận: cục bộ trên thiết bị
             </div>
             <div className="flex items-center gap-2">
-              <MapPin size={16} /> Vietnam
+              <MapPin size={16} /> {stateInfo?.nameEn ?? '—'}
             </div>
           </div>
         </div>
         <div className="flex gap-4">
-          <Stat label="Cấp độ" val="12" icon="🥇" />
-          <Stat label="Điểm XP" val="2,450" icon="⭐" />
-          <Stat label="Huy hiệu" val="18" icon="🏅" />
+          <Stat label="Đã làm" val={stats.totalAttempts.toString()} icon="📚" />
+          <Stat label="Chính xác" val={`${stats.accuracy}%`} icon="🎯" />
+          <Stat label="Đã thuộc" val={`${stats.mastered}`} icon="⭐" />
         </div>
       </Card>
 
@@ -86,44 +143,47 @@ export default function ProfilePage() {
                   fill="transparent"
                   stroke="#0d9488"
                   strokeWidth="4"
-                  strokeDasharray="72 28"
+                  strokeDasharray={`${stats.coverage} ${100 - stats.coverage}`}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-800">72%</span>
-                <span className="text-[10px] text-gray-500">92 / 128 câu hỏi</span>
+                <span className="text-2xl font-bold text-gray-800">{stats.coverage}%</span>
+                <span className="text-[10px] text-gray-500">{stats.distinctAnswered} / 128</span>
               </div>
             </div>
             <div className="flex-1 space-y-3 text-sm">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-gray-600">Đúng</span>
-                  <span className="font-bold text-gray-800">66 câu (72%)</span>
+                  <span className="text-gray-600">Đúng (lần gần nhất)</span>
+                  <span className="font-bold text-gray-800">{stats.mastered}</span>
                 </div>
-                <ProgressBar progress={72} colorClass="bg-teal-600" />
+                <ProgressBar progress={(stats.mastered / 128) * 100} colorClass="bg-teal-600" />
               </div>
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-gray-600">Sai</span>
-                  <span className="font-bold text-gray-800">18 câu (20%)</span>
+                  <span className="text-gray-600">Chính xác toàn bộ</span>
+                  <span className="font-bold text-gray-800">{stats.accuracy}%</span>
                 </div>
-                <ProgressBar progress={20} colorClass="bg-orange-500" />
+                <ProgressBar progress={stats.accuracy} colorClass="bg-orange-500" />
               </div>
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-gray-600">Chưa làm</span>
-                  <span className="font-bold text-gray-800">8 câu (8%)</span>
+                  <span className="text-gray-600">Đã đánh dấu</span>
+                  <span className="font-bold text-gray-800">{state.bookmarks.length}</span>
                 </div>
-                <ProgressBar progress={8} colorClass="bg-gray-300" />
+                <ProgressBar
+                  progress={Math.min(100, (state.bookmarks.length / 128) * 100)}
+                  colorClass="bg-yellow-500"
+                />
               </div>
             </div>
           </div>
-          <button
-            type="button"
+          <Link
+            href={`/${locale}/n400app/statistic`}
             className="w-full py-2.5 bg-teal-50 text-teal-600 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-teal-100"
           >
             <BarChart2 size={16} /> Xem thống kê chi tiết
-          </button>
+          </Link>
         </Card>
 
         <Card className="p-6">
@@ -131,17 +191,17 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center justify-center mb-8">
             <div className="flex items-center gap-3 mb-2">
               <Flame size={40} className="text-orange-500" />
-              <span className="text-4xl font-bold text-gray-800">7 ngày</span>
+              <span className="text-4xl font-bold text-gray-800">{state.streak.current} ngày</span>
             </div>
-            <div className="text-sm text-gray-500">Cao nhất: 21 ngày</div>
+            <div className="text-sm text-gray-500">Cao nhất: {state.streak.longest} ngày</div>
           </div>
           <div className="flex justify-between mb-4">
-            {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, i) => (
-              <div key={d} className="flex flex-col items-center gap-2">
-                <span className="text-xs text-gray-500 font-medium">{d}</span>
+            {weekActivity.map((d, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">{d.label}</span>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    i < 6 ? 'bg-teal-600 text-white' : 'bg-gray-100 text-transparent'
+                    d.active ? 'bg-teal-600 text-white' : 'bg-gray-100 text-transparent'
                   }`}
                 >
                   <CheckCircle size={16} />
@@ -157,22 +217,44 @@ export default function ProfilePage() {
         <Card className="p-6 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-gray-800">Thành tích</h3>
-            <button type="button" className="text-teal-600 text-xs font-bold">
-              Xem tất cả
-            </button>
+            <span className="text-xs text-gray-400">Mở khóa khi đạt cột mốc</span>
           </div>
           <div className="grid grid-cols-4 gap-2 mb-6">
-            <Badge icon={<Shield size={22} />} label="Người bắt đầu" tone="blue" />
-            <Badge icon={<Award size={22} />} label="Kiên trì" tone="orange" />
-            <Badge icon={<Target size={22} />} label="Tập trung" tone="teal" />
-            <Badge icon={<Shield size={22} />} label="Chinh phục" tone="red" />
+            <Badge
+              icon={<Shield size={22} />}
+              label="Người bắt đầu"
+              tone="blue"
+              unlocked={stats.totalAttempts > 0}
+            />
+            <Badge
+              icon={<Award size={22} />}
+              label="Kiên trì"
+              tone="orange"
+              unlocked={state.streak.current >= 3}
+            />
+            <Badge
+              icon={<Target size={22} />}
+              label="Tập trung"
+              tone="teal"
+              unlocked={stats.distinctAnswered >= 50}
+            />
+            <Badge
+              icon={<Shield size={22} />}
+              label="Chinh phục"
+              tone="red"
+              unlocked={passedMocks >= 1}
+            />
           </div>
           <div className="mt-auto bg-teal-50 rounded-xl p-4 flex gap-4 items-center">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm shrink-0">
               <Award size={20} />
             </div>
             <div>
-              <div className="font-bold text-gray-800 text-sm mb-0.5">Bạn đang làm rất tốt!</div>
+              <div className="font-bold text-gray-800 text-sm mb-0.5">
+                {passedMocks > 0
+                  ? `Đạt ${passedMocks}/${totalMocks} lần thi thử!`
+                  : 'Bạn đang làm rất tốt!'}
+              </div>
               <div className="text-xs text-gray-600">
                 Hãy tiếp tục phát huy và chinh phục mục tiêu N400 nhé!
               </div>
@@ -183,19 +265,96 @@ export default function ProfilePage() {
 
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-bold text-gray-800">Kỹ năng</h3>
-          <div className="text-xs text-gray-400">Cập nhật gần nhất: 01/05/2024</div>
+          <h3 className="font-bold text-gray-800">Tiến độ theo danh mục</h3>
         </div>
         <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-          {SKILL_ROWS.map((s) => (
-            <div key={s.label} className="flex items-center gap-4">
-              <div className="w-32 text-sm font-medium text-gray-700">{s.label}</div>
+          {categoryRows.map((s) => (
+            <div key={s.key} className="flex items-center gap-4">
+              <div className="w-44 text-sm font-medium text-gray-700">{s.label}</div>
               <div className="flex-1">
                 <ProgressBar progress={s.value} colorClass={s.color} />
               </div>
               <div className="w-10 text-right font-bold text-gray-700">{s.value}%</div>
             </div>
           ))}
+        </div>
+      </Card>
+
+      <Card className="p-6 space-y-6">
+        <h3 className="font-bold text-gray-800">Cài đặt</h3>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tiểu bang đang sống
+            </label>
+            <select
+              value={state.settings.stateCode}
+              onChange={(e) => updateSettings({ stateCode: e.target.value as StateCode })}
+              className="w-full h-11 rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none"
+            >
+              {STATES.map((s) => (
+                <option key={s.code} value={s.code}>
+                  {s.nameEn} ({s.code})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-2">
+              Dùng để xác định Thượng nghị sĩ, Thống đốc, Thủ phủ cho câu Q23 / Q61 / Q62.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phát âm thanh</label>
+            <button
+              type="button"
+              onClick={() => updateSettings({ audioEnabled: !state.settings.audioEnabled })}
+              className={`flex items-center gap-3 px-4 h-11 rounded-xl border ${
+                state.settings.audioEnabled
+                  ? 'bg-teal-50 border-teal-200 text-teal-700'
+                  : 'bg-white border-gray-200 text-gray-600'
+              }`}
+            >
+              {state.settings.audioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+              {state.settings.audioEnabled ? 'Bật' : 'Tắt'}
+            </button>
+            <p className="text-xs text-gray-500 mt-2">
+              Tắt nếu bạn không muốn nghe MP3 phát âm câu hỏi và đáp án.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 pt-6">
+          <h4 className="font-semibold text-gray-800 mb-2">Đặt lại tiến độ</h4>
+          <p className="text-xs text-gray-500 mb-3">
+            Xóa toàn bộ lượt làm bài, đánh dấu, kết quả thi thử và chuỗi học tập trên thiết bị này.
+          </p>
+          {confirmReset ? (
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onResetConfirm}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold text-sm hover:bg-red-600"
+              >
+                Xác nhận xóa
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmReset(false)}
+                className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm"
+              >
+                Hủy
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmReset(true)}
+              className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm hover:border-red-200 hover:text-red-500 flex items-center gap-2"
+            >
+              <RotateCcw size={14} /> Đặt lại tất cả
+            </button>
+          )}
         </div>
       </Card>
     </div>
@@ -217,10 +376,12 @@ function Badge({
   icon,
   label,
   tone,
+  unlocked,
 }: {
   icon: React.ReactNode;
   label: string;
   tone: 'blue' | 'orange' | 'teal' | 'red';
+  unlocked: boolean;
 }) {
   const styles = {
     blue: 'bg-blue-50 border-blue-200 text-blue-600',
@@ -232,11 +393,15 @@ function Badge({
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className={`w-14 h-14 border-2 rounded-full flex items-center justify-center ${styles[tone]}`}
+        className={`w-14 h-14 border-2 rounded-full flex items-center justify-center ${
+          unlocked ? styles[tone] : 'bg-gray-50 border-gray-200 text-gray-300'
+        }`}
       >
         {icon}
       </div>
-      <span className="text-[11px] font-medium text-gray-700 text-center">{label}</span>
+      <span className={`text-[11px] font-medium text-center ${unlocked ? 'text-gray-700' : 'text-gray-400'}`}>
+        {label}
+      </span>
     </div>
   );
 }

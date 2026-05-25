@@ -3,10 +3,23 @@
 import { usePathname, useParams } from 'next/navigation';
 import { Bookmark, ChevronDown, Flame, Menu } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useN400State } from '@/lib/n400/storage';
 
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
   '': { title: 'Tổng quan', subtitle: 'Chào mừng trở lại! 👋' },
-  practice: { title: 'Luyện tập' },
+  practice: {
+    title: 'Luyện tập',
+    subtitle: 'Trả lời và xem ngay đáp án đúng / sai',
+  },
+  'mock-test': {
+    title: 'Thi thử',
+    subtitle: '20 câu — đạt 12 câu để vượt qua, không xem đáp án giữa chừng',
+  },
+  flashcards: {
+    title: 'Flashcards',
+    subtitle: 'Lật thẻ — học theo từng câu',
+  },
   statistic: {
     title: 'Thống kê',
     subtitle: 'Theo dõi tiến độ và hiệu suất học tập của bạn',
@@ -16,7 +29,7 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     title: 'Danh mục',
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
   },
-  bookmark: { title: 'Đánh dấu' },
+  bookmark: { title: 'Đánh dấu', subtitle: 'Câu hỏi bạn đã lưu để ôn lại' },
 };
 
 function detectSection(pathname: string | null, locale: string): string {
@@ -35,6 +48,8 @@ export function Header() {
   const meta = TITLES[section] ?? TITLES[''];
   const showHamburger = section === 'practice' || section === 'bookmark';
   const showBookmark = section === 'practice';
+  const { state, hydrated } = useN400State();
+  const streak = hydrated ? state.streak.current : 0;
 
   return (
     <header className="h-20 bg-slate-50/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 sticky top-0 z-10">
@@ -52,13 +67,13 @@ export function Header() {
 
       <div className="flex items-center gap-4">
         {showBookmark ? (
-          <button
-            type="button"
+          <Link
+            href={`/${locale}/n400app/bookmark`}
             aria-label="Đánh dấu"
             className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:text-teal-600 shadow-sm"
           >
             <Bookmark size={18} />
-          </button>
+          </Link>
         ) : null}
 
         {section === 'statistic' && (
@@ -76,11 +91,14 @@ export function Header() {
             <span className="text-[10px] text-gray-400 font-medium leading-none">
               Chuỗi học tập
             </span>
-            <span className="text-sm font-bold text-gray-800 leading-tight">7 ngày</span>
+            <span className="text-sm font-bold text-gray-800 leading-tight">{streak} ngày</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-white border border-gray-100 shadow-sm px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-50">
+        <Link
+          href={`/${locale}/n400app/profile`}
+          className="flex items-center gap-3 bg-white border border-gray-100 shadow-sm px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-50"
+        >
           <div className="w-8 h-8 bg-blue-100 rounded-full overflow-hidden">
             <Image
               src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
@@ -95,7 +113,7 @@ export function Header() {
             <span className="text-sm font-bold text-gray-800 leading-tight">Liberty Learner!</span>
           </div>
           <ChevronDown size={16} className="text-gray-400 ml-2" />
-        </div>
+        </Link>
       </div>
     </header>
   );

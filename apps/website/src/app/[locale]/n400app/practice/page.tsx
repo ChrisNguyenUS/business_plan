@@ -1,39 +1,124 @@
 'use client';
 
 import Image from 'next/image';
-import { CheckCircle, Upload, Target, Award, Rocket } from 'lucide-react';
-import { useState } from 'react';
+import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { AudioButton } from '@/components/n400/AudioButton';
+import { useN400State } from '@/lib/n400/storage';
+import { N400_QUESTIONS } from '@/lib/n400/questions-data';
+import {
+  buildOptions,
+  correctAnswersFor,
+  shuffle,
+  type QuizOption,
+} from '@/lib/n400/quiz-engine';
+import { questionAudioUrl, answerAudioUrl } from '@/lib/n400/quiz-engine';
 
-type Option = { id: 'A' | 'B' | 'C' | 'D'; en: string; vi: string };
-
-const OPTIONS: Option[] = [
-  { id: 'A', en: 'offers', vi: 'cung cấp' },
-  { id: 'B', en: 'offer', vi: 'cung cấp (danh từ)' },
-  { id: 'C', en: 'offered', vi: 'đã cung cấp' },
-  { id: 'D', en: 'offering', vi: 'sự cung cấp' },
-];
+const TOTAL = N400_QUESTIONS.length;
 
 export default function PracticePage() {
-  const [selected, setSelected] = useState<Option['id']>('A');
+  const {
+    state,
+    hydrated,
+    recordAnswer,
+    toggleBookmark,
+  } = useN400State();
+
+  const [seed] = useState(() => {
+    if (typeof window === 'undefined') return 'init';
+    const existing = window.sessionStorage.getItem('n400.practice.seed');
+    if (existing) return existing;
+    const next = String(Date.now());
+    window.sessionStorage.setItem('n400.practice.seed', next);
+    return next;
+  });
+
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState<QuizOption['id'] | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [prevIndex, setPrevIndex] = useState(0);
+
+  // Reset selected/revealed when navigating between questions (React-recommended pattern).
+  if (index !== prevIndex) {
+    setPrevIndex(index);
+    setSelected(null);
+    setRevealed(false);
+  }
+
+  const stateCode = state.settings.stateCode;
+  const order = useMemo(() => {
+    const ids = N400_QUESTIONS.map((q) => q.id);
+    return shuffle(ids, `practice-${seed}`);
+  }, [seed]);
+
+  const question = useMemo(() => {
+    const id = order[index];
+    return N400_QUESTIONS.find((q) => q.id === id)!;
+  }, [order, index]);
+
+  const options = useMemo(
+    () => buildOptions(question, stateCode, `practice-${seed}-${index}`),
+    [question, stateCode, seed, index]
+  );
+
+  const correctOption = options.find((o) => o.isCorrect);
+  const allCorrect = correctAnswersFor(question, stateCode);
+
+  const isBookmarked = state.bookmarks.includes(question.id);
+
+  const onPick = (id: QuizOption['id']) => {
+    if (revealed) return;
+    setSelected(id);
+    setRevealed(true);
+    const opt = options.find((o) => o.id === id);
+    const wasCorrect = !!opt?.isCorrect;
+    recordAnswer(question.id, wasCorrect, 'practice');
+  };
+
+  const onNext = () => {
+    setIndex((i) => (i + 1) % order.length);
+  };
+
+  const onRestart = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('n400.practice.seed');
+      window.location.reload();
+    }
+  };
+
+  if (!hydrated) {
+    return <div className="animate-in fade-in duration-300 text-sm text-gray-500">Đang tải…</div>;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <div className="text-sm font-medium text-gray-700 mb-3">Câu hỏi 24 / 128</div>
-        <ProgressBar progress={(24 / 128) * 100} heightClass="h-2" />
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="text-sm font-medium text-gray-700 mb-3">
+            Câu hỏi {index + 1} / {TOTAL}
+          </div>
+          <ProgressBar progress={((index + 1) / TOTAL) * 100} heightClass="h-2" />
+        </div>
+        <button
+          type="button"
+          onClick={onRestart}
+          className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm"
+        >
+          <RotateCw size={14} /> Trộn lại
+        </button>
       </div>
 
       <div className="grid grid-cols-[3fr_2fr] gap-6 items-start">
         <Card className="p-8 flex flex-col">
-          <div className="flex items-start gap-4 mb-10">
-            <div className="relative w-32 h-32 shrink-0">
+          <div className="flex items-start gap-4 mb-8">
+            <div className="relative w-28 h-28 shrink-0">
               <Image
                 src="/images/n400/illu-studying.png"
                 alt=""
                 fill
                 className="object-contain"
-                sizes="128px"
+                sizes="112px"
                 priority
               />
             </div>
@@ -43,70 +128,138 @@ export default function PracticePage() {
             </div>
           </div>
 
-          <div className="text-sm text-gray-500 mb-2">Câu hỏi / Question</div>
-          <div className="text-xl font-bold text-gray-800 leading-snug mb-1">
-            The United States{' '}
-            <span className="inline-block w-32 border-b-2 border-gray-400 mx-1 align-middle" />{' '}
-            freedom and opportunity.
-          </div>
-          <div className="text-sm text-gray-500 mb-8">
-            Hoa Kỳ{' '}
-            <span className="inline-block w-24 border-b border-gray-300 mx-1 align-middle" />{' '}
-            tự do và cơ hội.
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <div className="flex-1">
+              <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
+              <div className="text-xl font-bold text-gray-800 leading-snug">
+                {question.questionEn}
+              </div>
+              <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
+            </div>
+            <div className="flex flex-col gap-2 items-end shrink-0">
+              <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" />
+              <button
+                type="button"
+                onClick={() => toggleBookmark(question.id)}
+                aria-label="Đánh dấu"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  isBookmarked
+                    ? 'bg-amber-50 text-amber-500'
+                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                }`}
+              >
+                <Bookmark size={16} fill={isBookmarked ? 'currentColor' : 'none'} />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3 flex-1">
-            {OPTIONS.map((opt) => {
-              const isSelected = selected === opt.id;
+            {options.map((opt) => {
+              const isPicked = selected === opt.id;
+              let style = 'border-gray-200 hover:border-teal-300 bg-white';
+              let mark = (
+                <span className="w-6 h-6 rounded-full border-2 border-gray-200" />
+              );
+
+              if (revealed) {
+                if (opt.isCorrect) {
+                  style = 'border-teal-600 bg-teal-50';
+                  mark = <CheckCircle size={22} className="text-teal-600" />;
+                } else if (isPicked) {
+                  style = 'border-red-400 bg-red-50';
+                  mark = <XCircle size={22} className="text-red-500" />;
+                } else {
+                  style = 'border-gray-200 bg-white opacity-70';
+                }
+              } else if (isPicked) {
+                style = 'border-teal-600 bg-white shadow-sm';
+                mark = <CheckCircle size={22} className="text-teal-600" />;
+              }
+
               return (
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setSelected(opt.id)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
-                    isSelected
-                      ? 'border-teal-600 bg-white shadow-sm'
-                      : 'border-gray-200 hover:border-teal-300 bg-white'
-                  }`}
+                  disabled={revealed}
+                  onClick={() => onPick(opt.id)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${style}`}
                 >
                   <div className="font-bold text-gray-800 w-6">{opt.id}</div>
                   <div className="flex-1 text-gray-800 font-medium">
-                    {opt.en} / {opt.vi}
+                    <div>{opt.en}</div>
+                    {opt.vi !== opt.en ? (
+                      <div className="text-xs text-gray-500 mt-0.5">{opt.vi}</div>
+                    ) : null}
                   </div>
-                  {isSelected ? (
-                    <CheckCircle size={24} className="text-teal-600" />
-                  ) : (
-                    <span className="w-6 h-6 rounded-full border-2 border-gray-200" />
-                  )}
+                  {mark}
                 </button>
               );
             })}
           </div>
 
+          {revealed ? (
+            <div
+              className={`mt-6 rounded-2xl p-5 border-l-4 ${
+                correctOption?.id === selected
+                  ? 'bg-teal-50 border-teal-500'
+                  : 'bg-orange-50 border-orange-500'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Lightbulb className="text-amber-500" size={18} />
+                <div className="font-bold text-gray-800">
+                  {correctOption?.id === selected
+                    ? 'Chính xác! / Correct!'
+                    : 'Chưa đúng / Not quite'}
+                </div>
+                <AudioButton
+                  src={answerAudioUrl(question.id)}
+                  label="Nghe đáp án"
+                  size="sm"
+                  className="ml-auto"
+                />
+              </div>
+              <div className="text-sm text-gray-700 mb-1">
+                <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
+              </div>
+              <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                {(allCorrect.length > 0 ? allCorrect : question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }))).map((a, i) => (
+                  <li key={i}>
+                    <span className="font-medium">{a.en}</span>
+                    {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-[1fr_2fr] gap-4 mt-8 pt-6 border-t border-gray-100">
             <button
               type="button"
-              className="py-3.5 rounded-xl border border-gray-200 bg-white font-semibold text-gray-700 flex items-center justify-center gap-3 hover:bg-gray-50"
+              onClick={() => setRevealed(true)}
+              disabled={revealed}
+              className="py-3.5 rounded-xl border border-gray-200 bg-white font-semibold text-gray-700 flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Upload size={16} />
+              <Lightbulb size={16} />
               <span className="leading-tight text-left">
-                Giải thích
+                Xem đáp án
                 <br />
-                <span className="text-xs font-normal text-gray-500">Explanation</span>
+                <span className="text-xs font-normal text-gray-500">Reveal</span>
               </span>
             </button>
             <button
               type="button"
-              className="py-3.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex flex-col items-center justify-center"
+              onClick={onNext}
+              className="py-3.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
             >
-              <span>Tiếp theo</span>
-              <span className="text-xs font-normal opacity-80">Next</span>
+              <span>Tiếp theo / Next</span>
+              <ArrowRight size={16} />
             </button>
           </div>
         </Card>
 
         <div className="flex flex-col gap-6">
-          <div className="relative h-[480px] rounded-3xl overflow-hidden">
+          <div className="relative h-[420px] rounded-3xl overflow-hidden">
             <Image
               src="/images/n400/illu-statue-city.png"
               alt="Statue of Liberty with American flag and city skyline"

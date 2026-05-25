@@ -13,6 +13,8 @@ import {
   Moon,
   MapPin,
   Shield,
+  ClipboardCheck,
+  Layers,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,10 +28,12 @@ type MenuItem = {
 const MENU: MenuItem[] = [
   { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
   { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
-  { id: 'profile', label: 'Hồ sơ', href: 'profile', icon: User },
+  { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
+  { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
   { id: 'categories', label: 'Danh mục', href: 'categories', icon: MapPin },
   { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
+  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
+  { id: 'profile', label: 'Hồ sơ', href: 'profile', icon: User },
 ];
 
 export function Sidebar() {
@@ -96,9 +100,12 @@ export function Sidebar() {
           </button>
         </div>
         <div className="flex items-center justify-between px-2 text-sm text-gray-500 pb-2">
-          <button type="button" className="flex items-center gap-2 hover:text-gray-800">
+          <Link
+            href={`${base}/profile`}
+            className="flex items-center gap-2 hover:text-gray-800"
+          >
             <Settings size={16} /> Cài đặt
-          </button>
+          </Link>
           <button type="button" className="flex items-center gap-2 hover:text-red-500">
             <LogOut size={16} /> Đăng xuất
           </button>
