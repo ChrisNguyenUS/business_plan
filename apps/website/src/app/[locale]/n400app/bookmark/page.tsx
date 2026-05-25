@@ -6,7 +6,7 @@ import { Bookmark, Search, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_QUESTIONS,
   N400_CATEGORY_LABELS,
@@ -23,7 +23,7 @@ const CATEGORY_TONE: Record<N400CategoryKey, { bg: string; text: string; chip: s
 };
 
 export default function BookmarkPage() {
-  const { state, hydrated, toggleBookmark } = useN400State();
+  const { state, hydrated, toggleBookmark } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [tab, setTab] = useState<'all' | N400CategoryKey>('all');

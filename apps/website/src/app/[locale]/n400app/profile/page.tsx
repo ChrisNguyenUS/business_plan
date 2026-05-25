@@ -19,7 +19,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import { STATES, type StateCode } from '@/lib/n400/state-data';
 import { N400_CATEGORY_LABELS, N400_QUESTIONS, type N400CategoryKey } from '@/lib/n400/questions-data';
 
@@ -32,7 +32,7 @@ const SKILL_TONES: Record<N400CategoryKey, string> = {
 };
 
 export default function ProfilePage() {
-  const { state, hydrated, stats, updateSettings, resetAll } = useN400State();
+  const { state, hydrated, stats, updateSettings, resetAll } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [confirmReset, setConfirmReset] = useState(false);

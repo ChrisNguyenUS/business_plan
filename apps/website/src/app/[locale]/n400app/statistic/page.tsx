@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_CATEGORY_LABELS,
   N400_QUESTIONS,
@@ -59,7 +59,7 @@ function buildHeatGrid(attempts: { at: string }[]): { grid: number[][]; busiestD
 }
 
 export default function StatisticPage() {
-  const { state, hydrated, stats } = useN400State();
+  const { state, hydrated, stats } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
 

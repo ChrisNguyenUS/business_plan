@@ -5,7 +5,7 @@ import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, R
 import { useMemo, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS } from '@/lib/n400/questions-data';
 import {
   buildOptions,
@@ -23,7 +23,7 @@ export default function PracticePage() {
     hydrated,
     recordAnswer,
     toggleBookmark,
-  } = useN400State();
+  } = useN400UserState();
 
   const [seed] = useState(() => {
     if (typeof window === 'undefined') return 'init';

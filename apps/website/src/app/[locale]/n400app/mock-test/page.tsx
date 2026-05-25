@@ -5,7 +5,8 @@ import { ClipboardCheck, ArrowRight, CheckCircle, XCircle, Trophy, Volume2 } fro
 import { useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
-import { useN400State, type MockResult } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
+import type { MockResult } from '@/lib/n400/storage';
 import {
   buildOptions,
   selectMockTestQuestions,
@@ -27,7 +28,7 @@ interface PerQuestionAnswer {
 }
 
 export default function MockTestPage() {
-  const { state, recordMockResult, hydrated } = useN400State();
+  const { state, recordMockResult, hydrated } = useN400UserState();
   const stateCode = state.settings.stateCode;
 
   const [stage, setStage] = useState<Stage>('intro');

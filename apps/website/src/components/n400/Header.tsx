@@ -4,7 +4,7 @@ import { usePathname, useParams } from 'next/navigation';
 import { Bookmark, ChevronDown, Flame, Menu } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
   '': { title: 'Tổng quan', subtitle: 'Chào mừng trở lại! 👋' },
@@ -48,7 +48,7 @@ export function Header() {
   const meta = TITLES[section] ?? TITLES[''];
   const showHamburger = section === 'practice' || section === 'bookmark';
   const showBookmark = section === 'practice';
-  const { state, hydrated } = useN400State();
+  const { state, hydrated } = useN400UserState();
   const streak = hydrated ? state.streak.current : 0;
 
   return (

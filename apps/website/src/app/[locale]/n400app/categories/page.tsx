@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { ChevronDown, Search, ArrowRight, Volume2 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_QUESTIONS,
   N400_CATEGORY_LABELS,
@@ -42,7 +42,7 @@ const TREE_POSITIONS: ReadonlyArray<readonly [string, string]> = [
 ];
 
 export default function CategoriesPage() {
-  const { state, hydrated, stats } = useN400State();
+  const { state, hydrated, stats } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [search, setSearch] = useState('');

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Bookmark } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
-import { useN400State } from '@/lib/n400/storage';
+import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_QUESTIONS,
   N400_CATEGORY_LABELS,
@@ -32,7 +32,7 @@ const FILTER_OPTIONS: { id: FilterMode; label: string }[] = [
 ];
 
 export default function FlashcardsPage() {
-  const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400State();
+  const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
   const [filter, setFilter] = useState<FilterMode>('all');
   const [seed] = useState(() => String(Date.now()));
   const [index, setIndex] = useState(0);
