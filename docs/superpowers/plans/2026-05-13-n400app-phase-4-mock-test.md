@@ -4,6 +4,8 @@
 
 **Goal:** Build the core quiz engine and Mock Test mode — random question selection, distractor collision prevention, 4-option multiple choice UI, audio playback, server-side pass/fail scoring, server-side `was_correct` derivation (no client-trusted flags), and shareable certificate.
 
+**UI source of truth:** v1 `/n400app/mock-test` page and `src/components/n400/*`. Replace the data layer (localStorage `recordMockResult` → server action) but preserve the question card layout, option styling, audio button placement, progress bar, and result modal. Do not redesign.
+
 **Architecture:** Pure quiz engine in `src/lib/n400/quiz-engine.ts` (testable, no React). When the mock test starts, the server builds a **slide manifest** (`{ questionId → correctAnswerIdSet }`) and persists it to `n400_quiz_attempts.slide_manifest` (jsonb). `submitAnswer` looks up the manifest server-side and computes `was_correct` itself — the client only sends `selectedAnswerId`. `finalizeAttempt` then sums `n400_question_attempts` rows. Client component handles question rendering + audio. Certificate is a static page rendered from attempt data.
 
 **Resume across tab close:** the slide payload AND in-progress state both go to **localStorage** (keyed by `attemptId`). `sessionStorage` was previously planned but is wrong — it dies with the tab.

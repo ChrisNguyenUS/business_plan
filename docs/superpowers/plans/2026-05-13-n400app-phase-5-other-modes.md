@@ -4,6 +4,8 @@
 
 **Goal:** Build Daily Practice, Flashcards, and View All 128 modes, reusing `QuestionCard` and `AudioButton` from Phase 4.
 
+**UI source of truth:** v1 pages `/n400app/{practice,flashcards,categories,bookmark,profile,statistic}` and `/n400app/all-questions` (new). Spec route list now includes `/categories`, `/bookmark`, `/profile`, `/statistic` (all kept from v1). This phase swaps each page's data layer to Supabase using `useN400UserState`; do not redesign.
+
 **Architecture:**
 - Daily Practice reuses the full quiz engine with no early-stop. It also persists a slide manifest in `n400_quiz_attempts.slide_manifest` and uses the **shared `submitAnswer`** (extracted to `src/lib/n400/quiz-actions.ts` to avoid Phase 5 importing from Phase 4's mock-test route).
 - Flashcards use a flip-card UI with `AudioButton`. No quiz engine needed.

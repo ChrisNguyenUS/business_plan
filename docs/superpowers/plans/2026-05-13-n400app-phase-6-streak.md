@@ -4,6 +4,8 @@
 
 **Goal:** Implement daily streak tracking — DB transitions on session completion, header badge, dashboard card with milestone progress bar, and celebration modals at 3/7/14/30/100 days.
 
+**UI source of truth:** v1 streak card on `/n400app` dashboard already uses `state.streak.current/longest/lastActivityDate`. Phase 1 of cleanup wired those to `n400_user_profile` via `useN400UserState`. This phase adds milestone modals + header badge; reuse v1 styling, do not redesign existing streak card.
+
 **Architecture:** Streak logic is a pure function (testable). Server action `updateStreak` is called after `finalizeAttempt` / `finalizePractice` / `saveFlaschardSession`. Day attribution uses `started_at` in `America/Chicago` timezone. Idempotent via DB guard.
 
 **Tech Stack:** Next.js Server Actions, Supabase, `date-fns-tz` for timezone handling.

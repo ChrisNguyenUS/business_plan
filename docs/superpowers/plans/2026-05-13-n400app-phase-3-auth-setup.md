@@ -6,6 +6,8 @@
 
 **Architecture:** Extend existing `src/middleware.ts` to protect `/n400app/*` (except landing). New server action calls Geocodio API in-memory (no street address persisted). Upstash Redis rate-limits Geocodio calls. Dashboard is a Server Component with 4 mode cards.
 
+**UI source of truth:** v1 pages under `apps/website/src/app/[locale]/n400app/*` and components under `src/components/n400/*`. Phase 1 of cleanup already swapped the dashboard to Supabase via `useN400UserState` and added the `/n400app` middleware gate (commits `634776d`, `13014de`, `6af08f5`). This plan completes the rest: OAuth providers, Geocodio integration, `/setup` form. Do not redesign existing pages.
+
 **Tech Stack:** Supabase Auth (OAuth), `@upstash/redis`, `@upstash/ratelimit`, Geocodio REST API, Next.js Server Actions.
 
 **Prerequisite:** Phase 1 complete (DB tables exist). Supabase project has Google + Facebook OAuth providers configured.
