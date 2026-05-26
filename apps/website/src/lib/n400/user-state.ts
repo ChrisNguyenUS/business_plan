@@ -5,9 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak } from './storage';
-import type { QuizMode, MockResult, UserSettings, N400State } from './storage';
+import type { QuizMode, MockResult, UserSettings, UserAddress, N400State } from './storage';
 
-export type { QuizMode, MockResult, UserSettings, N400State };
+export type { QuizMode, MockResult, UserSettings, UserAddress, N400State };
 
 const TODAY_LOCAL = (): string => {
   const d = new Date();
@@ -21,10 +21,14 @@ const DEFAULT_STATE: N400State = {
   mockResults: [],
   streak: { current: 0, longest: 0, lastActivityDate: null },
   settings: { stateCode: 'TX', audioEnabled: true },
+  address: { city: null, stateCode: null, zipcode: null, districtNumber: null },
 };
 
 interface DbProfile {
+  city: string | null;
   state_code: string | null;
+  zipcode: string | null;
+  district_number: number | null;
   current_streak: number;
   longest_streak: number;
   last_activity_date: string | null;
@@ -51,7 +55,7 @@ async function loadAll(userId: string): Promise<N400State> {
   const [profileRes, bookmarksRes, quizzesRes, qaRes] = await Promise.all([
     supabase
       .from('n400_user_profile')
-      .select('state_code,current_streak,longest_streak,last_activity_date')
+      .select('city,state_code,zipcode,district_number,current_streak,longest_streak,last_activity_date')
       .eq('user_id', userId)
       .maybeSingle(),
     supabase.from('n400_bookmarks').select('question_id').eq('user_id', userId),
@@ -118,6 +122,12 @@ async function loadAll(userId: string): Promise<N400State> {
     settings: {
       stateCode: ((profile?.state_code as StateCode | null) ?? 'TX') as StateCode,
       audioEnabled: true,
+    },
+    address: {
+      city: profile?.city ?? null,
+      stateCode: profile?.state_code ?? null,
+      zipcode: profile?.zipcode ?? null,
+      districtNumber: profile?.district_number ?? null,
     },
   };
 }

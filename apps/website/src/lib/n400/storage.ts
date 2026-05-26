@@ -29,6 +29,16 @@ export interface UserSettings {
   audioEnabled: boolean;
 }
 
+// Address + resolved district from n400_user_profile. Populated only after
+// the user completes /setup. All fields nullable so the profile page can
+// render a "not set" state without crashing.
+export interface UserAddress {
+  city: string | null;
+  stateCode: string | null;
+  zipcode: string | null;
+  districtNumber: number | null;
+}
+
 export interface N400State {
   attempts: QuestionAttempt[];
   bookmarks: number[];
@@ -40,6 +50,7 @@ export interface N400State {
     lastActivityDate: string | null;
   };
   settings: UserSettings;
+  address: UserAddress;
 }
 
 function yesterdayLocal(today: string): string {

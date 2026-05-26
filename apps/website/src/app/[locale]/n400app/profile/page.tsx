@@ -17,10 +17,12 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
+  Pencil,
+  Building2,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { useN400UserState } from '@/lib/n400/user-state';
-import { STATES, type StateCode } from '@/lib/n400/state-data';
+import { STATES } from '@/lib/n400/state-data';
 import { N400_CATEGORY_LABELS, N400_QUESTIONS, type N400CategoryKey } from '@/lib/n400/questions-data';
 
 const SKILL_TONES: Record<N400CategoryKey, string> = {
@@ -36,7 +38,6 @@ export default function ProfilePage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [confirmReset, setConfirmReset] = useState(false);
-
   const categoryRows = useMemo(() => {
     const lastSeen = new Map<number, boolean>();
     for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
@@ -80,7 +81,9 @@ export default function ProfilePage() {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
 
-  const stateInfo = STATES.find((s) => s.code === state.settings.stateCode);
+  const stateInfo = STATES.find(
+    (s) => s.code === (state.address.stateCode ?? state.settings.stateCode)
+  );
   const passedMocks = state.mockResults.filter((m) => m.passed).length;
   const totalMocks = state.mockResults.length;
 
@@ -280,48 +283,89 @@ export default function ProfilePage() {
         </div>
       </Card>
 
+      <Card className="p-6">
+        <div className="flex justify-between items-start mb-4 gap-4 flex-wrap">
+          <div>
+            <h3 className="font-bold text-gray-800">Địa chỉ & Khu vực bầu cử</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Address & District — dùng để xác định Hạ nghị sĩ (câu Q20).
+            </p>
+          </div>
+          <Link
+            href={{
+              pathname: `/${locale}/n400app/setup`,
+              query: {
+                ...(state.address.city ? { city: state.address.city } : {}),
+                ...(state.address.stateCode ? { state: state.address.stateCode } : {}),
+                ...(state.address.zipcode ? { zip: state.address.zipcode } : {}),
+              },
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-teal-50 text-teal-700 text-sm font-semibold hover:bg-teal-100"
+          >
+            <Pencil size={14} /> Chỉnh sửa
+          </Link>
+        </div>
+
+        {state.address.districtNumber === null ? (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
+            Chưa có địa chỉ. Bấm <span className="font-semibold text-teal-700">Chỉnh sửa</span> để
+            cập nhật và xác định khu vực bầu cử của bạn.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AddressField
+              icon={<MapPin size={16} />}
+              label="Thành phố / City"
+              value={state.address.city ?? '—'}
+            />
+            <AddressField
+              icon={<MapPin size={16} />}
+              label="Tiểu bang / State"
+              value={
+                state.address.stateCode
+                  ? `${STATES.find((s) => s.code === state.address.stateCode)?.nameEn ?? state.address.stateCode} (${state.address.stateCode})`
+                  : '—'
+              }
+            />
+            <AddressField
+              icon={<MapPin size={16} />}
+              label="Zipcode"
+              value={state.address.zipcode ?? '—'}
+            />
+            <AddressField
+              icon={<Building2 size={16} />}
+              label="Khu vực bầu cử / District"
+              value={
+                state.address.districtNumber === 0
+                  ? 'At-large (toàn tiểu bang)'
+                  : `${state.address.stateCode ?? ''}-${state.address.districtNumber}`
+              }
+              highlight
+            />
+          </div>
+        )}
+      </Card>
+
       <Card className="p-6 space-y-6">
         <h3 className="font-bold text-gray-800">Cài đặt</h3>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tiểu bang đang sống
-            </label>
-            <select
-              value={state.settings.stateCode}
-              onChange={(e) => updateSettings({ stateCode: e.target.value as StateCode })}
-              className="w-full h-11 rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none"
-            >
-              {STATES.map((s) => (
-                <option key={s.code} value={s.code}>
-                  {s.nameEn} ({s.code})
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-2">
-              Dùng để xác định Thượng nghị sĩ, Thống đốc, Thủ phủ cho câu Q23 / Q61 / Q62.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phát âm thanh</label>
-            <button
-              type="button"
-              onClick={() => updateSettings({ audioEnabled: !state.settings.audioEnabled })}
-              className={`flex items-center gap-3 px-4 h-11 rounded-xl border ${
-                state.settings.audioEnabled
-                  ? 'bg-teal-50 border-teal-200 text-teal-700'
-                  : 'bg-white border-gray-200 text-gray-600'
-              }`}
-            >
-              {state.settings.audioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              {state.settings.audioEnabled ? 'Bật' : 'Tắt'}
-            </button>
-            <p className="text-xs text-gray-500 mt-2">
-              Tắt nếu bạn không muốn nghe MP3 phát âm câu hỏi và đáp án.
-            </p>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Phát âm thanh</label>
+          <button
+            type="button"
+            onClick={() => updateSettings({ audioEnabled: !state.settings.audioEnabled })}
+            className={`flex items-center gap-3 px-4 h-11 rounded-xl border ${
+              state.settings.audioEnabled
+                ? 'bg-teal-50 border-teal-200 text-teal-700'
+                : 'bg-white border-gray-200 text-gray-600'
+            }`}
+          >
+            {state.settings.audioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            {state.settings.audioEnabled ? 'Bật' : 'Tắt'}
+          </button>
+          <p className="text-xs text-gray-500 mt-2">
+            Tắt nếu bạn không muốn nghe MP3 phát âm câu hỏi và đáp án.
+          </p>
         </div>
 
         <div className="border-t border-gray-100 pt-6">
@@ -361,8 +405,34 @@ export default function ProfilePage() {
   );
 }
 
-function Stat({ label, val, icon }: { label: string; val: string; icon: string }) {
+function AddressField({
+  icon,
+  label,
+  value,
+  highlight,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
+    <div
+      className={`rounded-xl border px-4 py-3 ${
+        highlight ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-100'
+      }`}
+    >
+      <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-1">
+        {icon} {label}
+      </div>
+      <div className={`text-sm font-semibold ${highlight ? 'text-teal-700' : 'text-gray-800'}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, val, icon }: { label: string; val: string; icon: string }) {  return (
     <div className="text-center bg-gray-50 p-4 rounded-2xl w-24">
       <div className="text-xs text-gray-500 font-medium mb-1 flex items-center justify-center gap-1">
         {label} <span>{icon}</span>
