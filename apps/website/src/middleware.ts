@@ -8,6 +8,10 @@ const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
 // Whole /n400app surface is auth-gated for v1 (dashboard lives at the root, no public landing yet).
 const N400_RE = /^\/[a-z]{2}\/n400app(\/|$)/;
+// Routes that signed-in users can hit before completing /setup. /setup itself
+// would loop without this exemption; /help is informational and can render
+// without a profile row.
+const N400_NO_PROFILE_GATE_RE = /^\/[a-z]{2}\/n400app\/(setup|help)(\/|$)/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -97,6 +101,19 @@ export async function middleware(request: NextRequest) {
   // N400 paths: any signed-in user (client or admin). Anonymous already redirected above.
   if (isN400Path && role !== 'client' && role !== 'admin') {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  }
+
+  // N400 profile gate: redirect to /setup when no n400_user_profile row exists,
+  // unless the user is already on /setup or /help (those render without a profile).
+  if (isN400Path && !N400_NO_PROFILE_GATE_RE.test(pathname)) {
+    const { data: n400Profile } = await supabase
+      .from('n400_user_profile')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!n400Profile) {
+      return NextResponse.redirect(new URL(`/${locale}/n400app/setup`, request.url));
+    }
   }
 
   supabaseResponse.headers.set('x-user-role', role ?? '');
