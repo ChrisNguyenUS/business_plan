@@ -47,7 +47,9 @@
       "mcp__supabase__execute_sql",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "Bash(npx tsx *)",
+      "mcp__supabase__apply_migration"
     ]
   },
   "enableAllProjectMcpServers": true,
