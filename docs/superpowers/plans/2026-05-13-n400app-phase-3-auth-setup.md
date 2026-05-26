@@ -1,5 +1,12 @@
 # N400 App — Phase 3: Auth + Setup Flow
 
+> **Status (2026-05-26):** Code-side work landed in commits 88efc3e..6f78c24. Remaining work is environment/credentials only — see "Operator TODO" below. Task 7 was deliberately skipped: v1 page.tsx and layout.tsx already exist and are wired to Supabase via Phase 1 cleanup, and the master plan says "UI source of truth = v1 components."
+
+> **Operator TODO (no code can land until these are set up):**
+> - Task 1 — Google OAuth, Facebook OAuth in Supabase dashboard
+> - Task 3 Step 2 — provision Upstash Redis via Vercel Marketplace, run `vercel env pull .env.local`
+> - Task 4 Step 0 — sign up at geocod.io, add `GEOCODIO_API_KEY` to Vercel env + `.env.local`, run the curl smoke-test to confirm v1.7 response shape
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Wire Google + Facebook OAuth into Supabase Auth, add `/n400app` to middleware auth guard, build the setup form (address → Geocodio → district), and render the dashboard shell.
@@ -57,7 +64,7 @@ No new env vars needed for OAuth — Supabase handles the redirect. Confirm exis
 **Files:**
 - Modify: `apps/website/src/middleware.ts`
 
-- [ ] **Step 1: Add N400 regex and profile-gate logic**
+- [x] **Step 1: Add N400 regex and profile-gate logic**
 
 In `src/middleware.ts`, add after the existing `PORTAL_RE` line:
 
@@ -100,7 +107,7 @@ if (!isAdminPath && !isPortalPath && !isN400Path) {
 }
 ```
 
-- [ ] **Step 2: Verify middleware compiles**
+- [x] **Step 2: Verify middleware compiles**
 
 ```bash
 cd apps/website && npm run build 2>&1 | grep -E "error|Error" | head -20
@@ -108,7 +115,7 @@ cd apps/website && npm run build 2>&1 | grep -E "error|Error" | head -20
 
 Expected: no TypeScript errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/website/src/middleware.ts
@@ -123,7 +130,7 @@ git commit -m "feat(n400): extend middleware to protect /n400app/* with profile 
 - Modify: `apps/website/package.json`
 - Create: `apps/website/src/lib/n400/rate-limit.ts`
 
-- [ ] **Step 1: Install Upstash packages**
+- [x] **Step 1: Install Upstash packages**
 
 ```bash
 cd apps/website && npm install --save @upstash/redis@1.34.3 @upstash/ratelimit@2.0.5
@@ -140,7 +147,7 @@ Pull to local:
 vercel env pull .env.local
 ```
 
-- [ ] **Step 3: Create rate limiter**
+- [x] **Step 3: Create rate limiter**
 
 Create `apps/website/src/lib/n400/rate-limit.ts`:
 
@@ -168,7 +175,7 @@ export const geocodioUserLimiter = new Ratelimit({
 })
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/website/package.json apps/website/package-lock.json apps/website/src/lib/n400/rate-limit.ts
@@ -196,7 +203,7 @@ Confirm:
 - Each district object has `district_number` (int) and `state_abbreviation` (string)
 - If the field path differs, update the parser and tests below before proceeding
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `apps/website/src/lib/n400/geocodio.test.ts`:
 
@@ -243,7 +250,7 @@ describe('parseGeocodioResponse', () => {
 })
 ```
 
-- [ ] **Step 2: Run — expect FAIL**
+- [x] **Step 2: Run — expect FAIL**
 
 ```bash
 cd apps/website && npm test -- src/lib/n400/geocodio.test.ts
@@ -251,7 +258,7 @@ cd apps/website && npm test -- src/lib/n400/geocodio.test.ts
 
 Expected: `Cannot find module './geocodio'`
 
-- [ ] **Step 3: Implement Geocodio client**
+- [x] **Step 3: Implement Geocodio client**
 
 Create `apps/website/src/lib/n400/geocodio.ts`:
 
@@ -305,7 +312,7 @@ export async function geocodeAddress(params: {
 }
 ```
 
-- [ ] **Step 4: Run tests — expect PASS**
+- [x] **Step 4: Run tests — expect PASS**
 
 ```bash
 cd apps/website && npm test -- src/lib/n400/geocodio.test.ts
@@ -313,7 +320,7 @@ cd apps/website && npm test -- src/lib/n400/geocodio.test.ts
 
 Expected: `3 tests passed`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/website/src/lib/n400/geocodio.ts apps/website/src/lib/n400/geocodio.test.ts
@@ -327,7 +334,7 @@ git commit -m "feat(n400): add Geocodio client with unit tests"
 **Files:**
 - Create: `apps/website/src/app/[locale]/n400app/setup/actions.ts`
 
-- [ ] **Step 1: Create server action**
+- [x] **Step 1: Create server action**
 
 Create `apps/website/src/app/[locale]/n400app/setup/actions.ts`:
 
@@ -430,7 +437,7 @@ export async function saveSetupProfile(formData: FormData) {
 
 Add `GEOCODIO_API_KEY` to Vercel env vars and local `.env.local`.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add apps/website/src/app/[locale]/n400app/setup/actions.ts
@@ -444,7 +451,7 @@ git commit -m "feat(n400): add setup form server action with Geocodio + rate lim
 **Files:**
 - Create: `apps/website/src/app/[locale]/n400app/setup/page.tsx`
 
-- [ ] **Step 1: Create setup page**
+- [x] **Step 1: Create setup page**
 
 Create `apps/website/src/app/[locale]/n400app/setup/page.tsx`:
 
@@ -577,7 +584,7 @@ export default function SetupPage({ searchParams }: { searchParams?: { city?: st
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add apps/website/src/app/[locale]/n400app/setup/page.tsx
@@ -587,6 +594,8 @@ git commit -m "feat(n400): add setup form UI with bilingual labels"
 ---
 
 ## Task 7: N400 layout + landing/dashboard page
+
+> **SKIPPED 2026-05-26.** v1's `layout.tsx` and `page.tsx` already exist and were wired to Supabase via the Phase 1 cleanup hook (`useN400UserState`). Replacing them with the proposed Server Component would discard the v1 visuals — and the master plan explicitly says "UI source of truth = v1 components." Leave existing files untouched. The dashboard's "Đổi địa chỉ" deep-link (with prefilled `city`/`state`/`zip`) into `/setup` already works because the setup page reads those query params.
 
 **Files:**
 - Create: `apps/website/src/app/[locale]/n400app/layout.tsx`
@@ -736,7 +745,7 @@ git commit -m "feat(n400): add N400 layout, landing page, and dashboard"
 **Files:**
 - Create: `apps/website/src/app/[locale]/n400app/help/page.tsx`
 
-- [ ] **Step 1: Create help page**
+- [x] **Step 1: Create help page**
 
 Create `apps/website/src/app/[locale]/n400app/help/page.tsx`:
 
@@ -798,7 +807,7 @@ export default function HelpPage() {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add apps/website/src/app/[locale]/n400app/help/page.tsx

@@ -1,7 +1,7 @@
 # 🗺️ Project Roadmap: Business Plan App
 
 ## Trạng thái hiện tại
-- **Current Phase:** Website Phase 3B — N400 Civics Test App (Phase 1 DB+seed ✅, Phase 2 audio pipeline ✅, next: Phase 3 Auth + Setup)
+- **Current Phase:** Website Phase 3B — N400 Civics Test App (Phase 1 DB+seed ✅, Phase 2 audio ✅, Phase 3 auth+setup ✅ code-side; awaiting OAuth + Upstash + Geocodio credentials before next phase)
 - **Last updated:** 2026-05-26
 
 > **Track scope:**
