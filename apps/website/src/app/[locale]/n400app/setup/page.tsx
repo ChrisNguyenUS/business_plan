@@ -1,12 +1,18 @@
 'use client'
 
-// Setup form — collects city + state + zip + street address (street is sent to
-// Geocodio in-memory and never persisted). Visually consistent with the v1
-// n400app design system (Card, teal/orange accents, generous touch targets).
+// Setup form — Geoapify autocomplete drives a single street input that, on
+// selection, populates editable city/state/zip fields below. Street is sent
+// to Geocodio in-memory and never persisted.
+//
+// Hybrid UX rationale: autocomplete makes the common case fast, but the
+// editable city/state/zip lets users correct mis-parses. If the Geoapify
+// API key is missing or the network fails, the autocomplete dropdown
+// silently collapses and the user can fill the fields manually.
 
-import { use, useActionState } from 'react'
+import { use, useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Card } from '@/components/n400/ui'
+import { AddressAutocomplete, type AddressSelection } from '@/components/n400/AddressAutocomplete'
 import { saveSetupProfile, type SetupFormState } from './actions'
 
 const US_STATES: ReadonlyArray<readonly [string, string]> = [
@@ -44,10 +50,20 @@ export default function SetupPage({
 }: {
   searchParams?: Promise<SetupSearchParams>
 }) {
-  // Pre-fill from query string when arriving via the dashboard "Đổi địa chỉ" link.
-  // Street stays empty by design — we never persist it, so we can't pre-fill it.
   const prefill = searchParams ? use(searchParams) : {}
   const [state, formAction] = useActionState<SetupFormState, FormData>(saveSetupProfile, null)
+
+  const [city, setCity] = useState(prefill.city ?? '')
+  const [stateCode, setStateCode] = useState(prefill.state ?? 'TX')
+  const [zip, setZip] = useState(prefill.zip ?? '')
+
+  const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? ''
+
+  const handleAutocompleteSelect = (s: AddressSelection) => {
+    setCity(s.city)
+    setStateCode(s.stateCode)
+    setZip(s.zip)
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
@@ -85,18 +101,18 @@ export default function SetupPage({
 
           <form action={formAction} className="space-y-4">
             <div>
-              <label htmlFor="street" className="block text-sm font-medium mb-1">
+              <label htmlFor="street-autocomplete" className="block text-sm font-medium mb-1">
                 Địa chỉ nhà / Street Address <span className="text-red-500">*</span>
               </label>
-              <input
-                id="street"
-                name="street"
-                type="text"
-                required
-                autoComplete="street-address"
-                placeholder="123 Main St"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-500"
+              <AddressAutocomplete
+                apiKey={apiKey}
+                onSelect={handleAutocompleteSelect}
+                placeholder="123 Main St, Houston, TX"
               />
+              <p className="text-xs text-gray-400 mt-1">
+                Bắt đầu gõ địa chỉ và chọn từ gợi ý. /
+                Start typing your address and pick from the suggestions.
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -110,7 +126,8 @@ export default function SetupPage({
                   type="text"
                   required
                   autoComplete="address-level2"
-                  defaultValue={prefill.city ?? ''}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                   placeholder="Houston"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
@@ -128,7 +145,8 @@ export default function SetupPage({
                   pattern="\d{5}"
                   maxLength={5}
                   autoComplete="postal-code"
-                  defaultValue={prefill.zip ?? ''}
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
                   placeholder="77083"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
@@ -143,7 +161,8 @@ export default function SetupPage({
                 id="state"
                 name="state"
                 required
-                defaultValue={prefill.state ?? 'TX'}
+                value={stateCode}
+                onChange={(e) => setStateCode(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">-- Chọn tiểu bang / Select state --</option>
