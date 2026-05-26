@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# n400 audio manifest (regenerated from N400_voice/ on every run)
+scripts/n400/audio-manifest.json
