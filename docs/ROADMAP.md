@@ -1,8 +1,8 @@
 # 🗺️ Project Roadmap: Business Plan App
 
 ## Trạng thái hiện tại
-- **Current Phase:** Website Phase 3B — N400 Civics Test App (plans finalized, Phase 6B Gamification spec added)
-- **Last updated:** 2026-05-24
+- **Current Phase:** Website Phase 3B — N400 Civics Test App (Phase 1 DB+seed ✅, Phase 2 audio pipeline ✅, next: Phase 3 Auth + Setup)
+- **Last updated:** 2026-05-26
 
 > **Track scope:**
 > - **Track 1** — SDLC 8-phase framework, áp dụng cho **Internal App** (`apps/internal_app/`).

@@ -59,7 +59,7 @@ Total: 854 files, ~30–45 MB. Verified on disk 2026-05-21.
 **Files:**
 - Modify: `apps/website/.gitignore` (or root `.gitignore`)
 
-- [ ] **Step 1: Decide whether `N400_voice/` is committed**
+- [x] **Step 1: Decide whether `N400_voice/` is committed**
 
 The folder currently sits at `apps/website/N400_voice/` (~30–40 MB across ~790 MP3s).
 
@@ -71,7 +71,7 @@ If you'd rather keep it out of git, add to `.gitignore`:
 apps/website/N400_voice/
 ```
 
-- [ ] **Step 2: Always-gitignore the manifest**
+- [x] **Step 2: Always-gitignore the manifest**
 
 Add to `.gitignore`:
 
@@ -81,7 +81,7 @@ apps/website/scripts/n400/audio-manifest.json
 
 The manifest is a derived artifact (rebuilt from `N400_voice/` on every run).
 
-- [ ] **Step 3: Create Supabase Storage bucket**
+- [x] **Step 3: Create Supabase Storage bucket**
 
 In Supabase dashboard for project `ffsrlmtqzlidnuitkdvw`:
 1. Storage → New bucket
@@ -90,7 +90,7 @@ In Supabase dashboard for project `ffsrlmtqzlidnuitkdvw`:
 4. File size limit: 1 MB
 5. Allowed MIME types: `audio/mpeg`
 
-- [ ] **Step 4: Apply Storage RLS policies**
+- [x] **Step 4: Apply Storage RLS policies**
 
 Run once in Supabase SQL Editor:
 
@@ -106,7 +106,7 @@ CREATE POLICY "n400-audio admin write" ON storage.objects
   WITH CHECK (bucket_id = 'n400-audio' AND EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 ```
 
-- [ ] **Step 5: Commit `.gitignore` change**
+- [x] **Step 5: Commit `.gitignore` change**
 
 ```bash
 git add apps/website/.gitignore   # or root .gitignore
@@ -126,7 +126,7 @@ This script walks `apps/website/N400_voice/`, matches every MP3 to a DB target, 
 
 The owner reviews the report before the upload step runs.
 
-- [ ] **Step 1: Add a small slug helper**
+- [x] **Step 1: Add a small slug helper**
 
 Create `apps/website/scripts/n400/slug.ts`:
 
@@ -157,7 +157,7 @@ export function districtFromFolder(name: string): number | null {
 }
 ```
 
-- [ ] **Step 2: Create manifest builder**
+- [x] **Step 2: Create manifest builder**
 
 Create `apps/website/scripts/n400/build-audio-manifest.ts`:
 
@@ -415,7 +415,7 @@ async function main() {
 main().catch(e => { console.error(e); process.exit(1) })
 ```
 
-- [ ] **Step 3: Run the manifest build**
+- [x] **Step 3: Run the manifest build**
 
 ```bash
 cd apps/website
@@ -435,7 +435,7 @@ Wrote scripts/n400/audio-manifest.json
 
 If Phase 1 has *not* been extended to seed the 6 territories yet, you will instead see ~7 orphan lines for territory governor + at-large rep files. Run the updated Phase 1 seed first; the manifest should then resolve cleanly.
 
-- [ ] **Step 4: Commit the builder**
+- [x] **Step 4: Commit the builder**
 
 ```bash
 git add apps/website/scripts/n400/build-audio-manifest.ts \
@@ -450,7 +450,7 @@ git commit -m "feat(n400): add audio manifest builder for pre-recorded voices"
 **Files:**
 - Create: `apps/website/scripts/n400/upload-audio.ts`
 
-- [ ] **Step 1: Create upload script**
+- [x] **Step 1: Create upload script**
 
 Create `apps/website/scripts/n400/upload-audio.ts`:
 
@@ -532,7 +532,7 @@ async function main() {
 main().catch(e => { console.error(e); process.exit(1) })
 ```
 
-- [ ] **Step 2: Run upload**
+- [x] **Step 2: Run upload**
 
 ```bash
 cd apps/website
@@ -542,7 +542,7 @@ NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> \
 
 Expected: `Uploaded ~854/854 ... ✅ Upload + backfill complete.`
 
-- [ ] **Step 3: Verify in DB**
+- [x] **Step 3: Verify in DB**
 
 ```sql
 -- Questions: all 128 should have audio
@@ -578,7 +578,7 @@ SELECT state_code, rep_name, rep_audio_url FROM n400_representatives
 WHERE state_code = 'TX' ORDER BY district_number LIMIT 3;
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/website/scripts/n400/upload-audio.ts
