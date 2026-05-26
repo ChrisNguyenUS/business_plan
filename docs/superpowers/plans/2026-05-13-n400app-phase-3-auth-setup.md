@@ -1,11 +1,14 @@
 # N400 App — Phase 3: Auth + Setup Flow
 
-> **Status (2026-05-26):** Code-side work landed in commits 88efc3e..6f78c24. Remaining work is environment/credentials only — see "Operator TODO" below. Task 7 was deliberately skipped: v1 page.tsx and layout.tsx already exist and are wired to Supabase via Phase 1 cleanup, and the master plan says "UI source of truth = v1 components."
+> **Status (2026-05-26):** Code-side work landed in commits 88efc3e..f538430d. Remaining work is environment/credentials only — see "Operator TODO" below. Task 7 was deliberately skipped: v1 page.tsx and layout.tsx already exist and are wired to Supabase via Phase 1 cleanup, and the master plan says "UI source of truth = v1 components."
+
+> **Architecture update (2026-05-26):** Address input is now a hybrid Geoapify autocomplete + editable city/state/zip fields. Geoapify provides the typeahead UX; the picked address is then sent to Geocodio (server-side) which remains the authority for congressional district resolution. Geoapify never writes to the database.
 
 > **Operator TODO (no code can land until these are set up):**
 > - Task 1 — Google OAuth, Facebook OAuth in Supabase dashboard
 > - Task 3 Step 2 — provision Upstash Redis via Vercel Marketplace, run `vercel env pull .env.local`
 > - Task 4 Step 0 — sign up at geocod.io, add `GEOCODIO_API_KEY` to Vercel env + `.env.local`, run the curl smoke-test to confirm v1.7 response shape
+> - **Geoapify autocomplete** — sign up at geoapify.com, add `NEXT_PUBLIC_GEOAPIFY_API_KEY` to Vercel env + `.env.local`. **Restrict the key by HTTP referrer** (e.g. `mannaos.com`, `*.vercel.app`) in the Geoapify dashboard — it's a public client-side key.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
