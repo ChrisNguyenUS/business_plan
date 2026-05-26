@@ -6,6 +6,15 @@
 //   2. geocodeAddress — fetches the API. Auth via Authorization header so the API key
 //      never lands in URL/query logs. GeocodioError carries only the HTTP status, not
 //      the input address — caller is free to log it without leaking PII.
+//
+// Live response shape (verified 2026-05-26):
+//   results[0].fields.congressional_districts[0] = {
+//     district_number: 7,
+//     ocd_id: "ocd-division/country:us/state:tx/cd:7",
+//     ...
+//   }
+// Note: there is no `state_abbreviation` field on the district object —
+// state is parsed out of `ocd_id`.
 
 export interface GeocodeResult {
   districtNumber: number
@@ -14,8 +23,10 @@ export interface GeocodeResult {
 
 interface GeocodioDistrict {
   district_number?: unknown
-  state_abbreviation?: unknown
+  ocd_id?: unknown
 }
+
+const OCD_STATE_RE = /\/state:([a-z]{2})(?:\/|$)/
 
 export function parseGeocodioResponse(data: unknown): GeocodeResult | null {
   if (!data || typeof data !== 'object') return null
@@ -28,9 +39,12 @@ export function parseGeocodioResponse(data: unknown): GeocodeResult | null {
   if (districts.length > 1) return null
 
   const d = districts[0] as GeocodioDistrict
-  if (typeof d.district_number !== 'number' || typeof d.state_abbreviation !== 'string') return null
+  if (typeof d.district_number !== 'number') return null
+  if (typeof d.ocd_id !== 'string') return null
+  const m = OCD_STATE_RE.exec(d.ocd_id)
+  if (!m) return null
 
-  return { districtNumber: d.district_number, stateCode: d.state_abbreviation }
+  return { districtNumber: d.district_number, stateCode: m[1].toUpperCase() }
 }
 
 export class GeocodioError extends Error {

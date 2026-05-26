@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { parseGeocodioResponse } from './geocodio'
 
+// Real v1.7 shape — state is in ocd_id, not a top-level field.
 const MOCK_SUCCESS = {
   results: [
     {
       fields: {
-        congressional_districts: [{ district_number: 9, state_abbreviation: 'TX' }],
+        congressional_districts: [
+          {
+            name: 'Congressional District 7',
+            district_number: 7,
+            ocd_id: 'ocd-division/country:us/state:tx/cd:7',
+            congress_number: '119th',
+          },
+        ],
       },
     },
   ],
@@ -16,8 +24,8 @@ const MOCK_AMBIGUOUS = {
     {
       fields: {
         congressional_districts: [
-          { district_number: 7, state_abbreviation: 'TX' },
-          { district_number: 9, state_abbreviation: 'TX' },
+          { district_number: 7, ocd_id: 'ocd-division/country:us/state:tx/cd:7' },
+          { district_number: 9, ocd_id: 'ocd-division/country:us/state:tx/cd:9' },
         ],
       },
     },
@@ -30,7 +38,9 @@ const MOCK_AT_LARGE = {
   results: [
     {
       fields: {
-        congressional_districts: [{ district_number: 0, state_abbreviation: 'WY' }],
+        congressional_districts: [
+          { district_number: 0, ocd_id: 'ocd-division/country:us/state:wy/cd:0' },
+        ],
       },
     },
   ],
@@ -40,15 +50,35 @@ const MOCK_MALFORMED = {
   results: [
     {
       fields: {
-        congressional_districts: [{ district_number: '9', state_abbreviation: 'TX' }],
+        congressional_districts: [{ district_number: '9', ocd_id: 'ocd-division/country:us/state:tx/cd:9' }],
+      },
+    },
+  ],
+}
+
+const MOCK_OCD_MISSING = {
+  results: [
+    {
+      fields: {
+        congressional_districts: [{ district_number: 7 }],
+      },
+    },
+  ],
+}
+
+const MOCK_OCD_NO_STATE = {
+  results: [
+    {
+      fields: {
+        congressional_districts: [{ district_number: 7, ocd_id: 'ocd-division/country:us/cd:7' }],
       },
     },
   ],
 }
 
 describe('parseGeocodioResponse', () => {
-  it('returns district number on unambiguous success', () => {
-    expect(parseGeocodioResponse(MOCK_SUCCESS)).toEqual({ districtNumber: 9, stateCode: 'TX' })
+  it('returns district + uppercased state from ocd_id on unambiguous success', () => {
+    expect(parseGeocodioResponse(MOCK_SUCCESS)).toEqual({ districtNumber: 7, stateCode: 'TX' })
   })
 
   it('returns null when ambiguous (>1 district returned)', () => {
@@ -65,6 +95,14 @@ describe('parseGeocodioResponse', () => {
 
   it('returns null for malformed payload (district_number not a number)', () => {
     expect(parseGeocodioResponse(MOCK_MALFORMED)).toBeNull()
+  })
+
+  it('returns null when ocd_id missing', () => {
+    expect(parseGeocodioResponse(MOCK_OCD_MISSING)).toBeNull()
+  })
+
+  it('returns null when ocd_id has no state segment', () => {
+    expect(parseGeocodioResponse(MOCK_OCD_NO_STATE)).toBeNull()
   })
 
   it('returns null for null/undefined input', () => {
