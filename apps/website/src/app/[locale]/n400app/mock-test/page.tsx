@@ -1,128 +1,215 @@
 'use client';
 
+// Phase 4: data layer swapped to server actions, UI preserved from v1.
+// - startMockAttempt builds the slide manifest server-side; the slides we
+//   render here have NO isCorrect flag, so a tampered client cannot mark
+//   itself right.
+// - User picks are batched in component state. On submit we send all 20
+//   to finalizeMockAttempt; the server replays them through the answer
+//   key and stamps score/passed.
+// - The returned manifest lets the result screen show "correct answer was X"
+//   without an extra round-trip.
+// - In-progress state survives a tab close via localStorage keyed by
+//   attemptId. (Resume UI is wired below; the user can tap "Tiếp tục thi
+//   thử" on the intro card if a saved attempt is found.)
+
 import Image from 'next/image';
 import { ClipboardCheck, ArrowRight, CheckCircle, XCircle, Trophy, Volume2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { useN400UserState } from '@/lib/n400/user-state';
-import type { MockResult } from '@/lib/n400/storage';
 import {
-  buildOptions,
-  selectMockTestQuestions,
   questionAudioUrl,
   isPass,
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
-import type { N400Question } from '@/lib/n400/questions-data';
+import { N400_QUESTIONS_BY_ID, type N400Question } from '@/lib/n400/questions-data';
+import {
+  startMockAttempt,
+  finalizeMockAttempt,
+  type PublicSlide,
+  type FinalizeMockAttemptResult,
+} from './actions';
 
 type Stage = 'intro' | 'taking' | 'result';
 
-interface PerQuestionAnswer {
+interface PickState {
   questionId: number;
   pickedId: QuizOption['id'] | null;
-  options: QuizOption[];
-  wasCorrect: boolean | null;
+}
+
+interface PersistedAttempt {
+  attemptId: string;
+  startedAt: string;
+  slides: PublicSlide[];
+  picks: PickState[];
+  index: number;
+}
+
+const STORAGE_KEY = 'n400.mock.inflight';
+
+function loadPersisted(): PersistedAttempt | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedAttempt;
+    if (!parsed.attemptId || !Array.isArray(parsed.slides)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function persist(state: PersistedAttempt | null) {
+  if (typeof window === 'undefined') return;
+  if (state) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } else {
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
 }
 
 export default function MockTestPage() {
-  const { state, recordMockResult, hydrated } = useN400UserState();
-  const stateCode = state.settings.stateCode;
+  const { hydrated } = useN400UserState();
 
   const [stage, setStage] = useState<Stage>('intro');
-  const [seed, setSeed] = useState<string>('');
-  const [questions, setQuestions] = useState<N400Question[]>([]);
-  const [answers, setAnswers] = useState<PerQuestionAnswer[]>([]);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [slides, setSlides] = useState<PublicSlide[]>([]);
+  const [picks, setPicks] = useState<PickState[]>([]);
   const [index, setIndex] = useState(0);
   const [startedAt, setStartedAt] = useState<string>('');
-  const [finalResult, setFinalResult] = useState<MockResult | null>(null);
-  const recordedRef = useRef(false);
+  const [result, setResult] = useState<FinalizeMockAttemptResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resumable, setResumable] = useState<PersistedAttempt | null>(null);
+  const startedRef = useRef(false);
 
-  const startNew = () => {
-    const s = String(Date.now());
-    const qs = selectMockTestQuestions(s);
-    setSeed(s);
-    setQuestions(qs);
-    setAnswers(
-      qs.map((q) => ({
-        questionId: q.id,
-        pickedId: null,
-        options: buildOptions(q, stateCode, `mock-${s}-${q.id}`),
-        wasCorrect: null,
-      }))
-    );
-    setIndex(0);
-    setStartedAt(new Date().toISOString());
-    setStage('taking');
-    setFinalResult(null);
-    recordedRef.current = false;
+  // Surface a persisted in-flight attempt on mount.
+  useEffect(() => {
+    setResumable(loadPersisted());
+  }, []);
+
+  // Persist on every state change while taking the test.
+  useEffect(() => {
+    if (stage !== 'taking' || !attemptId) return;
+    persist({ attemptId, startedAt, slides, picks, index });
+  }, [stage, attemptId, startedAt, slides, picks, index]);
+
+  const startNew = async () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const r = await startMockAttempt();
+      setAttemptId(r.attemptId);
+      setStartedAt(r.startedAt);
+      setSlides(r.slides);
+      setPicks(r.slides.map((s) => ({ questionId: s.questionId, pickedId: null })));
+      setIndex(0);
+      setResult(null);
+      setStage('taking');
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Không thể bắt đầu thi thử. / Could not start attempt.',
+      );
+      startedRef.current = false;
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const finish = (final: PerQuestionAnswer[]) => {
-    const score = final.filter((a) => a.wasCorrect).length;
-    const result: MockResult = {
-      id: `mock-${seed}`,
-      startedAt,
-      completedAt: new Date().toISOString(),
-      score,
-      total: MOCK_TEST_QUESTION_COUNT,
-      passed: isPass(score),
-      questionResults: final.map((a) => ({
-        questionId: a.questionId,
-        wasCorrect: !!a.wasCorrect,
-      })),
-    };
-    setFinalResult(result);
-    setStage('result');
-    if (!recordedRef.current) {
-      recordedRef.current = true;
-      recordMockResult(result);
+  const resume = () => {
+    if (!resumable) return;
+    setAttemptId(resumable.attemptId);
+    setStartedAt(resumable.startedAt);
+    setSlides(resumable.slides);
+    setPicks(resumable.picks);
+    setIndex(resumable.index);
+    setResult(null);
+    setStage('taking');
+  };
+
+  const discardResumable = () => {
+    persist(null);
+    setResumable(null);
+  };
+
+  const finish = async (finalPicks: PickState[]) => {
+    if (!attemptId) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const r = await finalizeMockAttempt(
+        attemptId,
+        finalPicks
+          .filter((p): p is PickState & { pickedId: QuizOption['id'] } => p.pickedId !== null)
+          .map((p) => ({ questionId: p.questionId, selectedOption: p.pickedId })),
+      );
+      setResult(r);
+      setStage('result');
+      persist(null); // attempt finalized server-side; nothing left to resume
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Không thể nộp bài. / Could not submit. Please retry.',
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const onPick = (id: QuizOption['id']) => {
-    setAnswers((prev) => {
+    setPicks((prev) => {
       const next = [...prev];
-      const cur = { ...next[index] };
-      const opt = cur.options.find((o) => o.id === id);
-      cur.pickedId = id;
-      cur.wasCorrect = !!opt?.isCorrect;
-      next[index] = cur;
+      next[index] = { ...next[index], pickedId: id };
       return next;
     });
   };
 
   const onNext = () => {
-    if (index < questions.length - 1) {
+    if (index < slides.length - 1) {
       setIndex((i) => i + 1);
     } else {
-      // We need the latest answers — read from state asynchronously via callback.
-      setAnswers((prev) => {
-        finish(prev);
+      // Read latest picks via the setter callback (avoids a stale closure).
+      setPicks((prev) => {
+        void finish(prev);
         return prev;
       });
     }
   };
-
-  const current = questions[index];
-  const currentAnswer = answers[index];
-  const answeredCount = answers.filter((a) => a.pickedId !== null).length;
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
 
   if (stage === 'intro') {
-    return <Intro onStart={startNew} />;
+    return (
+      <Intro
+        onStart={startNew}
+        starting={submitting}
+        error={error}
+        resumable={resumable}
+        onResume={resume}
+        onDiscard={discardResumable}
+      />
+    );
   }
 
-  if (stage === 'result' && finalResult) {
-    return <Result result={finalResult} questions={questions} answers={answers} onRetake={startNew} />;
+  if (stage === 'result' && result) {
+    return <Result result={result} slides={slides} picks={picks} onRetake={startNew} />;
   }
 
-  if (!current || !currentAnswer) return null;
+  const slide = slides[index];
+  const pick = picks[index];
+  if (!slide || !pick) return null;
+  const question = N400_QUESTIONS_BY_ID.get(slide.questionId);
+  if (!question) return null;
+  const answeredCount = picks.filter((p) => p.pickedId !== null).length;
+  const isLast = index === slides.length - 1;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -141,18 +228,18 @@ export default function MockTestPage() {
       <Card className="p-8 max-w-3xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{current.id}</div>
+            <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
             <div className="text-xl font-bold text-gray-800 leading-snug">
-              {current.questionEn}
+              {question.questionEn}
             </div>
-            <div className="text-sm text-gray-500 mt-1">{current.questionVi}</div>
+            <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
           </div>
-          <AudioButton src={questionAudioUrl(current.id)} label="Nghe câu hỏi" />
+          <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" />
         </div>
 
         <div className="space-y-3">
-          {currentAnswer.options.map((opt) => {
-            const isPicked = currentAnswer.pickedId === opt.id;
+          {slide.options.map((opt) => {
+            const isPicked = pick.pickedId === opt.id;
             return (
               <button
                 key={opt.id}
@@ -181,6 +268,12 @@ export default function MockTestPage() {
           })}
         </div>
 
+        {error ? (
+          <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
           <div className="text-xs text-gray-500">
             ⚠️ Đáp án sẽ chỉ hiển thị khi bạn hoàn thành tất cả 20 câu.
@@ -188,10 +281,15 @@ export default function MockTestPage() {
           <button
             type="button"
             onClick={onNext}
-            disabled={currentAnswer.pickedId === null}
+            disabled={pick.pickedId === null || submitting}
             className="py-3 px-6 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {index === questions.length - 1 ? 'Nộp bài' : 'Tiếp theo'} <ArrowRight size={16} />
+            {submitting && isLast
+              ? 'Đang chấm bài...'
+              : isLast
+                ? 'Nộp bài'
+                : 'Tiếp theo'}{' '}
+            <ArrowRight size={16} />
           </button>
         </div>
       </Card>
@@ -199,7 +297,21 @@ export default function MockTestPage() {
   );
 }
 
-function Intro({ onStart }: { onStart: () => void }) {
+function Intro({
+  onStart,
+  starting,
+  error,
+  resumable,
+  onResume,
+  onDiscard,
+}: {
+  onStart: () => void;
+  starting: boolean;
+  error: string | null;
+  resumable: PersistedAttempt | null;
+  onResume: () => void;
+  onDiscard: () => void;
+}) {
   return (
     <div className="grid grid-cols-[3fr_2fr] gap-8 items-start animate-in fade-in duration-300">
       <Card className="p-8">
@@ -223,12 +335,48 @@ function Intro({ onStart }: { onStart: () => void }) {
           <Bullet color="bg-yellow-500">Có audio MP3 phát âm chuẩn cho từng câu hỏi.</Bullet>
         </div>
 
+        {resumable ? (
+          <div className="mb-4 rounded-xl border border-teal-200 bg-teal-50 p-4 space-y-2">
+            <div className="text-sm font-semibold text-teal-800">
+              Bạn có một bài thi đang dang dở.
+            </div>
+            <div className="text-xs text-teal-700">
+              Tiến độ: {resumable.picks.filter((p) => p.pickedId !== null).length} /{' '}
+              {resumable.slides.length} câu.
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={onResume}
+                className="flex-1 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700"
+              >
+                Tiếp tục
+              </button>
+              <button
+                type="button"
+                onClick={onDiscard}
+                className="px-4 py-2.5 rounded-lg bg-white border border-teal-200 text-teal-700 text-sm font-semibold hover:bg-teal-100"
+              >
+                Bỏ
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {error ? (
+          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={onStart}
-          className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
+          disabled={starting}
+          aria-busy={starting}
+          className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
         >
-          Bắt đầu thi thử <ArrowRight size={16} />
+          {starting ? 'Đang chuẩn bị câu hỏi...' : 'Bắt đầu thi thử'} <ArrowRight size={16} />
         </button>
       </Card>
 
@@ -257,16 +405,18 @@ function Bullet({ color, children }: { color: string; children: React.ReactNode 
 
 function Result({
   result,
-  questions,
-  answers,
+  slides,
+  picks,
   onRetake,
 }: {
-  result: MockResult;
-  questions: N400Question[];
-  answers: PerQuestionAnswer[];
+  result: FinalizeMockAttemptResult;
+  slides: PublicSlide[];
+  picks: PickState[];
   onRetake: () => void;
 }) {
-  const passed = result.passed;
+  const passed = isPass(result.score);
+  const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <Card className={`p-8 text-center ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>
@@ -298,11 +448,13 @@ function Result({
       <Card className="p-6">
         <h4 className="font-bold text-gray-800 mb-4">Chi tiết các câu trả lời</h4>
         <div className="space-y-3">
-          {questions.map((q, i) => {
-            const a = answers[i];
-            const correct = a?.options.find((o) => o.isCorrect);
-            const picked = a?.options.find((o) => o.id === a?.pickedId);
-            const ok = !!a?.wasCorrect;
+          {slides.map((slide, i) => {
+            const q: N400Question | undefined = N400_QUESTIONS_BY_ID.get(slide.questionId);
+            if (!q) return null;
+            const correctId = correctById.get(slide.questionId);
+            const correct = slide.options.find((o) => o.id === correctId);
+            const picked = slide.options.find((o) => o.id === picks[i]?.pickedId);
+            const ok = picked?.id === correctId;
             return (
               <div
                 key={q.id}
@@ -329,7 +481,7 @@ function Result({
                     {!ok ? (
                       <div className="text-sm">
                         <span className="text-gray-500">Đáp án đúng: </span>
-                        <span className="text-teal-700 font-medium">{correct?.en}</span>
+                        <span className="text-teal-700 font-medium">{correct?.en ?? '—'}</span>
                       </div>
                     ) : null}
                   </div>
