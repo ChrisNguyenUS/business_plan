@@ -31,4 +31,9 @@ export interface FinalizeMockAttemptResult {
   total: number
   passed: boolean
   manifest: { qid: number; correct: QuizOption['id'] }[]
+  // Streak fields stamped server-side inside finalize_mock_attempt.
+  // `milestone` fires once when current_streak crosses 3/7/14/30/60/100.
+  currentStreak: number
+  longestStreak: number
+  milestone: number | null
 }

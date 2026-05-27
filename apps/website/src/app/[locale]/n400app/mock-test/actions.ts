@@ -129,7 +129,14 @@ export async function finalizeMockAttempt(
     p_attempt_id: attemptId,
   })
   if (error) throw new Error(`finalize_mock_attempt failed: ${error.message}`)
-  const r = data as { score?: number; total?: number; passed?: boolean }
+  const r = data as {
+    score?: number
+    total?: number
+    passed?: boolean
+    current_streak?: number
+    longest_streak?: number
+    milestone?: number | null
+  }
 
   // Round-trip the manifest so the result page can render "correct answer
   // was X" without an additional fetch. RLS already restricts SELECT to the
@@ -149,6 +156,9 @@ export async function finalizeMockAttempt(
     total: Number(r?.total ?? MOCK_TEST_QUESTION_COUNT),
     passed: Boolean(r?.passed),
     manifest,
+    currentStreak: Number(r?.current_streak ?? 0),
+    longestStreak: Number(r?.longest_streak ?? 0),
+    milestone: r?.milestone ?? null,
   }
 }
 

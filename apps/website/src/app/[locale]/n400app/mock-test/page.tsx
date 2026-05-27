@@ -14,7 +14,7 @@
 //   thử" on the intro card if a saved attempt is found.)
 
 import Image from 'next/image';
-import { ClipboardCheck, ArrowRight, CheckCircle, XCircle, Trophy, Volume2 } from 'lucide-react';
+import { ClipboardCheck, ArrowRight, CheckCircle, XCircle, Trophy, Volume2, Flame, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
@@ -402,6 +402,30 @@ function Bullet({ color, children }: { color: string; children: React.ReactNode 
   );
 }
 
+function MilestoneBanner({ days }: { days: number }) {
+  const copy: Record<number, string> = {
+    3: 'Bạn đã giữ chuỗi 3 ngày — khởi đầu tuyệt vời!',
+    7: 'Một tuần liên tục! Sự kiên trì đang được đền đáp.',
+    14: 'Hai tuần liền — bạn đang biến việc học thành thói quen.',
+    30: 'Một tháng học không gián đoạn. Bạn rất ấn tượng!',
+    60: '60 ngày liên tục — kỷ luật ở đẳng cấp khác.',
+    100: '100 ngày! Bạn đang ở đỉnh cao của sự kiên định.',
+  };
+  return (
+    <div className="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 p-5 flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+      <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-sm shrink-0">
+        <Sparkles size={26} />
+      </div>
+      <div className="flex-1">
+        <div className="text-sm font-bold text-orange-700 mb-0.5">
+          🎉 Cột mốc {days} ngày!
+        </div>
+        <div className="text-sm text-gray-700">{copy[days] ?? `Bạn đã giữ chuỗi ${days} ngày.`}</div>
+      </div>
+    </div>
+  );
+}
+
 function Result({
   result,
   slides,
@@ -418,6 +442,8 @@ function Result({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {result.milestone !== null ? <MilestoneBanner days={result.milestone} /> : null}
+
       <Card className={`p-8 text-center ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>
         <div className="flex items-center justify-center gap-3 mb-4">
           <Trophy className={passed ? 'text-teal-600' : 'text-orange-500'} size={40} />
@@ -433,6 +459,13 @@ function Result({
           Cần đạt ≥ {MOCK_TEST_PASS_THRESHOLD} câu đúng để vượt qua. Bạn đạt{' '}
           {Math.round((result.score / result.total) * 100)}% độ chính xác.
         </p>
+        <div className="mt-4 inline-flex items-center gap-2 text-sm text-gray-700 bg-white/70 rounded-full px-3 py-1.5 border border-orange-200">
+          <Flame size={16} className="text-orange-500" />
+          <span className="font-semibold">{result.currentStreak} ngày</span>
+          <span className="text-xs text-gray-500">
+            · Cao nhất: {result.longestStreak} ngày
+          </span>
+        </div>
         <div className="flex justify-center gap-3 mt-6">
           <button
             type="button"
