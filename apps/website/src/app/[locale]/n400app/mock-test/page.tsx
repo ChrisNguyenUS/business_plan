@@ -30,9 +30,8 @@ import { N400_QUESTIONS_BY_ID, type N400Question } from '@/lib/n400/questions-da
 import {
   startMockAttempt,
   finalizeMockAttempt,
-  type PublicSlide,
-  type FinalizeMockAttemptResult,
 } from './actions';
+import type { PublicSlide, FinalizeMockAttemptResult } from './types';
 
 type Stage = 'intro' | 'taking' | 'result';
 

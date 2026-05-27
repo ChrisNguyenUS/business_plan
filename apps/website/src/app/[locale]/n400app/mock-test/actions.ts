@@ -15,6 +15,10 @@
 // shouldn't be trusted to compute. So we run buildOptions here, store the
 // answer key in slide_manifest, and only send the option labels + text to
 // the client.
+//
+// Public types live in ./types.ts. Next.js requires `'use server'` modules
+// to export only async functions — so type/interface exports must live in
+// a separate module.
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -26,25 +30,12 @@ import {
   type QuizOption,
 } from '@/lib/n400/quiz-engine'
 import type { StateCode } from '@/lib/n400/state-data'
-
-// Public option shape (no `isCorrect`). The server-only manifest in
-// slide_manifest carries the answer key.
-export interface PublicQuizOption {
-  id: QuizOption['id']
-  en: string
-  vi: string
-}
-
-export interface PublicSlide {
-  questionId: number
-  options: PublicQuizOption[]
-}
-
-export interface StartMockAttemptResult {
-  attemptId: string
-  startedAt: string
-  slides: PublicSlide[]
-}
+import type {
+  PublicSlide,
+  StartMockAttemptResult,
+  MockPick,
+  FinalizeMockAttemptResult,
+} from './types'
 
 async function getSupabase() {
   const cookieStore = await cookies()
@@ -113,20 +104,6 @@ export async function startMockAttempt(): Promise<StartMockAttemptResult> {
   }
 
   return { attemptId: attempt.id, startedAt, slides }
-}
-
-export interface FinalizeMockAttemptResult {
-  score: number
-  total: number
-  passed: boolean
-  // Returned alongside the score so the result page can render
-  // "you picked X, correct was Y" without an extra round-trip.
-  manifest: { qid: number; correct: QuizOption['id'] }[]
-}
-
-export interface MockPick {
-  questionId: number
-  selectedOption: QuizOption['id']
 }
 
 export async function finalizeMockAttempt(
