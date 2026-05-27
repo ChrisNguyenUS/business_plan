@@ -43,7 +43,7 @@ function SubmitButton() {
   )
 }
 
-type SetupSearchParams = { city?: string; state?: string; zip?: string }
+type SetupSearchParams = { city?: string; state?: string; zip?: string; from?: string }
 
 export default function SetupPage({
   searchParams,
@@ -56,6 +56,7 @@ export default function SetupPage({
   const [city, setCity] = useState(prefill.city ?? '')
   const [stateCode, setStateCode] = useState(prefill.state ?? 'TX')
   const [zip, setZip] = useState(prefill.zip ?? '')
+  const fromProfile = prefill.from === 'profile'
 
   const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? ''
 
@@ -100,6 +101,7 @@ export default function SetupPage({
           )}
 
           <form action={formAction} className="space-y-4">
+            {fromProfile && <input type="hidden" name="from" value="profile" />}
             <div>
               <label htmlFor="street-autocomplete" className="block text-sm font-medium mb-1">
                 Địa chỉ nhà / Street Address <span className="text-red-500">*</span>

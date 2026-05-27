@@ -137,5 +137,8 @@ export async function saveSetupProfile(
     }
   }
 
-  redirect('/n400app')
+  // Edit flow comes from /n400app/profile and expects to land back there.
+  // First-time setup falls through to the dashboard.
+  const from = (formData.get('from') as string | null)?.trim() ?? ''
+  redirect(from === 'profile' ? '/n400app/profile' : '/n400app')
 }

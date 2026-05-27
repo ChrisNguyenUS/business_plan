@@ -295,6 +295,7 @@ export default function ProfilePage() {
             href={{
               pathname: `/${locale}/n400app/setup`,
               query: {
+                from: 'profile',
                 ...(state.address.city ? { city: state.address.city } : {}),
                 ...(state.address.stateCode ? { state: state.address.stateCode } : {}),
                 ...(state.address.zipcode ? { zip: state.address.zipcode } : {}),
