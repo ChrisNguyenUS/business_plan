@@ -77,3 +77,15 @@ export function nextStreak(
   const longest = Math.max(current, prev.longest);
   return { current, longest, lastActivityDate: today };
 }
+
+// Mirrors the SQL milestone set in migration 09 (finalize_mock_attempt RPC),
+// so practice/flashcards client-side detection stays in lockstep with the
+// server-side mock-test detection.
+export const N400_MILESTONES = [3, 7, 14, 30, 60, 100] as const;
+
+// Returns the milestone day count when the streak transitions from prev→next,
+// otherwise null. Same-day no-ops (prev === next) return null.
+export function milestoneCrossed(prev: number, next: number): number | null {
+  if (next <= prev) return null;
+  return N400_MILESTONES.find((m) => m === next) ?? null;
+}

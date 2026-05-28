@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
-import { nextStreak } from './storage';
+import { nextStreak, milestoneCrossed } from './storage';
 import type { QuizMode, MockResult, UserSettings, UserAddress, N400State } from './storage';
 
 export type { QuizMode, MockResult, UserSettings, UserAddress, N400State };
@@ -225,11 +225,15 @@ export function useN400UserState() {
   );
 
   // Practice/flashcard answer recording — keeps streak in lockstep with v1 logic.
+  // Returns the milestone day count (3/7/14/30/60/100) when this answer pushes
+  // the streak across one, otherwise null. Mock test goes through the
+  // finalize_mock_attempt RPC instead and surfaces milestone via its result.
   const recordAnswer = useCallback(
-    async (questionId: number, wasCorrect: boolean, mode: QuizMode) => {
-      if (!user) return;
+    async (questionId: number, wasCorrect: boolean, mode: QuizMode): Promise<number | null> => {
+      if (!user) return null;
       const today = TODAY_LOCAL();
       const newStreak = nextStreak(state.streak, today);
+      const milestone = milestoneCrossed(state.streak.current, newStreak.current);
       setState((s) => {
         const nextAttempts = [
           ...s.attempts,
@@ -262,7 +266,7 @@ export function useN400UserState() {
         .single();
       if (qErr || !quiz) {
         console.error('n400: recordAnswer (quiz) failed', qErr);
-        return;
+        return milestone;
       }
       await supabase.from('n400_question_attempts').insert({
         attempt_id: quiz.id,
@@ -279,14 +283,15 @@ export function useN400UserState() {
         },
         { onConflict: 'user_id' }
       );
+      return milestone;
     },
     [user, state.streak]
   );
 
   const setFlashcardKnown = useCallback(
-    (questionId: number, known: boolean) => {
+    async (questionId: number, known: boolean): Promise<number | null> => {
       // Reuse recordAnswer so mastery state, streak, and DB stay consistent.
-      void recordAnswer(questionId, known, 'flashcard');
+      return recordAnswer(questionId, known, 'flashcard');
     },
     [recordAnswer]
   );
