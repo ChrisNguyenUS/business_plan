@@ -15,7 +15,7 @@ import {
   correctAnswersFor,
   shuffle,
   questionAudioUrl,
-  answerAudioUrl,
+  answerAudioUrlFor,
 } from '@/lib/n400/quiz-engine';
 
 type FilterMode = 'all' | 'unknown' | 'bookmarks' | N400CategoryKey;
@@ -48,6 +48,7 @@ export default function FlashcardsPage() {
   }
 
   const stateCode = state.settings.stateCode;
+  const districtNumber = state.address.districtNumber;
 
   const questions = useMemo(() => {
     let qs = N400_QUESTIONS;
@@ -58,13 +59,18 @@ export default function FlashcardsPage() {
     } else if (filter !== 'all') {
       qs = qs.filter((q) => q.category === filter);
     }
+    // Q29 (your U.S. Representative) needs the user's resolved district to
+    // produce a per-user correct answer. Hide it until /setup completes.
+    if (districtNumber === null) {
+      qs = qs.filter((q) => q.id !== 29);
+    }
     return shuffle(
       qs.map((q) => q.id),
       `flash-${filter}-${seed}`
     )
       .map((id) => N400_QUESTIONS.find((q) => q.id === id)!)
       .filter(Boolean);
-  }, [filter, seed, state.bookmarks, state.flashcardKnown]);
+  }, [filter, seed, state.bookmarks, state.flashcardKnown, districtNumber]);
 
   const total = questions.length;
   const current = questions[index];
@@ -93,7 +99,7 @@ export default function FlashcardsPage() {
 
   const known = state.flashcardKnown.includes(current.id);
   const bookmarked = state.bookmarks.includes(current.id);
-  const allCorrect = correctAnswersFor(current, stateCode);
+  const allCorrect = correctAnswersFor(current, stateCode, districtNumber);
   const answers = allCorrect.length > 0
     ? allCorrect
     : current.answersEn.map((en, i) => ({ en, vi: current.answersVi[i] ?? en }));
@@ -229,7 +235,7 @@ export default function FlashcardsPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-teal-700">
                   Đáp án / Answer
                 </span>
-                <AudioButton src={answerAudioUrl(current.id)} label="Nghe đáp án" size="sm" />
+                <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
               </div>
               <div className="flex-1 flex flex-col items-center justify-center text-center">
                 <ul className="space-y-3 max-w-xl text-left">

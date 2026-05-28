@@ -165,10 +165,10 @@
 * Supreme Court
 
 **53. How many seats are on the Supreme Court?**
-* Nine (9)
+* 9
 
 **54. How many Supreme Court justices are usually needed to decide a case?**
-* Five (5)
+* 5
 
 **55. How long do Supreme Court justices serve?**
 * For life

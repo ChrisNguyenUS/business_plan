@@ -59,22 +59,27 @@ export async function startMockAttempt(): Promise<StartMockAttemptResult> {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('unauthorized')
 
-  // Pull the user's resolved state for location-based correct-answer lookup.
+  // Pull the user's resolved state + district for location-based correct-answer lookup.
   const { data: profile } = await supabase
     .from('n400_user_profile')
-    .select('state_code')
+    .select('state_code,district_number')
     .eq('user_id', user.id)
     .maybeSingle()
   const stateCode = ((profile?.state_code as StateCode | null) ?? 'TX') as StateCode
+  const districtNumber = (profile?.district_number as number | null) ?? null
 
   const seed = `${Date.now()}-${user.id}`
-  const questions = selectMockTestQuestions(seed)
+  // Skip Q29 (your U.S. Representative) when district is unresolved — without
+  // it the question has no buildable answer for this user.
+  const questions = selectMockTestQuestions(seed).filter(
+    (q) => q.id !== 29 || districtNumber !== null,
+  )
 
   // Build the slides server-side. The manifest stores ONLY the answer key.
   const slides: PublicSlide[] = []
   const manifest: { qid: number; correct: QuizOption['id'] }[] = []
   for (const q of questions) {
-    const options = buildOptions(q, stateCode, `mock-${seed}-${q.id}`)
+    const options = buildOptions(q, stateCode, `mock-${seed}-${q.id}`, districtNumber)
     const correct = options.find((o) => o.isCorrect)
     if (!correct) {
       // Should never happen — buildOptions always shuffles in the correct one.

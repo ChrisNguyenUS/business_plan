@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { locales, defaultLocale } from '@/lib/i18n/config';
 
-const SKIP_PREFIXES = ['/_next', '/api', '/images'];
+const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
@@ -121,5 +121,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|images|favicon.ico|robots.txt|sitemap.xml|llms.txt).*)'],
+  matcher: ['/((?!_next|api|images|n400-audio|favicon.ico|robots.txt|sitemap.xml|llms.txt).*)'],
 };

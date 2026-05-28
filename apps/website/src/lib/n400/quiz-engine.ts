@@ -1,5 +1,6 @@
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question } from './questions-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
+import { REPS_BY_STATE, repForDistrict } from './reps-data';
 
 // ── Audio paths (served from public/n400-audio/* via symlink to N400_voice) ──
 
@@ -33,9 +34,45 @@ export function capitalAudioUrl(stateCode: StateCode): string | null {
   return `/n400-audio/State/${encodeURIComponent(info.nameEn)}/Capital/capital-${stateCode}.mp3`;
 }
 
+export function representativeAudioUrl(
+  stateCode: StateCode,
+  districtNumber: number | null
+): string | null {
+  const rep = repForDistrict(stateCode, districtNumber);
+  return rep?.audioUrl ?? null;
+}
+
+/**
+ * Picks the right "answer audio" URL for any question.
+ * For location-based questions (23, 29, 61, 62) it routes to the
+ * senator / rep / governor / capital MP3s; for everything else it
+ * falls back to the static a*.mp3 set.
+ */
+export function answerAudioUrlFor(
+  question: N400Question,
+  stateCode: StateCode,
+  districtNumber: number | null
+): string | null {
+  if (question.id === 23) {
+    const info = STATES_BY_CODE[stateCode];
+    if (!info || info.senators.length === 0) return null;
+    return senatorAudioUrl(stateCode, info.senators[0]);
+  }
+  if (question.id === 29) {
+    return representativeAudioUrl(stateCode, districtNumber);
+  }
+  if (question.id === 61) return governorAudioUrl(stateCode);
+  if (question.id === 62) return capitalAudioUrl(stateCode);
+  return answerAudioUrl(question.id);
+}
+
 // ── Per-user correct answers for location-based questions ────────────────────
 
-export function correctAnswersFor(question: N400Question, stateCode: StateCode): { en: string; vi: string }[] {
+export function correctAnswersFor(
+  question: N400Question,
+  stateCode: StateCode,
+  districtNumber: number | null = null
+): { en: string; vi: string }[] {
   if (!question.isLocationBased) {
     return question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }));
   }
@@ -46,11 +83,13 @@ export function correctAnswersFor(question: N400Question, stateCode: StateCode):
   if (question.id === 23) {
     return info.senators.map((s) => ({ en: s, vi: s }));
   }
-  // Q29: representative — not resolvable without district lookup; skip in v1.
+  // Q29: representative — district-specific. If district is unknown, fall back
+  // to "any rep from the user's state" (USCIS accepts any current rep).
   if (question.id === 29) {
-    // For practice, we surface all reps for the state as correct (any one accepted).
-    // No per-user district yet; this is good-enough for self-study.
-    return [];
+    const rep = repForDistrict(stateCode, districtNumber);
+    if (rep) return [{ en: rep.name, vi: rep.name }];
+    const reps = REPS_BY_STATE.get(stateCode) ?? [];
+    return reps.map((r) => ({ en: r.name, vi: r.name }));
   }
   // Q61: governor
   if (question.id === 61) {
@@ -113,9 +152,10 @@ const OPTION_IDS: QuizOption['id'][] = ['A', 'B', 'C', 'D'];
 export function buildOptions(
   question: N400Question,
   stateCode: StateCode,
-  seed: string | number
+  seed: string | number,
+  districtNumber: number | null = null
 ): QuizOption[] {
-  const correctList = correctAnswersFor(question, stateCode);
+  const correctList = correctAnswersFor(question, stateCode, districtNumber);
   // Fall back to question.answersEn if location-based has no resolution (e.g. Q29 in v1).
   const fallback = correctList.length === 0
     ? question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }))

@@ -13,7 +13,7 @@ import {
   shuffle,
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
-import { questionAudioUrl, answerAudioUrl } from '@/lib/n400/quiz-engine';
+import { questionAudioUrl, answerAudioUrlFor } from '@/lib/n400/quiz-engine';
 
 const TOTAL = N400_QUESTIONS.length;
 
@@ -47,10 +47,16 @@ export default function PracticePage() {
   }
 
   const stateCode = state.settings.stateCode;
+  const districtNumber = state.address.districtNumber;
   const order = useMemo(() => {
-    const ids = N400_QUESTIONS.map((q) => q.id);
+    // Skip Q29 (your U.S. Representative) when the user hasn't resolved
+    // their congressional district yet — without it we can't build a correct
+    // answer or 4 options.
+    const ids = N400_QUESTIONS
+      .filter((q) => q.id !== 29 || districtNumber !== null)
+      .map((q) => q.id);
     return shuffle(ids, `practice-${seed}`);
-  }, [seed]);
+  }, [seed, districtNumber]);
 
   const question = useMemo(() => {
     const id = order[index];
@@ -58,12 +64,12 @@ export default function PracticePage() {
   }, [order, index]);
 
   const options = useMemo(
-    () => buildOptions(question, stateCode, `practice-${seed}-${index}`),
-    [question, stateCode, seed, index]
+    () => buildOptions(question, stateCode, `practice-${seed}-${index}`, districtNumber),
+    [question, stateCode, seed, index, districtNumber]
   );
 
   const correctOption = options.find((o) => o.isCorrect);
-  const allCorrect = correctAnswersFor(question, stateCode);
+  const allCorrect = correctAnswersFor(question, stateCode, districtNumber);
 
   const isBookmarked = state.bookmarks.includes(question.id);
 
@@ -213,7 +219,7 @@ export default function PracticePage() {
                     : 'Chưa đúng / Not quite'}
                 </div>
                 <AudioButton
-                  src={answerAudioUrl(question.id)}
+                  src={answerAudioUrlFor(question, stateCode, districtNumber)}
                   label="Nghe đáp án"
                   size="sm"
                   className="ml-auto"

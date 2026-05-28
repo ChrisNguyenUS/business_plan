@@ -113,7 +113,7 @@ export default function BookmarkPage() {
         <div className="space-y-4">
           {items.map((q) => {
             const tone = CATEGORY_TONE[q.category];
-            const correct = correctAnswersFor(q, state.settings.stateCode);
+            const correct = correctAnswersFor(q, state.settings.stateCode, state.address.districtNumber);
             const answers = correct.length > 0
               ? correct
               : q.answersEn.slice(0, 1).map((en, i) => ({ en, vi: q.answersVi[i] ?? en }));

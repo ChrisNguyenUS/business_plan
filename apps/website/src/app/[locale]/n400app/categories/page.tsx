@@ -13,7 +13,7 @@ import {
   N400_CATEGORY_LABELS,
   type N400CategoryKey,
 } from '@/lib/n400/questions-data';
-import { questionAudioUrl, correctAnswersFor } from '@/lib/n400/quiz-engine';
+import { questionAudioUrl, answerAudioUrlFor, correctAnswersFor } from '@/lib/n400/quiz-engine';
 
 const CATEGORY_NODES: { key: N400CategoryKey; top: string; left: string; color: string }[] = [
   { key: 'principles', top: '16%', left: '28%', color: '#2C9F9A' },
@@ -259,7 +259,7 @@ export default function CategoriesPage() {
 
           <div className="space-y-2">
             {filteredQuestions.map((q) => {
-              const correct = correctAnswersFor(q, state.settings.stateCode);
+              const correct = correctAnswersFor(q, state.settings.stateCode, state.address.districtNumber);
               const answers = correct.length > 0
                 ? correct
                 : q.answersEn.slice(0, 3).map((en, i) => ({ en, vi: q.answersVi[i] ?? en }));
