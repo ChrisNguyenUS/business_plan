@@ -6,7 +6,9 @@ import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Book
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
+import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Badges } from '@/lib/n400/use-badges';
 import {
   N400_QUESTIONS,
   N400_CATEGORY_LABELS,
@@ -40,6 +42,8 @@ export default function FlashcardsPage() {
   const [flipped, setFlipped] = useState(false);
   const [prevFilterSeed, setPrevFilterSeed] = useState(`${'all'}-`);
   const [milestone, setMilestone] = useState<number | null>(null);
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+  const badges = useN400Badges();
 
   // Reset card position whenever filter or seed changes (React-recommended pattern).
   const filterSeedKey = `${filter}-${seed}`;
@@ -115,8 +119,9 @@ export default function FlashcardsPage() {
     setFlipped(false);
   };
   const markKnown = (k: boolean) => {
-    void setFlashcardKnown(current.id, k).then((m) => {
-      if (m) setMilestone(m);
+    void setFlashcardKnown(current.id, k).then((result) => {
+      if (result.milestone) setMilestone(result.milestone);
+      if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
     });
     if (index < total - 1) {
       setIndex((i) => i + 1);
@@ -126,6 +131,14 @@ export default function FlashcardsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+      {unlockedBadges.length > 0 ? (
+        <BadgeUnlockToast
+          slugs={unlockedBadges}
+          catalog={Object.fromEntries(badges.catalog.map((b) => [b.slug, b]))}
+          trigger="session_complete"
+        />
+      ) : null}
+
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
       <div className="flex items-center gap-3 flex-wrap">

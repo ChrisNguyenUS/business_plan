@@ -6,7 +6,9 @@ import { useMemo, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
+import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Badges } from '@/lib/n400/use-badges';
 import { N400_QUESTIONS } from '@/lib/n400/questions-data';
 import {
   buildOptions,
@@ -40,6 +42,8 @@ export default function PracticePage() {
   const [revealed, setRevealed] = useState(false);
   const [prevIndex, setPrevIndex] = useState(0);
   const [milestone, setMilestone] = useState<number | null>(null);
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+  const badges = useN400Badges();
 
   // Reset selected/revealed when navigating between questions (React-recommended pattern).
   if (index !== prevIndex) {
@@ -47,6 +51,7 @@ export default function PracticePage() {
     setSelected(null);
     setRevealed(false);
     setMilestone(null);
+    setUnlockedBadges([]);
   }
 
   const stateCode = state.settings.stateCode;
@@ -82,8 +87,9 @@ export default function PracticePage() {
     setRevealed(true);
     const opt = options.find((o) => o.id === id);
     const wasCorrect = !!opt?.isCorrect;
-    void recordAnswer(question.id, wasCorrect, 'practice').then((m) => {
-      if (m) setMilestone(m);
+    void recordAnswer(question.id, wasCorrect, 'practice').then((result) => {
+      if (result.milestone) setMilestone(result.milestone);
+      if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
     });
   };
 
@@ -104,6 +110,14 @@ export default function PracticePage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {unlockedBadges.length > 0 ? (
+        <BadgeUnlockToast
+          slugs={unlockedBadges}
+          catalog={Object.fromEntries(badges.catalog.map((b) => [b.slug, b]))}
+          trigger="session_complete"
+        />
+      ) : null}
+
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
       <div className="flex items-center justify-between gap-4">

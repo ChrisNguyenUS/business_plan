@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
+import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, UserSettings, UserAddress, N400State } from './storage';
 
 export type { QuizMode, MockResult, UserSettings, UserAddress, N400State };
@@ -228,9 +229,14 @@ export function useN400UserState() {
   // Returns the milestone day count (3/7/14/30/60/100) when this answer pushes
   // the streak across one, otherwise null. Mock test goes through the
   // finalize_mock_attempt RPC instead and surfaces milestone via its result.
+  // Also returns the badge slugs newly unlocked by this answer (Phase 6B).
   const recordAnswer = useCallback(
-    async (questionId: number, wasCorrect: boolean, mode: QuizMode): Promise<number | null> => {
-      if (!user) return null;
+    async (
+      questionId: number,
+      wasCorrect: boolean,
+      mode: QuizMode,
+    ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
+      if (!user) return { milestone: null, unlockedBadges: [] };
       const today = TODAY_LOCAL();
       const newStreak = nextStreak(state.streak, today);
       const milestone = milestoneCrossed(state.streak.current, newStreak.current);
@@ -266,7 +272,7 @@ export function useN400UserState() {
         .single();
       if (qErr || !quiz) {
         console.error('n400: recordAnswer (quiz) failed', qErr);
-        return milestone;
+        return { milestone, unlockedBadges: [] };
       }
       await supabase.from('n400_question_attempts').insert({
         attempt_id: quiz.id,
@@ -283,13 +289,40 @@ export function useN400UserState() {
         },
         { onConflict: 'user_id' }
       );
-      return milestone;
+      // Badge evaluation. Running all 24 evaluators on every practice
+      // answer is too heavy, but we DO want streak badges to unlock the
+      // moment a milestone is crossed. Strategy:
+      //   - Always: streak_change trigger when milestone fires.
+      //   - Periodic: session_complete trigger every 5th interaction
+      //     in a mode (cheap heuristic for "session done"). Misses a
+      //     few unlocks until the user keeps practicing — acceptable
+      //     for v1; backfill script catches the rest.
+      const unlockedBadges: string[] = [];
+      try {
+        if (milestone !== null) {
+          const streakUnlocks = await evaluateAfterStreak(newStreak.current);
+          unlockedBadges.push(...streakUnlocks);
+        }
+        const totalThisMode = state.attempts.filter((a) => a.mode === mode).length + 1;
+        if (totalThisMode % 5 === 0) {
+          const sessionUnlocks = await evaluateAfterAttempt(mode, quiz.id as string);
+          for (const slug of sessionUnlocks) {
+            if (!unlockedBadges.includes(slug)) unlockedBadges.push(slug);
+          }
+        }
+      } catch (e) {
+        console.error('n400/badges: evaluator wiring failed', e);
+      }
+      return { milestone, unlockedBadges };
     },
-    [user, state.streak]
+    [user, state.streak, state.attempts]
   );
 
   const setFlashcardKnown = useCallback(
-    async (questionId: number, known: boolean): Promise<number | null> => {
+    async (
+      questionId: number,
+      known: boolean,
+    ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
       // Reuse recordAnswer so mastery state, streak, and DB stay consistent.
       return recordAnswer(questionId, known, 'flashcard');
     },
