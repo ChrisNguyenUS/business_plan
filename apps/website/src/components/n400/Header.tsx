@@ -50,6 +50,11 @@ export function Header() {
   const showBookmark = section === 'practice';
   const { state, hydrated } = useN400UserState();
   const streak = hydrated ? state.streak.current : 0;
+  const today = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
+  const activeToday = hydrated && state.streak.lastActivityDate === today && streak > 0;
 
   return (
     <header className="h-20 bg-slate-50/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 sticky top-0 z-10">
@@ -85,13 +90,35 @@ export function Header() {
           </button>
         )}
 
-        <div className="flex items-center gap-2 bg-white border border-gray-100 shadow-sm px-4 py-2 rounded-xl">
-          <Flame className="text-orange-500" size={20} />
+        <div
+          className={`flex items-center gap-2 border shadow-sm px-4 py-2 rounded-xl transition-colors ${
+            activeToday
+              ? 'bg-orange-50 border-orange-100'
+              : 'bg-white border-gray-100'
+          }`}
+          title={
+            activeToday
+              ? 'Bạn đã học hôm nay — chuỗi đang giữ vững.'
+              : streak > 0
+                ? 'Bạn chưa học hôm nay — học một câu để giữ chuỗi.'
+                : 'Học hôm nay để bắt đầu chuỗi mới.'
+          }
+        >
+          <Flame
+            className={activeToday ? 'text-orange-500' : 'text-gray-300'}
+            size={20}
+          />
           <div className="flex flex-col">
             <span className="text-[10px] text-gray-400 font-medium leading-none">
               Chuỗi học tập
             </span>
-            <span className="text-sm font-bold text-gray-800 leading-tight">{streak} ngày</span>
+            <span
+              className={`text-sm font-bold leading-tight ${
+                activeToday ? 'text-orange-700' : 'text-gray-800'
+              }`}
+            >
+              {streak} ngày
+            </span>
           </div>
         </div>
 
