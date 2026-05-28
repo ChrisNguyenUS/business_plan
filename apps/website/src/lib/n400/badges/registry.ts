@@ -14,6 +14,7 @@ import { streakEvaluators } from './evaluators/streak';
 import { mockTestEvaluators } from './evaluators/mock-test';
 import { coverageEvaluators } from './evaluators/coverage';
 import { volumeEvaluators } from './evaluators/volume';
+import { categoryEvaluators } from './evaluators/category';
 
 export const BADGE_EVALUATORS: Record<string, BadgeEvaluator> = {
   ...streakEvaluators,    // streak-3, streak-7, streak-14, streak-30, streak-60, streak-100
@@ -21,5 +22,6 @@ export const BADGE_EVALUATORS: Record<string, BadgeEvaluator> = {
                           // mock-high-score, mock-perfect, mock-comeback
   ...coverageEvaluators,  // correct-answers-100, flashcards-mastery, all-128-answered, sessions-100
   ...volumeEvaluators,    // practice-sessions-10, practice-sessions-30, sessions-50
-  // category group (Task 7)
+  ...categoryEvaluators,  // category-democracy, category-government, category-rights,
+                          // category-history, category-symbols
 };
