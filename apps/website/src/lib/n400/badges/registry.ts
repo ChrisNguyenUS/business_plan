@@ -10,13 +10,10 @@
 // fails loud at build time instead of silently dropping unlocks.
 
 import type { BadgeEvaluator } from './types';
-
-// Group modules will fill these out in subsequent commits. Keeping the
-// imports here so the dispatcher type-checks immediately and growth
-// is purely additive.
+import { streakEvaluators } from './evaluators/streak';
 
 export const BADGE_EVALUATORS: Record<string, BadgeEvaluator> = {
-  // streak group (Task 3)
+  ...streakEvaluators, // streak-3, streak-7, streak-14, streak-30, streak-60, streak-100
   // mock-test group (Task 4)
   // coverage group (Task 5)
   // volume group (Task 6)
