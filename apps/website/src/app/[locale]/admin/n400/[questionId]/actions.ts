@@ -53,7 +53,7 @@ async function getAdminSupabase(): Promise<SupabaseClient> {
 export async function updateQuestion(
   questionId: number,
   formData: FormData,
-): Promise<{ success?: true; error?: string }> {
+): Promise<void> {
   const supabase = await getAdminSupabase();
   const { error } = await supabase
     .from('n400_questions')
@@ -64,15 +64,14 @@ export async function updateQuestion(
       updated_at: new Date().toISOString(),
     })
     .eq('id', questionId);
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
   updateTag('n400-content');
-  return { success: true };
 }
 
 export async function updateAnswer(
   answerId: string,
   formData: FormData,
-): Promise<{ success?: true; error?: string }> {
+): Promise<void> {
   const supabase = await getAdminSupabase();
   const { error } = await supabase
     .from('n400_answers')
@@ -82,15 +81,14 @@ export async function updateAnswer(
       is_correct: formData.get('is_correct') === 'true',
     })
     .eq('id', answerId);
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
   updateTag('n400-content');
-  return { success: true };
 }
 
 export async function addAnswer(
   questionId: number,
   formData: FormData,
-): Promise<{ success?: true; error?: string }> {
+): Promise<void> {
   const supabase = await getAdminSupabase();
   const { error } = await supabase.from('n400_answers').insert({
     question_id: questionId,
@@ -99,14 +97,11 @@ export async function addAnswer(
     is_correct: formData.get('is_correct') === 'true',
     display_order: 999,
   });
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
   updateTag('n400-content');
-  return { success: true };
 }
 
-export async function deleteAnswer(
-  answerId: string,
-): Promise<{ success?: true; error?: string }> {
+export async function deleteAnswer(answerId: string): Promise<void> {
   const supabase = await getAdminSupabase();
   // Soft delete: n400_answers has deleted_at column, but the `n400 answers
   // public read` policy filters on `deleted_at IS NULL`. Setting it makes
@@ -115,9 +110,8 @@ export async function deleteAnswer(
     .from('n400_answers')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', answerId);
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
   updateTag('n400-content');
-  return { success: true };
 }
 
 // ── Audio upload ──────────────────────────────────────────────────────────
