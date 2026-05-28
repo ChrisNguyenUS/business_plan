@@ -12,12 +12,13 @@
 import type { BadgeEvaluator } from './types';
 import { streakEvaluators } from './evaluators/streak';
 import { mockTestEvaluators } from './evaluators/mock-test';
+import { coverageEvaluators } from './evaluators/coverage';
 
 export const BADGE_EVALUATORS: Record<string, BadgeEvaluator> = {
   ...streakEvaluators,    // streak-3, streak-7, streak-14, streak-30, streak-60, streak-100
   ...mockTestEvaluators,  // onboarding-first-session, mock-pass-first, mock-pass-five,
                           // mock-high-score, mock-perfect, mock-comeback
-  // coverage group (Task 5)
+  ...coverageEvaluators,  // correct-answers-100, flashcards-mastery, all-128-answered, sessions-100
   // volume group (Task 6)
   // category group (Task 7)
 };
