@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Bookmark } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_QUESTIONS,
@@ -38,6 +39,7 @@ export default function FlashcardsPage() {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [prevFilterSeed, setPrevFilterSeed] = useState(`${'all'}-`);
+  const [milestone, setMilestone] = useState<number | null>(null);
 
   // Reset card position whenever filter or seed changes (React-recommended pattern).
   const filterSeedKey = `${filter}-${seed}`;
@@ -113,7 +115,9 @@ export default function FlashcardsPage() {
     setFlipped(false);
   };
   const markKnown = (k: boolean) => {
-    setFlashcardKnown(current.id, k);
+    void setFlashcardKnown(current.id, k).then((m) => {
+      if (m) setMilestone(m);
+    });
     if (index < total - 1) {
       setIndex((i) => i + 1);
       setFlipped(false);
@@ -122,6 +126,8 @@ export default function FlashcardsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+      {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
+
       <div className="flex items-center gap-3 flex-wrap">
         <Filter size={16} className="text-gray-400" />
         <span className="text-xs text-gray-500 font-medium">Bộ lọc:</span>

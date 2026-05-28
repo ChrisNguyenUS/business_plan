@@ -5,6 +5,7 @@ import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, R
 import { useMemo, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS } from '@/lib/n400/questions-data';
 import {
@@ -38,12 +39,14 @@ export default function PracticePage() {
   const [selected, setSelected] = useState<QuizOption['id'] | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [prevIndex, setPrevIndex] = useState(0);
+  const [milestone, setMilestone] = useState<number | null>(null);
 
   // Reset selected/revealed when navigating between questions (React-recommended pattern).
   if (index !== prevIndex) {
     setPrevIndex(index);
     setSelected(null);
     setRevealed(false);
+    setMilestone(null);
   }
 
   const stateCode = state.settings.stateCode;
@@ -79,7 +82,9 @@ export default function PracticePage() {
     setRevealed(true);
     const opt = options.find((o) => o.id === id);
     const wasCorrect = !!opt?.isCorrect;
-    recordAnswer(question.id, wasCorrect, 'practice');
+    void recordAnswer(question.id, wasCorrect, 'practice').then((m) => {
+      if (m) setMilestone(m);
+    });
   };
 
   const onNext = () => {
@@ -99,6 +104,8 @@ export default function PracticePage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <div className="text-sm font-medium text-gray-700 mb-3">
