@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { BadgeIcon } from './BadgeIcon';
+import { trackBadgeUnlocked } from '@/lib/analytics/events';
 
 interface BadgeMeta {
   slug: string;
@@ -43,22 +44,10 @@ export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastPr
   // INSERT per (user, slug), so the toast can only fire once per unlock.
   useEffect(() => {
     if (visibleSlugs.length === 0) return;
-    const w = window as Window & {
-      gtag?: (...args: unknown[]) => void;
-      dataLayer?: unknown[];
-    };
     for (const slug of visibleSlugs) {
-      const meta = catalog[slug];
-      if (!meta) continue;
-      const groupCode = slug.split('-')[0];
-      try {
-        w.gtag?.('event', 'n400_badge_unlocked', { slug, group_code: groupCode, trigger });
-        w.dataLayer?.push({ event: 'n400_badge_unlocked', slug, group_code: groupCode, trigger });
-      } catch {
-        // Analytics failures must never break the user-visible toast.
-      }
+      trackBadgeUnlocked(slug, trigger);
     }
-  }, [visibleSlugs, catalog, trigger]);
+  }, [visibleSlugs, trigger]);
 
   // Auto-dismiss the entire stack after AUTO_DISMISS_MS. Per-card
   // dismissal also works via the close button.

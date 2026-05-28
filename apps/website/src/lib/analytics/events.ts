@@ -55,3 +55,24 @@ export function trackFbq(
     window.fbq("track", eventName, params);
   }
 }
+
+// N400 Phase 6B — fired once per badge slug, when the BadgeUnlockToast
+// mounts in response to a server-side unlock. n400_user_badges PK
+// guarantees one INSERT per (user, slug), so duplicate fires per user
+// per slug aren't possible across sessions. Funnel param `trigger`
+// distinguishes streak_change unlocks from session-end unlocks.
+export function trackBadgeUnlocked(
+  slug: string,
+  trigger: "session_complete" | "streak_change" | "manual_recompute",
+): void {
+  if (typeof window === "undefined") return;
+  const groupCode = slug.split("-")[0];
+  const params = { slug, group_code: groupCode, trigger };
+  try {
+    trackGa("n400_badge_unlocked", params);
+    const w = window as Window & { dataLayer?: unknown[] };
+    w.dataLayer?.push({ event: "n400_badge_unlocked", ...params });
+  } catch {
+    // Analytics failures must never break the user-visible toast.
+  }
+}
