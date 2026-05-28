@@ -19,7 +19,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
+import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Badges } from '@/lib/n400/use-badges';
 import {
   questionAudioUrl,
   isPass,
@@ -416,9 +418,15 @@ function Result({
 }) {
   const passed = isPass(result.score);
   const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
+  const badges = useN400Badges();
+  const catalogMap = Object.fromEntries(badges.catalog.map((b) => [b.slug, b]));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {result.unlockedBadges.length > 0 ? (
+        <BadgeUnlockToast slugs={result.unlockedBadges} catalog={catalogMap} trigger="session_complete" />
+      ) : null}
+
       {result.milestone !== null ? <MilestoneBanner days={result.milestone} /> : null}
 
       <Card className={`p-8 text-center ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>

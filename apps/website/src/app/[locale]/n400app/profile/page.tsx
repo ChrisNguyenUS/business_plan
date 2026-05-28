@@ -21,7 +21,9 @@ import {
   Building2,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { BadgeGallery } from '@/components/n400/BadgeGallery';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Badges } from '@/lib/n400/use-badges';
 import { STATES } from '@/lib/n400/state-data';
 import { N400_CATEGORY_LABELS, N400_QUESTIONS, type N400CategoryKey } from '@/lib/n400/questions-data';
 
@@ -35,6 +37,7 @@ const SKILL_TONES: Record<N400CategoryKey, string> = {
 
 export default function ProfilePage() {
   const { state, hydrated, stats, updateSettings, resetAll } = useN400UserState();
+  const badges = useN400Badges();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [confirmReset, setConfirmReset] = useState(false);
@@ -282,6 +285,10 @@ export default function ProfilePage() {
           ))}
         </div>
       </Card>
+
+      {badges.hydrated ? (
+        <BadgeGallery catalog={badges.catalog} earned={badges.earned} />
+      ) : null}
 
       <Card className="p-6">
         <div className="flex justify-between items-start mb-4 gap-4 flex-wrap">

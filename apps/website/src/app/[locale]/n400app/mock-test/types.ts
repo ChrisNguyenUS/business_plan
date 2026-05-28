@@ -36,4 +36,8 @@ export interface FinalizeMockAttemptResult {
   currentStreak: number
   longestStreak: number
   milestone: number | null
+  // Slugs newly inserted by the badge dispatcher (Phase 6B). Empty
+  // array when the user earned no new badges this attempt. Drives the
+  // BadgeUnlockToast on the result screen.
+  unlockedBadges: string[]
 }

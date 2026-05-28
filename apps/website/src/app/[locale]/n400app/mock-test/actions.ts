@@ -30,6 +30,7 @@ import {
   type QuizOption,
 } from '@/lib/n400/quiz-engine'
 import type { StateCode } from '@/lib/n400/state-data'
+import { evaluateAfterAttempt, evaluateAfterStreak } from '@/lib/n400/badges/actions'
 import type {
   PublicSlide,
   StartMockAttemptResult,
@@ -164,6 +165,23 @@ export async function finalizeMockAttempt(
     currentStreak: Number(r?.current_streak ?? 0),
     longestStreak: Number(r?.longest_streak ?? 0),
     milestone: r?.milestone ?? null,
+    unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0)),
   }
+}
+
+// Run the badge dispatcher for both triggers fired by a finished mock
+// attempt: session_complete (mode=mock_test) plus streak_change when
+// the RPC reported a milestone crossing. Errors are swallowed inside
+// the action wrappers, so this can never block finalize.
+async function evaluateMockUnlocks(
+  attemptId: string,
+  milestone: number | null,
+  currentStreak: number,
+): Promise<string[]> {
+  const sessionUnlocks = await evaluateAfterAttempt('mock_test', attemptId)
+  if (milestone === null) return sessionUnlocks
+  const streakUnlocks = await evaluateAfterStreak(currentStreak)
+  // Dedupe across triggers — streak-N can show up in either path.
+  return [...new Set([...sessionUnlocks, ...streakUnlocks])]
 }
 
