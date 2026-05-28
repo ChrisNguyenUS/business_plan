@@ -93,7 +93,7 @@
 * Đại diện bình đẳng
 
 **29. Kể tên Dân biểu của bạn.**
-* *(Câu trả lời sẽ khác nhau tùy thuộc vào mã zip chính xác của bạn ở Houston, ví dụ: Lizzie Fletcher, Al Green, Sylvia Garcia, Dan Crenshaw, v.v.)*
+* Dân biểu của bạn
 
 **30. Tên của Chủ tịch Hạ viện hiện nay là gì?**
 * Mike Johnson

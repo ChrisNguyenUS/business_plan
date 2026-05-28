@@ -279,8 +279,8 @@ export const N400_QUESTIONS: N400Question[] = [
     category: "system",
     questionEn: "Name your U.S. Representative.",
     questionVi: "Kể tên Dân biểu của bạn.",
-    answersEn: ["*(Answers will vary depending on your exact zip code in Houston, e.g., Lizzie Fletcher, Al Green, Sylvia Garcia, Dan Crenshaw, etc.)*"],
-    answersVi: ["*(Câu trả lời sẽ khác nhau tùy thuộc vào mã zip chính xác của bạn ở Houston, ví dụ: Lizzie Fletcher, Al Green, Sylvia Garcia, Dan Crenshaw, v.v.)*"],
+    answersEn: ["Your U.S. Representative"],
+    answersVi: ["Dân biểu của bạn"],
     isLocationBased: true,
   },
   {

@@ -170,6 +170,10 @@ export function buildOptions(
   for (const q of N400_QUESTIONS) {
     if (q.id === question.id) continue;
     if (q.category !== question.category) continue;
+    // Skip location-based Q's: their static answersEn are user-specific
+    // (e.g., Q23 senators, Q61 governor) or placeholder text (Q29), neither
+    // of which makes sense as a distractor for unrelated questions.
+    if (q.isLocationBased) continue;
     for (let i = 0; i < q.answersEn.length; i++) {
       const en = q.answersEn[i];
       const vi = q.answersVi[i] ?? en;
@@ -190,6 +194,7 @@ export function buildOptions(
     // Widen pool to other categories if the same-category pool is too small.
     for (const q of N400_QUESTIONS) {
       if (q.id === question.id) continue;
+      if (q.isLocationBased) continue;
       for (let i = 0; i < q.answersEn.length; i++) {
         const en = q.answersEn[i];
         const vi = q.answersVi[i] ?? en;

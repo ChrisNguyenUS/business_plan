@@ -93,7 +93,7 @@
 * Equal representation
 
 **29. Name your U.S. Representative.**
-* *(Answers will vary depending on your exact zip code in Houston, e.g., Lizzie Fletcher, Al Green, Sylvia Garcia, Dan Crenshaw, etc.)*
+* Your U.S. Representative
 
 **30. What is the name of the Speaker of the House of Representatives now?**
 * Mike Johnson
