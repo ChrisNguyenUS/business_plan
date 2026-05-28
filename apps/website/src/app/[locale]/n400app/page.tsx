@@ -15,12 +15,15 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { BadgeIcon } from '@/components/n400/BadgeIcon';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Badges } from '@/lib/n400/use-badges';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import { MOCK_TEST_PASS_THRESHOLD, MOCK_TEST_QUESTION_COUNT } from '@/lib/n400/quiz-engine';
 
 export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
+  const badges = useN400Badges();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
 
@@ -104,14 +107,33 @@ export default function DashboardPage() {
                 <div className="mt-3 text-3xl font-semibold text-slate-900">
                   {state.streak.current} ngày
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
-                  {state.streak.current === 0
-                    ? 'Hãy bắt đầu hôm nay! 🚀'
-                    : 'Cố lên! 🔥'}
-                </p>
                 <p className="mt-1 text-xs text-slate-400">
                   Cao nhất: {state.streak.longest} ngày
                 </p>
+                {badges.hydrated ? (
+                  <Link
+                    href={`/${locale}/n400app/profile#badges`}
+                    className="mt-3 flex items-center gap-2 text-xs text-slate-500 hover:text-teal-700 transition-colors"
+                  >
+                    <span className="font-semibold text-slate-700">
+                      {badges.earned.length}
+                      <span className="font-normal text-slate-400"> / {badges.catalog.length}</span>
+                    </span>
+                    <span>huy hiệu</span>
+                    <div className="flex -space-x-1.5 ml-1">
+                      {badges.earned.slice(0, 3).map((b) => (
+                        <BadgeIcon
+                          key={b.slug}
+                          slug={b.slug}
+                          alt=""
+                          size={20}
+                          earned
+                          className="ring-2 ring-white rounded-full"
+                        />
+                      ))}
+                    </div>
+                  </Link>
+                ) : null}
               </div>
               <div className="pointer-events-none absolute -bottom-2 right-0 z-0 h-[170px] w-[120px] opacity-80">
                 <Image
