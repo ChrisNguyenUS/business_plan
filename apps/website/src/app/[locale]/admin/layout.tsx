@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Inbox, Users, Briefcase, FileText, Settings, Menu, X, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Inbox, Users, Briefcase, FileText, Settings, Menu, X, ShieldAlert, GraduationCap } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 const ADMIN_NAV = [
@@ -13,6 +13,7 @@ const ADMIN_NAV = [
   { key: "cases", label: "Cases", icon: Briefcase },
   { key: "blog", label: "Blog Posts", icon: FileText },
   { key: "content", label: "Content Editor", icon: Settings },
+  { key: "n400", label: "N400 App", icon: GraduationCap },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
