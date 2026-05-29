@@ -25,6 +25,14 @@ type CapiLeadInput = {
   customData?: Record<string, unknown>;
 };
 
+type CapiEventInput = {
+  eventName: string;
+  eventId: string;
+  eventSourceUrl: string;
+  user: CapiUserData;
+  customData?: Record<string, unknown>;
+};
+
 async function buildHashedUserData(user: CapiUserData) {
   const data: Record<string, unknown> = {};
   if (user.emails?.length) {
@@ -46,7 +54,12 @@ async function buildHashedUserData(user: CapiUserData) {
   return data;
 }
 
-export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
+// Generalized CAPI event sender. Used by both the contact-form Lead
+// path (via sendCapiLead) and the N400 conversion events
+// (n400_mock_test_pass, n400_setup_complete). The caller supplies the
+// event name; everything else (env-gated pixel/token, hashed PII, test
+// event code) is shared.
+export async function sendCapiEvent(input: CapiEventInput): Promise<void> {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const accessToken = process.env.META_CAPI_ACCESS_TOKEN;
   if (!pixelId || !accessToken) return;
@@ -55,7 +68,7 @@ export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
   const payload = {
     data: [
       {
-        event_name: "Lead",
+        event_name: input.eventName,
         event_time: Math.floor(Date.now() / 1000),
         event_id: input.eventId,
         event_source_url: input.eventSourceUrl,
@@ -79,9 +92,20 @@ export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
     });
     if (!res.ok) {
       const body = await res.text();
-      console.error("Meta CAPI non-OK:", res.status, body);
+      console.error(`Meta CAPI non-OK (${input.eventName}):`, res.status, body);
     }
   } catch (err) {
-    console.error("Meta CAPI fetch failed:", err);
+    console.error(`Meta CAPI fetch failed (${input.eventName}):`, err);
   }
+}
+
+// Thin wrapper preserving the existing contact-form call signature.
+export async function sendCapiLead(input: CapiLeadInput): Promise<void> {
+  return sendCapiEvent({
+    eventName: "Lead",
+    eventId: input.eventId,
+    eventSourceUrl: input.eventSourceUrl,
+    user: input.user,
+    customData: input.customData,
+  });
 }
