@@ -1,7 +1,7 @@
 # 🗺️ Project Roadmap: Business Plan App
 
 ## Trạng thái hiện tại
-- **Current Phase:** Website Phase 3B — N400 Civics Test App (Phase 1 DB+seed ✅, Phase 2 audio ✅, Phase 3 auth+setup ✅, Phase 4 mock-test server-side scoring ✅, Phase 6 streak ✅, Phase 6B 24-badge gamification ✅, Phase 7 admin panel ✅; awaiting OAuth + Upstash credentials operator-side)
+- **Current Phase:** Website Phase 3B — N400 Civics Test App (Phase 1 DB+seed ✅, Phase 2 audio ✅, Phase 3 auth+setup ✅, Phase 4 mock-test server-side scoring ✅, Phase 6 streak ✅, Phase 6B 24-badge gamification ✅, Phase 7 admin panel ✅, Phase 8 analytics + SW + Sentry ✅; awaiting OAuth + Upstash + Sentry DSN credentials operator-side)
 - **Last updated:** 2026-05-28
 
 > **Track scope:**
