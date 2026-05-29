@@ -130,13 +130,25 @@ export async function finalizeMockAttempt(
       p_question_id: pick.questionId,
       p_selected_option: pick.selectedOption,
     })
-    if (error) throw new Error(`submit_mock_answer failed (q${pick.questionId}): ${error.message}`)
+    if (error) {
+      try {
+        const Sentry = await import('@sentry/nextjs')
+        Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'submit_answer' } })
+      } catch {}
+      throw new Error(`submit_mock_answer failed (q${pick.questionId}): ${error.message}`)
+    }
   }
 
   const { data, error } = await supabase.rpc('finalize_mock_attempt', {
     p_attempt_id: attemptId,
   })
-  if (error) throw new Error(`finalize_mock_attempt failed: ${error.message}`)
+  if (error) {
+    try {
+      const Sentry = await import('@sentry/nextjs')
+      Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'finalize_rpc' } })
+    } catch {}
+    throw new Error(`finalize_mock_attempt failed: ${error.message}`)
+  }
   const r = data as {
     score?: number
     total?: number

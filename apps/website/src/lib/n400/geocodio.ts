@@ -65,12 +65,30 @@ export async function geocodeAddress(params: {
   url.searchParams.set('q', query)
   url.searchParams.set('fields', 'cd')
 
-  const res = await fetch(url.toString(), {
-    cache: 'no-store',
-    headers: { Authorization: `Bearer ${params.apiKey}` },
-  })
-  if (!res.ok) throw new GeocodioError(res.status)
-
-  const data = await res.json()
-  return parseGeocodioResponse(data)
+  try {
+    const res = await fetch(url.toString(), {
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${params.apiKey}` },
+    })
+    if (!res.ok) throw new GeocodioError(res.status)
+    const data = await res.json()
+    return parseGeocodioResponse(data)
+  } catch (err) {
+    // Re-package any unexpected error as GeocodioError so the address
+    // never leaks into a stack trace, then report. Tag-only context —
+    // explicit empty `extra` so a future code path can't accidentally
+    // attach the input address as breadcrumb metadata.
+    const safe = err instanceof GeocodioError ? err : new GeocodioError(0)
+    try {
+      const Sentry = await import('@sentry/nextjs')
+      Sentry.captureException(safe, {
+        tags: { feature: 'n400-geocodio' },
+        extra: {},
+      })
+    } catch {
+      // Sentry import failure must not block the user-facing setup
+      // form. Silent.
+    }
+    throw safe
+  }
 }
