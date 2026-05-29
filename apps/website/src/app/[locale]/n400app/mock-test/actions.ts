@@ -21,7 +21,8 @@
 // a separate module.
 
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { createHash } from 'node:crypto'
 
 import {
   buildOptions,
@@ -31,6 +32,7 @@ import {
 } from '@/lib/n400/quiz-engine'
 import type { StateCode } from '@/lib/n400/state-data'
 import { evaluateAfterAttempt, evaluateAfterStreak } from '@/lib/n400/badges/actions'
+import { sendCapiEvent } from '@/lib/analytics/meta-capi'
 import type {
   PublicSlide,
   StartMockAttemptResult,
@@ -165,7 +167,7 @@ export async function finalizeMockAttempt(
     currentStreak: Number(r?.current_streak ?? 0),
     longestStreak: Number(r?.longest_streak ?? 0),
     milestone: r?.milestone ?? null,
-    unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0)),
+    unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0), Boolean(r?.passed), Number(r?.score ?? 0), Number(r?.total ?? MOCK_TEST_QUESTION_COUNT)),
   }
 }
 
@@ -173,15 +175,47 @@ export async function finalizeMockAttempt(
 // attempt: session_complete (mode=mock_test) plus streak_change when
 // the RPC reported a milestone crossing. Errors are swallowed inside
 // the action wrappers, so this can never block finalize.
+//
+// Also fires the n400_mock_test_pass Meta CAPI event on first pass.
+// Deterministic event_id = sha256("n400-pass:" + attemptId) so a
+// retried finalize (e.g. network blip on the client retry) hashes to
+// the same id and Meta dedupes. Non-blocking: CAPI errors don't
+// surface here.
 async function evaluateMockUnlocks(
   attemptId: string,
   milestone: number | null,
   currentStreak: number,
+  passed: boolean,
+  score: number,
+  total: number,
 ): Promise<string[]> {
   const sessionUnlocks = await evaluateAfterAttempt('mock_test', attemptId)
-  if (milestone === null) return sessionUnlocks
-  const streakUnlocks = await evaluateAfterStreak(currentStreak)
-  // Dedupe across triggers — streak-N can show up in either path.
+  const streakUnlocks = milestone === null ? [] : await evaluateAfterStreak(currentStreak)
+
+  if (passed) {
+    try {
+      const supabase = await getSupabase()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const headerStore = await headers()
+        const eventId = createHash('sha256').update(`n400-pass:${attemptId}`).digest('hex').slice(0, 32)
+        await sendCapiEvent({
+          eventName: 'n400_mock_test_pass',
+          eventId,
+          eventSourceUrl: headerStore.get('referer') ?? 'https://mannaos.com/n400app/mock-test',
+          user: {
+            emails: user.email ? [user.email] : undefined,
+            clientIp: headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+            clientUserAgent: headerStore.get('user-agent') ?? null,
+          },
+          customData: { score, total_questions: total },
+        })
+      }
+    } catch {
+      // CAPI errors already log inside sendCapiEvent.
+    }
+  }
+
   return [...new Set([...sessionUnlocks, ...streakUnlocks])]
 }
 

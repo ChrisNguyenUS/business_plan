@@ -19,9 +19,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createHash } from 'node:crypto'
 
 import { geocodeAddress, GeocodioError } from '@/lib/n400/geocodio'
 import { geocodioIpLimiter, geocodioUserLimiter } from '@/lib/n400/rate-limit'
+import { sendCapiEvent } from '@/lib/analytics/meta-capi'
 
 export type SetupFormState =
   | { ok: false; error: string }
@@ -135,6 +137,33 @@ export async function saveSetupProfile(
       ok: false,
       error: 'Lỗi lưu dữ liệu. Vui lòng thử lại. / Error saving data. Please try again.',
     }
+  }
+
+  // Server-side Meta CAPI conversion. Deterministic event_id =
+  // sha256(user.id + resolved_state + district) so a retried setup
+  // (e.g. user re-runs the form to fix an ambiguous match) doesn't
+  // double-count in Meta — same inputs hash to the same id.
+  // Non-blocking: a CAPI failure must never block the redirect.
+  try {
+    const idInput = `n400-setup:${user.id}:${stateFromGeo ?? state}:${districtNumber ?? 'na'}`
+    const eventId = createHash('sha256').update(idInput).digest('hex').slice(0, 32)
+    await sendCapiEvent({
+      eventName: 'n400_setup_complete',
+      eventId,
+      eventSourceUrl: 'https://mannaos.com/n400app/setup',
+      user: {
+        emails: user.email ? [user.email] : undefined,
+        clientIp: ip === 'unknown' ? null : ip,
+        clientUserAgent: headerStore.get('user-agent') ?? null,
+      },
+      customData: {
+        state_code: stateFromGeo ?? state,
+        district_resolved: districtNumber !== null,
+      },
+    })
+  } catch {
+    // CAPI errors already log inside sendCapiEvent; swallowing here
+    // keeps the redirect on the happy path.
   }
 
   // Edit flow comes from /n400app/profile and expects to land back there.
