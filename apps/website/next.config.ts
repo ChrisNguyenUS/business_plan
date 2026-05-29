@@ -46,6 +46,17 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      {
+        // Service Worker is fetched on every page load that registers
+        // it. A long cache here would silently lock learners on a
+        // stale SW after a deploy — must-revalidate forces the
+        // browser to ask each time.
+        source: "/sw-n400.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
     ];
   },
 };
