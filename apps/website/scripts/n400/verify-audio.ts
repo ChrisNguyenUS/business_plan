@@ -73,6 +73,14 @@ function checkAnswers() {
   console.log(`  ${present} answer files present`);
 }
 
+// Filename slug rule — must match audioFileSlug() in quiz-engine.ts.
+// Any non-[a-zA-Z0-9-] character → single `_`. So `J.B. Pritzker` →
+// `J_B__Pritzker`, `Ben Ray Luján` → `Ben_Ray_Luj_n`. If you change
+// this rule, change it in both places.
+function fileSlug(name: string): string {
+  return name.replace(/[^a-zA-Z0-9-]/g, '_');
+}
+
 // ── Senator audio (Q23) ── State/<nameEn>/Senator voice/<First_Last>.mp3
 function checkSenators() {
   let total = 0;
@@ -80,7 +88,7 @@ function checkSenators() {
   for (const s of STATES) {
     for (const senator of s.senators) {
       total++;
-      const file = `${senator.replace(/\s+/g, '_')}.mp3`;
+      const file = `${fileSlug(senator)}.mp3`;
       const rel = `/n400-audio/State/${encodeURIComponent(s.nameEn)}/Senator voice/${encodeURIComponent(file)}`;
       if (checkFile(rel)) ok++;
     }
@@ -94,7 +102,7 @@ function checkGovernors() {
   let ok = 0;
   for (const s of STATES) {
     total++;
-    const file = `${s.governor.replace(/\s+/g, '_')}.mp3`;
+    const file = `${fileSlug(s.governor)}.mp3`;
     const rel = `/n400-audio/State/${encodeURIComponent(s.nameEn)}/Governor/${encodeURIComponent(file)}`;
     if (checkFile(rel)) ok++;
   }
