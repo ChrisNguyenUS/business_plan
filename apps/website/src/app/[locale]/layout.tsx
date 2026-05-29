@@ -5,6 +5,8 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { isValidLocale } from "@/lib/i18n/config";
 import { notFound } from "next/navigation";
 import "../globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import MetaPixel from "@/components/analytics/MetaPixel";
 import Navbar from "@/components/layout/Navbar";
@@ -98,6 +100,12 @@ export default async function LocaleLayout({
             {children}
           </ConditionalChrome>
         </AuthProvider>
+        {/* Vercel Analytics — auto-detects production deploys; no-op on
+            preview/dev unless VERCEL_ANALYTICS_DEBUG is set. */}
+        <Analytics />
+        {/* Speed Insights captures real-user CWV (LCP, CLS, INP) for
+            CWV-alert dashboards. Same env gating as Analytics. */}
+        <SpeedInsights />
       </body>
     </html>
   );
