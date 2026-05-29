@@ -9,6 +9,7 @@ import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
+import { trackStreakMilestone } from '@/lib/n400/analytics';
 import {
   N400_QUESTIONS,
   N400_CATEGORY_LABELS,
@@ -120,7 +121,10 @@ export default function FlashcardsPage() {
   };
   const markKnown = (k: boolean) => {
     void setFlashcardKnown(current.id, k).then((result) => {
-      if (result.milestone) setMilestone(result.milestone);
+      if (result.milestone) {
+        setMilestone(result.milestone);
+        trackStreakMilestone(result.milestone);
+      }
       if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
     });
     if (index < total - 1) {

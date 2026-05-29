@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
 import {
   ArrowRight,
   CheckCircle,
@@ -18,6 +18,7 @@ import { Card, ProgressBar } from '@/components/n400/ui';
 import { BadgeIcon } from '@/components/n400/BadgeIcon';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
+import { trackSignupComplete } from '@/lib/n400/analytics';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import { MOCK_TEST_PASS_THRESHOLD, MOCK_TEST_QUESTION_COUNT } from '@/lib/n400/quiz-engine';
 
@@ -25,7 +26,22 @@ export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
   const badges = useN400Badges();
   const params = useParams();
+  const search = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const locale = (params?.locale as string) || 'en';
+
+  // n400_signup_complete fires once when the user lands on the dashboard
+  // after completing /setup. Setup uses redirect() so the client there
+  // never observes ok=true; passing ?welcome=signup on the redirect lets
+  // us fire here exactly once. We strip the query immediately so a
+  // refresh doesn't re-fire.
+  useEffect(() => {
+    if (search?.get('welcome') !== 'signup') return;
+    if (!hydrated) return;
+    trackSignupComplete(state.address.stateCode);
+    router.replace(pathname);
+  }, [search, hydrated, state.address.stateCode, router, pathname]);
 
   const lastMock = state.mockResults[state.mockResults.length - 1];
 

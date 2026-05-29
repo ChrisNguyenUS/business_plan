@@ -22,6 +22,7 @@ import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
+import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
 import {
   questionAudioUrl,
   isPass,
@@ -107,6 +108,7 @@ export default function MockTestPage() {
     setError(null);
     setSubmitting(true);
     try {
+      trackMockTestStart();
       const r = await startMockAttempt();
       setAttemptId(r.attemptId);
       setStartedAt(r.startedAt);
@@ -154,6 +156,7 @@ export default function MockTestPage() {
       );
       setResult(r);
       setStage('result');
+      if (r.milestone) trackStreakMilestone(r.milestone);
       persist(null); // attempt finalized server-side; nothing left to resume
     } catch (e) {
       setError(
