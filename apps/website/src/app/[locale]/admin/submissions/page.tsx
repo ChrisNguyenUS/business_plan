@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Search, ChevronDown, ChevronUp, Mail, Phone, Calendar } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -27,7 +27,7 @@ export default function AdminSubmissions() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
+  const load = async () => {
     let query = supabase.from("contact_submissions").select("*").order("created_at", { ascending: false });
     if (statusFilter !== "all") query = query.eq("status", statusFilter);
     if (serviceFilter !== "all") query = query.eq("service_type", serviceFilter);
@@ -35,9 +35,24 @@ export default function AdminSubmissions() {
     const { data } = await query;
     setSubmissions(data || []);
     setLoading(false);
-  }, [statusFilter, serviceFilter]);
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // Inline the load so the lint rule sees the await fence between
+    // mount and setState. Re-runs when filters change. Mutation
+    // handlers below call load() directly outside of effects.
+    let cancelled = false;
+    (async () => {
+      let query = supabase.from("contact_submissions").select("*").order("created_at", { ascending: false });
+      if (statusFilter !== "all") query = query.eq("status", statusFilter);
+      if (serviceFilter !== "all") query = query.eq("service_type", serviceFilter);
+      const { data } = await query;
+      if (cancelled) return;
+      setSubmissions(data || []);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [statusFilter, serviceFilter]);
 
   const filtered = submissions.filter(s =>
     s.full_name.toLowerCase().includes(search.toLowerCase()) ||

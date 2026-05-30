@@ -5,8 +5,17 @@ interface WhyMannaProps {
   dictionary: Dictionary;
 }
 
+interface BadgeItem {
+  id?: string;
+  icon?: string;
+  title: string;
+  desc: string;
+}
+
+type LucideIconMap = Record<string, LucideIcons.LucideIcon>;
+
 export default function WhyManna({ dictionary }: WhyMannaProps) {
-  const defaultBadges = [
+  const defaultBadges: BadgeItem[] = [
     { icon: "Globe", title: dictionary.why_bilingual, desc: dictionary.why_bilingual_desc },
     { icon: "ShieldCheck", title: dictionary.why_efin, desc: dictionary.why_efin_desc },
     { icon: "Award", title: dictionary.why_insurance_license, desc: dictionary.why_insurance_license_desc },
@@ -24,8 +33,9 @@ export default function WhyManna({ dictionary }: WhyMannaProps) {
           {dictionary.why_title}
         </h2>
         <div className="flex flex-wrap justify-center gap-6">
-          {badges.map((b: any, i) => {
-            const IconComponent = (LucideIcons as any)[b.icon] || LucideIcons.CheckCircle;
+          {badges.map((b: BadgeItem, i) => {
+            const iconKey = b.icon ?? "CheckCircle";
+            const IconComponent = (LucideIcons as unknown as LucideIconMap)[iconKey] || LucideIcons.CheckCircle;
             return (
               <div
                 key={b.id || i}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Eye, EyeOff, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -37,13 +37,25 @@ export default function AdminBlog() {
   const [saving, setSaving] = useState(false);
   const [langTab, setLangTab] = useState<"en" | "vi">("en");
 
-  const load = useCallback(async () => {
+  const load = async () => {
     const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
     setPosts(data || []);
     setLoading(false);
-  }, []);
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      setPosts(data || []);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filtered = posts.filter(p =>
     (p.title_en || "").toLowerCase().includes(search.toLowerCase()) ||

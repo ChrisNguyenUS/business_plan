@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, X, Calendar, FileText } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -37,13 +37,29 @@ export default function AdminCases() {
   const [editing, setEditing] = useState<Partial<Case> | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = async () => {
     const { data } = await supabase.from("cases").select("*").order("updated_at", { ascending: false });
     setCases(data || []);
     setLoading(false);
-  }, []);
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // Inline the load to keep setState calls off the
+    // react-hooks/set-state-in-effect tripwire. The mutation handlers
+    // below call `load()` directly — those are event-driven and don't
+    // hit the rule.
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("cases")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (cancelled) return;
+      setCases(data || []);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filtered = cases.filter(c =>
     c.client_name.toLowerCase().includes(search.toLowerCase()) ||

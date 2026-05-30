@@ -1,11 +1,64 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { 
+import { useState, useEffect, useCallback, type ComponentType } from "react";
+import {
   Save, CheckCircle, Type, Image as ImageIcon, LayoutGrid, DollarSign, ChevronUp, ChevronDown, Trash2, Plus, Info,
-  Globe, ShieldCheck, Award, Stamp, Star, Heart, Briefcase, Users, FileText, BadgeCheck, Scale, Building, TrendingUp, Handshake, Zap, Clock, MapPin 
+  Globe, ShieldCheck, Award, Stamp, Star, Heart, Briefcase, Users, FileText, BadgeCheck, Scale, Building, TrendingUp, Handshake, Zap, Clock, MapPin
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+
+// Lucide icon components share this prop shape; ComponentType keeps
+// SECTIONS[].icon strongly typed without dragging in the full lucide
+// type surface.
+type LucideIcon = ComponentType<{ className?: string }>;
+
+// Trust badge editor row.
+interface TrustBadge {
+  id: string;
+  icon?: string;
+  title: string;
+  desc: string;
+}
+
+// Service catalog row used by ServiceCategoryPanel. `price` is optional
+// because the "What We Offer" panel hides the column.
+interface ServiceItem {
+  id?: string;
+  name?: string;
+  price?: string;
+  [k: string]: unknown;
+}
+
+// site_content row payload. The shape is intentionally loose — the
+// admin form accumulates whatever keys exist for the active section
+// (homepage / about / services), and we ship them back to the DB
+// verbatim. unknown beats any here because it forces consumers to
+// narrow before use.
+type ContentRecord = Record<string, unknown>;
+
+// Read an array-of-ServiceItem field off the loose ContentRecord with a
+// safe-default fallback. Centralizes the cast so individual call sites
+// stay readable.
+function readServiceItems(content: ContentRecord, key: string, fallback: ServiceItem[] = []): ServiceItem[] {
+  const v = content[key];
+  return Array.isArray(v) ? (v as ServiceItem[]) : fallback;
+}
+
+// Read a string field off the loose ContentRecord. Anything non-string
+// (including unset) returns the empty default. Mirrors the `|| ""`
+// coercion the original code did inline, just type-safely.
+function readString(content: ContentRecord, key: string, fallback = ""): string {
+  const v = content[key];
+  return typeof v === "string" ? v : fallback;
+}
+
+// Read a TrustBadge[] field with default fallback. Centralizes the
+// cast-with-fallback pattern that the trust_badges editor uses in 6
+// different places (badge add/remove + edit-icon/title/desc).
+function readTrustBadges(content: ContentRecord): TrustBadge[] {
+  const v = content.trust_badges;
+  return Array.isArray(v) ? (v as TrustBadge[]) : DEFAULT_TRUST_BADGES;
+}
 import {
   updateServiceContentDescription,
   type ServiceContent,
@@ -15,7 +68,7 @@ import {
 
 type ContentSection = "homepage" | "about" | "services";
 
-const SECTIONS: { key: ContentSection; label: string; icon: any }[] = [
+const SECTIONS: { key: ContentSection; label: string; icon: LucideIcon }[] = [
   { key: "homepage", label: "Home", icon: Type },
   { key: "about", label: "About", icon: ImageIcon },
   { key: "services", label: "Services", icon: LayoutGrid },
@@ -42,8 +95,6 @@ const ICON_OPTIONS = [
   { name: "Clock", icon: Clock },
   { name: "MapPin", icon: MapPin },
 ];
-
-type ServiceItem = { id: string; name: string; price: string };
 
 const DEFAULT_TRUST_BADGES = [
   { id: "1", title: "Bilingual Service (VI/EN)", desc: "Native Vietnamese speaker — no language barrier, no miscommunication" },
@@ -145,7 +196,7 @@ const SERVICE_CONTENT_CONFIG: Array<{
 
 export default function AdminContent() {
   const [activeSection, setActiveSection] = useState<ContentSection>("homepage");
-  const [content, setContent] = useState<Record<string, any>>({});
+  const [content, setContent] = useState<ContentRecord>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -155,7 +206,7 @@ export default function AdminContent() {
     try {
       const fetchPromise = supabase.from("site_content").select("*").eq("section", activeSection).single();
       // 5 second timeout to prevent infinite spinning if Safari network stack hangs on tab resume
-      const timeoutPromise = new Promise<{ data: null, error: any }>((resolve) => 
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
         setTimeout(() => resolve({ data: null, error: new Error("timeout") }), 5000)
       );
       
@@ -202,7 +253,7 @@ export default function AdminContent() {
     }
   }
 
-  const updateField = (key: string, value: any) => {
+  const updateField = (key: string, value: unknown) => {
     setContent((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -281,15 +332,15 @@ export default function AdminContent() {
                   <h2 className="text-base font-bold text-charcoal">Hero Banner</h2>
                 </div>
                 <div className="p-6 space-y-4">
-                  <ContentField label="Headline (English)" value={content.hero_headline_en || content.hero_headline || ""} onChange={(v) => updateField("hero_headline_en", v)} />
-                  <ContentField label="Headline (Vietnamese)" value={content.hero_headline_vi || ""} onChange={(v) => updateField("hero_headline_vi", v)} />
-                  <ContentField label="Sub-headline (English)" value={content.hero_sub_en || content.hero_subtitle || ""} onChange={(v) => updateField("hero_sub_en", v)} multiline />
-                  <ContentField label="Sub-headline (Vietnamese)" value={content.hero_sub_vi || ""} onChange={(v) => updateField("hero_sub_vi", v)} multiline />
-                  <ContentField label="Hero Background Image URL" value={content.hero_bg_image || ""} onChange={(v) => updateField("hero_bg_image", v)} />
-                  {content.hero_bg_image && (
+                  <ContentField label="Headline (English)" value={readString(content, "hero_headline_en") || readString(content, "hero_headline")} onChange={(v) => updateField("hero_headline_en", v)} />
+                  <ContentField label="Headline (Vietnamese)" value={readString(content, "hero_headline_vi")} onChange={(v) => updateField("hero_headline_vi", v)} />
+                  <ContentField label="Sub-headline (English)" value={readString(content, "hero_sub_en") || readString(content, "hero_subtitle")} onChange={(v) => updateField("hero_sub_en", v)} multiline />
+                  <ContentField label="Sub-headline (Vietnamese)" value={readString(content, "hero_sub_vi")} onChange={(v) => updateField("hero_sub_vi", v)} multiline />
+                  <ContentField label="Hero Background Image URL" value={readString(content, "hero_bg_image")} onChange={(v) => updateField("hero_bg_image", v)} />
+                  {readString(content, "hero_bg_image") && (
                     <div className="mt-2 rounded-lg overflow-hidden border border-border h-48 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={content.hero_bg_image} alt="Hero preview" className="w-full h-full object-cover" />
+                      <img src={readString(content, "hero_bg_image")} alt="Hero preview" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
@@ -301,7 +352,7 @@ export default function AdminContent() {
                   <h2 className="text-base font-bold text-charcoal">Why Manna — Trust Badges</h2>
                   <button
                     onClick={() => {
-                      const current = content.trust_badges || DEFAULT_TRUST_BADGES;
+                      const current = readTrustBadges(content);
                       updateField("trust_badges", [...current, { id: Date.now().toString(), title: "New Badge", desc: "Badge description" }]);
                     }}
                     className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
@@ -310,13 +361,15 @@ export default function AdminContent() {
                   </button>
                 </div>
                 <div className="p-6 flex flex-col gap-4">
-                  {(content.trust_badges || DEFAULT_TRUST_BADGES).map((b: any, idx: number) => {
+                  {readTrustBadges(content).map((b: TrustBadge, idx: number) => {
                     const SelectedIcon = ICON_OPTIONS.find((o) => o.name === (b.icon || "CheckCircle"))?.icon || CheckCircle;
                     return (
                       <div key={b.id || idx} className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-slate-50 relative group">
                         <button
                           onClick={() => {
-                            const newBadges = (content.trust_badges || DEFAULT_TRUST_BADGES).filter((_: any, i: number) => i !== idx);
+                            const newBadges = readTrustBadges(content).filter(
+                              (_: TrustBadge, i: number) => i !== idx,
+                            );
                             updateField("trust_badges", newBadges);
                           }}
                           className="absolute top-2 right-2 p-2 text-red-500 hover:bg-red-50 rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity"
@@ -324,7 +377,7 @@ export default function AdminContent() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                        
+
                         <div className="flex items-center gap-3 pr-10">
                           <div className="p-2 rounded-md bg-white border border-border shadow-sm flex items-center justify-center w-10 h-10">
                             <SelectedIcon className="h-5 w-5 text-primary" />
@@ -334,7 +387,7 @@ export default function AdminContent() {
                             <select
                               value={b.icon || "CheckCircle"}
                               onChange={(e) => {
-                                const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                                const newBadges = [...readTrustBadges(content)];
                                 newBadges[idx] = { ...newBadges[idx], icon: e.target.value };
                                 updateField("trust_badges", newBadges);
                               }}
@@ -347,23 +400,23 @@ export default function AdminContent() {
                           </div>
                         </div>
 
-                        <ContentField 
-                          label={`Badge ${idx + 1} Title`} 
-                          value={b.title || ""} 
+                        <ContentField
+                          label={`Badge ${idx + 1} Title`}
+                          value={b.title || ""}
                           onChange={(v) => {
-                            const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                            const newBadges = [...readTrustBadges(content)];
                             newBadges[idx] = { ...newBadges[idx], title: v };
                             updateField("trust_badges", newBadges);
-                          }} 
+                          }}
                         />
-                        <ContentField 
-                          label="Description" 
-                          value={b.desc || ""} 
+                        <ContentField
+                          label="Description"
+                          value={b.desc || ""}
                           onChange={(v) => {
-                            const newBadges = [...(content.trust_badges || DEFAULT_TRUST_BADGES)];
+                            const newBadges = [...readTrustBadges(content)];
                             newBadges[idx] = { ...newBadges[idx], desc: v };
                             updateField("trust_badges", newBadges);
-                          }} 
+                          }}
                           multiline
                         />
                       </div>
@@ -380,15 +433,15 @@ export default function AdminContent() {
                 <h2 className="text-base font-bold text-charcoal">About Page</h2>
               </div>
               <div className="p-6 space-y-4">
-                <ContentField label="Page Title (English)" value={content.about_title_en || ""} onChange={(v) => updateField("about_title_en", v)} />
-                <ContentField label="Page Title (Vietnamese)" value={content.about_title_vi || ""} onChange={(v) => updateField("about_title_vi", v)} />
-                <ContentField label="Bio / Mission (English)" value={content.about_mission_en || content.mission || ""} onChange={(v) => updateField("about_mission_en", v)} multiline />
-                <ContentField label="Bio / Mission (Vietnamese)" value={content.about_mission_vi || ""} onChange={(v) => updateField("about_mission_vi", v)} multiline />
-                <ContentField label="Office / Founder Photo URL" value={content.about_photo || ""} onChange={(v) => updateField("about_photo", v)} />
-                {content.about_photo && (
+                <ContentField label="Page Title (English)" value={readString(content, "about_title_en")} onChange={(v) => updateField("about_title_en", v)} />
+                <ContentField label="Page Title (Vietnamese)" value={readString(content, "about_title_vi")} onChange={(v) => updateField("about_title_vi", v)} />
+                <ContentField label="Bio / Mission (English)" value={readString(content, "about_mission_en") || readString(content, "mission")} onChange={(v) => updateField("about_mission_en", v)} multiline />
+                <ContentField label="Bio / Mission (Vietnamese)" value={readString(content, "about_mission_vi")} onChange={(v) => updateField("about_mission_vi", v)} multiline />
+                <ContentField label="Office / Founder Photo URL" value={readString(content, "about_photo")} onChange={(v) => updateField("about_photo", v)} />
+                {readString(content, "about_photo") && (
                   <div className="mt-2 rounded-lg overflow-hidden border border-border h-48 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={content.about_photo} alt="Office preview" className="w-full h-full object-cover" />
+                    <img src={readString(content, "about_photo")} alt="Office preview" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -397,26 +450,26 @@ export default function AdminContent() {
 
           {activeSection === "services" && (
             <div className="space-y-8">
-              <p className="text-sm text-muted-foreground">Manage your service offerings and detailed pricing. Use "What We Offer" to build the top list of services on the page, and "Pricing" to build the detailed cost breakdown table.</p>
+              <p className="text-sm text-muted-foreground">Manage your service offerings and detailed pricing. Use &ldquo;What We Offer&rdquo; to build the top list of services on the page, and &ldquo;Pricing&rdquo; to build the detailed cost breakdown table.</p>
               
               <div className="bg-white rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-bold text-charcoal">Tax & Business</h2>
                 <ServiceContentFields
                   service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "tax")!}
-                  serviceContent={content.service_content}
+                  serviceContent={content.service_content as ServiceContent | undefined}
                   onChange={updateServiceDescription}
                 />
                 <ServiceCategoryPanel
-                  title="What We Offer (Top List)" 
-                  items={(content.tax_offerings && content.tax_offerings.length > 0) ? content.tax_offerings : DEFAULT_TAX_OFFERINGS}
+                  title="What We Offer (Top List)"
+                  items={readServiceItems(content, "tax_offerings", DEFAULT_TAX_OFFERINGS)}
                   onChange={(items) => updateField("tax_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
                   hasPrice={false}
                 />
-                <ServiceCategoryPanel 
-                  title="Pricing (Bottom Table)" 
-                  items={(content.tax_services && content.tax_services.length > 0) ? content.tax_services : DEFAULT_TAX_SERVICES}
+                <ServiceCategoryPanel
+                  title="Pricing (Bottom Table)"
+                  items={readServiceItems(content, "tax_services", DEFAULT_TAX_SERVICES)}
                   onChange={(items) => updateField("tax_services", items)}
                   headerColor="bg-amber-100/50"
                   borderColor="border-amber-200"
@@ -427,20 +480,20 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">Insurance & Finance</h2>
                 <ServiceContentFields
                   service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "insurance")!}
-                  serviceContent={content.service_content}
+                  serviceContent={content.service_content as ServiceContent | undefined}
                   onChange={updateServiceDescription}
                 />
                 <ServiceCategoryPanel
-                  title="What We Offer (Top List)" 
-                  items={(content.insurance_offerings && content.insurance_offerings.length > 0) ? content.insurance_offerings : DEFAULT_INSURANCE_OFFERINGS}
+                  title="What We Offer (Top List)"
+                  items={readServiceItems(content, "insurance_offerings", DEFAULT_INSURANCE_OFFERINGS)}
                   onChange={(items) => updateField("insurance_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
                   hasPrice={false}
                 />
-                <ServiceCategoryPanel 
-                  title="Pricing (Bottom Table)" 
-                  items={content.insurance_services || []} 
+                <ServiceCategoryPanel
+                  title="Pricing (Bottom Table)"
+                  items={readServiceItems(content, "insurance_services")}
                   onChange={(items) => updateField("insurance_services", items)}
                   headerColor="bg-blue-100/50"
                   borderColor="border-blue-200"
@@ -451,20 +504,20 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">Immigration</h2>
                 <ServiceContentFields
                   service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "immigration")!}
-                  serviceContent={content.service_content}
+                  serviceContent={content.service_content as ServiceContent | undefined}
                   onChange={updateServiceDescription}
                 />
                 <ServiceCategoryPanel
-                  title="What We Offer (Top List)" 
-                  items={(content.immigration_offerings && content.immigration_offerings.length > 0) ? content.immigration_offerings : DEFAULT_IMMIGRATION_OFFERINGS}
+                  title="What We Offer (Top List)"
+                  items={readServiceItems(content, "immigration_offerings", DEFAULT_IMMIGRATION_OFFERINGS)}
                   onChange={(items) => updateField("immigration_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
                   hasPrice={false}
                 />
-                <ServiceCategoryPanel 
-                  title="Other Pricing (Bottom Table)" 
-                  items={content.immigration_services || []} 
+                <ServiceCategoryPanel
+                  title="Other Pricing (Bottom Table)"
+                  items={readServiceItems(content, "immigration_services")}
                   onChange={(items) => updateField("immigration_services", items)}
                   headerColor="bg-green-100/50"
                   borderColor="border-green-200"
@@ -475,20 +528,20 @@ export default function AdminContent() {
                 <h2 className="text-xl font-bold text-charcoal">AI / Automation</h2>
                 <ServiceContentFields
                   service={SERVICE_CONTENT_CONFIG.find((service) => service.slug === "ai")!}
-                  serviceContent={content.service_content}
+                  serviceContent={content.service_content as ServiceContent | undefined}
                   onChange={updateServiceDescription}
                 />
                 <ServiceCategoryPanel
-                  title="What We Offer (Top List)" 
-                  items={(content.ai_offerings && content.ai_offerings.length > 0) ? content.ai_offerings : DEFAULT_AI_OFFERINGS} 
+                  title="What We Offer (Top List)"
+                  items={readServiceItems(content, "ai_offerings", DEFAULT_AI_OFFERINGS)}
                   onChange={(items) => updateField("ai_offerings", items)}
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
                   hasPrice={false}
                 />
-                <ServiceCategoryPanel 
-                  title="Pricing (Bottom Table)" 
-                  items={content.ai_services || []} 
+                <ServiceCategoryPanel
+                  title="Pricing (Bottom Table)"
+                  items={readServiceItems(content, "ai_services")}
                   onChange={(items) => updateField("ai_services", items)}
                   headerColor="bg-purple-100/50"
                   borderColor="border-purple-200"
@@ -556,7 +609,7 @@ function ServiceContentFields({
   );
 }
 
-function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor, hasPrice = true }: { title: string, items: any[], onChange: (items: any[]) => void, headerColor: string, borderColor: string, hasPrice?: boolean }) {
+function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor, hasPrice = true }: { title: string; items: ServiceItem[]; onChange: (items: ServiceItem[]) => void; headerColor: string; borderColor: string; hasPrice?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const moveItem = (index: number, dir: number) => {

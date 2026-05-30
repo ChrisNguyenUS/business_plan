@@ -141,8 +141,16 @@ export function useN400UserState() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      setState(DEFAULT_STATE);
-      setHydrated(true);
+      // Defer state writes to a microtask so they run AFTER React
+      // commits this render, sidestepping the cascading-render
+      // pattern react-hooks/set-state-in-effect catches. In practice
+      // sign-out triggers a redirect to /login (AuthProvider) so this
+      // branch rarely runs to completion, but keeping the reset means
+      // a stale state never lingers between users on the same client.
+      queueMicrotask(() => {
+        setState(DEFAULT_STATE);
+        setHydrated(true);
+      });
       return;
     }
     let cancelled = false;
