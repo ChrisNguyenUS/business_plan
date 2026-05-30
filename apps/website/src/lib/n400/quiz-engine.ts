@@ -2,7 +2,7 @@ import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question } from './quest
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
 
-// ── Audio paths (served from public/n400-audio/* via symlink to N400_voice) ──
+// ── Audio paths (served from public/n400-audio/*) ──
 
 export function questionAudioUrl(id: number): string {
   return `/n400-audio/question/q${String(id).padStart(3, '0')}.mp3`;

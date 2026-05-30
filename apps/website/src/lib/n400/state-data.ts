@@ -18,7 +18,7 @@ export interface StateInfo {
 }
 
 // Source: docs/superpowers/plans/2026-05-13-n400app-phase-1-db-schema.md (Task 7)
-// Folder names match apps/website/N400_voice/State/<nameEn>/
+// Folder names match apps/website/public/n400-audio/State/<nameEn>/
 export const STATES: StateInfo[] = [
   { code: 'AL', nameEn: 'Alabama', nameVi: 'Alabama', governor: 'Kay Ivey', capital: 'Montgomery', senators: ['Tommy Tuberville', 'Katie Britt'] },
   { code: 'AK', nameEn: 'Alaska', nameVi: 'Alaska', governor: 'Mike Dunleavy', capital: 'Juneau', senators: ['Lisa Murkowski', 'Dan Sullivan'] },

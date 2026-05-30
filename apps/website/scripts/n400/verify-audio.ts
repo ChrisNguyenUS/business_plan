@@ -1,10 +1,10 @@
 // Phase 9 Task 1 — Audio verification (static-bundle path).
 //
-// The runtime serves audio from /n400-audio/* — a filesystem symlink to
-// apps/website/N400_voice. So this script walks the same static bundles
-// the app imports (N400_QUESTIONS, STATES, REPS) and checks for the
-// presence + non-emptiness of the corresponding MP3s on disk under
-// public/n400-audio.
+// The runtime serves audio from /n400-audio/*, which maps to
+// apps/website/public/n400-audio/. This script walks the same static
+// bundles the app imports (N400_QUESTIONS, STATES, REPS) and checks
+// for the presence + non-emptiness of the corresponding MP3s on disk
+// under public/n400-audio.
 //
 // Why not check Supabase Storage URLs (the original Phase 9 plan):
 // the app no longer reads audio from Storage. Storage URLs in DB are
