@@ -89,6 +89,40 @@ describe('buildOptions', () => {
     const opts = buildOptions(q62, 'TX', 'q62-tx');
     expect(opts.find((o) => o.isCorrect)!.en).toBe('Austin');
   });
+
+  it('uses static distractors from distractors-data for Q1', () => {
+    const q1 = N400_QUESTIONS_BY_ID.get(1)!;
+    const opts = buildOptions(q1, 'TX', 'test-q1');
+    const correctOpt = opts.find((o) => o.isCorrect)!;
+    const distractorOpts = opts.filter((o) => !o.isCorrect);
+
+    expect(correctOpt.en).toBe('Republic');
+    
+    // Distractors should be drawn from static list (Monarchy, Direct democracy, Theocracy, Communist state, Confederation)
+    const validStaticDistractors = [
+      'Monarchy',
+      'Direct democracy',
+      'Theocracy',
+      'Communist state',
+      'Confederation'
+    ];
+    for (const d of distractorOpts) {
+      expect(validStaticDistractors).toContain(d.en);
+    }
+  });
+
+  it('filters out static distractors that collide with correct answers (e.g. Q23 Vermont scenario)', () => {
+    // Q23 correct answers for VT would normally include Bernie Sanders if he were Senator of VT.
+    // Let's mock or simulate VT senators. In state-data.ts, VT (Vermont) senators are Bernie Sanders & Peter Welch.
+    // If the correct answers contain Bernie Sanders, Bernie Sanders (which is in the static distractor list for Q23)
+    // must be filtered out and never present as a distractor.
+    const q23 = N400_QUESTIONS_BY_ID.get(23)!;
+    const opts = buildOptions(q23, 'VT', 'test-q23-vt');
+    
+    // There should be exactly one correct option, and no option should have 'Bernie Sanders' marked as incorrect
+    const bernieIncorrect = opts.some((o) => o.en === 'Bernie Sanders' && !o.isCorrect);
+    expect(bernieIncorrect).toBe(false);
+  });
 });
 
 describe('correctAnswersFor', () => {
