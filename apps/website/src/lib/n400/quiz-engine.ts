@@ -1,4 +1,5 @@
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question } from './questions-data';
+import { N400_DISTRACTORS } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
 
@@ -178,31 +179,49 @@ export function buildOptions(
   const correctSet = new Set(fallback.map((c) => c.en.toLowerCase().trim()));
   const candidates: { en: string; vi: string }[] = [];
 
-  for (const q of N400_QUESTIONS) {
-    if (q.id === question.id) continue;
-    if (q.category !== question.category) continue;
-    // Skip location-based Q's: their static answersEn are user-specific
-    // (e.g., Q23 senators, Q61 governor) or placeholder text (Q29), neither
-    // of which makes sense as a distractor for unrelated questions.
-    if (q.isLocationBased) continue;
-    for (let i = 0; i < q.answersEn.length; i++) {
-      const en = q.answersEn[i];
-      const vi = q.answersVi[i] ?? en;
-      const enLower = en.toLowerCase().trim();
-      if (correctSet.has(enLower)) continue;
-      // Filter clear semantic overlap.
-      let overlap = false;
-      for (const c of correctSet) {
-        if (c.length > 4 && enLower.includes(c)) { overlap = true; break; }
-        if (enLower.length > 4 && c.includes(enLower)) { overlap = true; break; }
+  // 1. Try manually authored static distractors for this question
+  const staticList = N400_DISTRACTORS[question.id] || [];
+  for (const d of staticList) {
+    const enLower = d.en.toLowerCase().trim();
+    if (correctSet.has(enLower)) continue;
+    // Filter clear semantic overlap
+    let overlap = false;
+    for (const c of correctSet) {
+      if (c.length > 4 && enLower.includes(c)) { overlap = true; break; }
+      if (enLower.length > 4 && c.includes(enLower)) { overlap = true; break; }
+    }
+    if (overlap) continue;
+    candidates.push({ en: d.en, vi: d.vi });
+  }
+
+  // 2. Fall back to other questions in the same category if we have fewer than 3 candidates
+  if (candidates.length < 3) {
+    for (const q of N400_QUESTIONS) {
+      if (q.id === question.id) continue;
+      if (q.category !== question.category) continue;
+      // Skip location-based Q's: their static answersEn are user-specific
+      // (e.g., Q23 senators, Q61 governor) or placeholder text (Q29), neither
+      // of which makes sense as a distractor for unrelated questions.
+      if (q.isLocationBased) continue;
+      for (let i = 0; i < q.answersEn.length; i++) {
+        const en = q.answersEn[i];
+        const vi = q.answersVi[i] ?? en;
+        const enLower = en.toLowerCase().trim();
+        if (correctSet.has(enLower)) continue;
+        // Filter clear semantic overlap.
+        let overlap = false;
+        for (const c of correctSet) {
+          if (c.length > 4 && enLower.includes(c)) { overlap = true; break; }
+          if (enLower.length > 4 && c.includes(enLower)) { overlap = true; break; }
+        }
+        if (overlap) continue;
+        candidates.push({ en, vi });
       }
-      if (overlap) continue;
-      candidates.push({ en, vi });
     }
   }
 
+  // 3. Fall back further to other categories if still fewer than 3 candidates
   if (candidates.length < 3) {
-    // Widen pool to other categories if the same-category pool is too small.
     for (const q of N400_QUESTIONS) {
       if (q.id === question.id) continue;
       if (q.isLocationBased) continue;
