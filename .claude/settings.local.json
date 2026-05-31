@@ -51,7 +51,9 @@
       "Bash(npx tsx *)",
       "mcp__supabase__apply_migration",
       "Bash(npm test *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "mcp__plugin_vercel_vercel__get_deployment_build_logs",
+      "Bash(pnpm --version)"
     ]
   },
   "enableAllProjectMcpServers": true,
