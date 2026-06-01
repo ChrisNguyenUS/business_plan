@@ -715,192 +715,189 @@ export const N400_DISTRACTORS: Record<number, N400Distractor[]> = {
     { en: "Because Mexico attacked Texas", vi: "Vì Mexico tấn công Texas" },
   ],
   102: [
+    { en: "After World War II", vi: "Sau Thế chiến thứ hai" },
+    { en: "After the Civil War", vi: "Sau Nội chiến" },
+    { en: "After the Revolutionary War", vi: "Sau Chiến tranh Cách mạng" },
+    { en: "Before the Civil War", vi: "Trước Nội chiến" },
+  ],
+  103: [
+    { en: "A major war in Europe", vi: "Một cuộc chiến lớn ở châu Âu" },
+    { en: "A period of rapid inflation in the 1970s", vi: "Thời kỳ lạm phát nhanh những năm 1970" },
+    { en: "The stock market crash of 2008", vi: "Vụ sụp đổ thị trường chứng khoán năm 2008" },
+    { en: "A natural disaster in the Midwest", vi: "Một thiên tai ở vùng Trung Tây" },
+  ],
+  104: [
+    { en: "World War I in 1914", vi: "Thế chiến thứ nhất năm 1914" },
+    { en: "The signing of the Constitution in 1787", vi: "Ký kết Hiến pháp năm 1787" },
+    { en: "World War II in 1939", vi: "Thế chiến thứ hai năm 1939" },
+    { en: "The passage of the Bill of Rights in 1791", vi: "Thông qua Tuyên ngôn Nhân quyền năm 1791" },
+  ],
+  105: [
     { en: "(Theodore) Roosevelt", vi: "(Theodore) Roosevelt" },
     { en: "(Franklin) Roosevelt", vi: "(Franklin) Roosevelt" },
     { en: "(William) Taft", vi: "(William) Taft" },
     { en: "(Warren) Harding", vi: "(Warren) Harding" },
     { en: "(Calvin) Coolidge", vi: "(Calvin) Coolidge" },
+    { en: "(Woodrow) Wilson", vi: "(Woodrow) Wilson" },
+    { en: "(Harry) Truman", vi: "(Harry) Truman" },
+    { en: "(Herbert) Hoover", vi: "(Herbert) Hoover" },
+    { en: "(Dwight) Eisenhower", vi: "(Dwight) Eisenhower" },
   ],
-  103: [
+  106: [
     { en: "Germany invaded Poland", vi: "Đức xâm lược Ba Lan" },
     { en: "To stop the spread of communism", vi: "Để ngăn chặn sự lây lan của chủ nghĩa cộng sản" },
     { en: "Sinking of the Lusitania", vi: "Vụ chìm tàu Lusitania" },
     { en: "To free Kuwait", vi: "Để giải phóng Kuwait" },
     { en: "Germany attacked U.S. ships", vi: "Đức tấn công tàu Hoa Kỳ" },
   ],
-  104: [
-    { en: "(Woodrow) Wilson", vi: "(Woodrow) Wilson" },
-    { en: "(Harry) Truman", vi: "(Harry) Truman" },
-    { en: "(Herbert) Hoover", vi: "(Herbert) Hoover" },
-    { en: "(Dwight) Eisenhower", vi: "(Dwight) Eisenhower" },
-    { en: "(Calvin) Coolidge", vi: "(Calvin) Coolidge" },
-  ],
-  105: [
-    { en: "Germany, Italy, and the Soviet Union", vi: "Đức, Ý, và Liên Xô" },
-    { en: "China, Japan, and Korea", vi: "Trung Quốc, Nhật Bản, và Hàn Quốc" },
-    { en: "Germany, Austria-Hungary, and Turkey", vi: "Đức, Áo-Hung, và Thổ Nhĩ Kỳ" },
-    { en: "Spain, Italy, and Japan", vi: "Tây Ban Nha, Ý, và Nhật Bản" },
-    { en: "Germany, Russia, and Japan", vi: "Đức, Nga, và Nhật Bản" },
-  ],
-  106: [
+  107: [
     { en: "World War I", vi: "Thế chiến thứ nhất" },
     { en: "Korean War", vi: "Chiến tranh Triều Tiên" },
     { en: "Vietnam War", vi: "Chiến tranh Việt Nam" },
     { en: "Spanish-American War", vi: "Chiến tranh Tây Ban Nha-Mỹ" },
     { en: "Civil War", vi: "Nội chiến" },
   ],
-  107: [
+  108: [
+    { en: "Germany", vi: "Đức" },
+    { en: "Japan", vi: "Nhật Bản" },
+    { en: "Great Britain", vi: "Anh Quốc" },
+    { en: "France", vi: "Pháp" },
+    { en: "China", vi: "Trung Quốc" },
+  ],
+  109: [
     { en: "Terrorism", vi: "Khủng bố" },
     { en: "Fascism", vi: "Chủ nghĩa phát xít" },
     { en: "The Great Depression", vi: "Đại Suy thoái" },
     { en: "Imperialism", vi: "Chủ nghĩa đế quốc" },
     { en: "Slavery", vi: "Chế độ nô lệ" },
   ],
-  108: [
+  110: [
     { en: "To free Korea from Japan", vi: "Để giải phóng Triều Tiên khỏi Nhật Bản" },
     { en: "To gain new territory", vi: "Để có lãnh thổ mới" },
     { en: "To support the United Nations only", vi: "Chỉ để hỗ trợ Liên Hợp Quốc" },
     { en: "To stop terrorism", vi: "Để ngăn chặn khủng bố" },
     { en: "To end slavery in Korea", vi: "Để chấm dứt chế độ nô lệ ở Triều Tiên" },
   ],
-  109: [
+  111: [
     { en: "To support France against North Vietnam", vi: "Để hỗ trợ Pháp chống lại Bắc Việt" },
     { en: "To gain new territory", vi: "Để có lãnh thổ mới" },
     { en: "To stop terrorism", vi: "Để ngăn chặn khủng bố" },
     { en: "To free Vietnam from Japan", vi: "Để giải phóng Việt Nam khỏi Nhật Bản" },
     { en: "To enforce a United Nations treaty", vi: "Để thực thi một hiệp ước Liên Hợp Quốc" },
   ],
-  110: [
+  112: [
     { en: "Ended the Cold War", vi: "Kết thúc Chiến tranh Lạnh" },
     { en: "Gave women the right to vote", vi: "Cho phụ nữ quyền bỏ phiếu" },
     { en: "Freed the slaves", vi: "Giải phóng nô lệ" },
     { en: "Lowered the voting age to 18", vi: "Hạ độ tuổi bỏ phiếu xuống 18" },
     { en: "Established Social Security", vi: "Thành lập An sinh Xã hội" },
   ],
-  111: [
+  113: [
     { en: "Led the Underground Railroad", vi: "Lãnh đạo Đường sắt Ngầm" },
     { en: "Was the first African American president", vi: "Là tổng thống người Mỹ gốc Phi đầu tiên" },
     { en: "Wrote the 14th Amendment", vi: "Viết Tu chính án thứ 14" },
     { en: "Founded the NAACP", vi: "Thành lập NAACP" },
     { en: "Led the March to the Sea", vi: "Lãnh đạo cuộc Hành quân ra Biển" },
   ],
-  112: [
+  114: [
     { en: "To stop the spread of communism", vi: "Để ngăn chặn sự lây lan của chủ nghĩa cộng sản" },
     { en: "To respond to the September 11 attacks", vi: "Để đáp trả vụ tấn công 11 tháng 9" },
     { en: "To remove Saddam Hussein from power", vi: "Để loại bỏ Saddam Hussein khỏi quyền lực" },
     { en: "To free Iran from Iraq", vi: "Để giải phóng Iran khỏi Iraq" },
     { en: "To enforce a no-fly zone", vi: "Để thực thi vùng cấm bay" },
   ],
-  113: [
+  115: [
     { en: "The Pearl Harbor attack", vi: "Vụ tấn công Trân Châu Cảng" },
     { en: "A nuclear missile crisis", vi: "Khủng hoảng tên lửa hạt nhân" },
     { en: "A major hurricane struck New York", vi: "Một cơn bão lớn tấn công New York" },
     { en: "The fall of the Berlin Wall", vi: "Sự sụp đổ của Bức tường Berlin" },
     { en: "A school shooting in Washington, D.C.", vi: "Một vụ xả súng trường học ở Washington, D.C." },
   ],
-  114: [
+  116: [
     { en: "Korean War", vi: "Chiến tranh Triều Tiên" },
     { en: "Vietnam War", vi: "Chiến tranh Việt Nam" },
     { en: "Persian Gulf War", vi: "Chiến tranh vùng Vịnh Ba Tư" },
     { en: "Cold War", vi: "Chiến tranh Lạnh" },
     { en: "Bosnian War", vi: "Chiến tranh Bosnia" },
   ],
-  115: [
+  117: [
     { en: "Aztec", vi: "Aztec" },
     { en: "Maya", vi: "Maya" },
     { en: "Inca", vi: "Inca" },
     { en: "Mestizo", vi: "Mestizo" },
     { en: "Olmec", vi: "Olmec" },
   ],
-  116: [
-    { en: "Colorado (River)", vi: "Sông Colorado" },
-    { en: "Hudson (River)", vi: "Sông Hudson" },
-    { en: "Rio Grande", vi: "Sông Rio Grande" },
-    { en: "Ohio (River)", vi: "Sông Ohio" },
-    { en: "Columbia (River)", vi: "Sông Columbia" },
-  ],
-  117: [
-    { en: "Atlantic (Ocean)", vi: "(Đại dương) Đại Tây Dương" },
-    { en: "Indian (Ocean)", vi: "(Đại dương) Ấn Độ" },
-    { en: "Arctic (Ocean)", vi: "(Đại dương) Bắc Băng Dương" },
-    { en: "Gulf of Mexico", vi: "Vịnh Mexico" },
-    { en: "Caribbean Sea", vi: "Biển Caribbean" },
-  ],
   118: [
-    { en: "Pacific (Ocean)", vi: "(Đại dương) Thái Bình Dương" },
-    { en: "Indian (Ocean)", vi: "(Đại dương) Ấn Độ" },
-    { en: "Arctic (Ocean)", vi: "(Đại dương) Bắc Băng Dương" },
-    { en: "Gulf of Mexico", vi: "Vịnh Mexico" },
-    { en: "Caribbean Sea", vi: "Biển Caribbean" },
+    { en: "Steam engine", vi: "Động cơ hơi nước" },
+    { en: "Printing press", vi: "Máy in" },
+    { en: "Gunpowder", vi: "Thuốc súng" },
+    { en: "Compass", vi: "La bàn" },
   ],
   119: [
-    { en: "Hawaii", vi: "Hawaii" },
-    { en: "District of Columbia", vi: "Đặc khu Columbia" },
-    { en: "Alaska", vi: "Alaska" },
-    { en: "Cuba", vi: "Cuba" },
-    { en: "Panama Canal Zone", vi: "Vùng Kênh đào Panama" },
-  ],
-  120: [
-    { en: "California", vi: "California" },
-    { en: "Texas", vi: "Texas" },
-    { en: "Arizona", vi: "Arizona" },
-    { en: "Massachusetts", vi: "Massachusetts" },
-    { en: "Wyoming", vi: "Wyoming" },
-  ],
-  121: [
-    { en: "Nevada", vi: "Nevada" },
-    { en: "Utah", vi: "Utah" },
-    { en: "Louisiana", vi: "Louisiana" },
-    { en: "Colorado", vi: "Colorado" },
-    { en: "Oklahoma", vi: "Oklahoma" },
-  ],
-  122: [
     { en: "New York City", vi: "Thành phố New York" },
     { en: "Philadelphia", vi: "Philadelphia" },
     { en: "Boston", vi: "Boston" },
     { en: "Los Angeles", vi: "Los Angeles" },
     { en: "Chicago", vi: "Chicago" },
   ],
-  123: [
+  120: [
     { en: "Washington, D.C.", vi: "Washington, D.C." },
     { en: "Boston Harbor", vi: "Cảng Boston" },
     { en: "Philadelphia", vi: "Philadelphia" },
     { en: "San Francisco Bay", vi: "Vịnh San Francisco" },
     { en: "Chesapeake Bay", vi: "Vịnh Chesapeake" },
   ],
-  124: [
+  121: [
     { en: "Because there are 13 founding fathers", vi: "Vì có 13 người cha lập quốc" },
     { en: "Because there are 13 amendments in the Bill of Rights", vi: "Vì có 13 tu chính án trong Tuyên ngôn Nhân quyền" },
     { en: "Because there are 13 federal departments", vi: "Vì có 13 bộ liên bang" },
     { en: "Because there are 13 Supreme Court justices", vi: "Vì có 13 thẩm phán Tòa án Tối cao" },
     { en: "Because the country was founded in 1813", vi: "Vì đất nước được thành lập năm 1813" },
   ],
-  125: [
+  122: [
     { en: "Because there are 50 amendments to the Constitution", vi: "Vì có 50 tu chính án đối với Hiến pháp" },
     { en: "Because there are 50 founding fathers", vi: "Vì có 50 người cha lập quốc" },
     { en: "Because there are 50 federal departments", vi: "Vì có 50 bộ liên bang" },
     { en: "Because the flag was adopted in 1850", vi: "Vì lá cờ được thông qua năm 1850" },
     { en: "Because there are 50 senators", vi: "Vì có 50 thượng nghị sĩ" },
   ],
-  126: [
+  123: [
     { en: "America the Beautiful", vi: "America the Beautiful" },
     { en: "My Country, 'Tis of Thee", vi: "My Country, 'Tis of Thee" },
     { en: "God Bless America", vi: "God Bless America" },
     { en: "Yankee Doodle", vi: "Yankee Doodle" },
     { en: "This Land Is Your Land", vi: "This Land Is Your Land" },
   ],
-  127: [
+  124: [
+    { en: "In God We Trust", vi: "Chúng ta tin vào Thượng đế" },
+    { en: "Liberty and Justice for All", vi: "Tự do và Công lý cho Tất cả" },
+    { en: "Government of the people, by the people, for the people", vi: "Chính quyền của dân, do dân, vì dân" },
+    { en: "Freedom of Speech", vi: "Tự do Ngôn luận" },
+  ],
+  125: [
     { en: "July 14", vi: "Ngày 14 tháng 7" },
     { en: "June 14", vi: "Ngày 14 tháng 6" },
     { en: "May 1", vi: "Ngày 1 tháng 5" },
     { en: "September 17", vi: "Ngày 17 tháng 9" },
     { en: "November 11", vi: "Ngày 11 tháng 11" },
   ],
-  128: [
+  126: [
     { en: "Valentine's Day", vi: "Ngày Valentine" },
     { en: "Mother's Day", vi: "Ngày của Mẹ" },
     { en: "St. Patrick's Day", vi: "Ngày Thánh Patrick" },
     { en: "Halloween", vi: "Halloween" },
     { en: "Election Day", vi: "Ngày Bầu cử" },
+  ],
+  127: [
+    { en: "A holiday to honor all military veterans", vi: "Ngày lễ vinh danh tất cả cựu chiến binh" },
+    { en: "A holiday to celebrate independence from Britain", vi: "Ngày lễ kỷ niệm độc lập khỏi Anh" },
+    { en: "A holiday to honor all U.S. presidents", vi: "Ngày lễ vinh danh tất cả tổng thống Mỹ" },
+    { en: "A holiday to honor workers' achievements", vi: "Ngày lễ vinh danh thành tựu của người lao động" },
+  ],
+  128: [
+    { en: "A holiday to honor soldiers who died in military service", vi: "Ngày lễ vinh danh các chiến sĩ hy sinh trong lúc phục vụ quân ngũ" },
+    { en: "A holiday to celebrate the discovery of America", vi: "Ngày lễ kỷ niệm việc khám phá ra châu Mỹ" },
+    { en: "A holiday to honor all U.S. presidents", vi: "Ngày lễ vinh danh tất cả tổng thống Mỹ" },
+    { en: "A holiday to honor workers' achievements", vi: "Ngày lễ vinh danh thành tựu của người lao động" },
   ],
 };
