@@ -116,7 +116,7 @@ export default function DashboardPage() {
 
           <div className="flex flex-col gap-6 sm:flex-row">
             <Card className="relative min-h-[180px] w-full overflow-hidden p-5 sm:w-1/3 sm:p-6">
-              <div className="relative z-10 flex h-full flex-col">
+              <div className="relative z-10 flex h-full flex-col pr-24 sm:pr-28">
                 <h3 className="text-sm font-medium text-slate-500 flex items-center gap-2">
                   <Flame className="text-orange-500" size={16} /> Chuỗi học tập
                 </h3>
@@ -165,8 +165,8 @@ export default function DashboardPage() {
             </Card>
 
             <Card className="w-full p-5 sm:w-2/3 sm:p-6">
-              <h3 className="mb-6 text-sm font-medium text-slate-500">Tiến độ theo danh mục</h3>
-              <div className="flex h-32 items-end justify-around gap-2">
+              <h3 className="mb-8 text-sm font-medium text-slate-500">Tiến độ theo danh mục</h3>
+              <div className="flex items-end justify-around gap-2 pt-2">
                 {skillData.map((skill) => (
                   <div key={skill.name} className="flex flex-col items-center gap-3">
                     <div className="relative flex h-24 w-7 items-end overflow-hidden rounded-full bg-slate-100">
