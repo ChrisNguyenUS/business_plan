@@ -129,14 +129,16 @@ export default function DashboardPage() {
                 {badges.hydrated ? (
                   <Link
                     href={`/${locale}/n400app/profile#badges`}
-                    className="mt-3 flex items-center gap-2 text-xs text-slate-500 hover:text-teal-700 transition-colors"
+                    className="mt-3 flex flex-col items-start gap-2 text-xs text-slate-500 transition-colors hover:text-teal-700"
                   >
-                    <span className="font-semibold text-slate-700">
-                      {badges.earned.length}
-                      <span className="font-normal text-slate-400"> / {badges.catalog.length}</span>
+                    <span>
+                      <span className="font-semibold text-slate-700">
+                        {badges.earned.length}
+                        <span className="font-normal text-slate-400"> / {badges.catalog.length}</span>
+                      </span>
+                      <span className="ml-2">huy hiệu</span>
                     </span>
-                    <span>huy hiệu</span>
-                    <div className="flex -space-x-1.5 ml-1">
+                    <div className="mt-1 flex -space-x-1.5">
                       {badges.earned.slice(0, 3).map((b) => (
                         <BadgeIcon
                           key={b.slug}
