@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
@@ -53,7 +53,7 @@ interface DbQuiz {
 }
 
 async function loadAll(userId: string): Promise<N400State> {
-  const [profileRes, bookmarksRes, quizzesRes, qaRes] = await Promise.all([
+  const [profileRes, bookmarksRes, quizzesRes] = await Promise.all([
     supabase
       .from('n400_user_profile')
       .select('city,state_code,zipcode,district_number,current_streak,longest_streak,last_activity_date')
@@ -62,20 +62,41 @@ async function loadAll(userId: string): Promise<N400State> {
     supabase.from('n400_bookmarks').select('question_id').eq('user_id', userId),
     supabase
       .from('n400_quiz_attempts')
-      .select('id,mode,score,total_questions,passed,started_at,completed_at')
+      .select(`
+        id,mode,score,total_questions,passed,started_at,completed_at,
+        n400_question_attempts (
+          question_id, was_correct, answered_at, attempt_id
+        )
+      `)
       .eq('user_id', userId)
       .order('started_at', { ascending: true }),
-    supabase
-      .from('n400_question_attempts')
-      .select('question_id,was_correct,answered_at,attempt_id')
-      .order('answered_at', { ascending: true })
-      .limit(2000),
   ]);
 
   const profile = (profileRes.data ?? null) as DbProfile | null;
   const bookmarks = (bookmarksRes.data ?? []).map((r) => r.question_id as number);
-  const quizzes = (quizzesRes.data ?? []) as DbQuiz[];
-  const qa = (qaRes.data ?? []) as DbAttempt[];
+  
+  const rawQuizzes = quizzesRes.data ?? [];
+  const quizzes: DbQuiz[] = [];
+  let qa: DbAttempt[] = [];
+
+  for (const q of rawQuizzes) {
+    quizzes.push({
+      id: q.id,
+      mode: q.mode,
+      score: q.score,
+      total_questions: q.total_questions,
+      passed: q.passed,
+      started_at: q.started_at,
+      completed_at: q.completed_at,
+    });
+    if (q.n400_question_attempts && Array.isArray(q.n400_question_attempts)) {
+      qa.push(...(q.n400_question_attempts as DbAttempt[]));
+    }
+  }
+
+  // Sort QA by answered_at (ascending) and limit to last 2000
+  qa.sort((a, b) => new Date(a.answered_at).getTime() - new Date(b.answered_at).getTime());
+  if (qa.length > 2000) qa = qa.slice(-2000);
 
   const quizModeById = new Map(quizzes.map((q) => [q.id, q.mode as QuizMode]));
   const attempts = qa
@@ -133,7 +154,7 @@ async function loadAll(userId: string): Promise<N400State> {
   };
 }
 
-export function useN400UserState() {
+function useN400UserStateInternal() {
   const { user, loading: authLoading } = useAuth();
   const [state, setState] = useState<N400State>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
@@ -141,12 +162,6 @@ export function useN400UserState() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      // Defer state writes to a microtask so they run AFTER React
-      // commits this render, sidestepping the cascading-render
-      // pattern react-hooks/set-state-in-effect catches. In practice
-      // sign-out triggers a redirect to /login (AuthProvider) so this
-      // branch rarely runs to completion, but keeping the reset means
-      // a stale state never lingers between users on the same client.
       queueMicrotask(() => {
         setState(DEFAULT_STATE);
         setHydrated(true);
@@ -422,4 +437,19 @@ export function useN400UserState() {
     resetAll,
     user,
   };
+}
+
+type N400UserContextType = ReturnType<typeof useN400UserStateInternal>;
+
+const N400UserContext = createContext<N400UserContextType | null>(null);
+
+export function N400UserStateProvider({ children }: { children: ReactNode }) {
+  const value = useN400UserStateInternal();
+  return <N400UserContext.Provider value={value}>{children}</N400UserContext.Provider>;
+}
+
+export function useN400UserState() {
+  const ctx = useContext(N400UserContext);
+  if (!ctx) throw new Error('useN400UserState must be used within N400UserStateProvider');
+  return ctx;
 }
