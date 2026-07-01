@@ -1,17 +1,20 @@
 import type { ReactNode } from 'react';
-import { Sidebar } from '@/components/n400/Sidebar';
+import { MobileNav, Sidebar } from '@/components/n400/Sidebar';
 import { Header } from '@/components/n400/Header';
 import { RegisterSW } from '@/components/n400/RegisterSW';
 
 export default function N400AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-gray-900">
+    <div className="flex h-dvh overflow-hidden bg-slate-50 font-sans text-gray-900">
       <RegisterSW />
       <Sidebar />
-      <div className="ml-64 flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden lg:ml-64">
         <Header />
-        <main className="relative z-0 flex-1 overflow-y-auto p-8">{children}</main>
+        <main className="relative z-0 flex-1 overflow-y-auto px-4 pb-28 pt-4 sm:px-6 lg:p-8">
+          {children}
+        </main>
       </div>
+      <MobileNav />
     </div>
   );
 }

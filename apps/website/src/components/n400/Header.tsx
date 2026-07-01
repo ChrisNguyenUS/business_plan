@@ -57,25 +57,27 @@ export function Header() {
   const activeToday = hydrated && state.streak.lastActivityDate === today && streak > 0;
 
   return (
-    <header className="h-20 bg-slate-50/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 sticky top-0 z-10">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-10 flex min-h-20 items-start justify-between gap-3 border-b border-gray-200/50 bg-slate-50/90 px-4 py-4 backdrop-blur-md lg:h-20 lg:items-center lg:px-8 lg:py-0">
+      <div className="flex min-w-0 flex-1 items-start gap-3 lg:items-center lg:gap-4">
         {showHamburger ? (
-          <button type="button" className="text-gray-500 hover:text-gray-800" aria-label="Menu">
+          <button type="button" className="mt-0.5 text-gray-500 hover:text-gray-800 lg:mt-0" aria-label="Menu">
             <Menu size={24} />
           </button>
         ) : null}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">{meta.title}</h2>
-          {meta.subtitle ? <p className="text-sm text-gray-500">{meta.subtitle}</p> : null}
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold leading-tight text-gray-800 lg:text-2xl">{meta.title}</h2>
+          {meta.subtitle ? (
+            <p className="mt-1 hidden text-sm text-gray-500 sm:block">{meta.subtitle}</p>
+          ) : null}
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 lg:gap-4">
         {showBookmark ? (
           <Link
             href={`/${locale}/n400app/bookmark`}
             aria-label="Đánh dấu"
-            className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:text-teal-600 shadow-sm"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm hover:text-teal-600 sm:flex"
           >
             <Bookmark size={18} />
           </Link>
@@ -84,14 +86,14 @@ export function Header() {
         {section === 'statistic' && (
           <button
             type="button"
-            className="flex items-center gap-2 text-sm bg-white border border-gray-200 px-4 py-2 rounded-xl text-gray-600 font-medium hover:bg-gray-50 shadow-sm"
+            className="hidden items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 sm:flex"
           >
             01/05/2024 - 31/05/2024 <ChevronDown size={16} />
           </button>
         )}
 
         <div
-          className={`flex items-center gap-2 border shadow-sm px-4 py-2 rounded-xl transition-colors ${
+          className={`flex items-center gap-2 rounded-xl border px-3 py-2 shadow-sm transition-colors lg:px-4 ${
             activeToday
               ? 'bg-orange-50 border-orange-100'
               : 'bg-white border-gray-100'
@@ -106,14 +108,14 @@ export function Header() {
         >
           <Flame
             className={activeToday ? 'text-orange-500' : 'text-gray-300'}
-            size={20}
+            size={18}
           />
-          <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-medium leading-none">
+          <div className="flex min-w-0 flex-col">
+            <span className="hidden text-[10px] font-medium leading-none text-gray-400 sm:block">
               Chuỗi học tập
             </span>
             <span
-              className={`text-sm font-bold leading-tight ${
+              className={`text-sm font-bold leading-tight whitespace-nowrap ${
                 activeToday ? 'text-orange-700' : 'text-gray-800'
               }`}
             >
@@ -124,7 +126,7 @@ export function Header() {
 
         <Link
           href={`/${locale}/n400app/profile`}
-          className="flex items-center gap-3 bg-white border border-gray-100 shadow-sm px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-50"
+          className="hidden cursor-pointer items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-2 shadow-sm hover:bg-gray-50 lg:flex"
         >
           <div className="w-8 h-8 bg-blue-100 rounded-full overflow-hidden">
             <Image

@@ -36,16 +36,28 @@ const MENU: MenuItem[] = [
   { id: 'profile', label: 'Hồ sơ', href: 'profile', icon: User },
 ];
 
-export function Sidebar() {
+const MOBILE_MENU: MenuItem[] = [
+  { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
+  { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
+  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
+  { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
+];
+
+function useN400Navigation() {
   const pathname = usePathname();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
   const base = `/${locale}/n400app`;
 
+  return { base, pathname };
+}
+
+export function Sidebar() {
+  const { base, pathname } = useN400Navigation();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   return (
-    <div className="w-64 bg-white border-r border-gray-100 flex flex-col fixed h-full z-20">
+    <div className="hidden lg:flex fixed z-20 h-full w-64 flex-col border-r border-gray-100 bg-white">
       <div className="p-6 flex items-center gap-3 mb-2">
         <div className="w-8 h-8 rounded bg-teal-600 flex items-center justify-center shadow-md">
           <Shield size={20} className="text-white" />
@@ -112,5 +124,37 @@ export function Sidebar() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function MobileNav() {
+  const { base, pathname } = useN400Navigation();
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
+      <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+        {MOBILE_MENU.map((item) => {
+          const href = item.href ? `${base}/${item.href}` : base;
+          const isActive =
+            href === base ? pathname === base : pathname?.startsWith(href);
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.id}
+              href={href}
+              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-semibold transition-colors ${
+                isActive
+                  ? 'bg-teal-50 text-teal-700'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+              }`}
+            >
+              <Icon size={20} className={isActive ? 'text-teal-600' : 'text-gray-400'} />
+              <span className="max-w-full truncate">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

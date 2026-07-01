@@ -79,12 +79,12 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="flex gap-6">
-        <div className="w-2/3 space-y-6">
-          <Card className="p-6">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full space-y-6 lg:w-2/3">
+          <Card className="p-5 sm:p-6">
             <h3 className="mb-3 text-sm font-medium text-slate-500">Tiến độ tổng quát</h3>
-            <div className="mb-4 flex items-baseline gap-3">
-              <span className="text-5xl font-semibold tracking-tight text-slate-900">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+              <span className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
                 {stats.coverage}%
               </span>
               <span className="text-sm text-slate-500">
@@ -114,8 +114,8 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <div className="flex gap-6">
-            <Card className="relative w-1/3 min-h-[200px] overflow-hidden p-6">
+          <div className="flex flex-col gap-6 sm:flex-row">
+            <Card className="relative min-h-[180px] w-full overflow-hidden p-5 sm:w-1/3 sm:p-6">
               <div className="relative z-10 flex h-full flex-col">
                 <h3 className="text-sm font-medium text-slate-500 flex items-center gap-2">
                   <Flame className="text-orange-500" size={16} /> Chuỗi học tập
@@ -162,9 +162,9 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            <Card className="w-2/3 p-6">
+            <Card className="w-full p-5 sm:w-2/3 sm:p-6">
               <h3 className="mb-6 text-sm font-medium text-slate-500">Tiến độ theo danh mục</h3>
-              <div className="flex h-32 items-end justify-around">
+              <div className="flex h-32 items-end justify-around gap-2">
                 {skillData.map((skill) => (
                   <div key={skill.name} className="flex flex-col items-center gap-3">
                     <div className="relative flex h-24 w-7 items-end overflow-hidden rounded-full bg-slate-100">
@@ -183,8 +183,8 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <Card className="p-6">
-            <div className="grid grid-cols-4 gap-6">
+          <Card className="p-5 sm:p-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
               <Stat icon={<BookOpen size={36} className="text-teal-600" strokeWidth={1.5} />}
                 value={stats.totalAttempts.toLocaleString()}
                 label="Lượt trả lời"
@@ -208,8 +208,8 @@ export default function DashboardPage() {
           </Card>
 
           {lastMock ? (
-            <Card className={`p-6 ${lastMock.passed ? 'bg-teal-50' : 'bg-orange-50'}`}>
-              <div className="flex items-center justify-between">
+            <Card className={`p-5 sm:p-6 ${lastMock.passed ? 'bg-teal-50' : 'bg-orange-50'}`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md ${
@@ -220,9 +220,9 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Lần thi thử gần nhất</div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-base font-bold text-gray-900 sm:text-lg">
                       {lastMock.score} / {lastMock.total} câu đúng
-                      <span className="ml-2 text-sm font-normal text-gray-500">
+                      <span className="block text-sm font-normal text-gray-500 sm:ml-2 sm:inline">
                         ({lastMock.passed ? 'Đạt' : 'Chưa đạt'} • cần ≥{MOCK_TEST_PASS_THRESHOLD}/{MOCK_TEST_QUESTION_COUNT})
                       </span>
                     </div>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           ) : null}
         </div>
 
-        <div className="w-1/3">
+        <div className="hidden lg:block lg:w-1/3">
           <div className="relative h-full min-h-[600px]">
             <Image
               src="/images/n400/illu-flag-holding-transparent.png"

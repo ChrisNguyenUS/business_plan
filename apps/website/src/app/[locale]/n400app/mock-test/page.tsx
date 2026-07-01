@@ -219,7 +219,7 @@ export default function MockTestPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <span className="text-sm font-medium text-gray-700">
             Câu {index + 1} / {MOCK_TEST_QUESTION_COUNT}
           </span>
@@ -230,11 +230,11 @@ export default function MockTestPage() {
         <ProgressBar progress={((index + 1) / MOCK_TEST_QUESTION_COUNT) * 100} heightClass="h-2" />
       </div>
 
-      <Card className="p-8 max-w-3xl mx-auto">
-        <div className="flex items-start justify-between gap-4 mb-6">
+      <Card className="mx-auto max-w-3xl p-5 sm:p-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
-            <div className="text-xl font-bold text-gray-800 leading-snug">
+            <div className="text-lg font-bold leading-snug text-gray-800 sm:text-xl">
               {question.questionEn}
             </div>
             <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
@@ -250,13 +250,13 @@ export default function MockTestPage() {
                 key={opt.id}
                 type="button"
                 onClick={() => onPick(opt.id)}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left transition-all sm:gap-4 ${
                   isPicked
                     ? 'border-teal-600 bg-teal-50 shadow-sm'
                     : 'border-gray-200 hover:border-teal-300 bg-white'
                 }`}
               >
-                <div className="font-bold text-gray-800 w-6">{opt.id}</div>
+                <div className="w-6 shrink-0 font-bold text-gray-800">{opt.id}</div>
                 <div className="flex-1 text-gray-800 font-medium">
                   <div>{opt.en}</div>
                   {opt.vi !== opt.en ? (
@@ -279,7 +279,7 @@ export default function MockTestPage() {
           </div>
         ) : null}
 
-        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
+        <div className="mt-8 flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs text-gray-500">
             ⚠️ Đáp án sẽ chỉ hiển thị khi bạn hoàn thành tất cả 20 câu.
           </div>
@@ -287,7 +287,7 @@ export default function MockTestPage() {
             type="button"
             onClick={onNext}
             disabled={pick.pickedId === null || submitting}
-            className="py-3 px-6 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting && isLast
               ? 'Đang chấm bài...'
@@ -318,8 +318,8 @@ function Intro({
   onDiscard: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[3fr_2fr] gap-8 items-start animate-in fade-in duration-300">
-      <Card className="p-8">
+    <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-start animate-in fade-in duration-300">
+      <Card className="p-5 sm:p-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
             <ClipboardCheck size={26} />
@@ -385,7 +385,7 @@ function Intro({
         </button>
       </Card>
 
-      <div className="relative h-[420px] rounded-3xl overflow-hidden">
+      <div className="hidden h-[420px] overflow-hidden rounded-3xl lg:relative lg:block">
         <Image
           src="/images/n400/illu-flag-holding-transparent.png"
           alt=""
@@ -432,10 +432,10 @@ function Result({
 
       {result.milestone !== null ? <MilestoneBanner days={result.milestone} /> : null}
 
-      <Card className={`p-8 text-center ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>
-        <div className="flex items-center justify-center gap-3 mb-4">
+      <Card className={`p-5 text-center sm:p-8 ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>
+        <div className="mb-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Trophy className={passed ? 'text-teal-600' : 'text-orange-500'} size={40} />
-          <h3 className="text-3xl font-extrabold text-gray-800">
+          <h3 className="text-2xl font-extrabold text-gray-800 sm:text-3xl">
             {passed ? 'Chúc mừng! Bạn đã vượt qua!' : 'Cố lên! Lần sau bạn sẽ làm tốt hơn.'}
           </h3>
         </div>
@@ -465,7 +465,7 @@ function Result({
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-5 sm:p-6">
         <h4 className="font-bold text-gray-800 mb-4">Chi tiết các câu trả lời</h4>
         <div className="space-y-3">
           {slides.map((slide, i) => {

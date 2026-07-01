@@ -140,10 +140,10 @@ export default function PracticePage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-[3fr_2fr] gap-6 items-start">
-        <Card className="p-8 flex flex-col">
-          <div className="flex items-start gap-4 mb-8">
-            <div className="relative w-28 h-28 shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+        <Card className="flex flex-col p-5 sm:p-8">
+          <div className="mb-6 flex items-start gap-3 sm:mb-8 sm:gap-4">
+            <div className="relative h-20 w-20 shrink-0 sm:h-28 sm:w-28">
               <Image
                 src="/images/n400/illu-studying.png"
                 alt=""
@@ -153,21 +153,21 @@ export default function PracticePage() {
                 priority
               />
             </div>
-            <div className="relative bg-gray-50 rounded-2xl rounded-bl-none px-5 py-3 mt-6 border border-gray-200">
+            <div className="relative mt-3 rounded-2xl rounded-bl-none border border-gray-200 bg-gray-50 px-4 py-3 sm:mt-6 sm:px-5">
               <div className="text-sm text-gray-600 leading-tight">Cùng chinh phục</div>
               <div className="text-lg font-extrabold text-gray-900 leading-tight">N400!</div>
             </div>
           </div>
 
-          <div className="flex items-start justify-between gap-3 mb-6">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
               <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
-              <div className="text-xl font-bold text-gray-800 leading-snug">
+              <div className="text-lg font-bold leading-snug text-gray-800 sm:text-xl">
                 {question.questionEn}
               </div>
               <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
             </div>
-            <div className="flex flex-col gap-2 items-end shrink-0">
+            <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
               <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" />
               <button
                 type="button"
@@ -213,9 +213,9 @@ export default function PracticePage() {
                   type="button"
                   disabled={revealed}
                   onClick={() => onPick(opt.id)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${style}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left transition-all sm:gap-4 ${style}`}
                 >
-                  <div className="font-bold text-gray-800 w-6">{opt.id}</div>
+                  <div className="w-6 shrink-0 font-bold text-gray-800">{opt.id}</div>
                   <div className="flex-1 text-gray-800 font-medium">
                     <div>{opt.en}</div>
                     {opt.vi !== opt.en ? (
@@ -264,12 +264,12 @@ export default function PracticePage() {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-[1fr_2fr] gap-4 mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-8 grid grid-cols-1 gap-3 border-t border-gray-100 pt-6 sm:grid-cols-[1fr_2fr] sm:gap-4">
             <button
               type="button"
               onClick={() => setRevealed(true)}
               disabled={revealed}
-              className="py-3.5 rounded-xl border border-gray-200 bg-white font-semibold text-gray-700 flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white py-3.5 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Lightbulb size={16} />
               <span className="leading-tight text-left">
@@ -281,7 +281,7 @@ export default function PracticePage() {
             <button
               type="button"
               onClick={onNext}
-              className="py-3.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3.5 font-semibold text-white shadow-md hover:bg-teal-700"
             >
               <span>Tiếp theo / Next</span>
               <ArrowRight size={16} />
@@ -289,8 +289,8 @@ export default function PracticePage() {
           </div>
         </Card>
 
-        <div className="flex flex-col gap-6">
-          <div className="relative h-[420px] rounded-3xl overflow-hidden">
+        <div className="hidden flex-col gap-6 lg:flex">
+          <div className="relative h-[420px] overflow-hidden rounded-3xl">
             <Image
               src="/images/n400/illu-statue-city.png"
               alt="Statue of Liberty with American flag and city skyline"
@@ -312,7 +312,7 @@ export default function PracticePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <TipCard
               icon={<Target size={20} />}
               tone="teal"
