@@ -29,7 +29,7 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <h1 className="text-4xl lg:text-6xl font-bold text-white mb-4 leading-tight">
             {dictionary.hero_headline}
           </h1>
@@ -39,11 +39,11 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
           <p className="text-white/60 text-base mb-8 leading-relaxed">
             {dictionary.hero_desc}
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link href={`/${locale}/contact`}>
               <Button
                 size="lg"
-                className="w-full bg-primary hover:bg-teal-dark text-white rounded-full px-8 gap-2 sm:w-auto cursor-pointer"
+                className="w-full bg-primary hover:bg-teal-dark text-white rounded-full px-6 gap-2 sm:w-auto cursor-pointer"
               >
                 <Calendar className="h-4 w-4" />
                 {dictionary.hero_cta1}
@@ -53,7 +53,7 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full text-white border-white/30 hover:bg-white/10 rounded-full px-8 gap-2 sm:w-auto cursor-pointer"
+                className="w-full text-white border-white/30 hover:bg-white/10 rounded-full px-6 gap-2 sm:w-auto cursor-pointer"
               >
                 {dictionary.hero_cta2}
                 <ArrowRight className="h-4 w-4" />
@@ -62,7 +62,7 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
             <Link href={`/${locale}/n400app`}>
               <Button
                 size="lg"
-                className="w-full bg-white/95 hover:bg-white text-purple-700 rounded-full px-8 gap-2 sm:w-auto cursor-pointer shadow-lg group"
+                className="w-full bg-white/95 hover:bg-white text-purple-700 rounded-full px-6 gap-2 sm:w-auto cursor-pointer shadow-lg group"
               >
                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-white shadow-sm">
                   <span className="text-[8px] font-black leading-none">N400</span>
