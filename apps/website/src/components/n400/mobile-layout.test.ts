@@ -37,4 +37,15 @@ describe('N400 mobile layout contracts', () => {
     expect(dashboard).toContain('mt-1 flex -space-x-1.5');
     expect(dashboard).not.toContain('flex -space-x-1.5 ml-1');
   });
+
+  test('statistics screen avoids fixed desktop columns on mobile', () => {
+    const statistic = source('src/app/[locale]/n400app/statistic/page.tsx');
+
+    expect(statistic).toContain('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5');
+    expect(statistic).toContain('flex flex-col gap-6 xl:flex-row');
+    expect(statistic).toContain('grid grid-cols-1 gap-6 xl:grid-cols-3');
+    expect(statistic).not.toContain('grid grid-cols-5 gap-4');
+    expect(statistic).not.toContain('className="w-3/5');
+    expect(statistic).not.toContain('className="w-2/5');
+  });
 });
