@@ -30,6 +30,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
     { label: dictionary.nav_services, href: `/${locale}/services`, hasDropdown: true },
     { label: dictionary.nav_about, href: `/${locale}/about` },
     { label: "Blog", href: `/${locale}/blog` },
+    { label: "N400 Ready", href: `/${locale}/n400app` },
     { label: dictionary.nav_contact, href: `/${locale}/contact` },
   ];
 

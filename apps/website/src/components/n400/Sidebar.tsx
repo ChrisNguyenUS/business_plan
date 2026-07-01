@@ -63,7 +63,7 @@ export function Sidebar() {
           <Shield size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="font-extrabold text-lg text-gray-800 leading-tight">Gamify N400</h1>
+          <h1 className="font-extrabold text-lg text-gray-800 leading-tight">N400 Ready</h1>
           <p className="text-[10px] text-gray-500 uppercase tracking-wider">
             Tự tin chinh phục
             <br />
