@@ -191,6 +191,7 @@ export default function PracticePage() {
               </button>
             </div>
           </div>
+          </div>
 
           <div className="space-y-3 flex-1 overflow-y-auto min-h-0 pr-2 pb-4">
             {options.map((opt) => {
@@ -234,7 +235,6 @@ export default function PracticePage() {
                 </button>
               );
             })}
-          </div>
 
           {revealed ? (
             <div
@@ -272,6 +272,7 @@ export default function PracticePage() {
               </ul>
             </div>
           ) : null}
+          </div>
 
           <div className="mt-auto grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-[1fr_2fr] sm:gap-4 shrink-0 bg-white z-10">
             <button
