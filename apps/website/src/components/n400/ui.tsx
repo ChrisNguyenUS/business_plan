@@ -7,7 +7,7 @@ type CardProps = {
 
 export function Card({ children, className = '' }: CardProps) {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-5 ${className}`}>
+    <div className={`bg-white rounded-[24px] shadow-sm border border-slate-100 p-6 sm:p-8 ${className}`}>
       {children}
     </div>
   );
@@ -25,9 +25,9 @@ export function ProgressBar({
   heightClass = 'h-2',
 }: ProgressBarProps) {
   return (
-    <div className={`w-full bg-gray-100 rounded-full overflow-hidden ${heightClass}`}>
+    <div className={`w-full bg-slate-100 rounded-full overflow-hidden ${heightClass}`}>
       <div
-        className={`${heightClass} ${colorClass} rounded-full`}
+        className={`${heightClass} ${colorClass} rounded-full transition-all duration-1000 ease-out`}
         style={{ width: `${progress}%` }}
       />
     </div>
