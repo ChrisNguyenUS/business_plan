@@ -108,13 +108,7 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto">
       
-      {/* Header Area */}
-      <div className="mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
-          Tổng quan
-        </h1>
-        <p className="text-slate-500 mt-2 text-lg font-medium">Chào mừng trở lại! Sẵn sàng chinh phục mục tiêu hôm nay chứ? 🚀</p>
-      </div>
+
 
       <div className="flex flex-col xl:flex-row gap-8">
         
@@ -316,66 +310,64 @@ export default function DashboardPage() {
         {/* ================================================== */}
         <div className="w-full xl:w-[380px] flex flex-col gap-8">
           
-          {/* Liberty Section & Daily Goals */}
-          <div className="relative pt-[180px] sm:pt-[200px]">
-            {/* Supporting Illustration */}
-            <div className="absolute top-0 right-4 z-10 w-[240px] h-[280px] sm:w-[280px] sm:h-[320px] pointer-events-none drop-shadow-2xl">
-              <Image
-                src="/images/n400/illu-flag-holding-transparent.png"
-                alt="Statue of Liberty"
-                fill
-                className="object-contain object-bottom"
-                sizes="280px"
-                priority
-              />
-            </div>
-
-            {/* Daily Goals Card */}
-            <Card className="relative z-0 border-teal-100 bg-white pt-20 shadow-md">
-              <div className="absolute top-0 left-0 w-full h-28 bg-gradient-to-b from-teal-50 to-transparent rounded-t-[24px]"></div>
-              
-              <div className="relative z-10">
-                <h3 className="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-                  <Target className="text-teal-600" size={24} />
-                  Mục tiêu hôm nay
-                </h3>
-                
-                <div className="space-y-8">
-                  {/* Goal 1 */}
-                  <div>
-                    <div className="flex justify-between items-end mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600 shadow-sm">
-                          <Zap size={24} fill="currentColor" />
-                        </div>
-                        <span className="font-bold text-slate-700 text-base">Trả lời {GOAL_QUESTIONS} câu hỏi</span>
-                      </div>
-                      <span className="text-base font-bold text-slate-500">{todayQuestions} <span className="text-sm">/ {GOAL_QUESTIONS}</span></span>
-                    </div>
-                    <ProgressBar progress={qProgress} heightClass="h-3" colorClass="bg-orange-500" />
-                  </div>
-                  
-                  {/* Goal 2 */}
-                  <div>
-                    <div className="flex justify-between items-end mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 shadow-sm">
-                          <Layers size={24} fill="currentColor" />
-                        </div>
-                        <span className="font-bold text-slate-700 text-base">Ôn tập Flashcards</span>
-                      </div>
-                      <span className="text-base font-bold text-slate-500">0 <span className="text-sm">/ 15</span></span>
-                    </div>
-                    <ProgressBar progress={0} heightClass="h-3" colorClass="bg-purple-500" />
-                  </div>
-                </div>
-
-                <button className="w-full mt-10 py-4 rounded-2xl bg-slate-100 text-slate-700 font-bold text-base hover:bg-slate-200 transition-colors">
-                  Xem tất cả nhiệm vụ
-                </button>
+          {/* Daily Goals Card with Liberty */}
+          <Card className="!p-0 border-teal-100 bg-white shadow-md overflow-hidden flex flex-col">
+            {/* Supporting Illustration Area (Clipped inside the card) */}
+            <div className="relative h-[240px] bg-gradient-to-b from-teal-50 to-white flex items-end justify-center px-4 pt-6">
+              <div className="relative w-[220px] h-full pointer-events-none">
+                <Image
+                  src="/images/n400/illu-flag-holding-transparent.png"
+                  alt="Statue of Liberty"
+                  fill
+                  className="object-contain object-bottom drop-shadow-xl"
+                  sizes="220px"
+                  priority
+                />
               </div>
-            </Card>
-          </div>
+            </div>
+            
+            {/* Card Content */}
+            <div className="p-8 sm:p-10 pt-4 relative z-10 bg-white">
+              <h3 className="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+                <Target className="text-teal-600" size={24} />
+                Mục tiêu hôm nay
+              </h3>
+              
+              <div className="space-y-8">
+                {/* Goal 1 */}
+                <div>
+                  <div className="flex justify-between items-end mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600 shadow-sm">
+                        <Zap size={24} fill="currentColor" />
+                      </div>
+                      <span className="font-bold text-slate-700 text-base">Trả lời {GOAL_QUESTIONS} câu hỏi</span>
+                    </div>
+                    <span className="text-base font-bold text-slate-500">{todayQuestions} <span className="text-sm">/ {GOAL_QUESTIONS}</span></span>
+                  </div>
+                  <ProgressBar progress={qProgress} heightClass="h-3" colorClass="bg-orange-500" />
+                </div>
+                
+                {/* Goal 2 */}
+                <div>
+                  <div className="flex justify-between items-end mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 shadow-sm">
+                        <Layers size={24} fill="currentColor" />
+                      </div>
+                      <span className="font-bold text-slate-700 text-base">Ôn tập Flashcards</span>
+                    </div>
+                    <span className="text-base font-bold text-slate-500">0 <span className="text-sm">/ 15</span></span>
+                  </div>
+                  <ProgressBar progress={0} heightClass="h-3" colorClass="bg-purple-500" />
+                </div>
+              </div>
+
+              <button className="w-full mt-10 py-4 rounded-2xl bg-slate-100 text-slate-700 font-bold text-base hover:bg-slate-200 transition-colors">
+                Xem tất cả nhiệm vụ
+              </button>
+            </div>
+          </Card>
 
 
           {/* Streak Card */}
