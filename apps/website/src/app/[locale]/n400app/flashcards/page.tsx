@@ -173,7 +173,7 @@ export default function FlashcardsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col lg:h-[calc(100vh-130px)] animate-in fade-in duration-300 max-w-4xl mx-auto w-full">
+    <div className="flex flex-col lg:h-[calc(100vh-130px)] gap-4 animate-in fade-in duration-300 max-w-3xl mx-auto w-full">
       {unlockedBadges.length > 0 ? (
         <BadgeUnlockToast
           slugs={unlockedBadges}
@@ -184,7 +184,7 @@ export default function FlashcardsPage() {
 
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
-      <div className="flex items-center gap-3 flex-wrap shrink-0 mb-4">
+      <div className="flex items-center gap-3 flex-wrap shrink-0">
         <Filter size={16} className="text-slate-400" />
         <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Bộ lọc:</span>
         {FILTER_OPTIONS.map((f) => (
@@ -203,7 +203,7 @@ export default function FlashcardsPage() {
         ))}
       </div>
 
-      <div className="shrink-0 mb-4 mt-2">
+      <div className="shrink-0 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm text-slate-700">
           <span className="font-bold text-base">
             Thẻ {index + 1} / {total}
@@ -229,7 +229,7 @@ export default function FlashcardsPage() {
           >
             {/* Front: question */}
             <div
-              className="absolute inset-0 p-6 sm:p-10 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-y-auto hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
+              className="absolute inset-0 p-8 sm:p-12 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-y-auto hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
               style={{ backfaceVisibility: 'hidden' }}
             >
               <div className="flex items-center justify-between mb-2">
@@ -266,8 +266,8 @@ export default function FlashcardsPage() {
                 </div>
               </div>
               
-              <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-6 opacity-90 drop-shadow-sm">
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-4 min-h-0">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-4 opacity-90 drop-shadow-sm shrink-0">
                   <Image
                     src="/images/n400/illu-studying.png"
                     alt=""
@@ -291,7 +291,7 @@ export default function FlashcardsPage() {
 
             {/* Back: answers */}
             <div
-              className="absolute inset-0 p-6 sm:p-10 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-y-auto hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
+              className="absolute inset-0 p-8 sm:p-12 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-y-auto hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
@@ -305,7 +305,7 @@ export default function FlashcardsPage() {
                   <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center text-center py-6 w-full">
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-4 w-full min-h-0">
                 <ul className="space-y-4 w-full max-w-2xl text-center">
                   {answers.map((a, i) => (
                     <li
@@ -328,7 +328,7 @@ export default function FlashcardsPage() {
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-3 sm:gap-6 pt-4 pb-2 shrink-0">
+      <div className="flex items-center justify-center gap-3 sm:gap-6 pt-4 shrink-0">
         <button
           type="button"
           onClick={goPrev}

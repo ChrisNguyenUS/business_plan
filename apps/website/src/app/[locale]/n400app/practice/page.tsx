@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw, Flame } from 'lucide-react';
+import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
@@ -49,7 +49,6 @@ export default function PracticePage() {
 
   useEffect(() => {
     if (revealed && explanationRef.current) {
-      // Small timeout to allow render to complete before scrolling
       setTimeout(() => {
         explanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }, 50);
@@ -123,7 +122,7 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="flex flex-col lg:h-[calc(100vh-130px)] animate-in fade-in duration-300">
+    <div className="flex flex-col gap-4 lg:h-[calc(100vh-130px)] animate-in fade-in duration-300">
       {unlockedBadges.length > 0 ? (
         <BadgeUnlockToast
           slugs={unlockedBadges}
@@ -134,17 +133,17 @@ export default function PracticePage() {
 
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
-      <div className="flex items-center justify-between gap-4 mb-4 shrink-0">
+      <div className="flex items-center justify-between gap-4 shrink-0">
         <div className="flex-1">
-          <div className="flex items-center justify-between text-sm font-bold text-slate-700 mb-2">
-            <span>Câu hỏi {index + 1} / {TOTAL}</span>
+          <div className="text-sm font-medium text-gray-700 mb-3">
+            Câu hỏi {index + 1} / {TOTAL}
           </div>
           <ProgressBar progress={((index + 1) / TOTAL) * 100} heightClass="h-2" />
         </div>
         <button
           type="button"
           onClick={onRestart}
-          className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm"
+          className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm"
         >
           <RotateCw size={14} /> Trộn lại
         </button>
@@ -152,52 +151,68 @@ export default function PracticePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 flex-1 min-h-0 items-start lg:items-stretch">
         <Card className="flex flex-col p-5 sm:p-8 h-full overflow-hidden min-h-0">
-          <div className="mb-4 flex items-start justify-between shrink-0">
-            <div className="flex-1 pr-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-teal-600 mb-2 bg-teal-50 inline-block px-3 py-1 rounded-full">Câu hỏi / Question #{question.id}</div>
-              <div className="text-lg sm:text-2xl font-bold leading-snug text-slate-800">
+          <div className="shrink-0">
+            <div className="mb-4 flex items-start gap-3 sm:gap-4">
+              <div className="relative h-20 w-20 shrink-0 sm:h-28 sm:w-28">
+              <Image
+                src="/images/n400/illu-studying.png"
+                alt=""
+                fill
+                className="object-contain"
+                sizes="112px"
+                priority
+              />
+            </div>
+            <div className="relative mt-3 rounded-2xl rounded-bl-none border border-gray-200 bg-gray-50 px-4 py-3 sm:mt-6 sm:px-5">
+              <div className="text-sm text-gray-600 leading-tight">Cùng chinh phục</div>
+              <div className="text-lg font-extrabold text-gray-900 leading-tight">N400!</div>
+            </div>
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1">
+              <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
+              <div className="text-lg font-bold leading-snug text-gray-800 sm:text-xl">
                 {question.questionEn}
               </div>
-              <div className="text-sm sm:text-base text-slate-500 mt-1 font-medium">{question.questionVi}</div>
+              <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
             </div>
-            <div className="flex flex-col items-center gap-2 shrink-0">
-              <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
+            <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-end">
+              <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" />
               <button
                 type="button"
                 onClick={() => toggleBookmark(question.id)}
                 aria-label="Đánh dấu"
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   isBookmarked
-                    ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
-                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                    ? 'bg-amber-50 text-amber-500'
+                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                 }`}
               >
-                <Bookmark size={14} fill={isBookmarked ? 'currentColor' : 'none'} />
+                <Bookmark size={16} fill={isBookmarked ? 'currentColor' : 'none'} />
               </button>
             </div>
           </div>
 
-          <div className="space-y-2 flex-1 overflow-y-auto min-h-0 pr-2 pb-4">
+          <div className="space-y-3 flex-1 overflow-y-auto min-h-0 pr-2 pb-4">
             {options.map((opt) => {
               const isPicked = selected === opt.id;
-              let style = 'border-slate-200 hover:border-teal-300 bg-white';
+              let style = 'border-gray-200 hover:border-teal-300 bg-white';
               let mark = (
-                <span className="w-5 h-5 rounded-full border-2 border-slate-200" />
+                <span className="w-6 h-6 rounded-full border-2 border-gray-200" />
               );
 
               if (revealed) {
                 if (opt.isCorrect) {
                   style = 'border-teal-600 bg-teal-50';
-                  mark = <CheckCircle size={20} className="text-teal-600" />;
+                  mark = <CheckCircle size={22} className="text-teal-600" />;
                 } else if (isPicked) {
                   style = 'border-red-400 bg-red-50';
-                  mark = <XCircle size={20} className="text-red-500" />;
+                  mark = <XCircle size={22} className="text-red-500" />;
                 } else {
-                  style = 'border-slate-200 bg-white opacity-60';
+                  style = 'border-gray-200 bg-white opacity-70';
                 }
               } else if (isPicked) {
                 style = 'border-teal-600 bg-white shadow-sm';
-                mark = <CheckCircle size={20} className="text-teal-600" />;
+                mark = <CheckCircle size={22} className="text-teal-600" />;
               }
 
               return (
@@ -206,74 +221,76 @@ export default function PracticePage() {
                   type="button"
                   disabled={revealed}
                   onClick={() => onPick(opt.id)}
-                  className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all ${style}`}
+                  className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left transition-all sm:gap-4 ${style}`}
                 >
-                  <div className="w-6 shrink-0 font-bold text-slate-800 text-center">{opt.id}</div>
-                  <div className="flex-1 text-slate-800 font-medium leading-tight">
-                    <div className="text-[15px]">{opt.en}</div>
+                  <div className="w-6 shrink-0 font-bold text-gray-800">{opt.id}</div>
+                  <div className="flex-1 text-gray-800 font-medium">
+                    <div>{opt.en}</div>
                     {opt.vi !== opt.en ? (
-                      <div className="text-[13px] text-slate-500 mt-0.5">{opt.vi}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{opt.vi}</div>
                     ) : null}
                   </div>
                   {mark}
                 </button>
               );
             })}
-
-            {revealed ? (
-              <div
-                ref={explanationRef}
-                className={`mt-4 rounded-2xl p-4 border-l-4 shrink-0 ${
-                  correctOption?.id === selected
-                    ? 'bg-teal-50 border-teal-500'
-                    : 'bg-orange-50 border-orange-500'
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <Lightbulb className="text-amber-500" size={18} />
-                  <div className="font-bold text-slate-800">
-                    {correctOption?.id === selected
-                      ? 'Chính xác! / Correct!'
-                      : 'Chưa đúng / Not quite'}
-                  </div>
-                  <AudioButton
-                    src={answerAudioUrlFor(question, stateCode, districtNumber)}
-                    label="Nghe đáp án"
-                    size="sm"
-                    className="ml-auto"
-                  />
-                </div>
-                <div className="text-sm text-slate-700 mb-1">
-                  <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
-                </div>
-                <ul className="text-sm text-slate-700 space-y-1 list-disc pl-5">
-                  {(allCorrect.length > 0 ? allCorrect : question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }))).map((a, i) => (
-                    <li key={i}>
-                      <span className="font-medium">{a.en}</span>
-                      {a.vi !== a.en ? <span className="text-slate-500"> — {a.vi}</span> : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
           </div>
 
-          <div className="mt-auto grid grid-cols-1 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-[1fr_2fr] sm:gap-4 shrink-0 bg-white z-10">
+          {revealed ? (
+            <div
+              ref={explanationRef}
+              className={`mt-4 rounded-2xl p-5 border-l-4 shrink-0 ${
+                correctOption?.id === selected
+                  ? 'bg-teal-50 border-teal-500'
+                  : 'bg-orange-50 border-orange-500'
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Lightbulb className="text-amber-500" size={18} />
+                <div className="font-bold text-gray-800">
+                  {correctOption?.id === selected
+                    ? 'Chính xác! / Correct!'
+                    : 'Chưa đúng / Not quite'}
+                </div>
+                <AudioButton
+                  src={answerAudioUrlFor(question, stateCode, districtNumber)}
+                  label="Nghe đáp án"
+                  size="sm"
+                  className="ml-auto"
+                />
+              </div>
+              <div className="text-sm text-gray-700 mb-1">
+                <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
+              </div>
+              <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                {(allCorrect.length > 0 ? allCorrect : question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }))).map((a, i) => (
+                  <li key={i}>
+                    <span className="font-medium">{a.en}</span>
+                    {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="mt-auto grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-[1fr_2fr] sm:gap-4 shrink-0 bg-white z-10">
             <button
               type="button"
               onClick={() => setRevealed(true)}
               disabled={revealed}
-              className="flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white py-3 font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white py-3.5 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Lightbulb size={16} />
-              <span className="leading-tight text-left text-sm">
+              <span className="leading-tight text-left">
                 Xem đáp án
+                <br />
+                <span className="text-xs font-normal text-gray-500">Reveal</span>
               </span>
             </button>
             <button
               type="button"
               onClick={onNext}
-              className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md hover:bg-teal-700 text-sm"
+              className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3.5 font-semibold text-white shadow-md hover:bg-teal-700"
             >
               <span>Tiếp theo / Next</span>
               <ArrowRight size={16} />
@@ -282,35 +299,80 @@ export default function PracticePage() {
         </Card>
 
         <div className="hidden lg:flex flex-col gap-4 h-full overflow-hidden">
-          <div className="grid grid-cols-2 gap-3 shrink-0">
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center">
-              <div className="text-sm font-bold text-slate-500 mb-1">Chuỗi ngày</div>
-              <div className="text-2xl font-black text-orange-500 flex items-center gap-1">
-                <Flame size={20} fill="currentColor" />
-                {state.streak.current}
-              </div>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center">
-              <div className="text-sm font-bold text-slate-500 mb-1">Độ chính xác</div>
-              <div className="text-2xl font-black text-teal-600 flex items-center gap-1">
-                <Target size={20} />
-                {state.attempts.length > 0 ? Math.round((state.attempts.filter(a => a.wasCorrect).length / state.attempts.length) * 100) : 0}%
-              </div>
-            </div>
-          </div>
-
-          <div className="relative flex-1 min-h-0 overflow-hidden rounded-3xl bg-gradient-to-b from-slate-50/50 to-slate-100/50">
+          <div className="relative flex-1 min-h-0 overflow-hidden rounded-3xl">
             <Image
               src="/images/n400/illu-statue-city.png"
-              alt="Statue of Liberty"
+              alt="Statue of Liberty with American flag and city skyline"
               fill
               className="object-contain object-bottom"
               sizes="500px"
               priority
             />
           </div>
+
+          <div className="shrink-0 space-y-4">
+            <div className="text-center">
+            <h2 className="text-xl font-bold text-gray-800 leading-snug">
+              Mỗi câu trả lời đúng
+              <br />
+              là một bước gần hơn đến ước mơ!
+            </h2>
+            <p className="text-sm text-gray-500 mt-2">
+              Giữ vững phong độ và chinh phục N400 nhé! 💪
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <TipCard
+              icon={<Target size={20} />}
+              tone="teal"
+              title="Tập trung mỗi ngày"
+              desc="Tiến bộ hơn 1% hôm nay tốt hơn ngày mai."
+            />
+            <TipCard
+              icon={<Award size={20} />}
+              tone="orange"
+              title="Thử thách bản thân"
+              desc="Càng luyện tập nhiều, kết quả càng bứt phá."
+            />
+            <TipCard
+              icon={<Rocket size={20} />}
+              tone="purple"
+              title="Chinh phục mục tiêu"
+              desc="N400 không còn xa khi bạn không bỏ cuộc."
+            />
+          </div>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TipCard({
+  icon,
+  tone,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  tone: 'teal' | 'orange' | 'purple';
+  title: string;
+  desc: string;
+}) {
+  const styles = {
+    teal: 'bg-teal-50 text-teal-600',
+    orange: 'bg-orange-50 text-orange-500',
+    purple: 'bg-purple-50 text-purple-600',
+  } as const;
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles[tone]}`}>
+        {icon}
+      </div>
+      <div className="font-bold text-sm text-gray-800 mb-1 leading-tight">{title}</div>
+      <div className="text-[11px] text-gray-500 leading-snug">{desc}</div>
     </div>
   );
 }
