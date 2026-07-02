@@ -213,7 +213,7 @@ export default function FlashcardsPage() {
         <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-2.5" />
       </div>
 
-      <div className="relative flex-1 min-h-0 w-full" style={{ perspective: 2000 }}>
+      <div className="relative w-full min-h-[420px]" style={{ perspective: 2000 }}>
         <button
           type="button"
           onClick={() => setFlipped((f) => !f)}
@@ -221,7 +221,7 @@ export default function FlashcardsPage() {
           className="block w-full h-full outline-none text-left"
         >
           <div
-            className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
+            className="grid w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
             style={{
               transformStyle: 'preserve-3d',
               transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -229,7 +229,7 @@ export default function FlashcardsPage() {
           >
             {/* Front: question */}
             <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
+              className="[grid-area:1/1] p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col relative min-h-full transition-shadow duration-500 hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)]"
               style={{ backfaceVisibility: 'hidden' }}
             >
               {/* Decorative Layer: Liberty */}
@@ -270,33 +270,31 @@ export default function FlashcardsPage() {
                 </span>
               </div>
 
-              {/* Region 1: Question Badge */}
-              <div className="shrink-0 h-10 flex items-start relative z-20 mb-2">
+              {/* Normal Document Flow */}
+              {/* 1. Question Badge */}
+              <div className="shrink-0 flex items-start relative z-20 mb-16 sm:mb-20">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full inline-flex">
                   Câu hỏi / Question #{current.id}
                 </span>
               </div>
 
-              {/* Spacer to clear Liberty Illustration */}
-              <div className="shrink-0 h-12 sm:h-14" />
-
-              {/* Region 2: Question Area (Flexible) */}
-              <div className="flex-1 min-h-0 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10">
-                <div className={`text-center font-bold text-slate-800 leading-[1.3] text-balance max-w-[70%] mx-auto w-full ${current.questionEn.length > 85 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[40px]'}`}>
+              {/* 2. English Question */}
+              <div className="flex-1 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10 mb-8 sm:mb-10">
+                <div className={`text-center font-bold text-slate-800 leading-[1.3] text-balance max-w-[75%] sm:max-w-[78%] mx-auto w-full ${current.questionEn.length > 85 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[40px]'}`}>
                   {current.questionEn}
                 </div>
               </div>
 
-              {/* Region 3: Translation Area (Fixed) */}
-              <div className="shrink-0 h-16 sm:h-20 flex items-center justify-center px-2 sm:px-4 mt-2">
-                <div className="text-base sm:text-xl text-slate-500 font-medium max-w-[70%] text-balance text-center mx-auto w-full">
+              {/* 3. Vietnamese Translation */}
+              <div className="shrink-0 flex justify-center px-2 sm:px-4 mb-8">
+                <div className="text-base sm:text-xl text-slate-500 font-medium max-w-[75%] sm:max-w-[78%] text-balance text-center mx-auto w-full">
                   {current.questionVi}
                 </div>
               </div>
 
-              {/* Region 4: Hint Area (Fixed) */}
-              <div className="shrink-0 h-8 flex items-end justify-center">
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center w-full border-t border-slate-50 pt-3">
+              {/* 4. Hint */}
+              <div className="shrink-0 mt-auto flex items-end justify-center pt-4 border-t border-slate-50">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center w-full">
                   Nhấn vào thẻ để xem đáp án
                 </div>
               </div>
@@ -304,7 +302,7 @@ export default function FlashcardsPage() {
 
             {/* Back: answers */}
             <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
+              className="[grid-area:1/1] p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col relative min-h-full transition-shadow duration-500 hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)]"
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
@@ -315,19 +313,17 @@ export default function FlashcardsPage() {
                 <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
               </div>
 
-              {/* Region 1: Badge */}
-              <div className="shrink-0 h-10 flex items-start relative z-20 mb-2">
+              {/* Normal Document Flow */}
+              {/* 1. Badge */}
+              <div className="shrink-0 flex items-start relative z-20 mb-16 sm:mb-20">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full inline-flex">
                   Đáp án / Answer
                 </span>
               </div>
 
-              {/* Spacer */}
-              <div className="shrink-0 h-12 sm:h-14" />
-
-              {/* Region 2: Answer Area (Flexible) */}
-              <div className="flex-1 min-h-0 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10">
-                <ul className="space-y-6 w-full max-w-[70%] text-center mx-auto">
+              {/* 2. Answers */}
+              <div className="flex-1 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10 mb-8">
+                <ul className="space-y-8 w-full max-w-[75%] sm:max-w-[78%] text-center mx-auto">
                   {answers.map((a, i) => (
                     <li key={i} className="flex flex-col items-center justify-center w-full">
                       <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-2 ${a.en.length > 85 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[40px]'}`}>
@@ -343,9 +339,9 @@ export default function FlashcardsPage() {
                 </ul>
               </div>
 
-              {/* Region 4: Hint Area (Fixed) */}
-              <div className="shrink-0 h-8 flex items-end justify-center">
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center w-full border-t border-teal-100/50 pt-3">
+              {/* 3. Hint Area */}
+              <div className="shrink-0 mt-auto flex items-end justify-center pt-4 border-t border-teal-100/50">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center w-full">
                   Nhấn lại để quay về câu hỏi
                 </div>
               </div>
