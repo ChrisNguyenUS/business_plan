@@ -167,7 +167,8 @@ export default function PracticePage() {
               <div className="text-sm text-gray-600 leading-tight">Cùng chinh phục</div>
               <div className="text-lg font-extrabold text-gray-900 leading-tight">N400!</div>
             </div>
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          </div>
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
               <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
               <div className="text-lg font-bold leading-snug text-gray-800 sm:text-xl">
