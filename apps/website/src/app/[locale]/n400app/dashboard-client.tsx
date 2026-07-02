@@ -124,8 +124,11 @@ export default function DashboardPage() {
     
     let isActive = false;
     if (state.streak.current > 0 && state.streak.lastActivityDate) {
-      const [year, month, day] = state.streak.lastActivityDate.split('-').map(Number);
-      if (year && month && day) {
+      const match = state.streak.lastActivityDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
         const lastActiveMidnight = new Date(year, month - 1, day);
         const dMidnight = new Date(d.getFullYear(), d.getMonth(), d.getDate());
         const diffDays = Math.round((lastActiveMidnight.getTime() - dMidnight.getTime()) / (1000 * 60 * 60 * 24));
