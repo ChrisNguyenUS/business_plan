@@ -90,8 +90,14 @@ export default function DashboardPage() {
   // --- Derived Gamification Data ---
   const xpPerMastered = 10;
   const xpPerAttempt = 2;
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todaysAttempts = state.attempts.filter(a => a.at.startsWith(todayStr));
+
+  const getLocalDateStr = (d: Date) => {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const todayDate = new Date();
+  const todayStrLocal = getLocalDateStr(todayDate);
+
+  const todaysAttempts = state.attempts.filter(a => a.at.startsWith(todayStrLocal));
   const todaysXp = todaysAttempts.length * xpPerAttempt;
   
   const totalXp = (stats.mastered * xpPerMastered) + (stats.totalAttempts * xpPerAttempt);
@@ -104,6 +110,39 @@ export default function DashboardPage() {
   const GOAL_QUESTIONS = 20;
   const todayQuestions = todaysAttempts.length;
   const qProgress = Math.min(Math.round((todayQuestions / GOAL_QUESTIONS) * 100), 100);
+
+  // Streak Calendar Derivation
+  const currentDayOfWeek = todayDate.getDay();
+  const normalizedToday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  const startOfWeek = new Date(todayDate);
+  startOfWeek.setDate(todayDate.getDate() - normalizedToday);
+
+  const weekDaysInfo = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const dateStr = getLocalDateStr(d);
+    
+    let isActive = false;
+    if (state.streak.current > 0 && state.streak.lastActivityDate) {
+      const [year, month, day] = state.streak.lastActivityDate.split('-').map(Number);
+      if (year && month && day) {
+        const lastActiveMidnight = new Date(year, month - 1, day);
+        const dMidnight = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const diffDays = Math.round((lastActiveMidnight.getTime() - dMidnight.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays >= 0 && diffDays < state.streak.current) {
+          isActive = true;
+        }
+      }
+    }
+
+    const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    return {
+      label: dayNames[i],
+      isActive,
+      isToday: dateStr === todayStrLocal
+    };
+  });
 
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto">
@@ -384,18 +423,15 @@ export default function DashboardPage() {
             </div>
 
             {/* Mini Calendar/Progress Row */}
-            <div className="flex justify-between items-center bg-slate-50 p-5 rounded-3xl mb-8 border border-slate-100">
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => {
-                const isActive = day <= (state.streak.current % 7 || 7) && state.streak.current > 0;
-                return (
-                  <div key={day} className="flex flex-col items-center gap-2">
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' : 'bg-slate-200 text-slate-400'}`}>
-                      <Flame size={isActive ? 20 : 18} fill="currentColor" className={isActive ? 'opacity-100' : 'opacity-50'} />
-                    </div>
-                    <span className={`text-[12px] font-bold ${isActive ? 'text-orange-600' : 'text-slate-400'}`}>T{day+1 > 7 ? 'CN' : day+1}</span>
+            <div className="flex justify-between items-center bg-slate-50 p-5 rounded-3xl mb-8 border border-slate-100 relative">
+              {weekDaysInfo.map((info) => (
+                <div key={info.label} className="flex flex-col items-center gap-2 relative z-10">
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${info.isActive ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-110' : 'bg-slate-200 text-slate-400'} ${info.isToday && !info.isActive ? 'ring-2 ring-orange-200 ring-offset-2' : ''}`}>
+                    <Flame size={info.isActive ? 20 : 18} fill="currentColor" className={info.isActive ? 'opacity-100' : 'opacity-50'} />
                   </div>
-                );
-              })}
+                  <span className={`text-[12px] font-bold ${info.isActive ? 'text-orange-600' : info.isToday ? 'text-orange-400' : 'text-slate-400'}`}>{info.label}</span>
+                </div>
+              ))}
             </div>
 
             <div className="flex items-center gap-4 pt-6 border-t border-slate-100">
