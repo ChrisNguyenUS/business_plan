@@ -207,7 +207,7 @@ export default function DashboardPage() {
                     <div className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Huy hiệu tiếp theo</div>
                     <div className="flex items-center gap-3 bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm">
                       <BadgeIcon slug={badges.catalog[0].slug} alt="" size={32} earned={false} />
-                      <div className="text-sm font-bold text-slate-700">{badges.catalog[0].name.vi}</div>
+                      <div className="text-sm font-bold text-slate-700">{badges.catalog[0].title_vi}</div>
                     </div>
                   </div>
                 )}
