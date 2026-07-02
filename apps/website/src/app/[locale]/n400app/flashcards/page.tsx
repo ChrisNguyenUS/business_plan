@@ -223,14 +223,15 @@ export default function FlashcardsPage() {
           <div
             className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
             style={{
+              WebkitTransformStyle: 'preserve-3d',
               transformStyle: 'preserve-3d',
               transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
             }}
           >
             {/* Front: question */}
             <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
-              style={{ backfaceVisibility: 'hidden' }}
+              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
+              style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
             >
               {/* Pinned Layers: Audio & Bookmark */}
               <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-2 sm:gap-3 z-20">
@@ -306,8 +307,9 @@ export default function FlashcardsPage() {
             </div>
 
             <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
+              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
               style={{
+                WebkitBackfaceVisibility: 'hidden',
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
               }}
