@@ -106,10 +106,13 @@ export default function DashboardPage() {
   const xpProgress = totalXp % xpPerLevel;
   const xpProgressPercent = Math.round((xpProgress / xpPerLevel) * 100);
 
-  // Daily Goals Mock Data
+  // Daily Goals Data
   const GOAL_QUESTIONS = 20;
-  const todayQuestions = todaysAttempts.length;
+  const GOAL_FLASHCARDS = 15;
+  const todayQuestions = todaysAttempts.filter(a => a.mode !== 'flashcard').length;
+  const todayFlashcards = todaysAttempts.filter(a => a.mode === 'flashcard').length;
   const qProgress = Math.min(Math.round((todayQuestions / GOAL_QUESTIONS) * 100), 100);
+  const fProgress = Math.min(Math.round((todayFlashcards / GOAL_FLASHCARDS) * 100), 100);
 
   // Streak Calendar Derivation
   const currentDayOfWeek = todayDate.getDay();
@@ -399,9 +402,9 @@ export default function DashboardPage() {
                       </div>
                       <span className="font-bold text-slate-700 text-base">Ôn tập Flashcards</span>
                     </div>
-                    <span className="text-base font-bold text-slate-500">0 <span className="text-sm">/ 15</span></span>
+                    <span className="text-base font-bold text-slate-500">{todayFlashcards} <span className="text-sm">/ {GOAL_FLASHCARDS}</span></span>
                   </div>
-                  <ProgressBar progress={0} heightClass="h-3" colorClass="bg-purple-500" />
+                  <ProgressBar progress={fProgress} heightClass="h-3" colorClass="bg-purple-500" />
                 </div>
               </div>
 
