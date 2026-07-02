@@ -229,46 +229,47 @@ export default function FlashcardsPage() {
           >
             {/* Front: question */}
             <div
-              className="absolute inset-0 p-8 sm:p-12 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
+              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <div className="absolute top-8 left-8 sm:top-12 sm:left-12">
-                <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full">
+              {/* Header */}
+              <div className="shrink-0 flex items-start justify-between mb-4 w-full">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full inline-flex">
                   Câu hỏi / Question #{current.id}
                 </span>
-              </div>
-              <div className="absolute top-8 right-8 sm:top-12 sm:right-12 flex items-center gap-3 z-10">
-                <div className="scale-110">
+                
+                <div className="flex items-center gap-2 sm:gap-3 z-10">
                   <AudioButton src={questionAudioUrl(current.id)} label="Nghe câu hỏi" size="sm" />
-                </div>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleBookmark(current.id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
                       e.stopPropagation();
                       toggleBookmark(current.id);
-                    }
-                  }}
-                  aria-label="Đánh dấu"
-                  className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                    bookmarked
-                      ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
-                      : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                  }`}
-                >
-                  <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-                </span>
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleBookmark(current.id);
+                      }
+                    }}
+                    aria-label="Đánh dấu"
+                    className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                      bookmarked
+                        ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
+                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+                  </span>
+                </div>
               </div>
-              
-              <div className="shrink-0 flex justify-center mt-12 sm:mt-16 mb-4">
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-teal-50 rounded-full flex items-center justify-center">
-                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 opacity-90 drop-shadow-sm">
+
+              {/* Liberty */}
+              <div className="shrink-0 flex justify-center mb-4 sm:mb-6">
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-teal-50/60 rounded-full flex items-center justify-center">
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 opacity-90 drop-shadow-sm">
                     <Image
                       src="/images/n400/illu-studying.png"
                       alt=""
@@ -279,62 +280,67 @@ export default function FlashcardsPage() {
                   </div>
                 </div>
               </div>
-              
-              <div className="flex-1 min-h-0 flex items-center justify-center text-center px-4 overflow-y-auto">
-                <div className={`font-semibold text-slate-800 leading-[1.3] text-balance max-w-[75%] mx-auto w-full ${current.questionEn.length > 100 ? 'text-[22px] sm:text-[32px]' : 'text-[28px] sm:text-[40px]'}`}>
-                  {current.questionEn}
+
+              {/* Question */}
+              <div className="flex-1 min-h-0 overflow-y-auto flex flex-col w-full scrollbar-hide">
+                <div className="m-auto w-full text-center px-2 sm:px-4">
+                  <div className={`font-bold text-slate-800 leading-[1.3] text-balance max-w-[85%] mx-auto w-full ${current.questionEn.length > 70 ? 'text-[22px] sm:text-[28px]' : 'text-[26px] sm:text-[36px]'}`}>
+                    {current.questionEn}
+                  </div>
                 </div>
               </div>
-              
-              <div className="shrink-0 flex items-center justify-center text-center px-4 mt-6 h-16">
-                <div className="text-lg sm:text-xl text-slate-500 font-medium max-w-[75%] text-balance mx-auto w-full">
+
+              {/* Translation */}
+              <div className="shrink-0 flex items-center justify-center text-center px-2 sm:px-4 mt-4 sm:mt-6 h-12 sm:h-16">
+                <div className="text-base sm:text-lg text-slate-500 font-medium max-w-[85%] text-balance mx-auto w-full">
                   {current.questionVi}
                 </div>
               </div>
-              
-              <div className="shrink-0 mt-4 text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center">
+
+              {/* Footer */}
+              <div className="shrink-0 mt-3 sm:mt-4 text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center border-t border-slate-50 pt-3 sm:pt-4">
                 Nhấn vào thẻ để xem đáp án
               </div>
             </div>
 
             {/* Back: answers */}
             <div
-              className="absolute inset-0 p-8 sm:p-12 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
+              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
               }}
             >
-              <div className="absolute top-8 left-8 sm:top-12 sm:left-12">
-                <span className="text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full">
+              <div className="shrink-0 flex items-start justify-between mb-4 w-full">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full inline-flex">
                   Đáp án / Answer
                 </span>
-              </div>
-              <div className="absolute top-8 right-8 sm:top-12 sm:right-12 z-10">
-                <div className="scale-110">
+                <div className="z-10">
                   <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center text-center w-full min-h-0 overflow-y-auto px-4 mt-16 mb-4">
-                <ul className="space-y-6 w-full max-w-[75%] text-center mx-auto">
-                  {answers.map((a, i) => (
-                    <li
-                      key={i}
-                      className="flex flex-col items-center justify-center w-full"
-                    >
-                      <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-2 ${a.en.length > 80 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[44px]'}`}>
-                        {a.en}
-                      </div>
-                      {a.vi !== a.en ? (
-                        <div className="text-lg sm:text-xl text-teal-600/80 font-medium text-balance">
-                          {a.vi}
+              <div className="flex-1 min-h-0 flex flex-col w-full overflow-y-auto scrollbar-hide px-2 sm:px-4">
+                <div className="m-auto w-full text-center py-4">
+                  <ul className="space-y-6 w-full max-w-[85%] text-center mx-auto">
+                    {answers.map((a, i) => (
+                      <li
+                        key={i}
+                        className="flex flex-col items-center justify-center w-full"
+                      >
+                        <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-2 ${a.en.length > 70 ? 'text-[22px] sm:text-[28px]' : 'text-[28px] sm:text-[36px]'}`}>
+                          {a.en}
                         </div>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+                        {a.vi !== a.en ? (
+                          <div className="text-base sm:text-lg text-teal-600/80 font-medium text-balance">
+                            {a.vi}
+                          </div>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="shrink-0 mt-4 text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center">
+              <div className="shrink-0 mt-3 sm:mt-4 text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center border-t border-teal-100/50 pt-3 sm:pt-4">
                 Nhấn lại để quay về câu hỏi
               </div>
             </div>
