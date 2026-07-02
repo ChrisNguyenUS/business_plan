@@ -232,74 +232,73 @@ export default function FlashcardsPage() {
               className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              {/* Header */}
-              <div className="shrink-0 flex items-start justify-between mb-4 w-full">
+              {/* Decorative Layer: Liberty */}
+              <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 pointer-events-none z-0">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-teal-50/80 rounded-full blur-md"></div>
+                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 opacity-95">
+                    <Image src="/images/n400/illu-studying.png" alt="" fill className="object-contain" sizes="80px" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pinned Layers: Audio & Bookmark */}
+              <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-2 sm:gap-3 z-20">
+                <AudioButton src={questionAudioUrl(current.id)} label="Nghe câu hỏi" size="sm" />
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleBookmark(current.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleBookmark(current.id);
+                    }
+                  }}
+                  aria-label="Đánh dấu"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                    bookmarked
+                      ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
+                      : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                  }`}
+                >
+                  <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
+                </span>
+              </div>
+
+              {/* Region 1: Question Badge */}
+              <div className="shrink-0 h-10 flex items-start relative z-20 mb-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full inline-flex">
                   Câu hỏi / Question #{current.id}
                 </span>
-                
-                <div className="flex items-center gap-2 sm:gap-3 z-10">
-                  <AudioButton src={questionAudioUrl(current.id)} label="Nghe câu hỏi" size="sm" />
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleBookmark(current.id);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleBookmark(current.id);
-                      }
-                    }}
-                    aria-label="Đánh dấu"
-                    className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                      bookmarked
-                        ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
-                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-                  </span>
+              </div>
+
+              {/* Spacer to clear Liberty Illustration */}
+              <div className="shrink-0 h-12 sm:h-14" />
+
+              {/* Region 2: Question Area (Flexible) */}
+              <div className="flex-1 min-h-0 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10">
+                <div className={`text-center font-bold text-slate-800 leading-[1.3] text-balance max-w-[70%] mx-auto w-full ${current.questionEn.length > 85 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[40px]'}`}>
+                  {current.questionEn}
                 </div>
               </div>
 
-              {/* Liberty */}
-              <div className="shrink-0 flex justify-center mb-4 sm:mb-6">
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-teal-50/60 rounded-full flex items-center justify-center">
-                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 opacity-90 drop-shadow-sm">
-                    <Image
-                      src="/images/n400/illu-studying.png"
-                      alt=""
-                      fill
-                      className="object-contain"
-                      sizes="80px"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Question */}
-              <div className="flex-1 min-h-0 overflow-y-auto flex flex-col w-full scrollbar-hide">
-                <div className="m-auto w-full text-center px-2 sm:px-4">
-                  <div className={`font-bold text-slate-800 leading-[1.3] text-balance max-w-[85%] mx-auto w-full ${current.questionEn.length > 70 ? 'text-[22px] sm:text-[28px]' : 'text-[26px] sm:text-[36px]'}`}>
-                    {current.questionEn}
-                  </div>
-                </div>
-              </div>
-
-              {/* Translation */}
-              <div className="shrink-0 flex items-center justify-center text-center px-2 sm:px-4 mt-4 sm:mt-6 h-12 sm:h-16">
-                <div className="text-base sm:text-lg text-slate-500 font-medium max-w-[85%] text-balance mx-auto w-full">
+              {/* Region 3: Translation Area (Fixed) */}
+              <div className="shrink-0 h-16 sm:h-20 flex items-center justify-center px-2 sm:px-4 mt-2">
+                <div className="text-base sm:text-xl text-slate-500 font-medium max-w-[70%] text-balance text-center mx-auto w-full">
                   {current.questionVi}
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="shrink-0 mt-3 sm:mt-4 text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center border-t border-slate-50 pt-3 sm:pt-4">
-                Nhấn vào thẻ để xem đáp án
+              {/* Region 4: Hint Area (Fixed) */}
+              <div className="shrink-0 h-8 flex items-end justify-center">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center w-full border-t border-slate-50 pt-3">
+                  Nhấn vào thẻ để xem đáp án
+                </div>
               </div>
             </div>
 
@@ -311,37 +310,44 @@ export default function FlashcardsPage() {
                 transform: 'rotateY(180deg)',
               }}
             >
-              <div className="shrink-0 flex items-start justify-between mb-4 w-full">
+              {/* Pinned Layers: Audio */}
+              <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center z-20">
+                <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
+              </div>
+
+              {/* Region 1: Badge */}
+              <div className="shrink-0 h-10 flex items-start relative z-20 mb-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full inline-flex">
                   Đáp án / Answer
                 </span>
-                <div className="z-10">
-                  <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
-                </div>
               </div>
-              <div className="flex-1 min-h-0 flex flex-col w-full overflow-y-auto scrollbar-hide px-2 sm:px-4">
-                <div className="m-auto w-full text-center py-4">
-                  <ul className="space-y-6 w-full max-w-[85%] text-center mx-auto">
-                    {answers.map((a, i) => (
-                      <li
-                        key={i}
-                        className="flex flex-col items-center justify-center w-full"
-                      >
-                        <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-2 ${a.en.length > 70 ? 'text-[22px] sm:text-[28px]' : 'text-[28px] sm:text-[36px]'}`}>
-                          {a.en}
+
+              {/* Spacer */}
+              <div className="shrink-0 h-12 sm:h-14" />
+
+              {/* Region 2: Answer Area (Flexible) */}
+              <div className="flex-1 min-h-0 flex flex-col justify-center w-full px-2 sm:px-4 relative z-10">
+                <ul className="space-y-6 w-full max-w-[70%] text-center mx-auto">
+                  {answers.map((a, i) => (
+                    <li key={i} className="flex flex-col items-center justify-center w-full">
+                      <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-2 ${a.en.length > 85 ? 'text-[24px] sm:text-[32px]' : 'text-[32px] sm:text-[40px]'}`}>
+                        {a.en}
+                      </div>
+                      {a.vi !== a.en ? (
+                        <div className="text-base sm:text-xl text-teal-600/80 font-medium text-balance">
+                          {a.vi}
                         </div>
-                        {a.vi !== a.en ? (
-                          <div className="text-base sm:text-lg text-teal-600/80 font-medium text-balance">
-                            {a.vi}
-                          </div>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="shrink-0 mt-3 sm:mt-4 text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center border-t border-teal-100/50 pt-3 sm:pt-4">
-                Nhấn lại để quay về câu hỏi
+
+              {/* Region 4: Hint Area (Fixed) */}
+              <div className="shrink-0 h-8 flex items-end justify-center">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center w-full border-t border-teal-100/50 pt-3">
+                  Nhấn lại để quay về câu hỏi
+                </div>
               </div>
             </div>
           </div>
