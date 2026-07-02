@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw, Flame } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
@@ -45,6 +45,16 @@ export default function PracticePage() {
   const [milestone, setMilestone] = useState<number | null>(null);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const badges = useN400Badges();
+  const explanationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (revealed && explanationRef.current) {
+      // Small timeout to allow render to complete before scrolling
+      setTimeout(() => {
+        explanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 50);
+    }
+  }, [revealed]);
 
   // Reset selected/revealed when navigating between questions (React-recommended pattern).
   if (index !== prevIndex) {
@@ -141,7 +151,7 @@ export default function PracticePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 flex-1 min-h-0 items-start lg:items-stretch">
-        <Card className="flex flex-col p-5 sm:p-8 h-full overflow-hidden">
+        <Card className="flex flex-col p-5 sm:p-8 h-full overflow-hidden min-h-0">
           <div className="mb-4 flex items-start justify-between shrink-0">
             <div className="flex-1 pr-4">
               <div className="text-xs font-bold uppercase tracking-wider text-teal-600 mb-2 bg-teal-50 inline-block px-3 py-1 rounded-full">Câu hỏi / Question #{question.id}</div>
@@ -212,6 +222,7 @@ export default function PracticePage() {
 
             {revealed ? (
               <div
+                ref={explanationRef}
                 className={`mt-4 rounded-2xl p-4 border-l-4 shrink-0 ${
                   correctOption?.id === selected
                     ? 'bg-teal-50 border-teal-500'
