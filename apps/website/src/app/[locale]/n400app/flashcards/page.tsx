@@ -1,10 +1,21 @@
 'use client';
 
+/*
+ * FLASHCARD PAGE — LAYOUT ARCHITECTURE
+ *
+ * This page uses an immersive layout (see flashcards/layout.tsx):
+ * - The page NEVER scrolls.
+ * - The Flashcard is the ONLY flexible area (flex-1 min-h-0).
+ * - English and Vietnamese content ALWAYS stay together inside
+ *   a single Content Area.
+ * - ONLY the Content Area may scroll internally, as a last resort.
+ * - Bottom study controls ALWAYS remain visible and anchored.
+ */
+
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { AudioButton } from '@/components/n400/AudioButton';
+import { Flashcard } from '@/components/n400/flashcard/Flashcard';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -173,7 +184,10 @@ export default function FlashcardsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col lg:h-[calc(100vh-130px)] gap-4 animate-in fade-in duration-300 max-w-3xl mx-auto w-full">
+    <div
+      className="flex flex-col h-full overflow-hidden gap-[clamp(0.5rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
+    >
       {unlockedBadges.length > 0 ? (
         <BadgeUnlockToast
           slugs={unlockedBadges}
@@ -184,6 +198,7 @@ export default function FlashcardsPage() {
 
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
+      {/* Filters — shrink-0 */}
       <div className="flex items-center gap-3 flex-wrap shrink-0">
         <Filter size={16} className="text-slate-400" />
         <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Bộ lọc:</span>
@@ -203,7 +218,8 @@ export default function FlashcardsPage() {
         ))}
       </div>
 
-      <div className="shrink-0 mb-4">
+      {/* Progress — shrink-0 */}
+      <div className="shrink-0">
         <div className="flex items-center justify-between mb-2 text-sm text-slate-700">
           <span className="font-bold text-base">
             Thẻ {index + 1} / {total}
@@ -213,149 +229,22 @@ export default function FlashcardsPage() {
         <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-2.5" />
       </div>
 
-      <div className="relative flex-1 min-h-0 w-full" style={{ perspective: 2000 }}>
-        <button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          aria-label="Lật thẻ"
-          className="block w-full h-full outline-none text-left"
-        >
-          <div
-            className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
-            style={{
-              WebkitTransformStyle: 'preserve-3d',
-              transformStyle: 'preserve-3d',
-              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            }}
-          >
-            {/* Front: question */}
-            <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500"
-              style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
-            >
-              {/* Pinned Layers: Audio & Bookmark */}
-              <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-2 sm:gap-3 z-20">
-                <AudioButton src={questionAudioUrl(current.id)} label="Nghe câu hỏi" size="sm" />
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleBookmark(current.id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleBookmark(current.id);
-                    }
-                  }}
-                  aria-label="Đánh dấu"
-                  className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                    bookmarked
-                      ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
-                      : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                  }`}
-                >
-                  <Bookmark size={18} fill={bookmarked ? 'currentColor' : 'none'} />
-                </span>
-              </div>
+      {/* Flashcard — flex-1 min-h-0 (fills remaining space) */}
+      <Flashcard
+        flipped={flipped}
+        onFlip={() => setFlipped((f) => !f)}
+        questionId={current.id}
+        questionEn={current.questionEn}
+        questionVi={current.questionVi}
+        questionAudioSrc={questionAudioUrl(current.id)}
+        answerAudioSrc={answerAudioUrlFor(current, stateCode, districtNumber)}
+        answers={answers}
+        bookmarked={bookmarked}
+        onToggleBookmark={() => toggleBookmark(current.id)}
+      />
 
-              {/* TOP SECTION */}
-              <div className="shrink-0 flex flex-col items-center z-10">
-                {/* 1. Question Badge */}
-                <div className="flex justify-center mb-6">
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full inline-flex">
-                    Câu hỏi / Question #{current.id}
-                  </span>
-                </div>
-
-                {/* 2. Liberty */}
-                <div className="flex justify-center mb-6 pointer-events-none">
-                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-teal-50/80 rounded-full blur-md"></div>
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 opacity-95">
-                      <Image src="/images/n400/illu-studying.png" alt="" fill className="object-contain" sizes="80px" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* MIDDLE SECTION (Flexible, auto-centers content) */}
-              <div className="flex-1 min-h-0 flex flex-col justify-center items-center w-full z-10">
-                {/* 3. English Question */}
-                <div className="flex justify-center w-full px-2 sm:px-4 mb-6">
-                  <div className={`text-center font-bold text-slate-800 leading-[1.3] text-balance max-w-[90%] mx-auto w-full ${current.questionEn.length > 85 ? 'text-[22px] sm:text-[28px]' : 'text-[28px] sm:text-[36px]'}`}>
-                    {current.questionEn}
-                  </div>
-                </div>
-
-                {/* 4. Vietnamese Translation */}
-                <div className="flex justify-center px-2 sm:px-4">
-                  <div className="text-sm sm:text-lg text-slate-500 font-medium max-w-[90%] text-balance text-center mx-auto w-full">
-                    {current.questionVi}
-                  </div>
-                </div>
-              </div>
-
-              {/* BOTTOM SECTION */}
-              <div className="shrink-0 mt-auto pt-4 z-10">
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-slate-300 font-bold text-center">
-                  Nhấn vào thẻ để xem đáp án
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="absolute inset-0 p-6 sm:p-8 rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col overflow-hidden hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500"
-              style={{
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }}
-            >
-              {/* Pinned Layers: Audio */}
-              <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center z-20">
-                <AudioButton src={answerAudioUrlFor(current, stateCode, districtNumber)} label="Nghe đáp án" size="sm" />
-              </div>
-
-              {/* TOP SECTION */}
-              <div className="shrink-0 flex justify-center mb-8 z-10">
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full inline-flex">
-                  Đáp án / Answer
-                </span>
-              </div>
-
-              {/* MIDDLE SECTION */}
-              <div className="flex-1 min-h-0 flex flex-col justify-center items-center w-full px-2 sm:px-4 z-10">
-                <ul className="space-y-6 w-full max-w-[90%] text-center mx-auto overflow-y-auto min-h-0 py-2 custom-scrollbar">
-                  {answers.map((a, i) => (
-                    <li key={i} className="flex flex-col items-center justify-center w-full">
-                      <div className={`font-bold text-teal-800 leading-[1.2] text-balance mb-3 ${a.en.length > 85 ? 'text-[22px] sm:text-[28px]' : 'text-[28px] sm:text-[36px]'}`}>
-                        {a.en}
-                      </div>
-                      {a.vi !== a.en ? (
-                        <div className="text-sm sm:text-lg text-teal-600/80 font-medium text-balance">
-                          {a.vi}
-                        </div>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* BOTTOM SECTION */}
-              <div className="shrink-0 mt-auto pt-4 z-10">
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-teal-400 font-bold text-center">
-                  Nhấn lại để quay về câu hỏi
-                </div>
-              </div>
-            </div>
-          </div>
-        </button>
-      </div>
-
-      <div className="flex items-center justify-center gap-3 sm:gap-6 pt-4 shrink-0">
+      {/* Study Controls — shrink-0 */}
+      <div className="flex items-center justify-center gap-3 sm:gap-6 shrink-0" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}>
         <button
           type="button"
           onClick={goPrev}
