@@ -162,6 +162,16 @@ export default function FlashcardsPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const f = params.get('filter') as FilterMode;
+      if (f && FILTER_OPTIONS.some(o => o.id === f)) {
+        setFilter(f);
+      }
+    }
+  }, []);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
       {unlockedBadges.length > 0 ? (

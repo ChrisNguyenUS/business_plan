@@ -341,7 +341,7 @@ export default function DashboardPage() {
                 <p className="text-indigo-800 font-medium text-base leading-relaxed flex-1">
                   Bạn thường sai các câu hỏi về <strong className="text-indigo-900">Hệ Thống Chính Phủ</strong>. Dành 5 phút ôn tập ngay để cải thiện điểm số nhé!
                 </p>
-                <Link href={`/${locale}/n400app/practice`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-colors w-max shadow-md shadow-indigo-600/20">
+                <Link href={`/${locale}/n400app/flashcards?filter=system`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-colors w-max shadow-md shadow-indigo-600/20">
                   Bắt đầu ôn tập <ArrowRight size={18} />
                 </Link>
               </div>
