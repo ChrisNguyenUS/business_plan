@@ -12,7 +12,7 @@ export default function N400AppLayout({ children }: { children: ReactNode }) {
         <Sidebar />
         <div className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden lg:ml-64">
           <Header />
-          <main className="relative z-0 flex-1 overflow-y-auto px-4 pb-28 pt-4 sm:px-6 lg:p-8">
+          <main className="page-transition relative z-0 flex-1 overflow-y-auto px-4 pb-28 pt-4 sm:px-6 lg:p-8">
             {children}
           </main>
         </div>

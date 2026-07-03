@@ -1,5 +1,18 @@
 'use client';
 
+/**
+ * Sidebar (desktop) + MobileNav (bottom navigation).
+ *
+ * Information Architecture:
+ *   Primary:   Dashboard, Practice, Flashcards, Mock Test
+ *   Secondary: Bookmarks, Statistics
+ *   Utilities: Profile, Settings, Dark Mode, Logout
+ *
+ * Desktop: Permanent sidebar with grouped sections.
+ * Mobile:  Bottom nav with 4 primary study features only.
+ * Categories: Removed from navigation (now a study filter).
+ */
+
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import {
@@ -11,7 +24,6 @@ import {
   Settings,
   LogOut,
   Moon,
-  MapPin,
   Shield,
   ClipboardCheck,
   Layers,
@@ -25,22 +37,26 @@ type MenuItem = {
   icon: typeof Home;
 };
 
-const MENU: MenuItem[] = [
+/* ─── Navigation Groups ─── */
+
+const PRIMARY_MENU: MenuItem[] = [
   { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
   { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-  { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
   { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
-  { id: 'categories', label: 'Danh mục', href: 'categories', icon: MapPin },
-  { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
-  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
-  { id: 'profile', label: 'Hồ sơ', href: 'profile', icon: User },
+  { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
 ];
 
+const SECONDARY_MENU: MenuItem[] = [
+  { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
+  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
+];
+
+/** Mobile bottom nav — only primary study features */
 const MOBILE_MENU: MenuItem[] = [
   { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
   { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-  { id: 'statistic', label: 'Thống kê', href: 'statistic', icon: BarChart2 },
-  { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
+  { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
+  { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
 ];
 
 function useN400Navigation() {
@@ -52,12 +68,33 @@ function useN400Navigation() {
   return { base, pathname };
 }
 
+function NavItem({ item, base, pathname }: { item: MenuItem; base: string; pathname: string | null }) {
+  const href = item.href ? `${base}/${item.href}` : base;
+  const isActive = href === base ? pathname === base : pathname?.startsWith(href);
+  const Icon = item.icon;
+
+  return (
+    <Link
+      href={href}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-[var(--motion-fast)] text-sm font-medium ${
+        isActive
+          ? 'bg-teal-50 text-teal-700 shadow-sm'
+          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+      }`}
+    >
+      <Icon size={18} className={isActive ? 'text-teal-600' : 'text-gray-400'} />
+      {item.label}
+    </Link>
+  );
+}
+
 export function Sidebar() {
   const { base, pathname } = useN400Navigation();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   return (
     <div className="hidden lg:flex fixed z-20 h-full w-64 flex-col border-r border-gray-100 bg-white">
+      {/* Logo */}
       <div className="p-6 flex items-center gap-3 mb-2">
         <div className="w-8 h-8 rounded bg-teal-600 flex items-center justify-center shadow-md">
           <Shield size={20} className="text-white" />
@@ -72,29 +109,22 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* Primary navigation */}
       <nav className="flex-1 overflow-y-auto px-4 space-y-1">
-        {MENU.map((item) => {
-          const href = item.href ? `${base}/${item.href}` : base;
-          const isActive =
-            href === base ? pathname === base : pathname?.startsWith(href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.id}
-              href={href}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
-                isActive
-                  ? 'bg-teal-50 text-teal-700 shadow-sm'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-              }`}
-            >
-              <Icon size={18} className={isActive ? 'text-teal-600' : 'text-gray-400'} />
-              {item.label}
-            </Link>
-          );
-        })}
+        {PRIMARY_MENU.map((item) => (
+          <NavItem key={item.id} item={item} base={base} pathname={pathname} />
+        ))}
+
+        {/* Divider */}
+        <div className="!my-3 border-t border-gray-100" />
+
+        {/* Secondary navigation */}
+        {SECONDARY_MENU.map((item) => (
+          <NavItem key={item.id} item={item} base={base} pathname={pathname} />
+        ))}
       </nav>
 
+      {/* Bottom utilities */}
       <div className="p-4 border-t border-gray-100 space-y-4">
         <div className="flex items-center justify-between px-2 text-sm text-gray-500">
           <span className="flex items-center gap-2">
@@ -143,7 +173,7 @@ export function MobileNav() {
             <Link
               key={item.id}
               href={href}
-              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-semibold transition-colors ${
+              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-semibold transition-colors duration-[var(--motion-fast)] ${
                 isActive
                   ? 'bg-teal-50 text-teal-700'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'

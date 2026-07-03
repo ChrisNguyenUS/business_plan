@@ -1,10 +1,21 @@
 'use client';
 
+/**
+ * Header — Consistent page header across all N400 pages.
+ *
+ * Primary pages (lateral navigation):   Title + Streak + Avatar
+ * Secondary pages (hierarchical):       Back + Title + Streak + Avatar
+ *
+ * No hamburger. No bookmark shortcut. No date range button.
+ * The sidebar (desktop) and bottom nav (mobile) handle primary navigation.
+ * The AvatarMenu handles secondary navigation.
+ */
+
 import { usePathname, useParams } from 'next/navigation';
-import { Bookmark, ChevronDown, Flame, Menu } from 'lucide-react';
-import Image from 'next/image';
+import { ChevronLeft, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { AvatarMenu } from './AvatarMenu';
 
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
   '': { title: 'Tổng quan', subtitle: 'Chào mừng trở lại! 👋' },
@@ -32,6 +43,22 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
   bookmark: { title: 'Đánh dấu', subtitle: 'Câu hỏi bạn đã lưu để ôn lại' },
 };
 
+/** Primary sections use lateral navigation (no Back button). */
+const PRIMARY_SECTIONS = ['', 'practice', 'flashcards', 'mock-test'];
+
+/**
+ * Deterministic back navigation — navigate to logical parent, not browser history.
+ * This creates predictable navigation regardless of how the user originally arrived.
+ */
+const PARENT_MAP: Record<string, string> = {
+  profile: '',
+  bookmark: '',
+  statistic: '',
+  categories: '',
+  help: '',
+  setup: '',
+};
+
 function detectSection(pathname: string | null, locale: string): string {
   if (!pathname) return '';
   const base = `/${locale}/n400app`;
@@ -44,10 +71,20 @@ export function Header() {
   const pathname = usePathname();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const base = `/${locale}/n400app`;
   const section = detectSection(pathname, locale);
   const meta = TITLES[section] ?? TITLES[''];
-  const showHamburger = section === 'practice' || section === 'bookmark';
-  const showBookmark = section === 'practice';
+  const isSecondary = !PRIMARY_SECTIONS.includes(section);
+
+  // Deterministic back navigation
+  const parentHref = PARENT_MAP[section];
+  const backHref =
+    parentHref !== undefined
+      ? parentHref
+        ? `${base}/${parentHref}`
+        : base
+      : base;
+
   const { state, hydrated } = useN400UserState();
   const streak = hydrated ? state.streak.current : 0;
   const today = (() => {
@@ -57,41 +94,29 @@ export function Header() {
   const activeToday = hydrated && state.streak.lastActivityDate === today && streak > 0;
 
   return (
-    <header className="sticky top-0 z-10 flex min-h-20 items-start justify-between gap-3 border-b border-gray-200/50 bg-slate-50/90 px-4 py-4 backdrop-blur-md lg:h-20 lg:items-center lg:px-8 lg:py-0">
-      <div className="flex min-w-0 flex-1 items-start gap-3 lg:items-center lg:gap-4">
-        {showHamburger ? (
-          <button type="button" className="mt-0.5 text-gray-500 hover:text-gray-800 lg:mt-0" aria-label="Menu">
-            <Menu size={24} />
-          </button>
-        ) : null}
+    <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between gap-3 border-b border-gray-200/50 bg-slate-50/90 px-4 py-3 backdrop-blur-md lg:min-h-20 lg:px-8 lg:py-0">
+      {/* Left: Back + Title */}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {isSecondary && (
+          <Link
+            href={backHref}
+            aria-label="Quay lại"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+          >
+            <ChevronLeft size={24} />
+          </Link>
+        )}
         <div className="min-w-0">
-          <h2 className="text-xl font-bold leading-tight text-gray-800 lg:text-2xl">{meta.title}</h2>
-          {meta.subtitle ? (
-            <p className="mt-1 hidden text-sm text-gray-500 sm:block">{meta.subtitle}</p>
+          <h2 className="text-lg font-bold leading-tight text-gray-800 lg:text-xl">{meta.title}</h2>
+          {!isSecondary && meta.subtitle ? (
+            <p className="mt-0.5 hidden text-sm text-gray-500 sm:block">{meta.subtitle}</p>
           ) : null}
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 lg:gap-4">
-        {showBookmark ? (
-          <Link
-            href={`/${locale}/n400app/bookmark`}
-            aria-label="Đánh dấu"
-            className="hidden h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm hover:text-teal-600 sm:flex"
-          >
-            <Bookmark size={18} />
-          </Link>
-        ) : null}
-
-        {section === 'statistic' && (
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 sm:flex"
-          >
-            01/05/2024 - 31/05/2024 <ChevronDown size={16} />
-          </button>
-        )}
-
+      {/* Right: Streak + Avatar */}
+      <div className="flex shrink-0 items-center gap-2 lg:gap-3">
+        {/* Study streak badge */}
         <div
           className={`flex items-center gap-2 rounded-xl border px-3 py-2 shadow-sm transition-colors lg:px-4 ${
             activeToday
@@ -124,25 +149,8 @@ export function Header() {
           </div>
         </div>
 
-        <Link
-          href={`/${locale}/n400app/profile`}
-          className="hidden cursor-pointer items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-2 shadow-sm hover:bg-gray-50 lg:flex"
-        >
-          <div className="w-8 h-8 bg-blue-100 rounded-full overflow-hidden">
-            <Image
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="avatar"
-              width={32}
-              height={32}
-              unoptimized
-            />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-medium leading-none">Xin chào,</span>
-            <span className="text-sm font-bold text-gray-800 leading-tight">Liberty Learner!</span>
-          </div>
-          <ChevronDown size={16} className="text-gray-400 ml-2" />
-        </Link>
+        {/* Avatar menu */}
+        <AvatarMenu />
       </div>
     </header>
   );

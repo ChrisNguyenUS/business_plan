@@ -97,6 +97,30 @@
   --chart-3: 200 60% 50%;
   --chart-4: 30 80% 55%;
   --chart-5: 340 75% 55%;
+
+  /* Motion tokens */
+  --motion-fast: 150ms;
+  --motion-normal: 300ms;
+  --motion-slow: 500ms;
+  --motion-easing: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-normal: 0ms;
+    --motion-slow: 0ms;
+  }
+}
+
+/* Page transition — subtle fade-in on route change */
+@keyframes pageTransitionFadeIn {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+
+.page-transition {
+  animation: pageTransitionFadeIn var(--motion-fast) ease-out;
 }
 
 .dark {
