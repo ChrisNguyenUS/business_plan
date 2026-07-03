@@ -114,54 +114,54 @@ export default function DashboardPage() {
       
 
 
-      <div className="flex flex-col xl:flex-row gap-8">
+      <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
         
         {/* ================================================== */}
         {/* LEFT COLUMN - MAIN CONTENT                        */}
         {/* ================================================== */}
-        <div className="flex-1 space-y-8 min-w-0">
+        <div className="flex-1 space-y-6 min-w-0">
           
           {/* 1. HERO PROGRESS CARD */}
           <Card className="!p-0 overflow-hidden border-slate-200/60 shadow-sm">
             <div className="flex flex-col lg:flex-row">
               
               {/* Left Side: Progress */}
-              <div className="flex-1 p-8 sm:p-10">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Target className="text-teal-600" size={22} />
+              <div className="flex-1 p-6 sm:p-8 lg:p-10">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                  <Target className="text-teal-600" size={18} />
                   Tiến độ tổng quát
                 </h3>
                 
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-6">
-                  <span className="text-6xl sm:text-7xl font-bold tracking-tight text-slate-900">
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-4">
+                  <span className="text-6xl sm:text-7xl font-extrabold tracking-tight text-slate-900">
                     {stats.coverage}%
                   </span>
-                  <div className="text-sm font-semibold text-slate-500 flex flex-col justify-end pb-2">
+                  <div className="text-sm font-medium text-slate-500 flex flex-col gap-0.5 pb-2">
                     <span>{stats.distinctAnswered} / 128 câu hỏi đã làm</span>
-                    <span className="text-teal-700">{stats.mastered} câu đã thuộc lòng</span>
+                    <span className="text-teal-600 font-semibold">{stats.mastered} câu đã thuộc lòng</span>
                   </div>
                 </div>
                 
                 <ProgressBar progress={stats.coverage} heightClass="h-3 sm:h-4" />
 
-                <div className="mt-8 flex flex-wrap gap-4">
+                <div className="mt-8 flex flex-wrap gap-3">
                   <Link
                     href={`/${locale}/n400app/practice`}
-                    className="flex-1 sm:flex-none justify-center px-8 py-4 rounded-[20px] bg-teal-600 text-white text-base font-bold flex items-center gap-2 hover:bg-teal-700 shadow-md shadow-teal-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                    className="flex-1 sm:flex-none justify-center whitespace-nowrap min-w-[140px] px-6 py-3.5 rounded-2xl bg-teal-600 text-white text-sm font-bold flex items-center gap-2 hover:bg-teal-700 shadow-md shadow-teal-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <CheckCircle size={20} /> Tiếp tục luyện tập
+                    <CheckCircle size={18} /> Tiếp tục luyện tập
                   </Link>
                   <Link
                     href={`/${locale}/n400app/mock-test`}
-                    className="flex-1 sm:flex-none justify-center px-6 py-4 rounded-[20px] bg-white border-2 border-slate-200 text-slate-700 text-base font-bold flex items-center gap-2 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                    className="flex-1 sm:flex-none justify-center whitespace-nowrap min-w-[100px] px-5 py-3.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold flex items-center gap-2 hover:border-slate-300 hover:bg-slate-50 transition-all"
                   >
-                    <ClipboardCheck size={20} /> Thi thử
+                    <ClipboardCheck size={18} /> Thi thử
                   </Link>
                   <Link
                     href={`/${locale}/n400app/flashcards`}
-                    className="flex-1 sm:flex-none justify-center px-6 py-4 rounded-[20px] bg-white border-2 border-slate-200 text-slate-700 text-base font-bold flex items-center gap-2 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                    className="flex-1 sm:flex-none justify-center whitespace-nowrap min-w-[100px] px-5 py-3.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold flex items-center gap-2 hover:border-slate-300 hover:bg-slate-50 transition-all"
                   >
-                    <Layers size={20} /> Flashcards
+                    <Layers size={18} /> Flashcards
                   </Link>
                 </div>
               </div>
@@ -217,20 +217,22 @@ export default function DashboardPage() {
           {/* 2. QUICK INSIGHT LINE → Learning Progress */}
           <Link
             href={`/${locale}/n400app/statistic`}
-            className="flex items-center gap-3 px-5 py-3.5 bg-slate-50 rounded-2xl text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)] border border-slate-100"
+            className="group flex items-center gap-3 px-5 py-3 bg-slate-50/80 rounded-xl text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)] border border-slate-100/80"
           >
-            <BarChart2 size={18} className="text-slate-400" />
-            <span>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-teal-100 transition-colors">
+              <BarChart2 size={16} className="text-slate-400 group-hover:text-teal-600 transition-colors" />
+            </div>
+            <span className="font-medium">
               {stats.accuracy}% chính xác · {stats.mastered} câu đã thuộc
               {state.mockResults.length > 0 && (
-                <> · Thi thử gần nhất: {state.mockResults[state.mockResults.length - 1].score}/{state.mockResults[state.mockResults.length - 1].total}{' '}
+                <> · Thi thử: {state.mockResults[state.mockResults.length - 1].score}/{state.mockResults[state.mockResults.length - 1].total}{' '}
                   <span className={state.mockResults[state.mockResults.length - 1].passed ? 'text-teal-600 font-bold' : 'text-orange-500 font-bold'}>
                     {state.mockResults[state.mockResults.length - 1].passed ? 'ĐẠT' : 'CHƯA ĐẠT'}
                   </span>
                 </>
               )}
             </span>
-            <ArrowRight size={16} className="ml-auto text-slate-400" />
+            <ArrowRight size={16} className="ml-auto text-slate-300 group-hover:text-teal-500 transition-colors" />
           </Link>
 
 
@@ -258,7 +260,7 @@ export default function DashboardPage() {
         {/* ================================================== */}
         {/* RIGHT COLUMN - MOTIVATIONAL SIDEBAR               */}
         {/* ================================================== */}
-        <div className="w-full xl:w-[380px] flex flex-col gap-8">
+        <div className="w-full xl:w-[360px] flex flex-col gap-6">
           
           {/* Daily Goals Card with Liberty */}
           <Card className="!p-0 border-teal-100 bg-white shadow-md overflow-hidden flex flex-col">

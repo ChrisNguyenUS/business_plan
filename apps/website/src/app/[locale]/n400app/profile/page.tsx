@@ -42,9 +42,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-[1100px] mx-auto">
       {/* ─── Identity ─── */}
-      <Card className="p-6">
+      <Card className="p-6 sm:p-8">
         <div className="flex items-center gap-6 sm:gap-8">
           <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-teal-50 border-4 border-teal-100 relative shadow-inner overflow-hidden shrink-0">
             <Image
@@ -80,13 +80,15 @@ export default function ProfilePage() {
         {/* Summary stat line → Learning Progress */}
         <Link
           href={`/${locale}/n400app/statistic`}
-          className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-xl text-sm text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)]"
+          className="mt-6 group flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl text-sm text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)] border border-gray-100/80"
         >
-          <BarChart2 size={16} className="text-gray-400" />
-          <span>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 group-hover:bg-teal-100 transition-colors">
+            <BarChart2 size={16} className="text-gray-400 group-hover:text-teal-600 transition-colors" />
+          </div>
+          <span className="font-medium">
             {stats.coverage}% phủ chương trình · {stats.accuracy}% chính xác · {stats.mastered} câu đã thuộc
           </span>
-          <ExternalLink size={14} className="ml-auto text-gray-400" />
+          <ExternalLink size={14} className="ml-auto text-gray-300 group-hover:text-teal-500 transition-colors" />
         </Link>
       </Card>
 

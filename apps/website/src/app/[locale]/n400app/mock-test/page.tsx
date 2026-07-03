@@ -385,13 +385,13 @@ function Intro({
         </button>
       </Card>
 
-      <div className="hidden h-[420px] overflow-hidden rounded-3xl lg:relative lg:block">
+      <div className="hidden h-[340px] overflow-hidden rounded-3xl lg:relative lg:block">
         <Image
           src="/images/n400/illu-flag-holding-transparent.png"
           alt=""
           fill
           className="object-contain"
-          sizes="500px"
+          sizes="400px"
           priority
         />
       </div>

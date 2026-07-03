@@ -180,23 +180,23 @@ export default function StatisticPage() {
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-[1400px] mx-auto">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {KPIS.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <Card key={kpi.title} className="flex min-w-0 items-center justify-between gap-4 p-5 xl:min-h-[136px] xl:flex-col xl:items-start">
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-gray-800">{kpi.title}</div>
-                <div className="text-xs text-gray-400">{kpi.subtitle}</div>
-                <div className="mt-3 text-3xl font-extrabold leading-none text-gray-900">
+            <Card key={kpi.title} className="relative flex min-w-0 items-center justify-between gap-4 p-6 xl:min-h-[148px] xl:flex-col xl:items-start overflow-hidden">
+              <div className="min-w-0 relative z-10">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">{kpi.title}</div>
+                <div className="text-[10px] text-gray-400 mt-0.5">{kpi.subtitle}</div>
+                <div className="mt-3 text-4xl font-extrabold leading-none tracking-tight text-gray-900">
                   {kpi.val}
-                  {kpi.unit ? <span className="ml-1 text-base font-semibold text-gray-700">{kpi.unit}</span> : null}
+                  {kpi.unit ? <span className="ml-1.5 text-base font-semibold text-gray-500">{kpi.unit}</span> : null}
                 </div>
-                <div className="mt-2 text-xs text-gray-400">{kpi.inc}</div>
+                <div className="mt-2 text-xs font-medium text-gray-400">{kpi.inc}</div>
               </div>
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${kpi.bg}`}>
-                <Icon size={24} className={kpi.text} />
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${kpi.bg} xl:absolute xl:top-5 xl:right-5`}>
+                <Icon size={22} className={kpi.text} />
               </div>
             </Card>
           );
