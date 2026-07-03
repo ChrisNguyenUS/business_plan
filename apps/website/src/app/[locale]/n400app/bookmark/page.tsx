@@ -26,12 +26,17 @@ export default function BookmarkPage() {
   const { state, hydrated, toggleBookmark } = useN400UserState();
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
-  const [tab, setTab] = useState<'all' | N400CategoryKey>('all');
+  const [tab, setTab] = useState<'all' | 'unknown' | N400CategoryKey>('all');
   const [search, setSearch] = useState('');
 
   const items = useMemo(() => {
     let qs = N400_QUESTIONS.filter((q) => state.bookmarks.includes(q.id));
-    if (tab !== 'all') qs = qs.filter((q) => q.category === tab);
+    if (tab === 'unknown') {
+      qs = qs.filter((q) => !state.flashcardKnown.includes(q.id));
+    } else if (tab !== 'all') {
+      qs = qs.filter((q) => q.category === tab);
+    }
+    
     if (search.trim()) {
       const s = search.toLowerCase();
       qs = qs.filter(
@@ -42,7 +47,7 @@ export default function BookmarkPage() {
       );
     }
     return qs;
-  }, [state.bookmarks, tab, search]);
+  }, [state.bookmarks, state.flashcardKnown, tab, search]);
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
@@ -57,6 +62,10 @@ export default function BookmarkPage() {
     },
     {} as Record<N400CategoryKey, number>
   );
+  
+  const unknownCount = N400_QUESTIONS.filter(
+    (q) => state.bookmarks.includes(q.id) && !state.flashcardKnown.includes(q.id)
+  ).length;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-[var(--motion-fast)] max-w-4xl mx-auto">
@@ -74,6 +83,17 @@ export default function BookmarkPage() {
           }`}
         >
           Tất cả ({state.bookmarks.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('unknown')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-[var(--motion-fast)] ${
+            tab === 'unknown'
+              ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
+          }`}
+        >
+          Chưa thuộc ({unknownCount})
         </button>
         {(Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((cat) => (
           <button
