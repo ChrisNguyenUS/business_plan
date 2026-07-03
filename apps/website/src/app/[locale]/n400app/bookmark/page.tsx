@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Bookmark, Search, Trash2 } from 'lucide-react';
+import { Bookmark, Search, Trash2, Filter } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
@@ -59,15 +59,35 @@ export default function BookmarkPage() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 max-w-4xl mx-auto">
-      <div className="flex gap-6 border-b border-gray-200 px-4 overflow-x-auto">
-        <TabButton active={tab === 'all'} onClick={() => setTab('all')}>
+    <div className="space-y-6 animate-in fade-in duration-[var(--motion-fast)] max-w-4xl mx-auto">
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap shrink-0">
+        <Filter size={16} className="text-slate-400" />
+        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Bộ lọc:</span>
+        <button
+          type="button"
+          onClick={() => setTab('all')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-[var(--motion-fast)] ${
+            tab === 'all'
+              ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
+          }`}
+        >
           Tất cả ({state.bookmarks.length})
-        </TabButton>
+        </button>
         {(Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((cat) => (
-          <TabButton key={cat} active={tab === cat} onClick={() => setTab(cat)}>
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setTab(cat)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-[var(--motion-fast)] ${
+              tab === cat
+                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
+            }`}
+          >
             {N400_CATEGORY_LABELS[cat].vi} ({counts[cat] ?? 0})
-          </TabButton>
+          </button>
         ))}
       </div>
 
@@ -168,26 +188,3 @@ export default function BookmarkPage() {
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`pb-3 px-2 transition-colors whitespace-nowrap text-sm ${
-        active
-          ? 'border-b-2 border-teal-600 text-teal-600 font-bold'
-          : 'text-gray-500 font-medium hover:text-gray-800'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
