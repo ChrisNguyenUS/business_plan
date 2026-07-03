@@ -292,7 +292,7 @@ export default function StatisticPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card className="p-5">
           <h3 className="font-bold text-gray-800 mb-6">Tiến độ theo danh mục</h3>
           <div className="space-y-3">
@@ -347,28 +347,6 @@ export default function StatisticPage() {
           <div className="flex justify-between items-center mt-2 text-xs">
             <span className="text-gray-500">Tổng ngày đã học:</span>
             <span className="font-semibold text-gray-800">{heat.totalDays} ngày</span>
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="font-bold text-gray-800">Đã đánh dấu</h3>
-            <Link href={`/${locale}/n400app/bookmark`} className="text-teal-600 text-xs font-bold">
-              Xem tất cả
-            </Link>
-          </div>
-          <div className="flex flex-col items-center justify-center py-6">
-            <div className="text-5xl font-extrabold text-gray-900 mb-1">
-              {state.bookmarks.length}
-            </div>
-            <div className="text-sm text-gray-500">câu đã lưu để ôn lại</div>
-          </div>
-          <div className="flex flex-col items-center mt-2">
-            <div className="text-xs text-gray-500 mb-2">Đã thuộc trong flashcards</div>
-            <div className="text-3xl font-bold text-teal-600">
-              {state.flashcardKnown.length}
-              <span className="text-base font-normal text-gray-400"> / 128</span>
-            </div>
           </div>
         </Card>
       </div>

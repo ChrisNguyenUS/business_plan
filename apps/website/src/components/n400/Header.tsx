@@ -32,10 +32,10 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     subtitle: 'Lật thẻ — học theo từng câu',
   },
   statistic: {
-    title: 'Thống kê',
+    title: 'Tiến độ học tập',
     subtitle: 'Theo dõi tiến độ và hiệu suất học tập của bạn',
   },
-  profile: { title: 'Hồ sơ' },
+  profile: { title: 'Tài khoản' },
   categories: {
     title: 'Danh mục',
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',

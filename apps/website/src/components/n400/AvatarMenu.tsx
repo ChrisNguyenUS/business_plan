@@ -3,8 +3,8 @@
 /**
  * AvatarMenu — Dropdown menu for secondary destinations.
  *
- * Desktop: Profile, Settings, Dark Mode, Logout (sidebar already shows Bookmarks/Statistics)
- * Mobile:  Profile, Bookmarks, Statistics, Settings, Dark Mode, Logout (single entry point)
+ * Desktop: Account, Settings, Dark Mode, Logout (sidebar already shows Bookmarks/Learning Progress)
+ * Mobile:  Account, Bookmarks, Learning Progress, Settings, Dark Mode, Logout (single entry point)
  *
  * Accessibility: WAI-ARIA menu pattern with full keyboard navigation.
  */
@@ -140,7 +140,7 @@ export function AvatarMenu() {
             className={menuItemClass}
           >
             <User size={16} className="text-gray-400" />
-            Hồ sơ
+            Tài khoản
           </Link>
 
           {/* Secondary destinations — mobile only */}
@@ -163,7 +163,7 @@ export function AvatarMenu() {
               className={menuItemClass}
             >
               <BarChart2 size={16} className="text-gray-400" />
-              Thống kê
+              Tiến độ học tập
             </Link>
           </div>
 

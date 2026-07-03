@@ -3,30 +3,25 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import {
   ArrowRight,
   CheckCircle,
   ClipboardCheck,
   Layers,
-  Star,
-  Trophy,
   Flame,
-  BookOpen,
   Zap,
   Target,
-  ChevronRight,
   ShieldCheck,
   Calendar,
-  Lightbulb
+  Lightbulb,
+  BarChart2,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { BadgeIcon } from '@/components/n400/BadgeIcon';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackSignupComplete } from '@/lib/n400/analytics';
-import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
-import { MOCK_TEST_PASS_THRESHOLD, MOCK_TEST_QUESTION_COUNT } from '@/lib/n400/quiz-engine';
 
 export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
@@ -45,43 +40,7 @@ export default function DashboardPage() {
     router.replace(pathname);
   }, [search, hydrated, state.address.stateCode, router, pathname]);
 
-  const lastMock = state.mockResults[state.mockResults.length - 1];
 
-  const categoryProgress = useMemo(() => {
-    const result: Record<N400CategoryKey, { total: number; mastered: number }> = {
-      principles: { total: 0, mastered: 0 },
-      system: { total: 0, mastered: 0 },
-      rights: { total: 0, mastered: 0 },
-      history: { total: 0, mastered: 0 },
-      symbols: { total: 0, mastered: 0 },
-    };
-    const lastSeen = new Map<number, boolean>();
-    for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
-    for (const q of N400_QUESTIONS) {
-      result[q.category].total += 1;
-      if (lastSeen.get(q.id) === true) result[q.category].mastered += 1;
-    }
-    return result;
-  }, [state.attempts]);
-
-  const skillData = (Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((key, i) => {
-    const cs = categoryProgress[key];
-    const value = cs.total === 0 ? 0 : Math.round((cs.mastered / cs.total) * 100);
-    const colors = ['bg-teal-600', 'bg-orange-500', 'bg-yellow-500', 'bg-purple-600', 'bg-blue-600'];
-    const icons = [
-      <Target key="i1" size={20}/>, 
-      <ShieldCheck key="i2" size={20}/>, 
-      <CheckCircle key="i3" size={20}/>, 
-      <BookOpen key="i4" size={20}/>, 
-      <Star key="i5" size={20}/>
-    ];
-    return {
-      name: N400_CATEGORY_LABELS[key].vi,
-      value,
-      color: colors[i % colors.length],
-      icon: icons[i % icons.length],
-    };
-  });
 
   if (!hydrated) {
     return <div className="text-sm font-medium text-slate-500 p-8">Đang tải…</div>;
@@ -255,98 +214,44 @@ export default function DashboardPage() {
           </Card>
 
 
-          {/* 2. CATEGORY PROGRESS */}
-          <Card>
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <BookOpen className="text-blue-500" size={24} />
-                Tiến độ theo danh mục
-              </h3>
-              <Link href={`/${locale}/n400app/practice`} className="text-sm font-bold text-teal-600 flex items-center gap-1 hover:text-teal-700 transition-colors">
-                Xem tất cả <ChevronRight size={18} />
+          {/* 2. QUICK INSIGHT LINE → Learning Progress */}
+          <Link
+            href={`/${locale}/n400app/statistic`}
+            className="flex items-center gap-3 px-5 py-3.5 bg-slate-50 rounded-2xl text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)] border border-slate-100"
+          >
+            <BarChart2 size={18} className="text-slate-400" />
+            <span>
+              {stats.accuracy}% chính xác · {stats.mastered} câu đã thuộc
+              {state.mockResults.length > 0 && (
+                <> · Thi thử gần nhất: {state.mockResults[state.mockResults.length - 1].score}/{state.mockResults[state.mockResults.length - 1].total}{' '}
+                  <span className={state.mockResults[state.mockResults.length - 1].passed ? 'text-teal-600 font-bold' : 'text-orange-500 font-bold'}>
+                    {state.mockResults[state.mockResults.length - 1].passed ? 'ĐẠT' : 'CHƯA ĐẠT'}
+                  </span>
+                </>
+              )}
+            </span>
+            <ArrowRight size={16} className="ml-auto text-slate-400" />
+          </Link>
+
+
+          {/* 3. RECOMMENDATION */}
+          <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+              <Lightbulb size={120} />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb size={24} className="text-indigo-600" fill="currentColor" />
+                <span className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Gợi ý hôm nay</span>
+              </div>
+              <p className="text-indigo-800 font-medium text-base leading-relaxed">
+                Bạn thường sai các câu hỏi về <strong className="text-indigo-900">Hệ Thống Chính Phủ</strong>. Dành 5 phút ôn tập ngay để cải thiện điểm số nhé!
+              </p>
+              <Link href={`/${locale}/n400app/flashcards?filter=system`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-colors w-max shadow-md shadow-indigo-600/20">
+                Bắt đầu ôn tập <ArrowRight size={18} />
               </Link>
             </div>
-            
-            <div className="flex flex-col gap-3">
-              {skillData.map((skill) => (
-                <div key={skill.name} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-[20px] transition-colors group cursor-default">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${skill.color} shadow-sm group-hover:scale-105 transition-transform`}>
-                    {skill.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-end mb-2.5">
-                      <span className="font-bold text-slate-700 text-base">{skill.name}</span>
-                      <span className="font-bold text-slate-900 text-lg leading-none">{skill.value}%</span>
-                    </div>
-                    <ProgressBar progress={skill.value} heightClass="h-2.5" colorClass={skill.color} />
-                  </div>
-                  <ChevronRight size={24} className="text-slate-300 ml-2 group-hover:text-slate-400 transition-colors" />
-                </div>
-              ))}
-            </div>
           </Card>
-
-
-          {/* 3. STATISTICS GRID */}
-          <Card>
-            <h3 className="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-              <Star className="text-yellow-500" size={24} />
-              Thống kê tổng quan
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-              <Stat icon={<BookOpen size={32} className="text-teal-600" />} value={stats.totalAttempts.toLocaleString()} label="Lượt trả lời" />
-              <Stat icon={<CheckCircle size={32} className="text-teal-600" />} value={`${stats.accuracy}%`} label="Độ chính xác" />
-              <Stat icon={<Trophy size={32} className="text-amber-500" fill="currentColor" />} value={state.mockResults.filter((m) => m.passed).length.toString()} label="Lần đạt thi thử" />
-              <Stat icon={<Star size={32} className="text-amber-400" fill="currentColor" />} value={state.bookmarks.length.toString()} label="Câu đã đánh dấu" />
-            </div>
-          </Card>
-
-
-          {/* 4. RECENT MOCK TEST & RECOMMENDATION */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {lastMock && (
-              <Card className={`relative overflow-hidden ${lastMock.passed ? 'border-teal-200 bg-teal-50' : 'border-orange-200 bg-orange-50'}`}>
-                <div className="flex items-center gap-4 mb-5">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-md ${lastMock.passed ? 'bg-teal-600 shadow-teal-600/20' : 'bg-orange-500 shadow-orange-500/20'}`}>
-                    <Trophy size={32} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-500 mb-1">Lần thi thử gần nhất</div>
-                    <div className="text-4xl font-bold text-slate-900 leading-none">
-                      {lastMock.score} <span className="text-2xl text-slate-500 font-medium">/ {lastMock.total}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between mt-8 pt-5 border-t border-slate-200/60">
-                  <span className={`px-4 py-2 rounded-xl text-sm font-bold tracking-wide ${lastMock.passed ? 'bg-teal-100 text-teal-800' : 'bg-orange-100 text-orange-800'}`}>
-                    {lastMock.passed ? 'ĐẠT' : 'CHƯA ĐẠT'}
-                  </span>
-                  <Link href={`/${locale}/n400app/mock-test`} className="text-sm text-teal-700 font-bold flex items-center gap-1.5 hover:gap-2.5 transition-all">
-                    Thi lại <ArrowRight size={18} />
-                  </Link>
-                </div>
-              </Card>
-            )}
-
-            <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-100 relative overflow-hidden flex flex-col h-full">
-              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                <Lightbulb size={120} />
-              </div>
-              <div className="relative z-10 flex-1 flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <Lightbulb size={24} className="text-indigo-600" fill="currentColor" />
-                  <span className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Gợi ý hôm nay</span>
-                </div>
-                <p className="text-indigo-800 font-medium text-base leading-relaxed flex-1">
-                  Bạn thường sai các câu hỏi về <strong className="text-indigo-900">Hệ Thống Chính Phủ</strong>. Dành 5 phút ôn tập ngay để cải thiện điểm số nhé!
-                </p>
-                <Link href={`/${locale}/n400app/flashcards?filter=system`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-colors w-max shadow-md shadow-indigo-600/20">
-                  Bắt đầu ôn tập <ArrowRight size={18} />
-                </Link>
-              </div>
-            </Card>
-          </div>
 
         </div>
 
@@ -452,28 +357,6 @@ export default function DashboardPage() {
           </Card>
 
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex flex-col items-start gap-4 p-2">
-      <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-        {icon}
-      </div>
-      <div>
-        <div className="text-4xl font-bold tracking-tight text-slate-900">{value}</div>
-        <div className="mt-1 text-sm font-bold text-slate-500">{label}</div>
       </div>
     </div>
   );
