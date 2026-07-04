@@ -214,8 +214,20 @@ export default function PracticePage() {
   }
 
   if (completed) {
+    // A badge/milestone earned on the last answer must survive the swap to the
+    // summary screen — replay the celebration here instead of cutting it short.
     return (
       <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
+        {unlockedBadges.length > 0 ? (
+          <BadgeUnlockToast
+            slugs={unlockedBadges}
+            catalog={Object.fromEntries(badges.catalog.map((b) => [b.slug, b]))}
+            trigger="session_complete"
+          />
+        ) : null}
+
+        {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
+
         <PracticeSessionSummary
           correct={correctCount}
           total={order.length}
