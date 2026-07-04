@@ -228,7 +228,8 @@ export default function StatisticPage() {
               </Link>
             </div>
           ) : (
-            <div className="relative flex h-56 items-end justify-between gap-2 pl-8 pr-2 sm:h-64">
+            <div className="relative h-56 pl-8 pr-2 sm:h-64">
+              {/* Y-axis labels */}
               <div className="absolute left-0 top-0 flex h-full flex-col justify-between py-2 text-[10px] text-gray-400">
                 <span>20</span>
                 <span>15</span>
@@ -236,29 +237,53 @@ export default function StatisticPage() {
                 <span>5</span>
                 <span>0</span>
               </div>
+              {/* Horizontal grid lines */}
+              {[20, 15, 12, 5, 0].map((v) => (
+                <div
+                  key={v}
+                  className="absolute left-8 right-2 border-t border-gray-100 pointer-events-none"
+                  style={{ bottom: `${(v / 20) * 100}%` }}
+                />
+              ))}
               {/* Pass threshold line */}
               <div
-                className="absolute left-8 right-2 border-t border-dashed border-teal-300 pointer-events-none"
-                style={{ top: `${100 - (12 / 20) * 100}%` }}
+                className="absolute left-8 right-2 border-t-2 border-dashed border-teal-300 pointer-events-none z-10"
+                style={{ bottom: `${(12 / 20) * 100}%` }}
               >
                 <span className="absolute -top-4 right-0 text-[10px] text-teal-600 bg-teal-50 px-1 rounded">
                   Đạt: 12
                 </span>
               </div>
-              {mockTrend.map((m, i) => {
-                const pct = (m.score / m.total) * 100;
-                return (
-                  <div
-                    key={m.id}
-                    className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1"
-                    title={`${m.score}/${m.total} • ${new Date(m.completedAt).toLocaleDateString('vi-VN')}`}
-                  >
-                    <span className="text-[10px] text-gray-700 font-bold">{m.score}</span>
-                    <div className={`w-full rounded-t ${m.passed ? 'bg-teal-500' : 'bg-orange-400'}`} style={{ height: `${pct}%`, minHeight: 2 }} />
-                    <span className="text-[9px] text-gray-400">#{i + 1}</span>
-                  </div>
-                );
-              })}
+              {/* Bar columns */}
+              <div className="absolute left-8 right-2 top-0 bottom-0 flex items-end gap-3">
+                {mockTrend.map((m, i) => {
+                  const barH = (m.score / 20) * 100;
+                  return (
+                    <div
+                      key={m.id}
+                      className="relative flex-1 min-w-0 h-full"
+                      title={`${m.score}/${m.total} • ${new Date(m.completedAt).toLocaleDateString('vi-VN')}`}
+                    >
+                      {/* Score label */}
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 text-[11px] font-bold text-gray-700"
+                        style={{ bottom: `calc(${barH}% + 4px)` }}
+                      >
+                        {m.score}
+                      </div>
+                      {/* Bar */}
+                      <div
+                        className={`absolute bottom-0 left-1 right-1 rounded-t-lg transition-all duration-500 ${m.passed ? 'bg-teal-500' : 'bg-orange-400'}`}
+                        style={{ height: `${barH}%`, minHeight: 4 }}
+                      />
+                      {/* Attempt label */}
+                      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 whitespace-nowrap">
+                        #{i + 1}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </Card>

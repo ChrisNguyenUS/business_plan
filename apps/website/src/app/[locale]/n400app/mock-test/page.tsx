@@ -14,6 +14,8 @@
 //   thử" on the intro card if a saved attempt is found.)
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   ClipboardCheck,
   ArrowRight,
@@ -33,13 +35,16 @@ import {
   RotateCcw,
   Sparkles,
   Bookmark,
+  Play,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
-import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400UserState, type MockResult } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
 import {
@@ -125,6 +130,7 @@ interface MockStats {
   passRate: number;
   avgMs: number | null;
   total: number;
+  latest: number;
 }
 
 export default function MockTestPage() {
@@ -145,6 +151,7 @@ export default function MockTestPage() {
       passRate: Math.round((results.filter((r) => r.passed).length / results.length) * 100),
       avgMs: durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : null,
       total: results[0]?.total ?? MOCK_TEST_QUESTION_COUNT,
+      latest: results[results.length - 1]?.score ?? 0,
     };
   }, [state.mockResults]);
 
@@ -270,6 +277,7 @@ export default function MockTestPage() {
         onResume={resume}
         onDiscard={discardResumable}
         stats={mockStats}
+        results={state.mockResults}
       />
     );
   }
@@ -432,6 +440,7 @@ function Intro({
   onResume,
   onDiscard,
   stats,
+  results,
 }: {
   onStart: () => void;
   starting: boolean;
@@ -440,7 +449,11 @@ function Intro({
   onResume: () => void;
   onDiscard: () => void;
   stats: MockStats | null;
+  results: MockResult[];
 }) {
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+
   const answered = resumable ? resumable.picks.filter((p) => p.pickedId !== null).length : 0;
   const total = resumable && resumable.slides.length ? resumable.slides.length : MOCK_TEST_QUESTION_COUNT;
   const pct = total ? Math.round((answered / total) * 100) : 0;
@@ -448,6 +461,20 @@ function Intro({
   const hasResume = !!resumable && answered > 0;
   const lastActivity = resumable ? formatRelativeVi(resumable.savedAt ?? resumable.startedAt) : '';
   const isFirstTime = !stats && !hasResume;
+
+  // Last 5 attempts, newest first. Each carries its score delta vs the
+  // chronologically previous attempt so the tiles can show a trend arrow.
+  const recentAttempts = useMemo(() => {
+    const start = Math.max(0, results.length - 5);
+    return results
+      .slice(start)
+      .map((r, i) => {
+        const prev = results[start + i - 1];
+        return { ...r, delta: prev ? r.score - prev.score : null };
+      })
+      .reverse();
+  }, [results]);
+  const latestDelta = recentAttempts[0]?.delta ?? null;
 
   // "Làm lại từ đầu" — abandon the in-flight attempt and roll a fresh one.
   const onRestart = () => {

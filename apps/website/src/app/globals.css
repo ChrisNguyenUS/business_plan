@@ -44,6 +44,7 @@
   /* --- Animations --- */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-float-subtle: float-subtle 6s ease-in-out infinite;
 }
 
 /* Keyframes */
@@ -55,6 +56,11 @@
 @keyframes accordion-up {
   from { height: var(--radix-accordion-content-height); }
   to { height: 0; }
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 /* ===== CSS Custom Properties (EXACT copy from old index.css) ===== */
