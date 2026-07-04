@@ -32,6 +32,7 @@ import {
   Clock,
   RotateCcw,
   Sparkles,
+  Bookmark,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
@@ -690,6 +691,7 @@ function Result({
   const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
   const badges = useN400Badges();
   const catalogMap = Object.fromEntries(badges.catalog.map((b) => [b.slug, b]));
+  const { state, toggleBookmark } = useN400UserState();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -771,7 +773,25 @@ function Result({
                       </div>
                     ) : null}
                   </div>
-                  <Volume2 className="text-gray-300" size={16} />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <AudioButton src={questionAudioUrl(q.id)} size="sm" label="Nghe câu hỏi" />
+                    <button
+                      type="button"
+                      onClick={() => toggleBookmark(q.id)}
+                      className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                        state.bookmarks.includes(q.id)
+                          ? 'text-teal-600 bg-teal-50 hover:bg-teal-100'
+                          : 'text-gray-300 hover:text-teal-500 hover:bg-gray-100'
+                      }`}
+                      aria-label={state.bookmarks.includes(q.id) ? 'Bỏ đánh dấu' : 'Đánh dấu để học sau'}
+                      title={state.bookmarks.includes(q.id) ? 'Bỏ đánh dấu' : 'Đánh dấu để học sau'}
+                    >
+                      <Bookmark
+                        size={16}
+                        fill={state.bookmarks.includes(q.id) ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

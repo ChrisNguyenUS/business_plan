@@ -21,6 +21,7 @@ import { Card, ProgressBar } from '@/components/n400/ui';
 import { BadgeIcon } from '@/components/n400/BadgeIcon';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
+import { pickNextBadge } from '@/lib/n400/badges/next-badge';
 import { trackSignupComplete } from '@/lib/n400/analytics';
 
 export default function DashboardPage() {
@@ -64,6 +65,19 @@ export default function DashboardPage() {
   const currentLevel = Math.floor(totalXp / xpPerLevel) + 1;
   const xpProgress = totalXp % xpPerLevel;
   const xpProgressPercent = Math.round((xpProgress / xpPerLevel) * 100);
+
+  // Next-badge suggestion: closest unearned badge by progress toward its
+  // unlock threshold (see lib/n400/badges/next-badge.ts).
+  const mockPassed = state.mockResults.filter((r) => r.passed).length;
+  const nextBadge = pickNextBadge(badges.catalog, badges.earnedSlugs, {
+    currentStreak: state.streak.current,
+    distinctAnswered: stats.distinctAnswered,
+    correctCount: stats.correctCount,
+    flashcardsKnown: state.flashcardKnown.length,
+    mockPassed,
+    mockFailed: state.mockResults.length - mockPassed,
+    bestMockScore: state.mockResults.reduce((m, r) => Math.max(m, r.score), 0),
+  });
 
   // Daily Goals Data
   const GOAL_QUESTIONS = 20;
@@ -200,12 +214,22 @@ export default function DashboardPage() {
                   <ProgressBar progress={xpProgressPercent} heightClass="h-2.5" colorClass="bg-teal-500" />
                 </div>
 
-                {badges.catalog.length > 0 && badges.catalog[0] && (
+                {nextBadge && (
                   <div className="mt-auto pt-6 border-t border-slate-200/60">
                     <div className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Huy hiệu tiếp theo</div>
                     <div className="flex items-center gap-3 bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm">
-                      <BadgeIcon slug={badges.catalog[0].slug} alt="" size={32} earned={false} />
-                      <div className="text-sm font-bold text-slate-700">{badges.catalog[0].title_vi}</div>
+                      <BadgeIcon slug={nextBadge.badge.slug} alt="" size={32} earned={false} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-slate-700">{nextBadge.badge.title_vi}</div>
+                        {nextBadge.target != null && nextBadge.current != null && (
+                          <div className="mt-1.5">
+                            <ProgressBar progress={Math.round(nextBadge.ratio * 100)} heightClass="h-1.5" colorClass="bg-teal-500" />
+                            <div className="mt-1 text-[11px] font-semibold text-slate-400">
+                              {Math.min(nextBadge.current, nextBadge.target)} / {nextBadge.target}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

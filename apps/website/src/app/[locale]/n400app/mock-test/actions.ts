@@ -5,9 +5,9 @@
 //                         The browser receives slides with NO `isCorrect` flag,
 //                         so a tampered client cannot mark itself right.
 //   - finalizeMockAttempt replays the user's picks through the server-side
-//                         checker (`submit_mock_answer` RPC, which reads the
-//                         manifest and derives was_correct itself), then calls
-//                         `finalize_mock_attempt` to stamp score/passed.
+//                         checker in ONE round trip (`finalize_mock_attempt_batch`
+//                         RPC, which derives was_correct from the manifest,
+//                         stamps score/passed/streak, and returns the manifest).
 //
 // Why server-side build of options: buildOptions is deterministic given a
 // seed, but the seed alone is not enough — the user's stateCode (for Q23/
@@ -22,6 +22,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
+import { after } from 'next/server'
 import { createHash } from 'node:crypto'
 
 import {
@@ -120,34 +121,21 @@ export async function finalizeMockAttempt(
 ): Promise<FinalizeMockAttemptResult> {
   const supabase = await getSupabase()
 
-  // Replay each pick through the server-side checker, then finalize.
-  // The 20 RPCs run sequentially because submit_mock_answer inserts an
-  // n400_question_attempts row each time and the finalize RPC needs to
-  // see all of them. Concurrency would risk losing rows on retry.
-  for (const pick of picks) {
-    const { error } = await supabase.rpc('submit_mock_answer', {
-      p_attempt_id: attemptId,
-      p_question_id: pick.questionId,
-      p_selected_option: pick.selectedOption,
-    })
-    if (error) {
-      try {
-        const Sentry = await import('@sentry/nextjs')
-        Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'submit_answer' } })
-      } catch {}
-      throw new Error(`submit_mock_answer failed (q${pick.questionId}): ${error.message}`)
-    }
-  }
-
-  const { data, error } = await supabase.rpc('finalize_mock_attempt', {
+  // One RPC does it all: replays every pick against the server-built
+  // manifest, stamps score/passed/streak, and returns the manifest for
+  // the result screen. The v1 flow (20 sequential submit_mock_answer
+  // calls + finalize + manifest re-read) cost ~22 round trips and left
+  // the user staring at "Đang chấm bài..." for seconds.
+  const { data, error } = await supabase.rpc('finalize_mock_attempt_batch', {
     p_attempt_id: attemptId,
+    p_picks: picks.map((p) => ({ qid: p.questionId, selected: p.selectedOption })),
   })
   if (error) {
     try {
       const Sentry = await import('@sentry/nextjs')
-      Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'finalize_rpc' } })
+      Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'finalize_batch_rpc' } })
     } catch {}
-    throw new Error(`finalize_mock_attempt failed: ${error.message}`)
+    throw new Error(`finalize_mock_attempt_batch failed: ${error.message}`)
   }
   const r = data as {
     score?: number
@@ -156,20 +144,9 @@ export async function finalizeMockAttempt(
     current_streak?: number
     longest_streak?: number
     milestone?: number | null
+    manifest?: { qid: number; correct: QuizOption['id'] }[]
   }
-
-  // Round-trip the manifest so the result page can render "correct answer
-  // was X" without an additional fetch. RLS already restricts SELECT to the
-  // owning user, so this read is safe.
-  const { data: row } = await supabase
-    .from('n400_quiz_attempts')
-    .select('slide_manifest')
-    .eq('id', attemptId)
-    .maybeSingle()
-  const manifest = (row?.slide_manifest ?? []) as {
-    qid: number
-    correct: QuizOption['id']
-  }[]
+  const manifest = r?.manifest ?? []
 
   return {
     score: Number(r?.score ?? 0),
