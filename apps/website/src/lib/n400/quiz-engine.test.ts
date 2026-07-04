@@ -67,6 +67,23 @@ describe('buildOptions', () => {
     }
   });
 
+  it('never shows a distractor that equals the correct answer ignoring parentheses/case', () => {
+    // USCIS marks optional words with parens, e.g. "(Franklin) Roosevelt".
+    // A distractor differing from the answer only by "()" is confusing and
+    // must be filtered out (regression for Q105 Franklin Roosevelt).
+    const strip = (s: string) =>
+      s.toLowerCase().replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+    for (const q of N400_QUESTIONS) {
+      for (const s of ['a', 'b', 'c', 'd', 'e']) {
+        const opts = buildOptions(q, 'TX', `paren-${q.id}-${s}`);
+        const correct = strip(opts.find((o) => o.isCorrect)!.en);
+        for (const o of opts.filter((o) => !o.isCorrect)) {
+          expect(strip(o.en), `q${q.id} seed ${s}`).not.toBe(correct);
+        }
+      }
+    }
+  });
+
   it('uses state-specific correct answers for Q23 (senators)', () => {
     const q23 = N400_QUESTIONS_BY_ID.get(23)!;
     const tx = buildOptions(q23, 'TX', 'q23-tx');

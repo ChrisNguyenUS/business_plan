@@ -734,7 +734,6 @@ export const N400_DISTRACTORS: Record<number, N400Distractor[]> = {
   ],
   105: [
     { en: "(Theodore) Roosevelt", vi: "(Theodore) Roosevelt" },
-    { en: "(Franklin) Roosevelt", vi: "(Franklin) Roosevelt" },
     { en: "(William) Taft", vi: "(William) Taft" },
     { en: "(Warren) Harding", vi: "(Warren) Harding" },
     { en: "(Calvin) Coolidge", vi: "(Calvin) Coolidge" },

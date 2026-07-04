@@ -136,6 +136,21 @@ function mulberry32(a: number) {
   };
 }
 
+/**
+ * Normalize an answer for comparison: lowercase, drop parenthesis characters
+ * and collapse whitespace. USCIS wraps optional words in parentheses
+ * (e.g. "(Franklin) Roosevelt"), so without this a distractor like
+ * "(Franklin) Roosevelt" would slip past the exact/overlap filters and appear
+ * next to the correct answer "Franklin Roosevelt" — differing only by "()".
+ */
+function normalizeAnswer(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function shuffle<T>(arr: T[], seed: string | number): T[] {
   const rng = mulberry32(hashSeed(seed));
   const out = [...arr];
@@ -176,19 +191,19 @@ export function buildOptions(
   const rng = mulberry32(hashSeed(`${question.id}-${seed}`));
   const correct = fallback[Math.floor(rng() * fallback.length)] ?? { en: '—', vi: '—' };
 
-  const correctSet = new Set(fallback.map((c) => c.en.toLowerCase().trim()));
+  const correctSet = new Set(fallback.map((c) => normalizeAnswer(c.en)));
   const candidates: { en: string; vi: string }[] = [];
 
   // 1. Try manually authored static distractors for this question
   const staticList = N400_DISTRACTORS[question.id] || [];
   for (const d of staticList) {
-    const enLower = d.en.toLowerCase().trim();
-    if (correctSet.has(enLower)) continue;
+    const enNorm = normalizeAnswer(d.en);
+    if (correctSet.has(enNorm)) continue;
     // Filter clear semantic overlap
     let overlap = false;
     for (const c of correctSet) {
-      if (c.length > 4 && enLower.includes(c)) { overlap = true; break; }
-      if (enLower.length > 4 && c.includes(enLower)) { overlap = true; break; }
+      if (c.length > 4 && enNorm.includes(c)) { overlap = true; break; }
+      if (enNorm.length > 4 && c.includes(enNorm)) { overlap = true; break; }
     }
     if (overlap) continue;
     candidates.push({ en: d.en, vi: d.vi });
@@ -206,13 +221,13 @@ export function buildOptions(
       for (let i = 0; i < q.answersEn.length; i++) {
         const en = q.answersEn[i];
         const vi = q.answersVi[i] ?? en;
-        const enLower = en.toLowerCase().trim();
-        if (correctSet.has(enLower)) continue;
+        const enNorm = normalizeAnswer(en);
+        if (correctSet.has(enNorm)) continue;
         // Filter clear semantic overlap.
         let overlap = false;
         for (const c of correctSet) {
-          if (c.length > 4 && enLower.includes(c)) { overlap = true; break; }
-          if (enLower.length > 4 && c.includes(enLower)) { overlap = true; break; }
+          if (c.length > 4 && enNorm.includes(c)) { overlap = true; break; }
+          if (enNorm.length > 4 && c.includes(enNorm)) { overlap = true; break; }
         }
         if (overlap) continue;
         candidates.push({ en, vi });
@@ -228,7 +243,7 @@ export function buildOptions(
       for (let i = 0; i < q.answersEn.length; i++) {
         const en = q.answersEn[i];
         const vi = q.answersVi[i] ?? en;
-        if (correctSet.has(en.toLowerCase().trim())) continue;
+        if (correctSet.has(normalizeAnswer(en))) continue;
         candidates.push({ en, vi });
       }
     }
@@ -238,7 +253,7 @@ export function buildOptions(
   const seen = new Set<string>();
   const unique: { en: string; vi: string }[] = [];
   for (const c of candidates) {
-    const k = c.en.toLowerCase().trim();
+    const k = normalizeAnswer(c.en);
     if (seen.has(k)) continue;
     seen.add(k);
     unique.push(c);
