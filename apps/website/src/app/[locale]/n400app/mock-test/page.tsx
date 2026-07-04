@@ -217,87 +217,145 @@ export default function MockTestPage() {
   const isLast = index === slides.length - 1;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-gray-700">
-            Câu {index + 1} / {MOCK_TEST_QUESTION_COUNT}
-          </span>
-          <span className="text-xs text-gray-500">
-            Đã trả lời: {answeredCount} / {MOCK_TEST_QUESTION_COUNT}
-          </span>
-        </div>
-        <ProgressBar progress={((index + 1) / MOCK_TEST_QUESTION_COUNT) * 100} heightClass="h-2" />
+    <div
+      className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
+    >
+      {/* Progress — shrink-0, compact on mobile */}
+      <div className="shrink-0 flex items-center justify-between gap-2">
+        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
+          Câu {index + 1} / {MOCK_TEST_QUESTION_COUNT}
+        </span>
+        <span className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.875rem)' }}>
+          Đã trả lời: {answeredCount} / {MOCK_TEST_QUESTION_COUNT}
+        </span>
       </div>
+      <ProgressBar progress={((index + 1) / MOCK_TEST_QUESTION_COUNT) * 100} heightClass="h-[clamp(4px,0.5vw,10px)] shrink-0" />
 
-      <Card className="mx-auto max-w-3xl p-5 sm:p-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1">
-            <div className="text-sm text-gray-500 mb-1">Câu hỏi / Question #{question.id}</div>
-            <div className="text-lg font-bold leading-snug text-gray-800 sm:text-xl">
-              {question.questionEn}
-            </div>
-            <div className="text-sm text-gray-500 mt-1">{question.questionVi}</div>
-          </div>
-          <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" />
-        </div>
-
-        <div className="space-y-3">
-          {slide.options.map((opt) => {
-            const isPicked = pick.pickedId === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => onPick(opt.id)}
-                className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left transition-all sm:gap-4 ${
-                  isPicked
-                    ? 'border-teal-600 bg-teal-50 shadow-sm'
-                    : 'border-gray-200 hover:border-teal-300 bg-white'
-                }`}
-              >
-                <div className="w-6 shrink-0 font-bold text-gray-800">{opt.id}</div>
-                <div className="flex-1 text-gray-800 font-medium">
-                  <div>{opt.en}</div>
-                  {opt.vi !== opt.en ? (
-                    <div className="text-xs text-gray-500 mt-0.5">{opt.vi}</div>
-                  ) : null}
-                </div>
-                {isPicked ? (
-                  <CheckCircle size={22} className="text-teal-600" />
-                ) : (
-                  <span className="w-6 h-6 rounded-full border-2 border-gray-200" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {error ? (
-          <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="mt-8 flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs text-gray-500">
-            ⚠️ Đáp án sẽ chỉ hiển thị khi bạn hoàn thành tất cả 20 câu.
-          </div>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={pick.pickedId === null || submitting}
-            className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+      {/* Main area — flex-1, grid on desktop */}
+      <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
+        {/* Question Card — flex-1, immersive */}
+        <div className="flex-1 min-h-0 flex flex-col bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+          {/* Card Body — the only scrollable region */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vw,2rem)]"
+            style={{ scrollbarGutter: 'stable' }}
           >
-            {submitting && isLast
-              ? 'Đang chấm bài...'
-              : isLast
-                ? 'Nộp bài'
-                : 'Tiếp theo'}{' '}
-            <ArrowRight size={16} />
-          </button>
+            {/* Question header — compact on mobile */}
+            <div className="mb-[clamp(0.5rem,1vw,1rem)]">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
+                    Câu hỏi / Question #{question.id}
+                  </div>
+                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+                    {question.questionEn}
+                  </div>
+                  <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                    {question.questionVi}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
+                </div>
+              </div>
+            </div>
+
+            {/* Answer Options */}
+            <div className="space-y-[clamp(0.375rem,1vw,0.75rem)]">
+              {slide.options.map((opt) => {
+                const isPicked = pick.pickedId === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => onPick(opt.id)}
+                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 sm:gap-4 min-h-[72px] p-[clamp(0.625rem,1.5vw,1rem)] ${
+                      isPicked
+                        ? 'border-teal-600 bg-teal-50 shadow-sm'
+                        : 'border-gray-200 hover:border-teal-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
+                    <div className="flex-1 text-gray-800 font-medium">
+                      <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
+                      {opt.vi !== opt.en ? (
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>{opt.vi}</div>
+                      ) : null}
+                    </div>
+                    {isPicked ? (
+                      <CheckCircle size={22} className="text-teal-600 shrink-0" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {error ? (
+              <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Pinned Actions — always visible, never scroll */}
+          <div
+            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vw,2rem)] pt-3"
+            style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="hidden text-gray-500 sm:block lg:hidden" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>
+                ⚠️ Đáp án sẽ chỉ hiển thị khi bạn hoàn thành tất cả {MOCK_TEST_QUESTION_COUNT} câu.
+              </div>
+              <button
+                type="button"
+                onClick={onNext}
+                disabled={pick.pickedId === null || submitting}
+                className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 font-semibold text-white shadow-md hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 max-sm:w-full"
+                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+              >
+                {submitting && isLast
+                  ? 'Đang chấm bài...'
+                  : isLast
+                    ? 'Nộp bài'
+                    : 'Tiếp theo'}{' '}
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
         </div>
-      </Card>
+
+        {/* Desktop Sidebar — decorative, mirrors Luyện tập */}
+        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
+          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
+            <Image
+              src="/images/n400/illu-flag-holding-transparent.png"
+              alt=""
+              fill
+              className="object-contain"
+              sizes="400px"
+              priority
+            />
+          </div>
+
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-gray-800 leading-snug">
+              Bình tĩnh và tự tin
+              <br />
+              như đang thi thật!
+            </h2>
+            <p className="text-sm text-gray-500 mt-2">
+              Đạt ≥ {MOCK_TEST_PASS_THRESHOLD}/{MOCK_TEST_QUESTION_COUNT} câu để vượt qua. Bạn làm được! 💪
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 text-sm text-gray-700">
+            ⚠️ Đáp án sẽ chỉ hiển thị sau khi bạn hoàn thành tất cả {MOCK_TEST_QUESTION_COUNT} câu — giống như kỳ thi thật.
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
