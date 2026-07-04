@@ -10,7 +10,6 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -22,6 +21,8 @@ import {
   Moon,
   LogOut,
 } from 'lucide-react';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { getAvatarUrl, getInitials, getShortName } from '@/lib/profile-utils';
 
 export function AvatarMenu() {
   const [open, setOpen] = useState(false);
@@ -31,6 +32,16 @@ export function AvatarMenu() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
+  const { profile, signOut } = useAuth();
+
+  const avatarUrl = profile ? getAvatarUrl(profile.avatar_path, profile.updated_at) : null;
+  const shortName = profile ? getShortName(profile) : '…';
+
+  const handleSignOut = async () => {
+    await signOut();
+    // Full reload so middleware sees the cleared cookie.
+    window.location.href = `/${locale}/login`;
+  };
 
   const close = useCallback(() => {
     setOpen(false);
@@ -106,18 +117,21 @@ export function AvatarMenu() {
         aria-expanded={open}
         className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm hover:bg-gray-50 transition-colors lg:gap-3 lg:px-4"
       >
-        <div className="w-8 h-8 bg-blue-100 rounded-full overflow-hidden">
-          <Image
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-            alt="avatar"
-            width={32}
-            height={32}
-            unoptimized
-          />
+        <div className="w-8 h-8 bg-teal-50 rounded-full overflow-hidden flex items-center justify-center">
+          {avatarUrl ? (
+            // Plain <img>: avatar lives on the Supabase storage CDN, which
+            // is not in next/image's remotePatterns allowlist.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-bold text-teal-600">
+              {profile ? getInitials(profile) : '?'}
+            </span>
+          )}
         </div>
         <div className="hidden lg:flex flex-col">
           <span className="text-[10px] text-gray-400 font-medium leading-none">Xin chào,</span>
-          <span className="text-sm font-bold text-gray-800 leading-tight">Liberty Learner!</span>
+          <span className="text-sm font-bold text-gray-800 leading-tight">{shortName}!</span>
         </div>
         <ChevronDown
           size={16}
@@ -212,7 +226,7 @@ export function AvatarMenu() {
             type="button"
             role="menuitem"
             tabIndex={-1}
-            onClick={close}
+            onClick={handleSignOut}
             className={`${menuItemClass} text-red-600 hover:bg-red-50 focus:bg-red-50`}
           >
             <LogOut size={16} />
