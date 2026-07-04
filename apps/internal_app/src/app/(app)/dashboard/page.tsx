@@ -2,21 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getCrossSellOpportunities } from '@/actions/crossSell'
 import CrossSellCard from '@/components/dashboard/CrossSellCard'
-<<<<<<< HEAD
 import UscisStatusAlertsPanel from '@/components/dashboard/UscisStatusAlertsPanel'
-
-function timeAgo(date: string): string {
-  const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
-  if (s < 60) return 'just now'
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
-}
-=======
 import RecentCasesTable from '@/components/dashboard/RecentCasesTable'
->>>>>>> fix/dashboard-routing-fix
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -74,11 +61,7 @@ export default async function DashboardPage() {
       {/* Summary Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Cases */}
-<<<<<<< HEAD
-        <Link href="/cases?status=active" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start cursor-pointer">
-=======
-        <Link href="/cases" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
->>>>>>> fix/dashboard-routing-fix
+        <Link href="/cases?status=active" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline cursor-pointer">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Cases</p>
             <h3 className="text-4xl font-bold text-primary-container">{activeCases ?? 0}</h3>
@@ -92,11 +75,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* Total Clients */}
-<<<<<<< HEAD
-        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start cursor-pointer">
-=======
-        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
->>>>>>> fix/dashboard-routing-fix
+        <Link href="/clients" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline cursor-pointer">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Clients</p>
             <h3 className="text-4xl font-bold text-amber-600">{clientCount ?? 0}</h3>
@@ -110,11 +89,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* USCIS Alerts */}
-<<<<<<< HEAD
-        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start cursor-pointer">
-=======
-        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
->>>>>>> fix/dashboard-routing-fix
+        <Link href="/tracker" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline cursor-pointer">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">USCIS Alerts</p>
             <h3 className="text-4xl font-bold text-error">{rfeCases?.length ?? 0}</h3>
@@ -131,7 +106,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* Completed MTD */}
-        <Link href="/cases?status=approved" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline">
+        <Link href="/cases?status=approved" className="bg-surface-container-lowest p-6 rounded-xl border-none shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)] group hover:shadow-[0_12px_32px_-4px_rgba(0,105,112,0.08)] transition-all flex justify-between items-start no-underline cursor-pointer">
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Completed MTD</p>
             <h3 className="text-4xl font-bold text-green-600">{completedMTD ?? 0}</h3>
@@ -154,62 +129,7 @@ export default async function DashboardPage() {
               <Link href="/cases" className="text-xs text-primary-container font-bold uppercase tracking-widest hover:underline transition-all cursor-pointer">View All</Link>
             </div>
             <div className="overflow-x-auto">
-<<<<<<< HEAD
-              <table className="w-full text-left">
-                <thead className="bg-surface-container-low/50">
-                  <tr>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Client Name</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Forms</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Last Updated</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y-0">
-                  {(recentCases ?? []).map((c: any) => {
-                    const initials = `${(c.primary_client as any)?.first_name?.[0] || ''}${(c.primary_client as any)?.last_name?.[0] || ''}`.toUpperCase()
-                    const formsDesc = (c.case_forms as any[]).map((f: any) => f.form_type.toUpperCase()).join(', ') || 'N/A'
-                    const isUrgent = c.status === 'rfe_issued'
-
-                    return (
-                      <tr key={c.id} className="hover:bg-surface-container-high transition-colors group">
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">{initials}</div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">{(c.primary_client as any)?.first_name} {(c.primary_client as any)?.last_name}</p>
-                              <p className="text-[11px] text-slate-400 truncate w-32">#{c.id.split('-')[0]}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <p className="text-[11px] text-slate-600 font-medium">{formsDesc}</p>
-                        </td>
-                        <td className="px-6 py-5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            isUrgent
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-primary/10 text-primary'
-                          }`}>
-                            {c.status.replace(/_/g, ' ').toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5">
-                          <p className="text-sm font-medium text-slate-500">{timeAgo(c.created_at)}</p>
-                        </td>
-                        <td className="px-6 py-5 text-right pr-8">
-                          <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-[#3AAFB9] hover:text-[#006970] transition-colors p-2 -mr-2 rounded-lg hover:bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-[#3AAFB9]/30 cursor-pointer">
-                            Open
-                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-=======
               <RecentCasesTable cases={recentCases as any[] ?? []} />
->>>>>>> fix/dashboard-routing-fix
             </div>
           </div>
           
@@ -235,7 +155,6 @@ export default async function DashboardPage() {
         <div className="col-span-12 lg:col-span-5 space-y-8">
           
           {/* USCIS Alerts Card */}
-<<<<<<< HEAD
           <UscisStatusAlertsPanel
             rfeCases={(rfeCases ?? []).map((c: any) => ({
               id: c.id,
@@ -245,37 +164,6 @@ export default async function DashboardPage() {
             }))}
             dailyAlerts={[]}
           />
-=======
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_-4px_rgba(0,105,112,0.04)]">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-slate-800">USCIS Status Alerts</h3>
-              {(rfeCases?.length ?? 0) > 0 && <span className="bg-error text-white text-[10px] px-2 py-0.5 rounded-full font-bold">{rfeCases?.length} NEW</span>}
-            </div>
-            
-            <div className="space-y-4">
-              {(!rfeCases || rfeCases.length === 0) ? (
-                <div className="p-4 text-center text-sm text-slate-500 bg-surface-container-low rounded-lg">
-                  No urgent alerts at this time.
-                </div>
-              ) : (
-                rfeCases.map((c: any) => (
-                  <Link key={c.id} href={`/cases/${c.id}`} className="flex gap-4 group cursor-pointer hover:bg-surface-container-low p-2 -m-2 rounded-lg transition-all relative no-underline">
-                    <div className={`status-pillar absolute left-0 top-2 bottom-2 ${c.status === 'rfe_issued' ? 'bg-error' : 'bg-amber-500'}`}></div>
-                    <div className="flex-grow pl-3">
-                      <p className="text-xs font-bold text-slate-400">ID: {c.id.split('-')[0]}</p>
-                      <p className="text-sm font-medium text-slate-800">
-                        {c.status === 'rfe_issued' ? 'Request for Additional Evidence (RFE) Issued' : 'Status Update Received'}
-                      </p>
-                      <p className="text-[11px] text-slate-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {new Date(c.created_at).toLocaleDateString()} • {(c.primary_client as any)?.first_name} {(c.primary_client as any)?.last_name}
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
->>>>>>> fix/dashboard-routing-fix
 
           {/* Cross-Sell Opportunities Card */}
           <CrossSellCard opportunities={crossSellOpportunities} />
