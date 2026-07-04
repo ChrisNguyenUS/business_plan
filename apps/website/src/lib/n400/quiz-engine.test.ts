@@ -5,6 +5,9 @@ import {
   isPass,
   correctAnswersFor,
   shuffle,
+  selectPracticeQuestionIds,
+  PRACTICE_PRESETS,
+  isPersonalizedAnswerUnavailable,
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
 } from './quiz-engine';
@@ -211,5 +214,49 @@ describe('shuffle', () => {
 
   it('is deterministic given the same seed', () => {
     expect(shuffle([1, 2, 3, 4, 5], 's')).toEqual(shuffle([1, 2, 3, 4, 5], 's'));
+  });
+});
+
+describe('selectPracticeQuestionIds', () => {
+  it('returns exactly the requested count with no duplicate ids', () => {
+    for (const count of [5, 15, 40]) {
+      const ids = selectPracticeQuestionIds('seed-1', count);
+      expect(ids.length).toBe(count);
+      expect(new Set(ids).size).toBe(count);
+    }
+  });
+
+  it('returns the full 128-question pool when count is null, including Q29', () => {
+    const ids = selectPracticeQuestionIds('seed-1', null);
+    expect(ids.length).toBe(N400_QUESTIONS.length);
+    expect(ids).toContain(29);
+  });
+
+  it('is deterministic for a given seed and differs across seeds', () => {
+    const a = selectPracticeQuestionIds('seed-1', 15);
+    const b = selectPracticeQuestionIds('seed-1', 15);
+    const c = selectPracticeQuestionIds('seed-2', 15);
+    expect(a).toEqual(b);
+    expect(a).not.toEqual(c);
+  });
+
+  it('clamps count to the available pool', () => {
+    const ids = selectPracticeQuestionIds('seed-1', 999);
+    expect(ids.length).toBe(N400_QUESTIONS.length);
+  });
+
+  it('exposes the four product presets in display order', () => {
+    expect(PRACTICE_PRESETS.map((p) => p.id)).toEqual(['quick', 'standard', 'deep', 'full']);
+    expect(PRACTICE_PRESETS.map((p) => p.count)).toEqual([5, 15, 40, null]);
+  });
+});
+
+describe('isPersonalizedAnswerUnavailable', () => {
+  it('is true only for Q29 without a resolved district', () => {
+    const q29 = N400_QUESTIONS_BY_ID.get(29)!;
+    const q23 = N400_QUESTIONS_BY_ID.get(23)!;
+    expect(isPersonalizedAnswerUnavailable(q29, null)).toBe(true);
+    expect(isPersonalizedAnswerUnavailable(q29, 12)).toBe(false);
+    expect(isPersonalizedAnswerUnavailable(q23, null)).toBe(false);
   });
 });

@@ -295,3 +295,45 @@ export function selectMockTestQuestions(seed: string | number): N400Question[] {
 export function isPass(score: number): boolean {
   return score >= MOCK_TEST_PASS_THRESHOLD;
 }
+
+// ── Practice session selection ───────────────────────────────────────────────
+
+export interface PracticePreset {
+  id: 'quick' | 'standard' | 'deep' | 'full';
+  titleVi: string;
+  titleEn: string;
+  count: number | null;   // null = all available questions
+  minutes: number | null; // null = no time estimate shown
+}
+
+export const PRACTICE_PRESETS: PracticePreset[] = [
+  { id: 'quick', titleVi: 'Luyện nhanh', titleEn: 'Quick Practice', count: 5, minutes: 3 },
+  { id: 'standard', titleVi: 'Tiêu chuẩn', titleEn: 'Standard Practice', count: 15, minutes: 8 },
+  { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', count: 40, minutes: 20 },
+  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', count: null, minutes: null },
+];
+
+export function selectPracticeQuestionIds(
+  seed: string | number,
+  count: number | null
+): number[] {
+  // Same shuffle key the practice page has always used, so "full" keeps
+  // producing the identical order for an existing seed. Q29 is always
+  // included: without a district, correctAnswersFor falls back to any
+  // current representative of the user's state.
+  const ids = N400_QUESTIONS.map((q) => q.id);
+  const shuffled = shuffle(ids, `practice-${seed}`);
+  return count === null ? shuffled : shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
+/**
+ * True when a question's correct answer is personal to the user but the app
+ * cannot resolve it yet (Q29 needs the resolved congressional district).
+ * Q23/Q61/Q62 only need stateCode, which always has a value.
+ */
+export function isPersonalizedAnswerUnavailable(
+  question: N400Question,
+  districtNumber: number | null
+): boolean {
+  return question.id === 29 && districtNumber === null;
+}
