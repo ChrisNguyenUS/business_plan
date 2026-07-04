@@ -320,9 +320,6 @@ export default function MockTestPage() {
                   <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
                     {question.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {question.questionVi}
-                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
@@ -348,9 +345,6 @@ export default function MockTestPage() {
                     <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
-                      {opt.vi !== opt.en ? (
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>{opt.vi}</div>
-                      ) : null}
                     </div>
                     {isPicked ? (
                       <CheckCircle size={22} className="text-teal-600 shrink-0" />
@@ -764,7 +758,6 @@ function Result({
                       Câu {i + 1} / Question #{q.id}
                     </div>
                     <div className="font-semibold text-gray-800 mt-1">{q.questionEn}</div>
-                    <div className="text-xs text-gray-500">{q.questionVi}</div>
                     <div className="text-sm mt-2">
                       <span className="text-gray-500">Bạn chọn: </span>
                       <span className={ok ? 'text-teal-700 font-medium' : 'text-orange-600 font-medium'}>
