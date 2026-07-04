@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
@@ -100,11 +101,16 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* OAuth providers */}
+        <div className="mb-6">
+          <OAuthButtons />
+        </div>
+
         {/* Divider */}
         <div className="flex items-center gap-3 mb-6">
           <div className="h-px bg-border flex-1" />
           <span className="text-xs text-muted-foreground font-medium uppercase">
-            Sign in with email
+            or sign in with email
           </span>
           <div className="h-px bg-border flex-1" />
         </div>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Mail, Lock, User } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 export default function SignUpPage() {
   const params = useParams();
@@ -97,6 +98,20 @@ export default function SignUpPage() {
             {error}
           </div>
         )}
+
+        {/* OAuth providers */}
+        <div className="mb-6">
+          <OAuthButtons />
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-px bg-border flex-1" />
+          <span className="text-xs text-muted-foreground font-medium uppercase">
+            or sign up with email
+          </span>
+          <div className="h-px bg-border flex-1" />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
