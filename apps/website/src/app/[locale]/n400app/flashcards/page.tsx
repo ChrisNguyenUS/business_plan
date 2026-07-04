@@ -31,7 +31,9 @@ import {
   shuffle,
   questionAudioUrl,
   answerAudioUrlFor,
+  isPersonalizedAnswerUnavailable,
 } from '@/lib/n400/quiz-engine';
+import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
 type FilterMode = 'all' | 'unknown' | 'bookmarks' | N400CategoryKey;
 
@@ -77,18 +79,13 @@ export default function FlashcardsPage() {
     } else if (filter !== 'all') {
       qs = qs.filter((q) => q.category === filter);
     }
-    // Q29 (your U.S. Representative) needs the user's resolved district to
-    // produce a per-user correct answer. Hide it until /setup completes.
-    if (districtNumber === null) {
-      qs = qs.filter((q) => q.id !== 29);
-    }
     return shuffle(
       qs.map((q) => q.id),
       `flash-${filter}-${seed}`
     )
       .map((id) => N400_QUESTIONS.find((q) => q.id === id)!)
       .filter(Boolean);
-  }, [filter, seed, state.bookmarks, state.flashcardKnown, districtNumber]);
+  }, [filter, seed, state.bookmarks, state.flashcardKnown]);
 
   const total = questions.length;
   const current = questions[index];
@@ -228,6 +225,12 @@ export default function FlashcardsPage() {
         </div>
         <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-2.5" />
       </div>
+
+      {isPersonalizedAnswerUnavailable(current, districtNumber) ? (
+        <div className="shrink-0">
+          <PersonalizedAnswerNotice from="flashcards" />
+        </div>
+      ) : null}
 
       {/* Flashcard — flex-1 min-h-0 (fills remaining space) */}
       <Flashcard
