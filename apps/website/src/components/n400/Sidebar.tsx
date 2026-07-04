@@ -14,6 +14,7 @@
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useParams } from 'next/navigation';
 import {
   Home,
@@ -96,8 +97,8 @@ export function Sidebar() {
     <div className="hidden lg:flex fixed z-20 h-full w-64 flex-col border-r border-gray-100 bg-white">
       {/* Logo */}
       <div className="p-6 flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded bg-teal-600 flex items-center justify-center shadow-md">
-          <Shield size={20} className="text-white" />
+        <div className="w-10 h-10 relative flex-shrink-0">
+          <Image src="/images/logo-transparent.png" alt="Manna One Solution" fill className="object-contain" />
         </div>
         <div>
           <h1 className="font-extrabold text-lg text-gray-800 leading-tight">N400 Ready</h1>
