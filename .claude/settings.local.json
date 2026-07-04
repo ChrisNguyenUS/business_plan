@@ -53,7 +53,8 @@
       "Bash(npm test *)",
       "Bash(echo \"exit=$?\")",
       "mcp__plugin_vercel_vercel__get_deployment_build_logs",
-      "Bash(pnpm --version)"
+      "Bash(pnpm --version)",
+      "Bash(git checkout *)"
     ]
   },
   "enableAllProjectMcpServers": true,
