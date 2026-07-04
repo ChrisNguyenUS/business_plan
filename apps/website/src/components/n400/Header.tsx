@@ -25,7 +25,7 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
   },
   'mock-test': {
     title: 'Thi thử',
-    subtitle: '20 câu — đạt 12 câu để vượt qua, không xem đáp án giữa chừng',
+    subtitle: 'Mô phỏng kỳ thi quốc tịch Mỹ (N-400) giống như kỳ thi thật.',
   },
   flashcards: {
     title: 'Flashcards',

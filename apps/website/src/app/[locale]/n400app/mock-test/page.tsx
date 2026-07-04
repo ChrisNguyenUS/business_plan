@@ -14,8 +14,26 @@
 //   thử" on the intro card if a saved attempt is found.)
 
 import Image from 'next/image';
-import { ClipboardCheck, ArrowRight, CheckCircle, XCircle, Trophy, Volume2, Flame } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  ClipboardCheck,
+  ArrowRight,
+  CheckCircle,
+  XCircle,
+  Trophy,
+  Volume2,
+  Flame,
+  FileText,
+  EyeOff,
+  Headphones,
+  ShieldCheck,
+  BarChart3,
+  Calendar,
+  Target,
+  Clock,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
@@ -47,6 +65,9 @@ interface PickState {
 interface PersistedAttempt {
   attemptId: string;
   startedAt: string;
+  // Refreshed on every autosave so the resume card can show "last activity".
+  // Optional for backward-compat with attempts persisted before this field existed.
+  savedAt?: string;
   slides: PublicSlide[];
   picks: PickState[];
   index: number;
@@ -76,8 +97,55 @@ function persist(state: PersistedAttempt | null) {
   }
 }
 
+// "10 phút trước" style relative time for the resume card.
+function formatRelativeVi(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const min = Math.floor((Date.now() - then) / 60000);
+  if (min < 1) return 'vừa xong';
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} giờ trước`;
+  return `${Math.floor(hr / 24)} ngày trước`;
+}
+
+// mm:ss for the average-time stat.
+function formatDuration(ms: number): string {
+  const totalSec = Math.round(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+interface MockStats {
+  best: number;
+  avg: number;
+  attempts: number;
+  passRate: number;
+  avgMs: number | null;
+  total: number;
+}
+
 export default function MockTestPage() {
-  const { hydrated } = useN400UserState();
+  const { state, hydrated } = useN400UserState();
+
+  // Aggregate the user's finished mock attempts for the motivational stats
+  // panel. `null` when they've never completed one (drives the empty state).
+  const mockStats = useMemo<MockStats | null>(() => {
+    const results = state.mockResults;
+    if (results.length === 0) return null;
+    const durations = results
+      .map((r) => new Date(r.completedAt).getTime() - new Date(r.startedAt).getTime())
+      .filter((d) => Number.isFinite(d) && d > 0);
+    return {
+      best: Math.max(...results.map((r) => r.score)),
+      avg: results.reduce((sum, r) => sum + r.score, 0) / results.length,
+      attempts: results.length,
+      passRate: Math.round((results.filter((r) => r.passed).length / results.length) * 100),
+      avgMs: durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : null,
+      total: results[0]?.total ?? MOCK_TEST_QUESTION_COUNT,
+    };
+  }, [state.mockResults]);
 
   const [stage, setStage] = useState<Stage>('intro');
   const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -99,7 +167,7 @@ export default function MockTestPage() {
   // Persist on every state change while taking the test.
   useEffect(() => {
     if (stage !== 'taking' || !attemptId) return;
-    persist({ attemptId, startedAt, slides, picks, index });
+    persist({ attemptId, startedAt, savedAt: new Date().toISOString(), slides, picks, index });
   }, [stage, attemptId, startedAt, slides, picks, index]);
 
   const startNew = async () => {
@@ -200,6 +268,7 @@ export default function MockTestPage() {
         resumable={resumable}
         onResume={resume}
         onDiscard={discardResumable}
+        stats={mockStats}
       />
     );
   }
@@ -367,6 +436,7 @@ function Intro({
   resumable,
   onResume,
   onDiscard,
+  stats,
 }: {
   onStart: () => void;
   starting: boolean;
@@ -374,94 +444,239 @@ function Intro({
   resumable: PersistedAttempt | null;
   onResume: () => void;
   onDiscard: () => void;
+  stats: MockStats | null;
 }) {
+  const answered = resumable ? resumable.picks.filter((p) => p.pickedId !== null).length : 0;
+  const total = resumable && resumable.slides.length ? resumable.slides.length : MOCK_TEST_QUESTION_COUNT;
+  const pct = total ? Math.round((answered / total) * 100) : 0;
+  // Section 3: only surface the resume card once there's real progress.
+  const hasResume = !!resumable && answered > 0;
+  const lastActivity = resumable ? formatRelativeVi(resumable.savedAt ?? resumable.startedAt) : '';
+  const isFirstTime = !stats && !hasResume;
+
+  // "Làm lại từ đầu" — abandon the in-flight attempt and roll a fresh one.
+  const onRestart = () => {
+    onDiscard();
+    onStart();
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-start animate-in fade-in duration-300">
-      <Card className="p-5 sm:p-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-            <ClipboardCheck size={26} />
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[3fr_2fr] lg:gap-8 animate-in fade-in duration-300">
+      {/* LEFT — primary card */}
+      <Card className="p-5 sm:p-7">
+        {/* Header — compact */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+            <ClipboardCheck size={24} />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">Thi thử N400</h3>
-        </div>
-        <p className="text-sm text-gray-600 mt-2 mb-6">
-          Mô phỏng kỳ thi quốc tịch thật. Trả lời {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên,
-          đạt {MOCK_TEST_PASS_THRESHOLD} câu đúng để vượt qua.
-        </p>
-
-        <div className="space-y-3 text-sm text-gray-700 mb-8">
-          <Bullet color="bg-teal-500">{MOCK_TEST_QUESTION_COUNT} câu ngẫu nhiên trên 128 câu chính thức.</Bullet>
-          <Bullet color="bg-orange-500">Không hiển thị đáp án giữa chừng — như thi thật.</Bullet>
-          <Bullet color="bg-purple-500">
-            Đạt ≥ {MOCK_TEST_PASS_THRESHOLD}/{MOCK_TEST_QUESTION_COUNT} câu để vượt qua.
-          </Bullet>
-          <Bullet color="bg-yellow-500">Có audio MP3 phát âm chuẩn cho từng câu hỏi.</Bullet>
+          <div className="min-w-0">
+            <h3 className="text-xl font-bold text-gray-800 sm:text-2xl">Thi thử N400</h3>
+            <p className="text-sm text-gray-500">
+              Mô phỏng bài thi USCIS với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên.
+            </p>
+          </div>
         </div>
 
-        {resumable ? (
-          <div className="mb-4 rounded-xl border border-teal-200 bg-teal-50 p-4 space-y-2">
-            <div className="text-sm font-semibold text-teal-800">
-              Bạn có một bài thi đang dang dở.
+        {/* Exam rules — scannable feature cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <FeatureCard
+            icon={<FileText size={18} />}
+            iconBg="bg-teal-50"
+            iconColor="text-teal-600"
+            title={`${MOCK_TEST_QUESTION_COUNT} câu hỏi`}
+            subtitle="Ngẫu nhiên"
+          />
+          <FeatureCard
+            icon={<EyeOff size={18} />}
+            iconBg="bg-orange-50"
+            iconColor="text-orange-500"
+            title="Không hiển thị"
+            subtitle="đáp án giữa chừng"
+          />
+          <FeatureCard
+            icon={<Trophy size={18} />}
+            iconBg="bg-purple-50"
+            iconColor="text-purple-600"
+            title={`≥ ${MOCK_TEST_PASS_THRESHOLD}/${MOCK_TEST_QUESTION_COUNT}`}
+            subtitle="để vượt qua"
+          />
+          <FeatureCard
+            icon={<Headphones size={18} />}
+            iconBg="bg-yellow-50"
+            iconColor="text-yellow-600"
+            title="Audio MP3"
+            subtitle="cho từng câu hỏi"
+          />
+        </div>
+
+        {/* Resume card / empty state / primary CTA */}
+        {hasResume ? (
+          <div className="mt-6 rounded-2xl border border-teal-100 bg-teal-50/60 p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="text-base font-bold text-gray-800">Tiếp tục bài thi của bạn</h4>
+                {lastActivity ? (
+                  <p className="mt-0.5 text-xs text-gray-500">Lần làm gần nhất: {lastActivity}</p>
+                ) : null}
+              </div>
+              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-sm font-bold text-teal-700 shadow-sm">
+                {pct}%
+              </span>
             </div>
-            <div className="text-xs text-teal-700">
-              Tiến độ: {resumable.picks.filter((p) => p.pickedId !== null).length} /{' '}
-              {resumable.slides.length} câu.
+            <div className="mt-3">
+              <ProgressBar progress={pct} heightClass="h-2.5" />
+              <div className="mt-1.5 text-xs font-medium text-gray-600">
+                {answered} / {total} câu
+              </div>
             </div>
-            <div className="flex gap-2 pt-1">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={onResume}
-                className="flex-1 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700"
+                disabled={starting}
+                className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg disabled:opacity-60"
               >
-                Tiếp tục
+                Tiếp tục bài thi
+                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
               </button>
               <button
                 type="button"
-                onClick={onDiscard}
-                className="px-4 py-2.5 rounded-lg bg-white border border-teal-200 text-teal-700 text-sm font-semibold hover:bg-teal-100"
+                onClick={onRestart}
+                disabled={starting}
+                className="flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-5 py-3 text-sm font-semibold text-teal-700 transition-colors duration-200 hover:bg-teal-50 disabled:opacity-60"
               >
-                Bỏ
+                <RotateCcw size={15} /> Làm lại từ đầu
               </button>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <>
+            {isFirstTime ? (
+              <div className="mt-6">
+                <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
+                  không xem đáp án cho tới khi bạn hoàn thành.
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={onStart}
+              disabled={starting}
+              aria-busy={starting}
+              className="group mt-6 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-teal-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              {starting
+                ? 'Đang chuẩn bị câu hỏi...'
+                : isFirstTime
+                  ? 'Bắt đầu thi thử'
+                  : 'Bắt đầu thi thử mới'}
+              <ArrowRight
+                size={18}
+                className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+              />
+            </button>
+          </>
+        )}
 
         {error ? (
-          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={onStart}
-          disabled={starting}
-          aria-busy={starting}
-          className="w-full py-4 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-        >
-          {starting ? 'Đang chuẩn bị câu hỏi...' : 'Bắt đầu thi thử'} <ArrowRight size={16} />
-        </button>
+        {/* Trust indicator */}
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+          <ShieldCheck size={15} className="shrink-0 text-teal-600" />
+          Dựa trên 128 câu hỏi chính thức từ USCIS
+        </div>
       </Card>
 
-      <div className="hidden h-[340px] overflow-hidden rounded-3xl lg:relative lg:block">
-        <Image
-          src="/images/n400/illu-flag-holding-transparent.png"
-          alt=""
-          fill
-          className="object-contain"
-          sizes="400px"
-          priority
-        />
+      {/* RIGHT — illustration, motivation, stats */}
+      <div className="flex flex-col gap-5">
+        <div className="relative mx-auto h-56 w-full max-w-xs lg:h-64 lg:max-w-none">
+          <Image
+            src="/images/n400/illu-statue-city.png"
+            alt=""
+            fill
+            className="object-contain"
+            sizes="400px"
+            priority
+          />
+        </div>
+
+        <div className="text-center">
+          <h3 className="text-lg font-bold text-gray-800">Thi thử như thi thật</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+            Chuẩn bị tốt hơn – Tự tin hơn
+            <br />
+            Chinh phục giấc mơ Mỹ!
+          </p>
+        </div>
+
+        {stats ? <StatsPanel stats={stats} /> : null}
       </div>
     </div>
   );
 }
 
-function Bullet({ color, children }: { color: string; children: React.ReactNode }) {
+function FeatureCard({
+  icon,
+  iconBg,
+  iconColor,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  subtitle: string;
+}) {
   return (
-    <div className="flex items-start gap-3">
-      <span className={`mt-1.5 w-2 h-2 rounded-full ${color} shrink-0`} />
-      <span>{children}</span>
+    <div className="rounded-2xl border border-slate-100 bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4">
+      <div className={`mb-2 flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
+        {icon}
+      </div>
+      <div className="text-sm font-bold leading-tight text-gray-800">{title}</div>
+      <div className="mt-0.5 text-xs leading-tight text-gray-500">{subtitle}</div>
+    </div>
+  );
+}
+
+function StatsPanel({ stats }: { stats: MockStats }) {
+  const rows: { icon: React.ReactNode; label: string; value: string; suffix?: string; valueClass?: string }[] = [
+    { icon: <Trophy size={16} className="text-yellow-500" />, label: 'Điểm cao nhất', value: `${stats.best}`, suffix: `/ ${stats.total}` },
+    { icon: <BarChart3 size={16} className="text-blue-500" />, label: 'Điểm trung bình', value: stats.avg.toFixed(1), suffix: `/ ${stats.total}` },
+    { icon: <Calendar size={16} className="text-teal-500" />, label: 'Số lần thi', value: `${stats.attempts}` },
+    { icon: <Target size={16} className="text-rose-500" />, label: 'Tỷ lệ vượt qua', value: `${stats.passRate}%`, valueClass: 'text-teal-600' },
+    ...(stats.avgMs != null
+      ? [{ icon: <Clock size={16} className="text-purple-500" />, label: 'Thời gian trung bình', value: formatDuration(stats.avgMs) }]
+      : []),
+  ];
+
+  return (
+    <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
+      <div className="divide-y divide-slate-100">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between py-2.5">
+            <div className="flex items-center gap-2.5 text-sm text-gray-600">
+              {r.icon}
+              <span>{r.label}</span>
+            </div>
+            <div className={`text-sm font-bold ${r.valueClass ?? 'text-gray-800'}`}>
+              {r.value}
+              {r.suffix ? <span className="text-xs font-medium text-gray-400"> {r.suffix}</span> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2 rounded-xl bg-teal-50 px-3 py-2.5 text-xs font-medium text-teal-700">
+        <Sparkles size={15} className="shrink-0 text-teal-500" />
+        Càng luyện tập, bạn càng gần với kết quả tốt hơn!
+      </div>
     </div>
   );
 }
