@@ -22,7 +22,6 @@ import {
   CheckCircle,
   XCircle,
   Trophy,
-  Volume2,
   Flame,
   FileText,
   EyeOff,
@@ -484,221 +483,417 @@ function Intro({
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[3fr_2fr] lg:gap-8 animate-in fade-in duration-300">
-      {/* LEFT — primary card */}
-      <Card className="p-5 sm:p-7">
-        {/* Header — compact */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-            <ClipboardCheck size={24} />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xl font-bold text-gray-800 sm:text-2xl">Thi thử N400</h3>
-            <p className="text-sm text-gray-500">
-              Mô phỏng bài thi USCIS với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên.
-            </p>
-          </div>
-        </div>
-
-        {/* Exam rules — scannable feature cards */}
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <FeatureCard
-            icon={<FileText size={18} />}
-            iconBg="bg-teal-50"
-            iconColor="text-teal-600"
-            title={`${MOCK_TEST_QUESTION_COUNT} câu hỏi`}
-            subtitle="Ngẫu nhiên"
+      {/* LEFT — hero + recent history */}
+      <div className="flex min-w-0 flex-col gap-6">
+        {/* Hero — the visual anchor of the page */}
+        <Card className="relative overflow-hidden p-6 sm:p-8">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-teal-50/80 via-white to-white"
           />
-          <FeatureCard
-            icon={<EyeOff size={18} />}
-            iconBg="bg-orange-50"
-            iconColor="text-orange-500"
-            title="Không hiển thị"
-            subtitle="đáp án giữa chừng"
-          />
-          <FeatureCard
-            icon={<Trophy size={18} />}
-            iconBg="bg-purple-50"
-            iconColor="text-purple-600"
-            title={`≥ ${MOCK_TEST_PASS_THRESHOLD}/${MOCK_TEST_QUESTION_COUNT}`}
-            subtitle="để vượt qua"
-          />
-          <FeatureCard
-            icon={<Headphones size={18} />}
-            iconBg="bg-yellow-50"
-            iconColor="text-yellow-600"
-            title="Audio MP3"
-            subtitle="cho từng câu hỏi"
-          />
-        </div>
-
-        {/* Resume card / empty state / primary CTA */}
-        {hasResume ? (
-          <div className="mt-6 rounded-2xl border border-teal-100 bg-teal-50/60 p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h4 className="text-base font-bold text-gray-800">Tiếp tục bài thi của bạn</h4>
-                {lastActivity ? (
-                  <p className="mt-0.5 text-xs text-gray-500">Lần làm gần nhất: {lastActivity}</p>
-                ) : null}
-              </div>
-              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-sm font-bold text-teal-700 shadow-sm">
-                {pct}%
-              </span>
-            </div>
-            <div className="mt-3">
-              <ProgressBar progress={pct} heightClass="h-2.5" />
-              <div className="mt-1.5 text-xs font-medium text-gray-600">
-                {answered} / {total} câu
-              </div>
-            </div>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <button
-                type="button"
-                onClick={onResume}
-                disabled={starting}
-                className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg disabled:opacity-60"
-              >
-                Tiếp tục bài thi
-                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
-              </button>
-              <button
-                type="button"
-                onClick={onRestart}
-                disabled={starting}
-                className="flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-5 py-3 text-sm font-semibold text-teal-700 transition-colors duration-200 hover:bg-teal-50 disabled:opacity-60"
-              >
-                <RotateCcw size={15} /> Làm lại từ đầu
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {isFirstTime ? (
-              <div className="mt-6">
-                <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
-                <p className="mt-1 text-sm text-gray-500">
-                  Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
-                  không xem đáp án cho tới khi bạn hoàn thành.
+          <div className="relative">
+            <div className="flex items-start justify-between gap-6">
+              <div className="min-w-0 pt-1">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-600/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-teal-700">
+                  <ClipboardCheck size={13} />
+                  Mock Exam
+                </div>
+                <h2 className="mt-3 text-3xl font-extrabold leading-tight text-gray-800 sm:text-4xl">
+                  Thi thử như thi thật
+                </h2>
+                <p className="mt-2.5 max-w-md text-sm leading-relaxed text-gray-500 sm:text-base">
+                  Trải nghiệm kỳ thi phỏng vấn quốc tịch Mỹ với mô phỏng sát thực tế nhất.
                 </p>
+              </div>
+              <div className="relative -my-2 hidden h-44 w-52 shrink-0 animate-float-subtle motion-reduce:animate-none sm:block lg:h-52 lg:w-64">
+                <Image
+                  src="/images/n400/illu-statue-city.png"
+                  alt=""
+                  fill
+                  className="object-contain"
+                  sizes="256px"
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Exam facts — questions & passing score lead, the rest support */}
+            <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <ExamFact
+                primary
+                icon={<FileText size={18} />}
+                iconBg="bg-teal-50"
+                iconColor="text-teal-600"
+                value={`${MOCK_TEST_QUESTION_COUNT}`}
+                label="Câu hỏi ngẫu nhiên"
+              />
+              <ExamFact
+                primary
+                icon={<Target size={18} />}
+                iconBg="bg-rose-50"
+                iconColor="text-rose-500"
+                value={`${MOCK_TEST_PASS_THRESHOLD}/${MOCK_TEST_QUESTION_COUNT}`}
+                label="Điểm đạt"
+              />
+              <ExamFact
+                icon={<Clock size={18} />}
+                iconBg="bg-blue-50"
+                iconColor="text-blue-500"
+                value="5–8 phút"
+                label="Thời gian ước tính"
+              />
+              <ExamFact
+                icon={<EyeOff size={18} />}
+                iconBg="bg-orange-50"
+                iconColor="text-orange-500"
+                value="Không hiển thị"
+                label="Đáp án giữa chừng"
+              />
+              <ExamFact
+                icon={<Headphones size={18} />}
+                iconBg="bg-yellow-50"
+                iconColor="text-yellow-600"
+                value="Audio MP3"
+                label="Cho từng câu hỏi"
+              />
+            </div>
+
+            {/* Resume card / empty state / primary CTA */}
+            {hasResume ? (
+              <div className="mt-7 rounded-2xl border border-teal-100 bg-teal-50/60 p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 className="text-base font-bold text-gray-800">Tiếp tục bài thi của bạn</h4>
+                    {lastActivity ? (
+                      <p className="mt-0.5 text-xs text-gray-500">Lần làm gần nhất: {lastActivity}</p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-sm font-bold text-teal-700 shadow-sm">
+                    {pct}%
+                  </span>
+                </div>
+                <div className="mt-3">
+                  <ProgressBar progress={pct} heightClass="h-2.5" />
+                  <div className="mt-1.5 text-xs font-medium text-gray-600">
+                    {answered} / {total} câu
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={onResume}
+                    disabled={starting}
+                    className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg disabled:opacity-60"
+                  >
+                    Tiếp tục bài thi
+                    <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onRestart}
+                    disabled={starting}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-5 py-3 text-sm font-semibold text-teal-700 transition-colors duration-200 hover:bg-teal-50 disabled:opacity-60"
+                  >
+                    <RotateCcw size={15} /> Làm lại từ đầu
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {isFirstTime ? (
+                  <div className="mt-7">
+                    <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
+                      không xem đáp án cho tới khi bạn hoàn thành.
+                    </p>
+                  </div>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={onStart}
+                  disabled={starting}
+                  aria-busy={starting}
+                  className="group mt-7 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-teal-600/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/30 active:translate-y-0 active:shadow-md disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:py-5 sm:text-lg"
+                >
+                  <Play size={18} className="shrink-0 fill-current" />
+                  {starting
+                    ? 'Đang chuẩn bị câu hỏi...'
+                    : isFirstTime
+                      ? 'Bắt đầu thi thử'
+                      : 'Bắt đầu thi thử mới'}
+                  <ArrowRight
+                    size={18}
+                    className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+                  />
+                </button>
+              </>
+            )}
+
+            {error ? (
+              <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
               </div>
             ) : null}
 
-            <button
-              type="button"
-              onClick={onStart}
-              disabled={starting}
-              aria-busy={starting}
-              className="group mt-6 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-teal-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-            >
-              {starting
-                ? 'Đang chuẩn bị câu hỏi...'
-                : isFirstTime
-                  ? 'Bắt đầu thi thử'
-                  : 'Bắt đầu thi thử mới'}
-              <ArrowRight
-                size={18}
-                className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-              />
-            </button>
-          </>
-        )}
-
-        {error ? (
-          <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+            {/* Trust indicator */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+              <ShieldCheck size={15} className="shrink-0 text-teal-600" />
+              Dựa trên 128 câu hỏi chính thức từ USCIS
+            </div>
           </div>
-        ) : null}
+        </Card>
 
-        {/* Trust indicator */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
-          <ShieldCheck size={15} className="shrink-0 text-teal-600" />
-          Dựa trên 128 câu hỏi chính thức từ USCIS
-        </div>
-      </Card>
-
-      {/* RIGHT — illustration, motivation, stats */}
-      <div className="flex flex-col gap-5">
-        <div className="relative mx-auto h-56 w-full max-w-xs lg:h-64 lg:max-w-none">
-          <Image
-            src="/images/n400/illu-statue-city.png"
-            alt=""
-            fill
-            className="object-contain"
-            sizes="400px"
-            priority
+        {recentAttempts.length > 0 ? (
+          <RecentHistory
+            attempts={recentAttempts}
+            latestDelta={latestDelta}
+            viewAllHref={`/${locale}/n400app/statistic`}
           />
-        </div>
-
-        <div className="text-center">
-          <h3 className="text-lg font-bold text-gray-800">Thi thử như thi thật</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
-            Chuẩn bị tốt hơn – Tự tin hơn
-            <br />
-            Chinh phục giấc mơ Mỹ!
-          </p>
-        </div>
-
-        {stats ? <StatsPanel stats={stats} /> : null}
+        ) : null}
       </div>
+
+      {/* RIGHT — unified exam overview */}
+      <ExamOverview stats={stats} />
     </div>
   );
 }
 
-function FeatureCard({
+function ExamFact({
   icon,
   iconBg,
   iconColor,
-  title,
-  subtitle,
+  value,
+  label,
+  primary = false,
 }: {
   icon: React.ReactNode;
   iconBg: string;
   iconColor: string;
-  title: string;
-  subtitle: string;
+  value: string;
+  label: string;
+  primary?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4">
-      <div className={`mb-2 flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
+    <div
+      className={`rounded-2xl border bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4 ${
+        primary ? 'border-teal-100 shadow-sm' : 'border-slate-100 hover:border-slate-200'
+      }`}
+    >
+      <div className={`mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
         {icon}
       </div>
-      <div className="text-sm font-bold leading-tight text-gray-800">{title}</div>
-      <div className="mt-0.5 text-xs leading-tight text-gray-500">{subtitle}</div>
+      <div className={`leading-tight text-gray-800 ${primary ? 'text-lg font-extrabold' : 'text-sm font-bold'}`}>
+        {value}
+      </div>
+      <div className="mt-0.5 text-xs leading-tight text-gray-500">{label}</div>
     </div>
   );
 }
 
-function StatsPanel({ stats }: { stats: MockStats }) {
-  const rows: { icon: React.ReactNode; label: string; value: string; suffix?: string; valueClass?: string }[] = [
-    { icon: <Trophy size={16} className="text-yellow-500" />, label: 'Điểm cao nhất', value: `${stats.best}`, suffix: `/ ${stats.total}` },
-    { icon: <BarChart3 size={16} className="text-blue-500" />, label: 'Điểm trung bình', value: stats.avg.toFixed(1), suffix: `/ ${stats.total}` },
-    { icon: <Calendar size={16} className="text-teal-500" />, label: 'Số lần thi', value: `${stats.attempts}` },
-    { icon: <Target size={16} className="text-rose-500" />, label: 'Tỷ lệ vượt qua', value: `${stats.passRate}%`, valueClass: 'text-teal-600' },
-    ...(stats.avgMs != null
-      ? [{ icon: <Clock size={16} className="text-purple-500" />, label: 'Thời gian trung bình', value: formatDuration(stats.avgMs) }]
-      : []),
-  ];
-
+function RecentHistory({
+  attempts,
+  latestDelta,
+  viewAllHref,
+}: {
+  attempts: (MockResult & { delta: number | null })[];
+  latestDelta: number | null;
+  viewAllHref: string;
+}) {
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
-      <div className="divide-y divide-slate-100">
-        {rows.map((r) => (
-          <div key={r.label} className="flex items-center justify-between py-2.5">
-            <div className="flex items-center gap-2.5 text-sm text-gray-600">
-              {r.icon}
-              <span>{r.label}</span>
+    <Card className="p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+            <BarChart3 size={18} />
+          </div>
+          <h3 className="text-base font-bold text-gray-800">Lịch sử thi gần đây</h3>
+        </div>
+        <Link
+          href={viewAllHref}
+          className="shrink-0 text-sm font-semibold text-teal-600 transition-colors duration-200 hover:text-teal-700"
+        >
+          Xem tất cả
+        </Link>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {attempts.map((a, i) => {
+          const pct = a.total ? Math.round((a.score / a.total) * 100) : 0;
+          const durMs = new Date(a.completedAt).getTime() - new Date(a.startedAt).getTime();
+          return (
+            <div
+              key={a.id}
+              className="relative rounded-2xl border border-slate-100 bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              {i === 0 ? (
+                <span className="absolute -top-2 right-3 rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                  Mới nhất
+                </span>
+              ) : null}
+              <div className="flex items-baseline justify-between gap-1">
+                <div className="text-lg font-extrabold text-gray-800">
+                  {a.score}
+                  <span className="text-xs font-medium text-gray-400"> / {a.total}</span>
+                </div>
+                {a.delta != null && a.delta !== 0 ? (
+                  a.delta > 0 ? (
+                    <TrendingUp size={14} className="shrink-0 text-teal-500" />
+                  ) : (
+                    <TrendingDown size={14} className="shrink-0 text-orange-400" />
+                  )
+                ) : null}
+              </div>
+              <div className="mt-0.5 text-sm font-semibold text-gray-600">{pct}%</div>
+              <div className="mt-1.5 text-[11px] text-gray-400">
+                {new Date(a.completedAt).toLocaleDateString('vi-VN')}
+                {Number.isFinite(durMs) && durMs > 0 ? ` · ${formatDuration(durMs)}` : ''}
+              </div>
             </div>
-            <div className={`text-sm font-bold ${r.valueClass ?? 'text-gray-800'}`}>
-              {r.value}
-              {r.suffix ? <span className="text-xs font-medium text-gray-400"> {r.suffix}</span> : null}
+          );
+        })}
+      </div>
+
+      {latestDelta != null && latestDelta > 0 ? (
+        <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+          <Trophy size={16} className="shrink-0 text-teal-600" />
+          <span>
+            Bạn đã tiến bộ <span className="font-bold">{latestDelta} điểm</span> so với lần trước — tiếp
+            tục phát huy nhé!
+          </span>
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+function ExamOverview({ stats }: { stats: MockStats | null }) {
+  return (
+    <Card className="p-5 sm:p-6">
+      <div className="relative mx-auto mt-1 h-40 w-40 lg:h-48 lg:w-48">
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full border border-teal-100/70 bg-gradient-to-b from-teal-50 to-white"
+        />
+        <Image
+          src="/images/n400/illu-flag-holding-transparent.png"
+          alt=""
+          fill
+          className="object-contain p-4"
+          sizes="192px"
+          priority
+        />
+      </div>
+
+      <div className="mt-4 text-center">
+        <h3 className="text-lg font-bold text-gray-800">Tổng quan kết quả</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          {stats
+            ? 'Vượt qua điểm cao nhất của bạn nhé!'
+            : 'Chuẩn bị tốt hơn – Tự tin hơn. Chinh phục giấc mơ Mỹ!'}
+        </p>
+      </div>
+
+      {stats ? (
+        <>
+          <div className="mt-5 flex flex-col gap-3">
+            <StatTile
+              icon={<Trophy size={18} />}
+              iconBg="bg-yellow-50"
+              iconColor="text-yellow-500"
+              label="Điểm cao nhất"
+              value={`${stats.best}`}
+              suffix={`/ ${stats.total}`}
+              tag={stats.latest === stats.best ? 'Mới nhất' : undefined}
+            />
+            <StatTile
+              icon={<BarChart3 size={18} />}
+              iconBg="bg-purple-50"
+              iconColor="text-purple-500"
+              label="Điểm trung bình"
+              value={stats.avg.toFixed(1)}
+              suffix={`/ ${stats.total}`}
+            />
+            <StatTile
+              icon={<Target size={18} />}
+              iconBg="bg-teal-50"
+              iconColor="text-teal-600"
+              label="Tỷ lệ vượt qua"
+              value={`${stats.passRate}%`}
+              valueClass="text-teal-600"
+            />
+            <StatTile
+              icon={<Calendar size={18} />}
+              iconBg="bg-blue-50"
+              iconColor="text-blue-500"
+              label="Số lần thi"
+              value={`${stats.attempts}`}
+            />
+            {stats.avgMs != null ? (
+              <StatTile
+                icon={<Clock size={18} />}
+                iconBg="bg-rose-50"
+                iconColor="text-rose-500"
+                label="Thời gian trung bình"
+                value={formatDuration(stats.avgMs)}
+              />
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-teal-50 px-4 py-3">
+            <Sparkles size={16} className="shrink-0 text-teal-500" />
+            <div>
+              <div className="text-sm font-semibold text-teal-800">Cải thiện từng ngày</div>
+              <div className="text-xs text-teal-700">Bạn đang đi đúng hướng!</div>
             </div>
           </div>
-        ))}
+        </>
+      ) : (
+        <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-5 text-center text-sm text-gray-500">
+          Hoàn thành bài thi thử đầu tiên để xem thống kê kết quả của bạn tại đây.
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function StatTile({
+  icon,
+  iconBg,
+  iconColor,
+  label,
+  value,
+  suffix,
+  tag,
+  valueClass,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  value: string;
+  suffix?: string;
+  tag?: string;
+  valueClass?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 transition-all duration-200 hover:border-slate-200 hover:shadow-sm motion-reduce:transition-none">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
+        {icon}
       </div>
-      <div className="mt-3 flex items-center gap-2 rounded-xl bg-teal-50 px-3 py-2.5 text-xs font-medium text-teal-700">
-        <Sparkles size={15} className="shrink-0 text-teal-500" />
-        Càng luyện tập, bạn càng gần với kết quả tốt hơn!
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-medium text-gray-500">{label}</div>
+        <div className={`text-xl font-extrabold leading-tight ${valueClass ?? 'text-gray-800'}`}>
+          {value}
+          {suffix ? <span className="text-sm font-semibold text-gray-400"> {suffix}</span> : null}
+        </div>
       </div>
+      {tag ? (
+        <span className="shrink-0 rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700">
+          {tag}
+        </span>
+      ) : null}
     </div>
   );
 }
