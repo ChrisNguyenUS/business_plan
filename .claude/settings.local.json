@@ -54,7 +54,18 @@
       "Bash(echo \"exit=$?\")",
       "mcp__plugin_vercel_vercel__get_deployment_build_logs",
       "Bash(pnpm --version)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(ls -d .worktrees worktrees)",
+      "Bash(grep -i \"worktree\" CLAUDE.md)",
+      "Bash(git check-ignore *)",
+      "Bash(git worktree *)",
+      "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning/.worktrees/practice-session-length\" show c646094e:apps/website/src/lib/n400/quiz-engine.ts)",
+      "Read(//tmp/**)",
+      "Bash(cp src/lib/n400/quiz-engine.ts /tmp/quiz-engine-current-backup.ts)",
+      "Bash(cp /tmp/quiz-engine-parent.ts src/lib/n400/quiz-engine.ts)",
+      "Bash(npx vitest *)",
+      "Bash(git stash *)",
+      "Bash(npx eslint *)"
     ]
   },
   "enableAllProjectMcpServers": true,
