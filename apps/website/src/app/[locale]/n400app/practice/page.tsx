@@ -12,7 +12,7 @@
  */
 
 import Image from 'next/image';
-import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
@@ -20,17 +20,29 @@ import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
-import { trackStreakMilestone } from '@/lib/n400/analytics';
+import { trackStreakMilestone, trackPracticeComplete } from '@/lib/n400/analytics';
 import { N400_QUESTIONS } from '@/lib/n400/questions-data';
 import {
   buildOptions,
   correctAnswersFor,
-  shuffle,
+  selectPracticeQuestionIds,
+  isPersonalizedAnswerUnavailable,
+  PRACTICE_PRESETS,
+  type PracticePreset,
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
 import { questionAudioUrl, answerAudioUrlFor } from '@/lib/n400/quiz-engine';
+import { PracticeSessionPicker } from '@/components/n400/PracticeSessionPicker';
+import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
+import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
-const TOTAL = N400_QUESTIONS.length;
+const PRESET_STORAGE_KEY = 'n400.practice.preset';
+
+function readStoredPreset(): PracticePreset | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.sessionStorage.getItem(PRESET_STORAGE_KEY);
+  return PRACTICE_PRESETS.find((p) => p.id === raw) ?? null;
+}
 
 /* ─── Interaction State Machine ─── */
 type StudyPhase = 'idle' | 'revealed';
@@ -51,6 +63,10 @@ export default function PracticePage() {
     window.sessionStorage.setItem('n400.practice.seed', next);
     return next;
   });
+
+  const [preset, setPreset] = useState<PracticePreset | null>(() => readStoredPreset());
+  const [completed, setCompleted] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<QuizOption['id'] | null>(null);
@@ -93,12 +109,10 @@ export default function PracticePage() {
 
   const stateCode = state.settings.stateCode;
   const districtNumber = state.address.districtNumber;
-  const order = useMemo(() => {
-    const ids = N400_QUESTIONS
-      .filter((q) => q.id !== 29 || districtNumber !== null)
-      .map((q) => q.id);
-    return shuffle(ids, `practice-${seed}`);
-  }, [seed, districtNumber]);
+  const order = useMemo(
+    () => selectPracticeQuestionIds(seed, preset?.count ?? null),
+    [seed, preset]
+  );
 
   const question = useMemo(() => {
     const id = order[index];
@@ -123,6 +137,7 @@ export default function PracticePage() {
     setPhase('revealed');
     const opt = options.find((o) => o.id === id);
     const wasCorrect = !!opt?.isCorrect;
+    if (wasCorrect) setCorrectCount((c) => c + 1);
     void recordAnswer(question.id, wasCorrect, 'practice').then((result) => {
       if (result.milestone) {
         setMilestone(result.milestone);
@@ -133,7 +148,12 @@ export default function PracticePage() {
   };
 
   const onNext = () => {
-    setIndex((i) => (i + 1) % order.length);
+    if (index + 1 >= order.length) {
+      trackPracticeComplete(correctCount, order.length);
+      setCompleted(true);
+      return;
+    }
+    setIndex((i) => i + 1);
   };
 
   const onReveal = () => {
@@ -160,8 +180,47 @@ export default function PracticePage() {
     }
   };
 
+  const onSelectPreset = (p: PracticePreset) => {
+    window.sessionStorage.setItem(PRESET_STORAGE_KEY, p.id);
+    setPreset(p);
+    setIndex(0);
+    setCorrectCount(0);
+    setCompleted(false);
+  };
+
+  const onChangeMode = () => {
+    window.sessionStorage.removeItem(PRESET_STORAGE_KEY);
+    window.sessionStorage.removeItem('n400.practice.seed');
+    window.location.reload();
+  };
+
   if (!hydrated) {
     return <div className="animate-in fade-in duration-300 text-sm text-gray-500">Đang tải…</div>;
+  }
+
+  if (preset === null) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
+        <PracticeSessionPicker
+          presets={PRACTICE_PRESETS}
+          totalCount={N400_QUESTIONS.length}
+          onSelect={onSelectPreset}
+        />
+      </div>
+    );
+  }
+
+  if (completed) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
+        <PracticeSessionSummary
+          correct={correctCount}
+          total={order.length}
+          onRetry={onRestart}
+          onChangeMode={onChangeMode}
+        />
+      </div>
+    );
   }
 
   return (
@@ -182,17 +241,26 @@ export default function PracticePage() {
       {/* Progress — shrink-0, compact on mobile */}
       <div className="shrink-0 flex items-center justify-between gap-2">
         <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
-          Câu hỏi {index + 1} / {TOTAL}
+          Câu hỏi {index + 1} / {order.length}
         </span>
-        <button
-          type="button"
-          onClick={onRestart}
-          className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-        >
-          <RotateCw size={14} /> Trộn lại
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onChangeMode}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
+          >
+            <SlidersHorizontal size={14} /> Đổi chế độ
+          </button>
+          <button
+            type="button"
+            onClick={onRestart}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
+          >
+            <RotateCw size={14} /> Trộn lại
+          </button>
+        </div>
       </div>
-      <ProgressBar progress={((index + 1) / TOTAL) * 100} heightClass="h-[clamp(4px,0.5vw,10px)] shrink-0" />
+      <ProgressBar progress={((index + 1) / order.length) * 100} heightClass="h-[clamp(4px,0.5vw,10px)] shrink-0" />
 
       {/* Main area — flex-1, grid on desktop */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -257,6 +325,12 @@ export default function PracticePage() {
                 </div>
               </div>
             </div>
+
+            {isPersonalizedAnswerUnavailable(question, districtNumber) ? (
+              <div className="mb-[clamp(0.5rem,1vw,1rem)]">
+                <PersonalizedAnswerNotice from="practice" />
+              </div>
+            ) : null}
 
             {/* Answer Options + Inline Feedback */}
             <div className="space-y-[clamp(0.375rem,1vw,0.75rem)]">
