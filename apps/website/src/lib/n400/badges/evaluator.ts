@@ -77,21 +77,26 @@ export async function evaluateBadges(
   supabase: SupabaseClient,
 ): Promise<string[]> {
   const slugs = pickSlugs(ctx);
-  const results: UnlockResult[] = [];
 
-  for (const slug of slugs) {
-    const evaluator = BADGE_EVALUATORS[slug];
-    if (!evaluator) continue;
-    try {
-      const result = await evaluator(userId, ctx, supabase);
-      if (result) results.push(result);
-    } catch (e) {
-      // Failing evaluator must not block session finalize. Swallow + log.
-      // Sentry wiring lives at the route layer, so console.error is
-      // enough here — deploy will surface this in Vercel logs.
-      console.error(`n400/badges: evaluator '${slug}' threw`, e);
-    }
-  }
+  // Evaluators are independent reads, so they run concurrently — the
+  // sequential version added one DB round trip of latency per badge to
+  // every session finalize.
+  const settled = await Promise.all(
+    slugs.map(async (slug): Promise<UnlockResult | null> => {
+      const evaluator = BADGE_EVALUATORS[slug];
+      if (!evaluator) return null;
+      try {
+        return await evaluator(userId, ctx, supabase);
+      } catch (e) {
+        // Failing evaluator must not block session finalize. Swallow + log.
+        // Sentry wiring lives at the route layer, so console.error is
+        // enough here — deploy will surface this in Vercel logs.
+        console.error(`n400/badges: evaluator '${slug}' threw`, e);
+        return null;
+      }
+    }),
+  );
+  const results: UnlockResult[] = settled.filter((r): r is UnlockResult => r !== null);
 
   if (results.length === 0) return [];
 

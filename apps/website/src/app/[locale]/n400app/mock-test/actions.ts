@@ -162,10 +162,13 @@ export async function finalizeMockAttempt(
 
 // Run the badge dispatcher for both triggers fired by a finished mock
 // attempt: session_complete (mode=mock_test) plus streak_change when
-// the RPC reported a milestone crossing. Errors are swallowed inside
+// the RPC reported a milestone crossing. The two triggers are
+// independent, so they run concurrently. Errors are swallowed inside
 // the action wrappers, so this can never block finalize.
 //
-// Also fires the n400_mock_test_pass Meta CAPI event on first pass.
+// The n400_mock_test_pass Meta CAPI event (fired on pass) is scheduled
+// via after() — it's pure analytics with no bearing on the response, so
+// it must not add its external HTTP latency to the result screen.
 // Deterministic event_id = sha256("n400-pass:" + attemptId) so a
 // retried finalize (e.g. network blip on the client retry) hashes to
 // the same id and Meta dedupes. Non-blocking: CAPI errors don't
@@ -178,31 +181,35 @@ async function evaluateMockUnlocks(
   score: number,
   total: number,
 ): Promise<string[]> {
-  const sessionUnlocks = await evaluateAfterAttempt('mock_test', attemptId)
-  const streakUnlocks = milestone === null ? [] : await evaluateAfterStreak(currentStreak)
+  const [sessionUnlocks, streakUnlocks] = await Promise.all([
+    evaluateAfterAttempt('mock_test', attemptId),
+    milestone === null ? Promise.resolve([]) : evaluateAfterStreak(currentStreak),
+  ])
 
   if (passed) {
-    try {
-      const supabase = await getSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const headerStore = await headers()
-        const eventId = createHash('sha256').update(`n400-pass:${attemptId}`).digest('hex').slice(0, 32)
-        await sendCapiEvent({
-          eventName: 'n400_mock_test_pass',
-          eventId,
-          eventSourceUrl: headerStore.get('referer') ?? 'https://mannaos.com/n400app/mock-test',
-          user: {
-            emails: user.email ? [user.email] : undefined,
-            clientIp: headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
-            clientUserAgent: headerStore.get('user-agent') ?? null,
-          },
-          customData: { score, total_questions: total },
-        })
+    after(async () => {
+      try {
+        const supabase = await getSupabase()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const headerStore = await headers()
+          const eventId = createHash('sha256').update(`n400-pass:${attemptId}`).digest('hex').slice(0, 32)
+          await sendCapiEvent({
+            eventName: 'n400_mock_test_pass',
+            eventId,
+            eventSourceUrl: headerStore.get('referer') ?? 'https://mannaos.com/n400app/mock-test',
+            user: {
+              emails: user.email ? [user.email] : undefined,
+              clientIp: headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+              clientUserAgent: headerStore.get('user-agent') ?? null,
+            },
+            customData: { score, total_questions: total },
+          })
+        }
+      } catch {
+        // CAPI errors already log inside sendCapiEvent.
       }
-    } catch {
-      // CAPI errors already log inside sendCapiEvent.
-    }
+    })
   }
 
   return [...new Set([...sessionUnlocks, ...streakUnlocks])]
