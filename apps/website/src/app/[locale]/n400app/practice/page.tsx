@@ -148,6 +148,9 @@ export default function PracticePage() {
   };
 
   const onNext = () => {
+    // Guarantees trackPracticeComplete fires at most once per session even if
+    // this handler is ever reachable after completion (double-click, hotkeys).
+    if (completed) return;
     if (index + 1 >= order.length) {
       trackPracticeComplete(correctCount, order.length);
       setCompleted(true);
