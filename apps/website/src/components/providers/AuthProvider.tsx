@@ -4,12 +4,26 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { supabase } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
+export type OAuthProvider = "google" | "facebook" | "apple";
+
 export interface Profile {
   id: string;
+  // Legacy field — only written by the signup trigger; new code reads
+  // structured fields below with full_name as fallback.
   full_name: string | null;
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  preferred_name: string | null;
+  name_suffix: string | null;
+  avatar_path: string | null; // relative storage path, never a full URL
+  preferred_language: "en" | "vi";
   email: string | null;
   role: "admin" | "staff" | "client";
   created_at: string;
+  updated_at: string | null;
+  profile_source: "email" | "google" | "facebook" | "apple" | "system" | "migration" | null;
+  profile_initialized_at: string | null;
 }
 
 interface AuthContextType {
@@ -19,6 +33,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -99,6 +114,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  const signInWithOAuth = async (provider: OAuthProvider) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=/n400app`,
+      },
+    });
+    return { error: error?.message ?? null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -108,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, session, loading, signIn, signUp, signOut, refreshProfile }}
+      value={{ user, profile, session, loading, signIn, signUp, signInWithOAuth, signOut, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>
