@@ -78,16 +78,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // It fires INITIAL_SESSION on mount, which replaces the need for getSession().
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, s) => {
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       if (!isMounted) return;
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        const p = await fetchProfile(s.user.id);
-        if (isMounted) {
-          setProfile(p);
-          setLoading(false);
-        }
+        const userId = s.user.id;
+        // Defer the profile fetch out of this callback. supabase-js holds
+        // its auth lock while awaiting onAuthStateChange callbacks — any
+        // supabase call awaited in here (which itself needs getSession →
+        // the same lock) deadlocks every subsequent request in the tab,
+        // e.g. storage uploads hanging forever after a token refresh.
+        setTimeout(async () => {
+          if (!isMounted) return;
+          const p = await fetchProfile(userId);
+          if (isMounted) {
+            setProfile(p);
+            setLoading(false);
+          }
+        }, 0);
       } else {
         setProfile(null);
         setLoading(false);

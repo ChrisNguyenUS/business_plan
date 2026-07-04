@@ -60,25 +60,29 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
     setSaved(false);
     setSaving(true);
 
-    const { error: err } = await updateProfile(user.id, {
-      first_name: firstName.trim() || null,
-      middle_name: middleName.trim() || null,
-      last_name: lastName.trim() || null,
-      preferred_name: preferredName.trim() || null,
-      name_suffix: nameSuffix.trim() || null,
-      preferred_language: language,
-    });
+    try {
+      const { error: err } = await updateProfile(user.id, {
+        first_name: firstName.trim() || null,
+        middle_name: middleName.trim() || null,
+        last_name: lastName.trim() || null,
+        preferred_name: preferredName.trim() || null,
+        name_suffix: nameSuffix.trim() || null,
+        preferred_language: language,
+      });
 
-    if (err) {
-      setError(err);
+      if (err) {
+        setError(err);
+        return;
+      }
+
+      await refreshProfile();
+      setSaved(true);
+      router.push(`/${locale}/n400app/profile`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không lưu được. Vui lòng thử lại.');
+    } finally {
       setSaving(false);
-      return;
     }
-
-    await refreshProfile();
-    setSaving(false);
-    setSaved(true);
-    router.push(`/${locale}/n400app/profile`);
   }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -86,14 +90,19 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
     if (!file) return;
     setError(null);
     setUploading(true);
-    const { error: err } = await uploadAvatar(user.id, file);
-    if (err) {
-      setError(err);
-    } else {
-      await refreshProfile();
+    try {
+      const { error: err } = await uploadAvatar(user.id, file);
+      if (err) {
+        setError(err);
+      } else {
+        await refreshProfile();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Tải ảnh thất bại. Vui lòng thử lại.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
-    setUploading(false);
-    e.target.value = '';
   }
 
   return (

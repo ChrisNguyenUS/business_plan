@@ -44,30 +44,37 @@ export async function uploadAvatar(
   }
 
   const avatarPath = `${userId}/avatar.${ext}`;
-  const { error: uploadError } = await supabase.storage
-    .from('avatars')
-    .upload(avatarPath, file, { contentType: file.type, upsert: true });
-  if (uploadError) {
-    return { avatarPath: null, error: uploadError.message };
-  }
+  try {
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(avatarPath, file, { contentType: file.type, upsert: true });
+    if (uploadError) {
+      return { avatarPath: null, error: uploadError.message };
+    }
 
-  const { data: existing } = await supabase.storage.from('avatars').list(userId);
-  const stale = (existing ?? [])
-    .filter((f) => f.name !== `avatar.${ext}`)
-    .map((f) => `${userId}/${f.name}`);
-  if (stale.length > 0) {
-    await supabase.storage.from('avatars').remove(stale);
-  }
+    const { data: existing } = await supabase.storage.from('avatars').list(userId);
+    const stale = (existing ?? [])
+      .filter((f) => f.name !== `avatar.${ext}`)
+      .map((f) => `${userId}/${f.name}`);
+    if (stale.length > 0) {
+      await supabase.storage.from('avatars').remove(stale);
+    }
 
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({ avatar_path: avatarPath })
-    .eq('id', userId);
-  if (updateError) {
-    return { avatarPath: null, error: updateError.message };
-  }
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_path: avatarPath })
+      .eq('id', userId);
+    if (updateError) {
+      return { avatarPath: null, error: updateError.message };
+    }
 
-  return { avatarPath, error: null };
+    return { avatarPath, error: null };
+  } catch (err) {
+    return {
+      avatarPath: null,
+      error: err instanceof Error ? err.message : 'Upload failed',
+    };
+  }
 }
 
 /** Providers linked to the current auth user (e.g. ['email', 'google']). */
