@@ -106,6 +106,7 @@ export default function PracticePage() {
   const badges = useN400Badges();
   const studyBodyRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   // Full UI reset when navigating between questions (React-recommended pattern).
   if (index !== prevIndex) {
@@ -132,6 +133,14 @@ export default function PracticePage() {
       const timer = setTimeout(() => setRevealExiting(false), 300);
       return () => clearTimeout(timer);
     }
+  }, [phase]);
+
+  // The feedback renders below the options grid; nudge it into view on the
+  // rare screens where the study body still overflows.
+  useEffect(() => {
+    if (phase !== 'revealed') return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    feedbackRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
   }, [phase]);
 
   const stateCode = state.settings.stateCode;
@@ -175,6 +184,7 @@ export default function PracticePage() {
     : question.answersEn.map((en, i) => ({ en, vi: question.answersVi[i] ?? en }));
 
   const isBookmarked = state.bookmarks.includes(question.id);
+  const pickedOption = options.find((o) => o.id === selected) ?? null;
 
   const onPick = (id: QuizOption['id']) => {
     if (phase === 'revealed') return;
@@ -400,27 +410,9 @@ export default function PracticePage() {
           {/* Study Body — the only scrollable region */}
           <div
             ref={studyBodyRef}
-            className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vw,2rem)]"
+            className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
-            {/* Decorative header — hidden on mobile */}
-            <div className="hidden sm:flex items-start gap-3 sm:gap-4 mb-4">
-              <div className="relative h-20 w-20 shrink-0 sm:h-28 sm:w-28">
-                <Image
-                  src="/images/n400/illu-studying.png"
-                  alt=""
-                  fill
-                  className="object-contain"
-                  sizes="112px"
-                  priority
-                />
-              </div>
-              <div className="relative mt-3 rounded-2xl rounded-bl-none border border-gray-200 bg-gray-50 px-4 py-3 sm:mt-6 sm:px-5">
-                <div className="text-sm text-gray-600 leading-tight">Cùng chinh phục</div>
-                <div className="text-lg font-extrabold text-gray-900 leading-tight">N400!</div>
-              </div>
-            </div>
-
             {/* Question header — compact on mobile */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
@@ -459,8 +451,8 @@ export default function PracticePage() {
               </div>
             ) : null}
 
-            {/* Answer Options + Inline Feedback */}
-            <div className="space-y-[clamp(0.375rem,1vw,0.75rem)]">
+            {/* Answer Options — 2-up on desktop so all four fit without scrolling */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
               {options.map((opt) => {
                 const isPicked = selected === opt.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';
@@ -481,94 +473,94 @@ export default function PracticePage() {
                 }
 
                 return (
-                  <div key={opt.id}>
-                    <button
-                      type="button"
-                      disabled={phase === 'revealed'}
-                      onClick={() => onPick(opt.id)}
-                      className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 sm:gap-4 min-h-[72px] p-[clamp(0.625rem,1.5vw,1rem)] ${style}`}
-                    >
-                      <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
-                      <div className="flex-1 text-gray-800 font-medium">
-                        <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
-                        {opt.vi !== opt.en ? (
-                          <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>{opt.vi}</div>
-                        ) : null}
-                      </div>
-                      {mark}
-                    </button>
-
-                    {/* Inline feedback — directly below the selected answer */}
-                    {phase === 'revealed' && isPicked && (
-                      <div
-                        className={`mt-2 rounded-2xl p-[clamp(0.75rem,1.5vw,1.25rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-                          opt.isCorrect
-                            ? 'bg-teal-50 border-teal-500'
-                            : 'bg-orange-50 border-orange-500'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Lightbulb className="text-amber-500 shrink-0" size={16} />
-                          <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                            {opt.isCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
-                          </span>
-                          <AudioButton
-                            src={answerAudioUrlFor(question, stateCode, districtNumber)}
-                            label="Nghe đáp án"
-                            size="sm"
-                            className="ml-auto"
-                          />
-                        </div>
-                        <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                          <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
-                        </div>
-                        <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                          {allAnswers.slice(0, 2).map((a, i) => (
-                            <li key={i}>
-                              <span className="font-medium">{a.en}</span>
-                              {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
-                            </li>
-                          ))}
-                        </ul>
-
-                        {/* Progressive disclosure for 3+ answers */}
-                        {allAnswers.length > 2 && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setShowAllAnswers(!showAllAnswers); }}
-                              className="mt-2 text-teal-600 font-semibold flex items-center gap-1 transition-colors hover:text-teal-700"
-                              style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.875rem)' }}
-                            >
-                              {showAllAnswers ? (
-                                <><ChevronUp size={14} /> Thu gọn</>
-                              ) : (
-                                <><ChevronDown size={14} /> Xem tất cả {allAnswers.length} đáp án</>
-                              )}
-                            </button>
-                            {showAllAnswers && (
-                              <ul className="text-gray-700 space-y-0.5 list-disc pl-5 mt-1 animate-in fade-in duration-200 motion-reduce:animate-none" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                                {allAnswers.slice(2).map((a, i) => (
-                                  <li key={i + 2}>
-                                    <span className="font-medium">{a.en}</span>
-                                    {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={opt.id}
+                    type="button"
+                    disabled={phase === 'revealed'}
+                    onClick={() => onPick(opt.id)}
+                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
+                  >
+                    <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
+                    <div className="flex-1 text-gray-800 font-medium">
+                      <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
+                      {opt.vi !== opt.en ? (
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>{opt.vi}</div>
+                      ) : null}
+                    </div>
+                    {mark}
+                  </button>
                 );
               })}
             </div>
+
+            {/* Feedback — full width below the options grid */}
+            {phase === 'revealed' && pickedOption && (
+              <div
+                ref={feedbackRef}
+                className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
+                  pickedOption.isCorrect
+                    ? 'bg-teal-50 border-teal-500'
+                    : 'bg-orange-50 border-orange-500'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Lightbulb className="text-amber-500 shrink-0" size={16} />
+                  <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                    {pickedOption.isCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
+                  </span>
+                  <AudioButton
+                    src={answerAudioUrlFor(question, stateCode, districtNumber)}
+                    label="Nghe đáp án"
+                    size="sm"
+                    className="ml-auto"
+                  />
+                </div>
+                <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                  <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
+                </div>
+                <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                  {allAnswers.slice(0, 2).map((a, i) => (
+                    <li key={i}>
+                      <span className="font-medium">{a.en}</span>
+                      {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Progressive disclosure for 3+ answers */}
+                {allAnswers.length > 2 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setShowAllAnswers(!showAllAnswers); }}
+                      className="mt-2 text-teal-600 font-semibold flex items-center gap-1 transition-colors hover:text-teal-700"
+                      style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.875rem)' }}
+                    >
+                      {showAllAnswers ? (
+                        <><ChevronUp size={14} /> Thu gọn</>
+                      ) : (
+                        <><ChevronDown size={14} /> Xem tất cả {allAnswers.length} đáp án</>
+                      )}
+                    </button>
+                    {showAllAnswers && (
+                      <ul className="text-gray-700 space-y-0.5 list-disc pl-5 mt-1 animate-in fade-in duration-200 motion-reduce:animate-none" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                        {allAnswers.slice(2).map((a, i) => (
+                          <li key={i + 2}>
+                            <span className="font-medium">{a.en}</span>
+                            {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Pinned Actions — always visible, never scroll */}
           <div
-            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vw,2rem)] pt-3"
+            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
           >
             <div className={`grid gap-3 transition-all duration-300 motion-reduce:duration-0 ${
@@ -579,7 +571,7 @@ export default function PracticePage() {
                   type="button"
                   onClick={onReveal}
                   disabled={phase === 'revealed'}
-                  className={`flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3.5 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 motion-reduce:duration-0 ${
+                  className={`flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 motion-reduce:duration-0 ${
                     revealExiting ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
                   }`}
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
@@ -592,7 +584,7 @@ export default function PracticePage() {
                 type="button"
                 onClick={onNext}
                 disabled={phase !== 'revealed'}
-                className={`flex items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all duration-300 motion-reduce:duration-0 ${
+                className={`flex items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all duration-300 motion-reduce:duration-0 ${
                   phase === 'revealed'
                     ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
