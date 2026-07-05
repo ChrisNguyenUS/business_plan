@@ -6,6 +6,7 @@ import {
   correctAnswersFor,
   shuffle,
   selectPracticeQuestionIds,
+  recommendWeakCategory,
   PRACTICE_PRESETS,
   isPersonalizedAnswerUnavailable,
   MOCK_TEST_QUESTION_COUNT,
@@ -248,6 +249,56 @@ describe('selectPracticeQuestionIds', () => {
   it('exposes the four product presets in display order', () => {
     expect(PRACTICE_PRESETS.map((p) => p.id)).toEqual(['quick', 'standard', 'deep', 'full']);
     expect(PRACTICE_PRESETS.map((p) => p.count)).toEqual([5, 15, 40, null]);
+  });
+
+  it('draws only from the requested category when one is given', () => {
+    const ids = selectPracticeQuestionIds('seed-1', 5, 'system');
+    expect(ids.length).toBe(5);
+    for (const id of ids) {
+      expect(N400_QUESTIONS_BY_ID.get(id)!.category).toBe('system');
+    }
+  });
+
+  it('keeps the historical order for an existing seed when category is omitted', () => {
+    expect(selectPracticeQuestionIds('seed-1', null)).toEqual(
+      selectPracticeQuestionIds('seed-1', null, null)
+    );
+  });
+});
+
+describe('recommendWeakCategory', () => {
+  const systemIds = N400_QUESTIONS.filter((q) => q.category === 'system').map((q) => q.id);
+  const historyIds = N400_QUESTIONS.filter((q) => q.category === 'history').map((q) => q.id);
+  const attempt = (questionId: number, wasCorrect: boolean) => ({ questionId, wasCorrect });
+
+  it('returns null when no category has enough attempts', () => {
+    expect(recommendWeakCategory([])).toBeNull();
+    expect(
+      recommendWeakCategory(systemIds.slice(0, 4).map((id) => attempt(id, false)))
+    ).toBeNull();
+  });
+
+  it('returns null when recent attempts are mostly correct', () => {
+    const attempts = systemIds.slice(0, 10).map((id, i) => attempt(id, i !== 0));
+    expect(recommendWeakCategory(attempts)).toBeNull();
+  });
+
+  it('surfaces the weakest category with its recent wrong count', () => {
+    const attempts = [
+      ...historyIds.slice(0, 10).map((id, i) => attempt(id, i >= 3)), // 3/10 wrong
+      ...systemIds.slice(0, 10).map((id, i) => attempt(id, i >= 6)),  // 6/10 wrong
+    ];
+    const rec = recommendWeakCategory(attempts);
+    expect(rec).toEqual({ category: 'system', wrongCount: 6, sampleSize: 10 });
+  });
+
+  it('only counts the most recent window per category', () => {
+    // 10 old misses followed by 10 recent correct answers: no longer weak.
+    const attempts = [
+      ...systemIds.slice(0, 10).map((id) => attempt(id, false)),
+      ...systemIds.slice(0, 10).map((id) => attempt(id, true)),
+    ];
+    expect(recommendWeakCategory(attempts)).toBeNull();
   });
 });
 

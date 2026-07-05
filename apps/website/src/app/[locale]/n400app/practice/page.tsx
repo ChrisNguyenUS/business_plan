@@ -21,14 +21,16 @@ import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackStreakMilestone, trackPracticeComplete } from '@/lib/n400/analytics';
-import { N400_QUESTIONS } from '@/lib/n400/questions-data';
+import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import {
   buildOptions,
   correctAnswersFor,
   selectPracticeQuestionIds,
   isPersonalizedAnswerUnavailable,
+  recommendWeakCategory,
   PRACTICE_PRESETS,
   type PracticePreset,
+  type PracticeRecommendation,
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
 import { questionAudioUrl, answerAudioUrlFor } from '@/lib/n400/quiz-engine';
@@ -37,11 +39,33 @@ import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
+const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
+const CATEGORY_STORAGE_KEY = 'n400.practice.category';
+const SEED_STORAGE_KEY = 'n400.practice.seed';
 
 function readStoredPreset(): PracticePreset | null {
   if (typeof window === 'undefined') return null;
   const raw = window.sessionStorage.getItem(PRESET_STORAGE_KEY);
   return PRACTICE_PRESETS.find((p) => p.id === raw) ?? null;
+}
+
+function readStoredProgress(): { index: number; correct: number } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(PROGRESS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { index?: unknown; correct?: unknown };
+    if (typeof parsed.index !== 'number' || typeof parsed.correct !== 'number') return null;
+    return { index: parsed.index, correct: parsed.correct };
+  } catch {
+    return null;
+  }
+}
+
+function readStoredCategory(): N400CategoryKey | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.sessionStorage.getItem(CATEGORY_STORAGE_KEY);
+  return raw !== null && raw in N400_CATEGORY_LABELS ? (raw as N400CategoryKey) : null;
 }
 
 /* ─── Interaction State Machine ─── */
@@ -55,16 +79,19 @@ export default function PracticePage() {
     toggleBookmark,
   } = useN400UserState();
 
-  const [seed] = useState(() => {
+  const [seed, setSeed] = useState(() => {
     if (typeof window === 'undefined') return 'init';
-    const existing = window.sessionStorage.getItem('n400.practice.seed');
+    const existing = window.sessionStorage.getItem(SEED_STORAGE_KEY);
     if (existing) return existing;
     const next = String(Date.now());
-    window.sessionStorage.setItem('n400.practice.seed', next);
+    window.sessionStorage.setItem(SEED_STORAGE_KEY, next);
     return next;
   });
 
-  const [preset, setPreset] = useState<PracticePreset | null>(() => readStoredPreset());
+  // The picker is always the landing screen; an unfinished session surfaces
+  // there as the "Continue Practice" hero instead of auto-resuming.
+  const [preset, setPreset] = useState<PracticePreset | null>(null);
+  const [focusCategory, setFocusCategory] = useState<N400CategoryKey | null>(() => readStoredCategory());
   const [completed, setCompleted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
 
@@ -110,8 +137,26 @@ export default function PracticePage() {
   const stateCode = state.settings.stateCode;
   const districtNumber = state.address.districtNumber;
   const order = useMemo(
-    () => selectPracticeQuestionIds(seed, preset?.count ?? null),
-    [seed, preset]
+    () => selectPracticeQuestionIds(seed, preset?.count ?? null, focusCategory),
+    [seed, preset, focusCategory]
+  );
+
+  // Unfinished session (persisted across navigation within the tab) offered
+  // as "Continue Practice" on the picker. Progress is written on each advance.
+  const resume = useMemo(() => {
+    if (preset !== null) return null;
+    const stored = readStoredPreset();
+    if (!stored) return null;
+    const progress = readStoredProgress();
+    if (!progress) return null;
+    const total = stored.count ?? N400_QUESTIONS.length;
+    if (progress.index < 1 || progress.index >= total) return null;
+    return { preset: stored, index: progress.index, total, correct: progress.correct };
+  }, [preset]);
+
+  const recommendation = useMemo(
+    () => recommendWeakCategory(state.attempts),
+    [state.attempts]
   );
 
   const question = useMemo(() => {
@@ -153,9 +198,16 @@ export default function PracticePage() {
     if (completed) return;
     if (index + 1 >= order.length) {
       trackPracticeComplete(correctCount, order.length);
+      window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
       setCompleted(true);
       return;
     }
+    // Snapshot progress on each advance: correctCount already includes the
+    // question just answered, and index + 1 is the next unanswered question.
+    window.sessionStorage.setItem(
+      PROGRESS_STORAGE_KEY,
+      JSON.stringify({ index: index + 1, correct: correctCount })
+    );
     setIndex((i) => i + 1);
   };
 
@@ -176,25 +228,81 @@ export default function PracticePage() {
     });
   };
 
-  const onRestart = () => {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.removeItem('n400.practice.seed');
-      window.location.reload();
-    }
+  // Per-question UI back to a clean state (mirrors the index-change reset).
+  const resetQuestionUI = () => {
+    setSelected(null);
+    setPhase('idle');
+    setShowAllAnswers(false);
+    setRevealExiting(false);
+    setMilestone(null);
+    setUnlockedBadges([]);
   };
 
-  const onSelectPreset = (p: PracticePreset) => {
+  const reseed = () => {
+    const next = String(Date.now());
+    window.sessionStorage.setItem(SEED_STORAGE_KEY, next);
+    setSeed(next);
+  };
+
+  const startSession = (p: PracticePreset, category: N400CategoryKey | null) => {
     window.sessionStorage.setItem(PRESET_STORAGE_KEY, p.id);
+    if (category !== null) window.sessionStorage.setItem(CATEGORY_STORAGE_KEY, category);
+    else window.sessionStorage.removeItem(CATEGORY_STORAGE_KEY);
+    window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setFocusCategory(category);
     setPreset(p);
     setIndex(0);
+    setPrevIndex(0);
     setCorrectCount(0);
     setCompleted(false);
+    resetQuestionUI();
   };
 
+  const onSelectPreset = (p: PracticePreset) => startSession(p, null);
+
+  const onPracticeRecommendation = (rec: PracticeRecommendation) => {
+    const quick = PRACTICE_PRESETS.find((p) => p.id === 'quick')!;
+    // Fresh shuffle so the review set changes between recommendations.
+    reseed();
+    startSession(quick, rec.category);
+  };
+
+  const onResume = () => {
+    if (!resume) return;
+    setFocusCategory(readStoredCategory());
+    setPreset(resume.preset);
+    setIndex(resume.index);
+    setPrevIndex(resume.index);
+    setCorrectCount(resume.correct);
+    setCompleted(false);
+    resetQuestionUI();
+  };
+
+  // Retry the same mode with a new shuffle.
+  const onRestart = () => {
+    reseed();
+    window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setIndex(0);
+    setPrevIndex(0);
+    setCorrectCount(0);
+    setCompleted(false);
+    resetQuestionUI();
+  };
+
+  // Back to the picker. Mid-session progress stays in storage so the picker
+  // can offer "Continue Practice"; after a finished session there is nothing
+  // to resume, so the stored session is cleared.
   const onChangeMode = () => {
-    window.sessionStorage.removeItem(PRESET_STORAGE_KEY);
-    window.sessionStorage.removeItem('n400.practice.seed');
-    window.location.reload();
+    if (completed) {
+      window.sessionStorage.removeItem(PRESET_STORAGE_KEY);
+      window.sessionStorage.removeItem(CATEGORY_STORAGE_KEY);
+    }
+    setPreset(null);
+    setIndex(0);
+    setPrevIndex(0);
+    setCorrectCount(0);
+    setCompleted(false);
+    resetQuestionUI();
   };
 
   if (!hydrated) {
@@ -207,7 +315,11 @@ export default function PracticePage() {
         <PracticeSessionPicker
           presets={PRACTICE_PRESETS}
           totalCount={N400_QUESTIONS.length}
+          resume={resume}
+          recommendation={recommendation}
           onSelect={onSelectPreset}
+          onResume={onResume}
+          onPracticeRecommendation={onPracticeRecommendation}
         />
       </div>
     );

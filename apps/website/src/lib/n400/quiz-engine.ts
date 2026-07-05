@@ -1,4 +1,4 @@
-import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question } from './questions-data';
+import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question, type N400CategoryKey } from './questions-data';
 import { N400_DISTRACTORS } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
@@ -302,28 +302,76 @@ export interface PracticePreset {
   id: 'quick' | 'standard' | 'deep' | 'full';
   titleVi: string;
   titleEn: string;
+  descVi: string;
   count: number | null;   // null = all available questions
   minutes: number | null; // null = no time estimate shown
 }
 
 export const PRACTICE_PRESETS: PracticePreset[] = [
-  { id: 'quick', titleVi: 'Luyện nhanh', titleEn: 'Quick Practice', count: 5, minutes: 3 },
-  { id: 'standard', titleVi: 'Tiêu chuẩn', titleEn: 'Standard Practice', count: 15, minutes: 8 },
-  { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', count: 40, minutes: 20 },
-  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', count: null, minutes: null },
+  { id: 'quick', titleVi: 'Luyện nhanh', titleEn: 'Quick Practice', descVi: 'Ôn nhanh trong vài phút.', count: 5, minutes: 3 },
+  { id: 'standard', titleVi: 'Tiêu chuẩn', titleEn: 'Standard Practice', descVi: 'Bài luyện vừa sức mỗi ngày.', count: 15, minutes: 8 },
+  { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', descVi: 'Ghi nhớ kỹ hơn, nhớ lâu hơn.', count: 40, minutes: 20 },
+  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', descVi: 'Ôn toàn bộ câu hỏi như thi thật.', count: null, minutes: 60 },
 ];
 
 export function selectPracticeQuestionIds(
   seed: string | number,
-  count: number | null
+  count: number | null,
+  category: N400CategoryKey | null = null
 ): number[] {
   // Same shuffle key the practice page has always used, so "full" keeps
   // producing the identical order for an existing seed. Q29 is always
   // included: without a district, correctAnswersFor falls back to any
   // current representative of the user's state.
-  const ids = N400_QUESTIONS.map((q) => q.id);
+  const pool = category === null ? N400_QUESTIONS : N400_QUESTIONS.filter((q) => q.category === category);
+  const ids = pool.map((q) => q.id);
   const shuffled = shuffle(ids, `practice-${seed}`);
   return count === null ? shuffled : shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
+// ── Practice recommendation ──────────────────────────────────────────────────
+
+const RECOMMENDATION_WINDOW = 10;     // look at the last N attempts per category
+const RECOMMENDATION_MIN_ATTEMPTS = 5; // need enough signal before recommending
+const RECOMMENDATION_MIN_WRONG = 3;    // only surface a genuine weak spot
+
+export interface PracticeRecommendation {
+  category: N400CategoryKey;
+  wrongCount: number;
+  sampleSize: number;
+}
+
+/**
+ * Picks the user's single weakest category from their attempt history
+ * (chronological order), or null when no category has enough recent misses
+ * to justify a recommendation.
+ */
+export function recommendWeakCategory(
+  attempts: readonly { questionId: number; wasCorrect: boolean }[]
+): PracticeRecommendation | null {
+  const byCategory = new Map<N400CategoryKey, boolean[]>();
+  for (const a of attempts) {
+    const q = N400_QUESTIONS_BY_ID.get(a.questionId);
+    if (!q) continue;
+    const list = byCategory.get(q.category) ?? [];
+    list.push(a.wasCorrect);
+    byCategory.set(q.category, list);
+  }
+
+  let best: PracticeRecommendation | null = null;
+  let bestRate = 0;
+  for (const [category, results] of byCategory) {
+    if (results.length < RECOMMENDATION_MIN_ATTEMPTS) continue;
+    const recent = results.slice(-RECOMMENDATION_WINDOW);
+    const wrongCount = recent.filter((ok) => !ok).length;
+    if (wrongCount < RECOMMENDATION_MIN_WRONG) continue;
+    const rate = wrongCount / recent.length;
+    if (rate > bestRate || (rate === bestRate && wrongCount > (best?.wrongCount ?? 0))) {
+      best = { category, wrongCount, sampleSize: recent.length };
+      bestRate = rate;
+    }
+  }
+  return best;
 }
 
 /**
