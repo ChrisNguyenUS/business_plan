@@ -363,7 +363,7 @@ export default function FlashcardsPage() {
                   : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Learning</div>
+              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Chưa thuộc</div>
               <span className="text-[10px] text-slate-400 font-medium mt-0.5 hidden sm:block">R</span>
             </button>
 
@@ -376,7 +376,7 @@ export default function FlashcardsPage() {
                   : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Mastered</div>
+              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Đã thuộc</div>
               <span className="text-[10px] text-white/60 font-medium mt-0.5 hidden sm:block">M</span>
             </button>
           </>
