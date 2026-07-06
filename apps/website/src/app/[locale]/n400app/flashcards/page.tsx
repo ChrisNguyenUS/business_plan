@@ -87,8 +87,9 @@ export default function FlashcardsPage() {
 
   // Render-time adjustment (same pattern as prevFilterSeed above): clamp the
   // index when the filtered set shrinks under a fixed filter, e.g. after
-  // un-bookmarking a question in list view.
-  if (index > 0 && index > questions.length - 1) {
+  // un-bookmarking a question in list view. Skipped on the filter-change
+  // render (keys differ) so the reset-to-0 above wins over the stale index.
+  if (filterSeedKey === prevFilterSeed && index > 0 && index > questions.length - 1) {
     setIndex(Math.max(0, questions.length - 1));
   }
 
