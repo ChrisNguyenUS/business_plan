@@ -67,16 +67,20 @@ count, and time estimate). `PracticeSessionPicker` is generalized to take the
 section's pool size and presets; icons, tier names, and colors stay identical
 so the app reads as one system. Counts are scaled per pool:
 
+Each preset card shows its question count AND an estimated duration
+(estimates only, same style as the current civics cards):
+
 | Preset | Civics (128) | What Mean (62) | Yes No (37) | Writing (45) |
 |---|---|---|---|---|
-| ⚡ Luyện nhanh | 5 | 5 | 5 | 3 |
-| 📋 Tiêu chuẩn | 15 | 15 | 10 | 10 |
-| 📚 Chuyên sâu | 40 | 30 | 20 | 20 |
-| 🏛 Ôn toàn bộ | 128 | 62 | 37 | 45 |
+| ⚡ Luyện nhanh | 5 · ≈3 phút | 5 · ≈3 phút | 5 · ≈3 phút | 3 · ≈5 phút |
+| 📋 Tiêu chuẩn | 15 · ≈8 phút | 15 · ≈8 phút | 10 · ≈5 phút | 10 · ≈15 phút |
+| 📚 Chuyên sâu | 40 · ≈20 phút | 30 · ≈15 phút | 20 · ≈10 phút | 20 · ≈30 phút |
+| 🏛 Ôn toàn bộ | 128 · ≈60 phút | 62 · ≈30 phút | 37 · ≈20 phút | 45 · ≈70 phút |
 
 Civics numbers are unchanged. Writing's Luyện nhanh is 3 câu on purpose — the
-same size as the real dictation test. Time estimates: ~30s/câu for MC and
-Yes No, ~90s/câu for Writing dictation.
+same size as the real dictation test. Duration basis: ~30s/câu for MC and
+Yes No (matching the existing civics estimates), ~90s/câu for Writing
+dictation (listening + typing is slower).
 
 - **Desktop sidebar** (`Sidebar.tsx`): group headers (CIVICS / SPEAKING) with
   section links nested under them; Writing is a single top-level link.
