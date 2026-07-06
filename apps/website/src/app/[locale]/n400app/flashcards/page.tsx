@@ -13,6 +13,8 @@
  */
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { Flashcard } from '@/components/n400/flashcard/Flashcard';
@@ -21,25 +23,22 @@ import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackStreakMilestone } from '@/lib/n400/analytics';
-import {
-  N400_QUESTIONS,
-  N400_CATEGORY_LABELS,
-  type N400CategoryKey,
-} from '@/lib/n400/questions-data';
+import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
 import {
   correctAnswersFor,
   shuffle,
   questionAudioUrl,
   answerAudioUrlFor,
   isPersonalizedAnswerUnavailable,
+  filterFlashcards,
+  type FlashcardFilter,
 } from '@/lib/n400/quiz-engine';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
-type FilterMode = 'all' | 'unknown' | 'bookmarks' | N400CategoryKey;
-
-const FILTER_OPTIONS: { id: FilterMode; label: string }[] = [
+const FILTER_OPTIONS: { id: FlashcardFilter; label: string }[] = [
   { id: 'all', label: 'Tất cả 128 câu' },
   { id: 'unknown', label: 'Chưa thuộc' },
+  { id: 'known', label: 'Đã thuộc' },
   { id: 'bookmarks', label: 'Đã đánh dấu' },
   { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi },
   { id: 'system', label: N400_CATEGORY_LABELS.system.vi },
@@ -50,7 +49,9 @@ const FILTER_OPTIONS: { id: FilterMode; label: string }[] = [
 
 export default function FlashcardsPage() {
   const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
-  const [filter, setFilter] = useState<FilterMode>('all');
+  const [filter, setFilter] = useState<FlashcardFilter>('all');
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
   const [seed] = useState(() => String(Date.now()));
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -71,14 +72,7 @@ export default function FlashcardsPage() {
   const districtNumber = state.address.districtNumber;
 
   const questions = useMemo(() => {
-    let qs = N400_QUESTIONS;
-    if (filter === 'bookmarks') {
-      qs = qs.filter((q) => state.bookmarks.includes(q.id));
-    } else if (filter === 'unknown') {
-      qs = qs.filter((q) => !state.flashcardKnown.includes(q.id));
-    } else if (filter !== 'all') {
-      qs = qs.filter((q) => q.category === filter);
-    }
+    const qs = filterFlashcards(N400_QUESTIONS, filter, state.bookmarks, state.flashcardKnown);
     return shuffle(
       qs.map((q) => q.id),
       `flash-${filter}-${seed}`
@@ -97,17 +91,41 @@ export default function FlashcardsPage() {
   if (total === 0) {
     return (
       <Card className="p-8 text-center max-w-md mx-auto">
-        <h3 className="font-bold text-gray-800 mb-2">Không có câu nào trong bộ lọc này</h3>
+        <h3 className="font-bold text-gray-800 mb-2">
+          {filter === 'bookmarks'
+            ? 'Bạn chưa đánh dấu câu hỏi nào'
+            : filter === 'known'
+              ? 'Chưa có câu nào "Đã thuộc"'
+              : 'Không có câu nào trong bộ lọc này'}
+        </h3>
         <p className="text-sm text-gray-500 mb-6">
-          Đổi sang bộ lọc khác hoặc luyện tập để đánh dấu các câu đã thuộc.
+          {filter === 'bookmarks'
+            ? 'Nhấn biểu tượng dấu trang trên thẻ hoặc trong Luyện tập để lưu câu cần ôn lại.'
+            : filter === 'known'
+              ? 'Hãy học vài thẻ trước — nhấn "Đã thuộc" khi bạn đã nhớ câu trả lời.'
+              : 'Đổi sang bộ lọc khác hoặc luyện tập để đánh dấu các câu đã thuộc.'}
         </p>
-        <button
-          type="button"
-          onClick={() => setFilter('all')}
-          className="px-4 py-2 rounded-xl bg-teal-600 text-white font-semibold"
-        >
-          Xem tất cả 128 câu
-        </button>
+        <div className="flex items-center justify-center gap-3">
+          {filter === 'bookmarks' ? (
+            <Link
+              href={`/${locale}/n400app/practice`}
+              className="px-4 py-2 rounded-xl bg-teal-600 text-white font-semibold"
+            >
+              Vào luyện tập
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-xl font-semibold ${
+              filter === 'bookmarks'
+                ? 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                : 'bg-teal-600 text-white'
+            }`}
+          >
+            Xem tất cả 128 câu
+          </button>
+        </div>
       </Card>
     );
   }
@@ -172,9 +190,9 @@ export default function FlashcardsPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const f = params.get('filter') as FilterMode;
-      if (f && FILTER_OPTIONS.some(o => o.id === f)) {
+      const p = new URLSearchParams(window.location.search);
+      const f = p.get('filter') as FlashcardFilter;
+      if (f && FILTER_OPTIONS.some((o) => o.id === f)) {
         setFilter(f);
       }
     }
