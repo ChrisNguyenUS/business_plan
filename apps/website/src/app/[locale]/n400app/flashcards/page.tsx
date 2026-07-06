@@ -15,10 +15,24 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, ChevronDown } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCw,
+  Layers,
+  Landmark,
+  Building2,
+  Scale,
+  ScrollText,
+  Flag,
+  type LucideIcon,
+} from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { Flashcard } from '@/components/n400/flashcard/Flashcard';
 import { QuestionList } from './QuestionList';
+import { CategoryFilterPicker } from './CategoryFilterPicker';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import {
@@ -45,13 +59,16 @@ const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
 
 /* ── Category dropdown options ────────────────────────────────────── */
 
-const CATEGORY_OPTIONS: { id: N400CategoryKey | 'all'; label: string }[] = [
-  { id: 'all', label: 'Tất cả chủ đề' },
-  { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi },
-  { id: 'system', label: N400_CATEGORY_LABELS.system.vi },
-  { id: 'rights', label: N400_CATEGORY_LABELS.rights.vi },
-  { id: 'history', label: N400_CATEGORY_LABELS.history.vi },
-  { id: 'symbols', label: N400_CATEGORY_LABELS.symbols.vi },
+const categoryCount = (id: N400CategoryKey | 'all') =>
+  id === 'all' ? N400_QUESTIONS.length : N400_QUESTIONS.filter((q) => q.category === id).length;
+
+const CATEGORY_OPTIONS: { id: N400CategoryKey | 'all'; label: string; count: number; icon: LucideIcon }[] = [
+  { id: 'all', label: 'Tất cả chủ đề', count: categoryCount('all'), icon: Layers },
+  { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi, count: categoryCount('principles'), icon: Landmark },
+  { id: 'system', label: N400_CATEGORY_LABELS.system.vi, count: categoryCount('system'), icon: Building2 },
+  { id: 'rights', label: N400_CATEGORY_LABELS.rights.vi, count: categoryCount('rights'), icon: Scale },
+  { id: 'history', label: N400_CATEGORY_LABELS.history.vi, count: categoryCount('history'), icon: ScrollText },
+  { id: 'symbols', label: N400_CATEGORY_LABELS.symbols.vi, count: categoryCount('symbols'), icon: Flag },
 ];
 
 export default function FlashcardsPage() {
@@ -94,6 +111,25 @@ export default function FlashcardsPage() {
   }, [statusFilter, categoryFilter, seed, state.bookmarks, state.flashcardKnown]);
 
   const total = questions.length;
+
+  // Category options with live mastery percent (known cards / category size).
+  const categoryOptions = useMemo(
+    () =>
+      CATEGORY_OPTIONS.map((opt) => ({
+        ...opt,
+        percent:
+          opt.id === 'all'
+            ? null
+            : Math.round(
+                (N400_QUESTIONS.filter(
+                  (q) => q.category === opt.id && state.flashcardKnown.includes(q.id)
+                ).length /
+                  opt.count) *
+                  100
+              ),
+      })),
+    [state.flashcardKnown]
+  );
 
   // Render-time adjustment: clamp the index when the filtered set shrinks
   // under a fixed filter, e.g. after un-bookmarking a question in list view.
@@ -252,8 +288,14 @@ export default function FlashcardsPage() {
         {/* Divider */}
         <div className="hidden sm:block w-px h-5 bg-slate-200" />
 
-        {/* Status chips */}
+        {/* Topic chip + status chips */}
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Category filter: bottom sheet on mobile, anchored popover on desktop */}
+          <CategoryFilterPicker
+            options={categoryOptions}
+            value={categoryFilter ?? 'all'}
+            onChange={(id) => setCategoryFilter(id === 'all' ? null : (id as N400CategoryKey))}
+          />
           {STATUS_OPTIONS.map((opt) => (
             <button
               key={opt.id}
@@ -270,19 +312,6 @@ export default function FlashcardsPage() {
           ))}
         </div>
 
-        {/* Category dropdown */}
-        <div className="relative shrink-0">
-          <select
-            value={categoryFilter ?? 'all'}
-            onChange={(e) => setCategoryFilter(e.target.value === 'all' ? null : e.target.value as N400CategoryKey)}
-            className="appearance-none bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:border-teal-300 transition-colors focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
-          >
-            {CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id}>{opt.label}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-        </div>
       </div>
 
       {view === 'cards' ? (
