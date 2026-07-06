@@ -84,7 +84,15 @@ export default function FlashcardsPage() {
   }, [filter, seed, state.bookmarks, state.flashcardKnown]);
 
   const total = questions.length;
-  const current = questions[index];
+
+  // Render-time adjustment (same pattern as prevFilterSeed above): clamp the
+  // index when the filtered set shrinks under a fixed filter, e.g. after
+  // un-bookmarking a question in list view.
+  if (index > 0 && index > questions.length - 1) {
+    setIndex(Math.max(0, questions.length - 1));
+  }
+
+  const current = questions[Math.min(index, total - 1)];
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
