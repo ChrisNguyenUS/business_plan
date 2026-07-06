@@ -1,6 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Global: ensure all interactive elements show pointer cursor */
+button,
+[role="button"],
+a,
+select,
+summary,
+[type="checkbox"],
+[type="radio"],
+label[for] {
+  cursor: pointer;
+}
+
 /* ===== MannaOS Design System - Light Theme (Preserved from Vite codebase) ===== */
 @theme inline {
   /* --- Font --- */
