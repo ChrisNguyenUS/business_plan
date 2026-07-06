@@ -164,7 +164,7 @@ function Recommendation({
       <button
         type="button"
         onClick={onPractice}
-        className="group shrink-0 inline-flex items-center justify-center gap-2 rounded-xl border border-teal-600 bg-white px-5 py-2.5 text-sm font-semibold text-teal-700 transition-colors duration-200 motion-reduce:transition-none hover:bg-teal-50"
+        className="group shrink-0 inline-flex items-center justify-center gap-2 rounded-xl border border-teal-600 bg-white px-5 py-2.5 text-sm font-semibold text-teal-700 transition-colors duration-200 motion-reduce:transition-none hover:bg-teal-50 cursor-pointer"
       >
         Luyện ngay
         <ArrowRight size={15} className="transition-transform duration-200 motion-reduce:transition-none group-hover:translate-x-0.5" />
