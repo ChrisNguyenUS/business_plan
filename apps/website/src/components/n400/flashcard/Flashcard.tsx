@@ -59,9 +59,16 @@ export function Flashcard({
         minHeight: 'clamp(240px, 50vh, 320px)',
       }}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onFlip}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onFlip();
+          }
+        }}
         aria-label="Lật thẻ"
         className="block w-full h-full outline-none text-left cursor-pointer group"
       >
@@ -101,7 +108,7 @@ export function Flashcard({
             />
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 }
