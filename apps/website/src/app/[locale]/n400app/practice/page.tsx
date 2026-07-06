@@ -49,14 +49,18 @@ function readStoredPreset(): PracticePreset | null {
   return PRACTICE_PRESETS.find((p) => p.id === raw) ?? null;
 }
 
-function readStoredProgress(): { index: number; correct: number } | null {
+function readStoredProgress(): { index: number; correct: number; wrong: number[] } | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(PROGRESS_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { index?: unknown; correct?: unknown };
+    const parsed = JSON.parse(raw) as { index?: unknown; correct?: unknown; wrong?: unknown };
     if (typeof parsed.index !== 'number' || typeof parsed.correct !== 'number') return null;
-    return { index: parsed.index, correct: parsed.correct };
+    // `wrong` was added later; older snapshots without it are still valid.
+    const wrong = Array.isArray(parsed.wrong)
+      ? parsed.wrong.filter((n): n is number => typeof n === 'number')
+      : [];
+    return { index: parsed.index, correct: parsed.correct, wrong };
   } catch {
     return null;
   }
@@ -94,6 +98,12 @@ export default function PracticePage() {
   const [focusCategory, setFocusCategory] = useState<N400CategoryKey | null>(() => readStoredCategory());
   const [completed, setCompleted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  // Distinct question ids answered wrong this session, in order of appearance;
+  // feeds the "Review wrong answers" flow on the summary screen.
+  const [wrongIds, setWrongIds] = useState<number[]>([]);
+  // Non-null while replaying the wrong answers of the previous run. Review
+  // sessions are ephemeral: they are never persisted or offered as resume.
+  const [reviewIds, setReviewIds] = useState<number[] | null>(null);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<QuizOption['id'] | null>(null);
@@ -146,8 +156,8 @@ export default function PracticePage() {
   const stateCode = state.settings.stateCode;
   const districtNumber = state.address.districtNumber;
   const order = useMemo(
-    () => selectPracticeQuestionIds(seed, preset?.count ?? null, focusCategory),
-    [seed, preset, focusCategory]
+    () => reviewIds ?? selectPracticeQuestionIds(seed, preset?.count ?? null, focusCategory),
+    [reviewIds, seed, preset, focusCategory]
   );
 
   // Unfinished session (persisted across navigation within the tab) offered
@@ -160,7 +170,7 @@ export default function PracticePage() {
     if (!progress) return null;
     const total = stored.count ?? N400_QUESTIONS.length;
     if (progress.index < 1 || progress.index >= total) return null;
-    return { preset: stored, index: progress.index, total, correct: progress.correct };
+    return { preset: stored, index: progress.index, total, correct: progress.correct, wrong: progress.wrong };
   }, [preset]);
 
   const recommendation = useMemo(
@@ -186,6 +196,10 @@ export default function PracticePage() {
   const isBookmarked = state.bookmarks.includes(question.id);
   const pickedOption = options.find((o) => o.id === selected) ?? null;
 
+  const markWrong = (questionId: number) => {
+    setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
+  };
+
   const onPick = (id: QuizOption['id']) => {
     if (phase === 'revealed') return;
     setSelected(id);
@@ -193,6 +207,7 @@ export default function PracticePage() {
     const opt = options.find((o) => o.id === id);
     const wasCorrect = !!opt?.isCorrect;
     if (wasCorrect) setCorrectCount((c) => c + 1);
+    else markWrong(question.id);
     void recordAnswer(question.id, wasCorrect, 'practice').then((result) => {
       if (result.milestone) {
         setMilestone(result.milestone);
@@ -212,12 +227,15 @@ export default function PracticePage() {
       setCompleted(true);
       return;
     }
-    // Snapshot progress on each advance: correctCount already includes the
-    // question just answered, and index + 1 is the next unanswered question.
-    window.sessionStorage.setItem(
-      PROGRESS_STORAGE_KEY,
-      JSON.stringify({ index: index + 1, correct: correctCount })
-    );
+    // Snapshot progress on each advance: correctCount/wrongIds already include
+    // the question just answered, and index + 1 is the next unanswered question.
+    // Review sessions are never resumable, so they skip the snapshot.
+    if (reviewIds === null) {
+      window.sessionStorage.setItem(
+        PROGRESS_STORAGE_KEY,
+        JSON.stringify({ index: index + 1, correct: correctCount, wrong: wrongIds })
+      );
+    }
     setIndex((i) => i + 1);
   };
 
@@ -229,6 +247,7 @@ export default function PracticePage() {
       setSelected(correct.id);
     }
     setPhase('revealed');
+    markWrong(question.id);
     void recordAnswer(question.id, false, 'practice').then((result) => {
       if (result.milestone) {
         setMilestone(result.milestone);
@@ -261,6 +280,8 @@ export default function PracticePage() {
     window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
     setFocusCategory(category);
     setPreset(p);
+    setReviewIds(null);
+    setWrongIds([]);
     setIndex(0);
     setPrevIndex(0);
     setCorrectCount(0);
@@ -281,6 +302,8 @@ export default function PracticePage() {
     if (!resume) return;
     setFocusCategory(readStoredCategory());
     setPreset(resume.preset);
+    setReviewIds(null);
+    setWrongIds(resume.wrong);
     setIndex(resume.index);
     setPrevIndex(resume.index);
     setCorrectCount(resume.correct);
@@ -288,10 +311,26 @@ export default function PracticePage() {
     resetQuestionUI();
   };
 
-  // Retry the same mode with a new shuffle.
+  // Retry the same mode with a new shuffle. Always returns to the full mode,
+  // even when invoked from a review session.
   const onRestart = () => {
     reseed();
     window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setReviewIds(null);
+    setWrongIds([]);
+    setIndex(0);
+    setPrevIndex(0);
+    setCorrectCount(0);
+    setCompleted(false);
+    resetQuestionUI();
+  };
+
+  // Replay only the questions answered wrong in the run that just finished.
+  const onReviewWrong = () => {
+    if (wrongIds.length === 0) return;
+    window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setReviewIds(wrongIds);
+    setWrongIds([]);
     setIndex(0);
     setPrevIndex(0);
     setCorrectCount(0);
@@ -308,6 +347,8 @@ export default function PracticePage() {
       window.sessionStorage.removeItem(CATEGORY_STORAGE_KEY);
     }
     setPreset(null);
+    setReviewIds(null);
+    setWrongIds([]);
     setIndex(0);
     setPrevIndex(0);
     setCorrectCount(0);
@@ -316,7 +357,22 @@ export default function PracticePage() {
   };
 
   if (!hydrated) {
-    return <div className="animate-in fade-in duration-300 text-sm text-gray-500">Đang tải…</div>;
+    // Skeleton mirroring the session picker (the landing screen) to avoid a
+    // layout jump when the real content hydrates in.
+    return (
+      <div
+        className="max-w-[1100px] mx-auto w-full animate-pulse motion-reduce:animate-none"
+        role="status"
+        aria-label="Đang tải"
+      >
+        <div className="h-6 w-48 rounded-lg bg-gray-100 mb-3" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-24 rounded-2xl bg-gray-100" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (preset === null) {
@@ -353,6 +409,8 @@ export default function PracticePage() {
         <PracticeSessionSummary
           correct={correctCount}
           total={order.length}
+          wrongCount={wrongIds.length}
+          onReviewWrong={onReviewWrong}
           onRetry={onRestart}
           onChangeMode={onChangeMode}
         />

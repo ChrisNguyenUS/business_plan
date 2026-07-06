@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { Zap, ClipboardList, Layers, Library, ArrowRight, ChevronRight, Lightbulb } from 'lucide-react';
-import { ProgressBar } from '@/components/n400/ui';
 import type { PracticePreset, PracticeRecommendation } from '@/lib/n400/quiz-engine';
 import { N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
 
@@ -87,7 +86,8 @@ export function PracticeSessionPicker({
           </div>
         </section>
 
-        {recommendation ? (
+        {/* The Continue hero is already the best recommendation — never show both. */}
+        {!resume && recommendation ? (
           <Recommendation
             recommendation={recommendation}
             onPractice={() => onPracticeRecommendation(recommendation)}
@@ -105,35 +105,32 @@ function ContinueHero({ resume, onResume }: { resume: ResumeSession; onResume: (
     : null;
 
   return (
-    <section className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-      <div className="relative h-20 w-24 shrink-0 hidden sm:block">
+    <section className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+      <div className="relative h-16 w-20 shrink-0 hidden sm:block">
         <Image
           src="/images/n400/illu-statue-city.png"
           alt=""
           fill
           className="object-contain object-bottom"
-          sizes="96px"
+          sizes="80px"
           priority
         />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-xs font-bold uppercase tracking-wide text-teal-600">Tiếp tục học</div>
-        <div className="text-lg sm:text-xl font-bold text-gray-900 leading-snug mt-0.5">
+        <div className="text-base sm:text-lg font-bold text-gray-900 leading-snug mt-0.5">
           {preset.titleVi} — Câu {index + 1}/{total}
         </div>
-        <div className="mt-2 max-w-sm">
-          <ProgressBar progress={(index / total) * 100} heightClass="h-1.5" />
-        </div>
         {minutesLeft !== null ? (
-          <div className="text-sm text-gray-500 mt-1.5">≈ {minutesLeft} phút còn lại</div>
+          <div className="text-sm text-gray-500 mt-1">≈ {minutesLeft} phút còn lại</div>
         ) : null}
       </div>
       <button
         type="button"
         onClick={onResume}
-        className="group shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 font-semibold text-white shadow-md shadow-teal-600/20 transition-all duration-200 motion-reduce:transition-none hover:bg-teal-700"
+        className="group shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md shadow-teal-600/20 transition-all duration-200 motion-reduce:transition-none hover:bg-teal-700 cursor-pointer"
       >
-        Tiếp tục học
+        Học tiếp
         <ArrowRight size={16} className="transition-transform duration-200 motion-reduce:transition-none group-hover:translate-x-0.5" />
       </button>
     </section>
@@ -157,9 +154,9 @@ function Recommendation({
       <div className="flex-1 min-w-0">
         <div className="text-[11px] font-bold uppercase tracking-wide text-amber-600">Gợi ý hôm nay</div>
         <div className="text-sm font-semibold text-gray-800 mt-0.5">
-          Bạn sai {recommendation.wrongCount}/{recommendation.sampleSize} câu gần đây về {label}.
+          Ôn lại chủ đề {label}
         </div>
-        <div className="text-sm text-gray-600">Ôn lại 5 câu trong khoảng 3 phút.</div>
+        <div className="text-sm text-gray-600">5 câu · ≈ 3 phút</div>
       </div>
       <button
         type="button"
