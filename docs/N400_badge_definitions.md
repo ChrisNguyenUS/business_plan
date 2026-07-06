@@ -46,9 +46,9 @@ Theme: xanh dương đậm / lá cờ. Đếm số flashcard civics hoàn thành
 | ❌ Bỏ | — | Daily Focus | Trùng 100% với `streak-7` |
 | 🆕 | `practice-high-score` | High Score | ≥90% trong 1 phiên Luyện tập (bất kỳ section) |
 | 🆕 | `practice-excellence-10` | Excellence | ≥90% trong 10 phiên Luyện tập |
-| ⚠️ Hoãn | — | Breakthrough | "Cải thiện điểm tuần +20%" — chưa định nghĩa được sạch (mốc so sánh, phiên nào tính); cân nhắc lại sau khi có dữ liệu sử dụng |
+| ❌ Bỏ | — | Breakthrough | "Cải thiện điểm tuần +20%" — không định nghĩa được sạch; ĐÃ CHỐT BỎ (2026-07-06) |
 | 🆕 | `correct-streak-100` | Perfect Accuracy | 100 câu đúng LIÊN TIẾP (khác `correct-answers-100` có sẵn — cái đó là tích lũy) |
-| ⚠️ | `bookmark-review-50` | Long-Term Memory | Ôn lại 50 thẻ đã bookmark — app chưa log sự kiện "xem thẻ"; đề xuất đổi thành *trả lời đúng 50 lượt trên các câu đã bookmark* (trackable từ attempts) |
+| 🆕 | `bookmark-review-50` | Long-Term Memory | Trả lời đúng 50 lượt trên các câu đã bookmark (ĐÃ CHỐT điều kiện thay thế 2026-07-06) |
 | ✅ | `mock-pass-first` | Exam Ready | Đạt chuẩn pass 1 bài Thi thử Civics (badge có sẵn) |
 | ✅ | `mock-high-score` | Future Citizen | Thi thử Civics ≥90% (badge có sẵn) |
 
@@ -104,7 +104,7 @@ Theme: xanh dương đậm / lá cờ. Đếm số flashcard civics hoàn thành
 | 🆕 | `secret-early-bird` | 🌅 Early Bird | Học trước 8AM trong 7 ngày (không cần liên tiếp) | Attempts có timestamp — làm được |
 | 🆕 | `secret-night-owl` | 🌙 Night Owl | Học sau 10PM trong 7 ngày | Như trên |
 | 🆕 | `secret-never-give-up` | 💪 Never Give Up | Tiếp tục học sau 20 câu sai (tích lũy trong 1 ngày) | Đếm từ attempts |
-| ⚠️ | `secret-speed-learner` | ⚡ Speed Learner | Gốc: "20 flashcard < 10 phút" — chưa log sự kiện flashcard; đề xuất đổi: *trả lời đúng 20 câu Luyện tập trong 10 phút* | Cần chốt điều kiện thay thế |
+| 🆕 | `secret-speed-learner` | ⚡ Speed Learner | Trả lời đúng 20 câu Luyện tập trong 10 phút (ĐÃ CHỐT điều kiện thay thế 2026-07-06) | Đếm từ attempts timestamps |
 | 🆕 | `secret-perfect-50` | 🎯 Perfect Streak | 50 câu đúng liên tiếp (nấc dưới của `correct-streak-100`) | |
 | 🆕 | `secret-marathon` | 🚀 Marathon | 100 câu trong 1 ngày | Đếm attempts theo ngày |
 | 🆕 | `secret-comeback` | 🔥 Comeback | Quay lại học sau ≥30 ngày nghỉ | Khác `mock-comeback` có sẵn (đậu lại mock sau khi rớt) — tên slug tách riêng để không lẫn |
@@ -123,14 +123,14 @@ Theme: xanh dương đậm / lá cờ. Đếm số flashcard civics hoàn thành
 |---|---:|---:|---:|---:|---:|
 | Civics Progress | 5 | 0 | 5 | 0 | 0 |
 | Daily Streak | 6 | 6 | 0 | 0 | 0 |
-| Practice Achievement | 8 | 2 | 3 | 2 | 1 |
+| Practice Achievement | 8 | 2 | 4 | 0 | 2 |
 | Writing | 6 | 0 | 6 | 0 | 0 |
 | Speaking Yes/No | 6 | 0 | 6 | 0 | 0 |
 | Speaking What Mean | 6 | 0 | 6 | 0 | 0 |
 | Communication Combo | 5 | 0 | 5 | 0 | 0 |
-| Secret | 7 | 0 | 6 | 1 | 0 |
+| Secret | 7 | 0 | 7 | 0 | 0 |
 | Ultimate | 1 | 0 | 1 | 0 | 0 |
-| **Tổng** | **50** | **8** | **38** | **3** | **1** |
+| **Tổng** | **50** | **8** | **40** | **0** | **2** |
 
 Ngoài ra hệ hiện tại còn các badge không nằm trong đề xuất này và **giữ nguyên**: `onboarding-first-session`, `mock-pass-five`, `mock-perfect`, `mock-comeback`, `correct-answers-100`, `flashcards-mastery`, `all-128-answered`, `sessions-50`, `sessions-100`, `practice-sessions-10`, `practice-sessions-30`, và 5 badge category (`category-democracy/government/rights/history/symbols`).
 
@@ -138,5 +138,5 @@ Ngoài ra hệ hiện tại còn các badge không nằm trong đề xuất này
 
 - Thêm 1 badge = ① INSERT row vào `n400_badges` (Supabase) + ② thêm evaluator vào registry (`badges/evaluators/`) — `verify-badges.ts` sẽ fail build nếu thiếu 1 trong 2 vế.
 - Các evaluator nhóm 4–7 phụ thuộc **bucket tiến độ per-section** (id namespace `wm-`, `yn-`, writing) trong spec expansion 2026-07-06 — build sau khi các section mới có state.
-- Icon: emoji trong bảng là placeholder; icon chính thức theo bộ `docs/N400_app_UI/Badges Icons`.
-- 3 mục ⚠️ cần owner chốt: **Breakthrough** (bỏ hẳn hay đổi điều kiện), **Long-Term Memory** (đổi thành 50 lượt đúng trên câu bookmark?), **Speed Learner** (đổi thành 20 câu đúng trong 10 phút?).
+- Icon: emoji trong bảng là placeholder; icon chính thức theo bộ `docs/N400_app_UI/Badges Icons` — owner đang làm assets mới cho 40 badge mới, sẽ update sau (dùng emoji/BadgeIcon fallback cho tới lúc đó).
+- Cả 3 mục ⚠️ đã được owner chốt ngày 2026-07-06: Breakthrough bỏ hẳn; Long-Term Memory = 50 lượt đúng trên câu bookmark; Speed Learner = 20 câu đúng trong 10 phút.
