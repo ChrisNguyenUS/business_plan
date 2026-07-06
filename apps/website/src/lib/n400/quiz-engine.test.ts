@@ -14,6 +14,10 @@ import {
   filterFlashcards,
   questionAudioUrl,
   answerAudioUrl,
+  whatMeanQuestionAudioUrl,
+  whatMeanAnswerAudioUrl,
+  yesNoAudioUrl,
+  writingAudioUrl,
 } from './quiz-engine';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
 
@@ -356,5 +360,20 @@ describe('civics audio urls (reorganized folder layout)', () => {
 
   it('builds answer audio under civic_answer/', () => {
     expect(answerAudioUrl(1)).toBe('/n400-audio/civic_answer/a001.mp3');
+  });
+});
+
+describe('new section audio urls', () => {
+  it('what mean question + answer', () => {
+    expect(whatMeanQuestionAudioUrl(5)).toBe('/n400-audio/What_mean_questions/question/5.mp3');
+    expect(whatMeanAnswerAudioUrl(62)).toBe('/n400-audio/What_mean_questions/answer/62.mp3');
+  });
+
+  it('yes/no', () => {
+    expect(yesNoAudioUrl(37)).toBe('/n400-audio/Yes_no_question/sound/37.mp3');
+  });
+
+  it('writing', () => {
+    expect(writingAudioUrl(45)).toBe('/n400-audio/Writing_questions/45.mp3');
   });
 });
