@@ -11,6 +11,7 @@ import {
   isPersonalizedAnswerUnavailable,
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
+  filterFlashcards,
 } from './quiz-engine';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
 
@@ -309,5 +310,38 @@ describe('isPersonalizedAnswerUnavailable', () => {
     expect(isPersonalizedAnswerUnavailable(q29, null)).toBe(true);
     expect(isPersonalizedAnswerUnavailable(q29, 12)).toBe(false);
     expect(isPersonalizedAnswerUnavailable(q23, null)).toBe(false);
+  });
+});
+
+describe('filterFlashcards', () => {
+  const qs = N400_QUESTIONS;
+
+  it('returns all questions for the all filter', () => {
+    expect(filterFlashcards(qs, 'all', [], [])).toHaveLength(qs.length);
+  });
+
+  it('unknown excludes known question ids', () => {
+    const known = [qs[0].id, qs[1].id];
+    const out = filterFlashcards(qs, 'unknown', [], known);
+    expect(out).toHaveLength(qs.length - 2);
+    expect(out.some((q) => known.includes(q.id))).toBe(false);
+  });
+
+  it('known returns only known question ids', () => {
+    const known = [qs[0].id, qs[5].id];
+    const out = filterFlashcards(qs, 'known', [], known);
+    expect(out.map((q) => q.id).sort((a, b) => a - b)).toEqual(known.sort((a, b) => a - b));
+  });
+
+  it('bookmarks returns only bookmarked question ids', () => {
+    const bookmarks = [qs[2].id];
+    const out = filterFlashcards(qs, 'bookmarks', bookmarks, []);
+    expect(out.map((q) => q.id)).toEqual(bookmarks);
+  });
+
+  it('category filter returns only that category', () => {
+    const out = filterFlashcards(qs, 'history', [], []);
+    expect(out.length).toBeGreaterThan(0);
+    expect(out.every((q) => q.category === 'history')).toBe(true);
   });
 });

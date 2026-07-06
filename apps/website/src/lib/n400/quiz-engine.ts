@@ -385,3 +385,27 @@ export function isPersonalizedAnswerUnavailable(
 ): boolean {
   return question.id === 29 && districtNumber === null;
 }
+
+// ── Flashcards filtering (shared by card view and list view) ─────────────────
+
+export type FlashcardFilter = 'all' | 'unknown' | 'known' | 'bookmarks' | N400CategoryKey;
+
+export function filterFlashcards(
+  questions: N400Question[],
+  filter: FlashcardFilter,
+  bookmarks: number[],
+  known: number[]
+): N400Question[] {
+  switch (filter) {
+    case 'all':
+      return questions;
+    case 'unknown':
+      return questions.filter((q) => !known.includes(q.id));
+    case 'known':
+      return questions.filter((q) => known.includes(q.id));
+    case 'bookmarks':
+      return questions.filter((q) => bookmarks.includes(q.id));
+    default:
+      return questions.filter((q) => q.category === filter);
+  }
+}
