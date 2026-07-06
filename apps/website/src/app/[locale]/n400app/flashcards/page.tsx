@@ -15,9 +15,10 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Layers, List } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { Flashcard } from '@/components/n400/flashcard/Flashcard';
+import { QuestionList } from './QuestionList';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -50,6 +51,7 @@ const FILTER_OPTIONS: { id: FlashcardFilter; label: string }[] = [
 export default function FlashcardsPage() {
   const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
   const [filter, setFilter] = useState<FlashcardFilter>('all');
+  const [view, setView] = useState<'cards' | 'list'>('cards');
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [seed] = useState(() => String(Date.now()));
@@ -160,6 +162,7 @@ export default function FlashcardsPage() {
   };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (view === 'list') return;
     // Ignore keypresses if user is typing in an input
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
@@ -181,7 +184,7 @@ export default function FlashcardsPage() {
         goNext();
         break;
     }
-  }, [goPrev, goNext, markKnown]);
+  }, [view, goPrev, goNext, markKnown]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -195,6 +198,9 @@ export default function FlashcardsPage() {
       if (f && FILTER_OPTIONS.some((o) => o.id === f)) {
         setFilter(f);
       }
+      if (p.get('view') === 'list') {
+        setView('list');
+      }
     }
   }, []);
 
@@ -203,6 +209,29 @@ export default function FlashcardsPage() {
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.5rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
+      {/* View toggle — shrink-0 */}
+      <div className="flex items-center gap-2 shrink-0">
+        {(
+          [
+            { id: 'cards', label: 'Học thẻ', icon: Layers },
+            { id: 'list', label: 'Danh sách', icon: List },
+          ] as const
+        ).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setView(id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+              view === id
+                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
+            }`}
+          >
+            <Icon size={16} /> {label}
+          </button>
+        ))}
+      </div>
+
       {unlockedBadges.length > 0 ? (
         <BadgeUnlockToast
           slugs={unlockedBadges}
@@ -233,6 +262,8 @@ export default function FlashcardsPage() {
         ))}
       </div>
 
+      {view === 'cards' ? (
+        <>
       {/* Progress — shrink-0 */}
       <div className="shrink-0">
         <div className="flex items-center justify-between mb-2 text-sm text-slate-700">
@@ -331,6 +362,18 @@ export default function FlashcardsPage() {
           <ChevronRight size={24} />
         </button>
       </div>
+        </>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+          <QuestionList
+            questions={questions}
+            bookmarks={state.bookmarks}
+            onToggleBookmark={(id) => void toggleBookmark(id)}
+            stateCode={stateCode}
+            districtNumber={districtNumber}
+          />
+        </div>
+      )}
     </div>
   );
 }
