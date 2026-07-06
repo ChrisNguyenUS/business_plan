@@ -62,7 +62,7 @@ export function PracticeSessionPicker({
                   key={preset.id}
                   type="button"
                   onClick={() => onSelect(preset)}
-                  className="group flex items-center gap-4 w-full text-left bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm transition-all duration-200 motion-reduce:transition-none hover:shadow-md hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
+                  className="group flex items-center gap-4 w-full text-left bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm transition-all duration-200 motion-reduce:transition-none hover:shadow-md hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 cursor-pointer"
                 >
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${PRESET_TONES[preset.id]}`}>
                     {PRESET_ICONS[preset.id]}
