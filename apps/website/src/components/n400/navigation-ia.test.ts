@@ -14,8 +14,8 @@ describe('N400 information architecture contracts', () => {
 
     expect(page).toContain("'cards' | 'list'");
     expect(page).toContain('QuestionList');
-    expect(page).toContain('Học thẻ');
-    expect(page).toContain('Danh sách');
+    expect(page).toContain('Flashcard');
+    expect(page).toContain('List');
   });
 
   test('bookmark is no longer a navigation destination', () => {

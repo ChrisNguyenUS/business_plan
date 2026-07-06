@@ -20,7 +20,7 @@ export function FlashcardFront({
   onToggleBookmark,
 }: FlashcardFrontProps) {
   return (
-    <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.2)] transition-shadow duration-500">
+    <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.22)] group-hover:-translate-y-0.5 transition-all duration-300 ease-out">
       {/* Pinned: Audio & Bookmark */}
       <div className="absolute top-[clamp(0.75rem,2vw,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] flex items-center gap-2 sm:gap-3 z-20">
         <AudioButton src={audioSrc} label="Nghe câu hỏi" size="sm" />

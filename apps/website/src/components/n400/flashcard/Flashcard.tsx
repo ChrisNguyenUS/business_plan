@@ -63,7 +63,7 @@ export function Flashcard({
         type="button"
         onClick={onFlip}
         aria-label="Lật thẻ"
-        className="block w-full h-full outline-none text-left"
+        className="block w-full h-full outline-none text-left cursor-pointer group"
       >
         <div
           className="relative w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none motion-reduce:duration-0 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d]"

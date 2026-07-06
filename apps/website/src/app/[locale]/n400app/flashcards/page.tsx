@@ -15,16 +15,12 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, Filter, Layers, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, RotateCw, ChevronDown } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { Flashcard } from '@/components/n400/flashcard/Flashcard';
 import { QuestionList } from './QuestionList';
-import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
-import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
-import { useN400Badges } from '@/lib/n400/use-badges';
-import { trackStreakMilestone } from '@/lib/n400/analytics';
-import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
+import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import {
   correctAnswersFor,
   shuffle,
@@ -36,11 +32,21 @@ import {
 } from '@/lib/n400/quiz-engine';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
-const FILTER_OPTIONS: { id: FlashcardFilter; label: string }[] = [
-  { id: 'all', label: 'Tất cả 128 câu' },
-  { id: 'unknown', label: 'Chưa thuộc' },
-  { id: 'known', label: 'Đã thuộc' },
-  { id: 'bookmarks', label: 'Đã đánh dấu' },
+/* ── Status filter chips (learning state) ─────────────────────────── */
+
+type StatusFilter = 'all' | 'unknown' | 'known' | 'bookmarks';
+
+const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
+  { id: 'all', label: 'All Questions' },
+  { id: 'unknown', label: 'Learning' },
+  { id: 'known', label: 'Mastered' },
+  { id: 'bookmarks', label: 'Saved' },
+];
+
+/* ── Category dropdown options ────────────────────────────────────── */
+
+const CATEGORY_OPTIONS: { id: N400CategoryKey | 'all'; label: string }[] = [
+  { id: 'all', label: 'Tất cả chủ đề' },
   { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi },
   { id: 'system', label: N400_CATEGORY_LABELS.system.vi },
   { id: 'rights', label: N400_CATEGORY_LABELS.rights.vi },
@@ -50,20 +56,20 @@ const FILTER_OPTIONS: { id: FlashcardFilter; label: string }[] = [
 
 export default function FlashcardsPage() {
   const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
-  const [filter, setFilter] = useState<FlashcardFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<N400CategoryKey | null>(null);
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const [seed] = useState(() => String(Date.now()));
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [prevFilterSeed, setPrevFilterSeed] = useState(`${'all'}-`);
-  const [milestone, setMilestone] = useState<number | null>(null);
-  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
-  const badges = useN400Badges();
+  const [prevFilterSeed, setPrevFilterSeed] = useState(`${'all'}-${'all'}-`);
+
+  // Composite filter key for reset detection.
+  const filterSeedKey = `${statusFilter}-${categoryFilter ?? 'all'}-${seed}`;
 
   // Reset card position whenever filter or seed changes (React-recommended pattern).
-  const filterSeedKey = `${filter}-${seed}`;
   if (filterSeedKey !== prevFilterSeed) {
     setPrevFilterSeed(filterSeedKey);
     setIndex(0);
@@ -73,22 +79,24 @@ export default function FlashcardsPage() {
   const stateCode = state.settings.stateCode;
   const districtNumber = state.address.districtNumber;
 
+  // Compose two filters: status first, then category.
   const questions = useMemo(() => {
-    const qs = filterFlashcards(N400_QUESTIONS, filter, state.bookmarks, state.flashcardKnown);
+    let qs = filterFlashcards(N400_QUESTIONS, statusFilter as FlashcardFilter, state.bookmarks, state.flashcardKnown);
+    if (categoryFilter) {
+      qs = qs.filter((q) => q.category === categoryFilter);
+    }
     return shuffle(
       qs.map((q) => q.id),
-      `flash-${filter}-${seed}`
+      `flash-${statusFilter}-${categoryFilter ?? 'all'}-${seed}`
     )
       .map((id) => N400_QUESTIONS.find((q) => q.id === id)!)
       .filter(Boolean);
-  }, [filter, seed, state.bookmarks, state.flashcardKnown]);
+  }, [statusFilter, categoryFilter, seed, state.bookmarks, state.flashcardKnown]);
 
   const total = questions.length;
 
-  // Render-time adjustment (same pattern as prevFilterSeed above): clamp the
-  // index when the filtered set shrinks under a fixed filter, e.g. after
-  // un-bookmarking a question in list view. Skipped on the filter-change
-  // render (keys differ) so the reset-to-0 above wins over the stale index.
+  // Render-time adjustment: clamp the index when the filtered set shrinks
+  // under a fixed filter, e.g. after un-bookmarking a question in list view.
   if (filterSeedKey === prevFilterSeed && index > 0 && index > questions.length - 1) {
     setIndex(Math.max(0, questions.length - 1));
   }
@@ -103,21 +111,21 @@ export default function FlashcardsPage() {
     return (
       <Card className="p-8 text-center max-w-md mx-auto">
         <h3 className="font-bold text-gray-800 mb-2">
-          {filter === 'bookmarks'
-            ? 'Bạn chưa đánh dấu câu hỏi nào'
-            : filter === 'known'
-              ? 'Chưa có câu nào "Đã thuộc"'
+          {statusFilter === 'bookmarks'
+            ? 'Bạn chưa lưu (Saved) câu hỏi nào'
+            : statusFilter === 'known'
+              ? 'Chưa có câu nào trong mục "Mastered"'
               : 'Không có câu nào trong bộ lọc này'}
         </h3>
         <p className="text-sm text-gray-500 mb-6">
-          {filter === 'bookmarks'
+          {statusFilter === 'bookmarks'
             ? 'Nhấn biểu tượng dấu trang trên thẻ hoặc trong Luyện tập để lưu câu cần ôn lại.'
-            : filter === 'known'
-              ? 'Hãy học vài thẻ trước — nhấn "Đã thuộc" khi bạn đã nhớ câu trả lời.'
-              : 'Đổi sang bộ lọc khác hoặc luyện tập để đánh dấu các câu đã thuộc.'}
+            : statusFilter === 'known'
+              ? 'Hãy học vài thẻ trước — đánh dấu "Mastered" khi bạn đã nhớ câu trả lời.'
+              : 'Đổi sang bộ lọc khác hoặc luyện tập để thay đổi trạng thái câu hỏi.'}
         </p>
         <div className="flex items-center justify-center gap-3">
-          {filter === 'bookmarks' ? (
+          {statusFilter === 'bookmarks' ? (
             <Link
               href={`/${locale}/n400app/practice`}
               className="px-4 py-2 rounded-xl bg-teal-600 text-white font-semibold"
@@ -127,9 +135,9 @@ export default function FlashcardsPage() {
           ) : null}
           <button
             type="button"
-            onClick={() => setFilter('all')}
+            onClick={() => { setStatusFilter('all'); setCategoryFilter(null); }}
             className={`px-4 py-2 rounded-xl font-semibold ${
-              filter === 'bookmarks'
+              statusFilter === 'bookmarks'
                 ? 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 : 'bg-teal-600 text-white'
             }`}
@@ -157,13 +165,7 @@ export default function FlashcardsPage() {
     setFlipped(false);
   };
   const markKnown = (k: boolean) => {
-    void setFlashcardKnown(current.id, k).then((result) => {
-      if (result.milestone) {
-        setMilestone(result.milestone);
-        trackStreakMilestone(result.milestone);
-      }
-      if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
-    });
+    void setFlashcardKnown(current.id, k);
     if (index < total - 1) {
       setIndex((i) => i + 1);
       setFlipped(false);
@@ -203,9 +205,13 @@ export default function FlashcardsPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
-      const f = p.get('filter') as FlashcardFilter;
-      if (f && FILTER_OPTIONS.some((o) => o.id === f)) {
-        setFilter(f);
+      const f = p.get('filter') as StatusFilter;
+      if (f && STATUS_OPTIONS.some((o) => o.id === f)) {
+        setStatusFilter(f);
+      }
+      const cat = p.get('category') as N400CategoryKey;
+      if (cat && CATEGORY_OPTIONS.some((o) => o.id === cat)) {
+        setCategoryFilter(cat);
       }
       if (p.get('view') === 'list') {
         setView('list');
@@ -215,73 +221,80 @@ export default function FlashcardsPage() {
 
   return (
     <div
-      className="flex flex-col h-full overflow-hidden gap-[clamp(0.5rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
+      className="flex flex-col h-full overflow-hidden gap-2 max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* View toggle — shrink-0 */}
-      <div className="flex items-center gap-2 shrink-0">
-        {(
-          [
-            { id: 'cards', label: 'Học thẻ', icon: Layers },
-            { id: 'list', label: 'Danh sách', icon: List },
-          ] as const
-        ).map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setView(id)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
-              view === id
-                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
-            }`}
+      {/* ── Header: Segmented Control + Filters ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+        {/* Apple-style segmented control */}
+        <div className="inline-flex bg-slate-100 rounded-lg p-0.5 shrink-0">
+          {(
+            [
+              { id: 'cards', label: 'Flashcard' },
+              { id: 'list', label: 'List' },
+            ] as const
+          ).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setView(id)}
+              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                view === id
+                  ? 'bg-white text-slate-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="hidden sm:block w-px h-5 bg-slate-200" />
+
+        {/* Status chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setStatusFilter(opt.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                statusFilter === opt.id
+                  ? 'bg-teal-600 text-white shadow-sm shadow-teal-600/20'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Category dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={categoryFilter ?? 'all'}
+            onChange={(e) => setCategoryFilter(e.target.value === 'all' ? null : e.target.value as N400CategoryKey)}
+            className="appearance-none bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:border-teal-300 transition-colors focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
           >
-            <Icon size={16} /> {label}
-          </button>
-        ))}
-      </div>
-
-      {unlockedBadges.length > 0 ? (
-        <BadgeUnlockToast
-          slugs={unlockedBadges}
-          catalog={Object.fromEntries(badges.catalog.map((b) => [b.slug, b]))}
-          trigger="session_complete"
-        />
-      ) : null}
-
-      {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
-
-      {/* Filters — shrink-0 */}
-      <div className="flex items-center gap-3 flex-wrap shrink-0">
-        <Filter size={16} className="text-slate-400" />
-        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Bộ lọc:</span>
-        {FILTER_OPTIONS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
-              filter === f.id
-                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 scale-105'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-300 hover:bg-slate-50'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+            {CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        </div>
       </div>
 
       {view === 'cards' ? (
         <>
       {/* Progress — shrink-0 */}
       <div className="shrink-0">
-        <div className="flex items-center justify-between mb-2 text-sm text-slate-700">
-          <span className="font-bold text-base">
-            Thẻ {index + 1} / {total}
+        <div className="flex items-center justify-between mb-1.5 text-sm text-slate-500">
+          <span className="font-medium">
+            Câu {index + 1} / {total}
           </span>
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Đã thuộc: {state.flashcardKnown.length}</span>
         </div>
-        <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-2.5" />
+        <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-1.5" />
       </div>
 
       {isPersonalizedAnswerUnavailable(current, districtNumber) ? (
@@ -304,71 +317,79 @@ export default function FlashcardsPage() {
         onToggleBookmark={() => toggleBookmark(current.id)}
       />
 
-      {/* Study Controls — shrink-0 */}
-      <div className="flex items-center justify-center gap-3 sm:gap-6 shrink-0" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}>
+      {/* Study Controls — shrink-0, contextual based on flip state */}
+      <div className="flex items-center justify-center gap-3 sm:gap-4 shrink-0" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}>
         <button
           type="button"
           onClick={goPrev}
           disabled={index === 0}
-          className="w-14 h-14 rounded-full bg-white border-2 border-slate-100 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-200 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
+          className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
           aria-label="Trước"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={22} />
         </button>
 
-        <button
-          type="button"
-          onClick={() => markKnown(false)}
-          className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-4 sm:px-10 sm:py-5 rounded-[24px] border-2 transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
-            !known
-              ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-orange-500/10'
-              : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
-          }`}
-        >
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-lg whitespace-nowrap"><ThumbsDown size={20} className="hidden sm:block" /> Chưa thuộc</div>
-          <span className="text-[11px] font-bold opacity-50 mt-1 hidden sm:block">Phím R</span>
-        </button>
+        {!flipped ? (
+          /* ── Pre-flip: only Flip Card ── */
+          <>
+            {/* Desktop flip button */}
+            <button
+              type="button"
+              onClick={() => setFlipped(true)}
+              className="hidden sm:flex flex-col items-center justify-center px-8 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 shadow-sm transition-all hover:scale-[1.02] active:scale-95"
+            >
+              <div className="flex items-center gap-2 font-bold text-base"><RotateCw size={18} /> Flip Card</div>
+              <span className="text-[10px] text-slate-400 font-medium mt-0.5">Space</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          className="hidden sm:flex flex-col items-center justify-center px-8 py-5 rounded-[24px] bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-[1.02] active:scale-95"
-          aria-label="Lật thẻ"
-        >
-          <div className="flex items-center gap-2 font-bold text-base"><RotateCw size={20} /> Lật thẻ</div>
-          <span className="text-[11px] font-bold opacity-50 mt-1">Space</span>
-        </button>
+            {/* Mobile flip button */}
+            <button
+              type="button"
+              onClick={() => setFlipped(true)}
+              className="flex sm:hidden flex-1 items-center justify-center gap-2 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all active:scale-95 font-bold text-sm"
+            >
+              <RotateCw size={18} /> Flip Card
+            </button>
+          </>
+        ) : (
+          /* ── Post-flip: Mastered / Not Mastered ── */
+          <>
+            <button
+              type="button"
+              onClick={() => markKnown(false)}
+              className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
+                !known
+                  ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-orange-500/10'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
+              }`}
+            >
+              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Learning</div>
+              <span className="text-[10px] text-slate-400 font-medium mt-0.5 hidden sm:block">R</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          className="flex sm:hidden w-14 h-14 shrink-0 rounded-full bg-white border-2 border-slate-200 items-center justify-center text-slate-600 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all active:scale-95"
-          aria-label="Lật thẻ"
-        >
-          <RotateCw size={20} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => markKnown(true)}
-          className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-4 sm:px-10 sm:py-5 rounded-[24px] border-2 transition-all hover:scale-[1.02] active:scale-95 shadow-md ${
-            known
-              ? 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30'
-              : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
-          }`}
-        >
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-lg whitespace-nowrap"><ThumbsUp size={20} className="hidden sm:block" /> Đã thuộc</div>
-          <span className="text-[11px] font-bold opacity-80 mt-1 hidden sm:block">Phím M</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => markKnown(true)}
+              className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
+                known
+                  ? 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30'
+                  : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
+              }`}
+            >
+              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Mastered</div>
+              <span className="text-[10px] text-white/60 font-medium mt-0.5 hidden sm:block">M</span>
+            </button>
+          </>
+        )}
 
         <button
           type="button"
           onClick={goNext}
           disabled={index === total - 1}
-          className="w-14 h-14 rounded-full bg-white border-2 border-slate-100 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-200 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
+          className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
           aria-label="Tiếp"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={22} />
         </button>
       </div>
         </>
@@ -380,6 +401,13 @@ export default function FlashcardsPage() {
             onToggleBookmark={(id) => void toggleBookmark(id)}
             stateCode={stateCode}
             districtNumber={districtNumber}
+            onSelectQuestion={(id) => {
+              const idx = questions.findIndex((q) => q.id === id);
+              if (idx !== -1) {
+                setIndex(idx);
+                setView('cards');
+              }
+            }}
           />
         </div>
       )}

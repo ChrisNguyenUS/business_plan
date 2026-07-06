@@ -12,7 +12,7 @@ interface FlashcardBackProps {
 
 export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
   return (
-    <div className="h-full rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col p-[clamp(1rem,2vw,2rem)] relative hover:shadow-[0_16px_60px_-15px_rgba(20,184,166,0.25)] transition-shadow duration-500">
+    <div className="h-full rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.25)] group-hover:-translate-y-0.5 transition-all duration-300 ease-out">
       {/* Pinned: Audio */}
       <div className="absolute top-[clamp(0.75rem,2vw,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] flex items-center z-20">
         <AudioButton src={audioSrc} label="Nghe đáp án" size="sm" />
