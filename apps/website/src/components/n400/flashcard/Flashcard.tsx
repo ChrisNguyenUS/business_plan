@@ -29,7 +29,16 @@ interface FlashcardProps {
  * - `will-change: transform` is safe here because only one
  *   Flashcard is rendered at a time.
  * - `motion-reduce:` disables animation for accessibility.
+ * - Safari/WebKit ignores `backface-visibility: hidden` for a face's
+ *   DESCENDANTS (only the face's own background is culled), so the
+ *   hidden face's content bleeds through mirrored. Each face is
+ *   therefore also gated with `visibility`, swapped 60ms into the
+ *   flip — when the card crosses ~90° for the 500ms
+ *   cubic-bezier(0.23,1,0.32,1) curve. If you change the flip
+ *   duration or easing, retune the 60ms swap delay below.
  */
+const faceClass =
+  'absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transition:visibility_0s_60ms] motion-reduce:transition-none';
 export function Flashcard({
   flipped,
   onFlip,
@@ -65,7 +74,8 @@ export function Flashcard({
         >
           {/* Front face */}
           <div
-            className="absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+            className={`${faceClass} ${flipped ? 'invisible' : 'visible'}`}
+            aria-hidden={flipped}
           >
             <FlashcardFront
               questionId={questionId}
@@ -79,10 +89,11 @@ export function Flashcard({
 
           {/* Back face */}
           <div
-            className="absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+            className={`${faceClass} ${flipped ? 'visible' : 'invisible'}`}
             style={{
               transform: 'rotateY(180deg)',
             }}
+            aria-hidden={!flipped}
           >
             <FlashcardBack
               audioSrc={answerAudioSrc}
