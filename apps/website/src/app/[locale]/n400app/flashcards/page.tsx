@@ -38,8 +38,8 @@ type StatusFilter = 'all' | 'unknown' | 'known' | 'bookmarks';
 
 const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
   { id: 'all', label: 'All Questions' },
-  { id: 'unknown', label: 'Learning' },
-  { id: 'known', label: 'Mastered' },
+  { id: 'unknown', label: 'Chưa thuộc' },
+  { id: 'known', label: 'Đã thuộc' },
   { id: 'bookmarks', label: 'Saved' },
 ];
 
