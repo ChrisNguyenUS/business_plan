@@ -65,7 +65,12 @@
       "Bash(cp /tmp/quiz-engine-parent.ts src/lib/n400/quiz-engine.ts)",
       "Bash(npx vitest *)",
       "Bash(git stash *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(git commit -m 'docs\\(specs\\): flashcards + bookmark merge design spec *)",
+      "Bash(pnpm test *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(pnpm lint *)",
+      "Bash(awk '/flashcards\\\\/page\\\\.tsx/{f=1;print;next} f&&/^\\\\//{f=0} f')"
     ]
   },
   "enableAllProjectMcpServers": true,
