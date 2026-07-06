@@ -3,8 +3,8 @@
 /**
  * AvatarMenu — Dropdown menu for secondary destinations.
  *
- * Desktop: Account, Settings, Dark Mode, Logout (sidebar already shows Bookmarks/Learning Progress)
- * Mobile:  Account, Bookmarks, Learning Progress, Settings, Dark Mode, Logout (single entry point)
+ * Desktop: Account, Settings, Dark Mode, Logout (sidebar already shows Learning Progress)
+ * Mobile:  Account, Learning Progress, Settings, Dark Mode, Logout (single entry point)
  *
  * Accessibility: WAI-ARIA menu pattern with full keyboard navigation.
  */
