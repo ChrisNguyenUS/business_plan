@@ -6,13 +6,13 @@ import { REPS_BY_STATE, repForDistrict } from './reps-data';
 // ── Audio paths (served from public/n400-audio/*) ──
 
 export function questionAudioUrl(id: number): string {
-  return `/n400-audio/question/q${String(id).padStart(3, '0')}.mp3`;
+  return `/n400-audio/civic_question/q${String(id).padStart(3, '0')}.mp3`;
 }
 
 export function answerAudioUrl(id: number): string | null {
-  // 79 of 128 questions have a canonical answer audio (a001..a128 only some).
+  // Not every question has answer audio (124 of 128 files exist).
   // The frontend tries the URL; missing files fall back gracefully.
-  return `/n400-audio/answer/a${String(id).padStart(3, '0')}.mp3`;
+  return `/n400-audio/civic_answer/a${String(id).padStart(3, '0')}.mp3`;
 }
 
 // File name → URL path slug. Source-of-truth filenames at

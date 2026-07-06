@@ -12,6 +12,8 @@ import {
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
   filterFlashcards,
+  questionAudioUrl,
+  answerAudioUrl,
 } from './quiz-engine';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
 
@@ -343,5 +345,16 @@ describe('filterFlashcards', () => {
     const out = filterFlashcards(qs, 'history', [], []);
     expect(out.length).toBeGreaterThan(0);
     expect(out.every((q) => q.category === 'history')).toBe(true);
+  });
+});
+
+describe('civics audio urls (reorganized folder layout)', () => {
+  it('builds question audio under civic_question/', () => {
+    expect(questionAudioUrl(7)).toBe('/n400-audio/civic_question/q007.mp3');
+    expect(questionAudioUrl(128)).toBe('/n400-audio/civic_question/q128.mp3');
+  });
+
+  it('builds answer audio under civic_answer/', () => {
+    expect(answerAudioUrl(1)).toBe('/n400-audio/civic_answer/a001.mp3');
   });
 });

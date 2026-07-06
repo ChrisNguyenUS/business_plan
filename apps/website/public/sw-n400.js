@@ -22,7 +22,7 @@
 // default scope. Anything outside /n400-audio/* falls through to
 // the network unchanged.
 
-const CACHE_NAME = 'n400-audio-v1';
+const CACHE_NAME = 'n400-audio-v2';
 const AUDIO_PREFIX = '/n400-audio/';
 
 self.addEventListener('install', (event) => {
