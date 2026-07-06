@@ -15,7 +15,6 @@ import { useParams } from 'next/navigation';
 import {
   ChevronDown,
   User,
-  Bookmark,
   BarChart2,
   Settings,
   Moon,
@@ -159,16 +158,6 @@ export function AvatarMenu() {
 
           {/* Secondary destinations — mobile only */}
           <div className="lg:hidden">
-            <Link
-              href={`${base}/bookmark`}
-              role="menuitem"
-              tabIndex={-1}
-              onClick={close}
-              className={menuItemClass}
-            >
-              <Bookmark size={16} className="text-gray-400" />
-              Đánh dấu
-            </Link>
             <Link
               href={`${base}/statistic`}
               role="menuitem"

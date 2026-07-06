@@ -17,4 +17,10 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('Học thẻ');
     expect(page).toContain('Danh sách');
   });
+
+  test('bookmark is no longer a navigation destination', () => {
+    expect(source('src/components/n400/Sidebar.tsx')).not.toContain("'bookmark'");
+    expect(source('src/components/n400/AvatarMenu.tsx')).not.toContain('/bookmark');
+    expect(source('src/components/n400/Header.tsx')).not.toContain('bookmark:');
+  });
 });

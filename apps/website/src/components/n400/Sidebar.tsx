@@ -5,12 +5,13 @@
  *
  * Information Architecture:
  *   Primary:   Dashboard, Practice, Flashcards, Mock Test
- *   Secondary: Bookmarks, Learning Progress
+ *   Secondary: Learning Progress
  *   Utilities: Account, Settings, Dark Mode, Logout
  *
  * Desktop: Permanent sidebar with grouped sections.
  * Mobile:  Bottom nav with 4 primary study features only.
  * Categories: Removed from navigation (now a study filter).
+ * Bookmarks: merged into Flashcards (list view + filter).
  */
 
 import Link from 'next/link';
@@ -21,7 +22,6 @@ import {
   CheckCircle,
   BarChart2,
   User,
-  Bookmark,
   Settings,
   LogOut,
   Moon,
@@ -48,7 +48,6 @@ const PRIMARY_MENU: MenuItem[] = [
 ];
 
 const SECONDARY_MENU: MenuItem[] = [
-  { id: 'bookmark', label: 'Đánh dấu', href: 'bookmark', icon: Bookmark },
   { id: 'statistic', label: 'Tiến độ học tập', href: 'statistic', icon: BarChart2 },
 ];
 

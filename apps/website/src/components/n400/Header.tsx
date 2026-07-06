@@ -40,7 +40,6 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     title: 'Danh mục',
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
   },
-  bookmark: { title: 'Đánh dấu', subtitle: 'Câu hỏi bạn đã lưu để ôn lại' },
 };
 
 /** Primary sections use lateral navigation (no Back button). */
@@ -52,7 +51,6 @@ const PRIMARY_SECTIONS = ['', 'practice', 'flashcards', 'mock-test'];
  */
 const PARENT_MAP: Record<string, string> = {
   profile: '',
-  bookmark: '',
   statistic: '',
   categories: '',
   help: '',
