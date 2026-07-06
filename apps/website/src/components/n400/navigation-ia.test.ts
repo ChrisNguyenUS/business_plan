@@ -23,4 +23,11 @@ describe('N400 information architecture contracts', () => {
     expect(source('src/components/n400/AvatarMenu.tsx')).not.toContain('/bookmark');
     expect(source('src/components/n400/Header.tsx')).not.toContain('bookmark:');
   });
+
+  test('old bookmark route redirects into flashcards list view', () => {
+    const page = source('src/app/[locale]/n400app/bookmark/page.tsx');
+
+    expect(page).toContain('redirect(');
+    expect(page).toContain('view=list&filter=bookmarks');
+  });
 });
