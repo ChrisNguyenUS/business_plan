@@ -2,7 +2,7 @@
 
 **Ngày:** 2026-07-07
 
-## Trạng thái: Badge system hoàn chỉnh, Progress page (Tiến độ) CHƯA build
+## Trạng thái: Badge system + Progress page đều đã xong
 
 ## Deviation quan trọng so với plan gốc
 
@@ -28,10 +28,15 @@ User đã xác nhận hướng đi: **xoá sạch 24 badge cũ, thay bằng toà
 6. **UI:** `BadgeGallery`/`use-badges` cập nhật 9 group code + `is_secret` (badge bí mật hiện "???" cho tới khi mở khoá); `next-badge.ts` remap sang slug mới; `verify-badges.ts` cập nhật roster 56 badge — **đã chạy live** against DB, tất cả pass (catalog 56 rows, PNG đủ, evaluator registry khớp catalog 1-1).
 7. **Verification gate:** `type-check` sạch, 209/209 test pass, `build` thành công.
 
-## CHƯA làm (nằm trong Plan 4 gốc, KHÔNG nằm trong yêu cầu "56 badge" của user)
+## Đã làm thêm — Progress page (`/n400app/progress`)
 
-- **Progress page (`/n400app/progress`, "Tiến độ")** — Plan 4 Task 6-8 gốc muốn route riêng với `StatsCard` 4 khối (% thuộc mỗi phần + số quiz) + `BadgeGallery`. Badge hiện **đã hiển thị được** qua trang `/n400app/profile` sẵn có (dùng `BadgeGallery` component, không đổi), nhưng chưa có trang Tiến độ riêng với thống kê chi tiết theo plan gốc.
-- Toast "🎉 Huy hiệu mới!" khi unlock — hiện chỉ wire cho civics (`practice/page.tsx` dùng `BadgeUnlockToast` sẵn có). 3 trang whatmean/yesno/writing đã trả về `unlockedBadges` từ `recordSectionAnswer` nhưng chưa hiển thị toast (badge vẫn được ghi nhận, chỉ là user không thấy thông báo ngay — sẽ thấy ở lần vào `/profile` tiếp theo).
+- 4 `StatsCard` (Civics/What Mean/Yes-No/Viết — số câu thuộc, % mastery, số câu đã làm) dùng lại `Card`/`ProgressBar` sẵn có + `BadgeGallery` sẵn có (không đổi component).
+- **Đổi tên khác plan gốc:** plan gốc gọi route này "Tiến độ" — nhưng sidebar đã có sẵn mục "Tiến độ học tập" trỏ tới `/statistic` (heatmap + category breakdown). Đặt trùng tên sẽ gây nhầm lẫn UX thật sự, nên route mới đặt tên **"Huy hiệu & Thành tích"**, thêm vào nhóm Secondary nav ngay dưới "Tiến độ học tập".
+- Không tạo `layout.tsx` riêng — theo đúng pattern của `/profile` và `/statistic` (dùng layout n400app gốc có sidebar, không phải layout "immersive" ẩn chrome như `/writing`).
+
+## CHƯA làm (nằm trong Plan 4 gốc, KHÔNG nằm trong yêu cầu ban đầu của user)
+
+- Toast "🎉 Huy hiệu mới!" khi unlock — hiện chỉ wire cho civics (`practice/page.tsx` dùng `BadgeUnlockToast` sẵn có). 3 trang whatmean/yesno/writing đã trả về `unlockedBadges` từ `recordSectionAnswer` nhưng chưa hiển thị toast (badge vẫn được ghi nhận, chỉ là user không thấy thông báo ngay — sẽ thấy ở lần vào `/progress` tiếp theo).
 
 ## Quyết định kỹ thuật đáng chú ý (đã cân nhắc, không phải thiếu sót)
 
