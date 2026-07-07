@@ -1,4 +1,5 @@
 import { AudioButton } from '@/components/n400/AudioButton';
+import { Pointer } from 'lucide-react';
 
 interface Answer {
   en: string;
@@ -53,8 +54,9 @@ export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
       </div>
 
       {/* Hint — always visible, never scrolls */}
-      <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)]">
-        <div className="uppercase tracking-widest text-teal-400 font-bold text-center" style={{ fontSize: 'clamp(0.5rem, 0.8vw, 0.7rem)' }}>
+      <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)] flex items-center justify-center">
+        <div className="uppercase tracking-widest text-teal-500 font-bold text-center flex items-center gap-1.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.9rem)' }}>
+          <Pointer size={16} className="text-teal-500 animate-bounce" />
           Nhấn lại để quay về câu hỏi
         </div>
       </div>

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Pointer } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
 
 interface FlashcardFrontProps {
@@ -92,8 +92,9 @@ export function FlashcardFront({
       </div>
 
       {/* Hint — always visible, never scrolls */}
-      <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)]">
-        <div className="uppercase tracking-widest text-slate-300 font-bold text-center" style={{ fontSize: 'clamp(0.5rem, 0.8vw, 0.7rem)' }}>
+      <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)] flex items-center justify-center">
+        <div className="uppercase tracking-widest text-slate-400 font-bold text-center flex items-center gap-1.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.9rem)' }}>
+          <Pointer size={16} className="text-slate-400 animate-bounce" />
           Nhấn vào thẻ để xem đáp án
         </div>
       </div>

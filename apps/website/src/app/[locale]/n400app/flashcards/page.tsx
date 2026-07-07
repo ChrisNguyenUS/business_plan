@@ -20,7 +20,6 @@ import {
   ChevronRight,
   ThumbsUp,
   ThumbsDown,
-  RotateCw,
   Layers,
   Landmark,
   Building2,
@@ -139,6 +138,76 @@ export default function FlashcardsPage() {
 
   const current = questions[Math.min(index, total - 1)];
 
+  const goPrev = useCallback(() => {
+    setIndex((i) => Math.max(0, i - 1));
+    setFlipped(false);
+  }, []);
+
+  const goNext = useCallback(() => {
+    setIndex((i) => Math.min(total - 1, i + 1));
+    setFlipped(false);
+  }, [total]);
+
+  const markKnown = useCallback((k: boolean) => {
+    if (!current) return;
+    void setFlashcardKnown(current.id, k);
+    if (index < total - 1) {
+      setIndex((i) => i + 1);
+      setFlipped(false);
+    }
+  }, [current, index, total, setFlashcardKnown]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (view === 'list') return;
+    // Ignore keypresses if user is typing in an input
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+    switch (e.key.toLowerCase()) {
+      case ' ':
+        e.preventDefault();
+        setFlipped((f) => !f);
+        break;
+      case 'r':
+        markKnown(false);
+        break;
+      case 'm':
+        markKnown(true);
+        break;
+      case 'arrowleft':
+        goPrev();
+        break;
+      case 'arrowright':
+        goNext();
+        break;
+    }
+  }, [view, goPrev, goNext, markKnown]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const f = p.get('filter') as StatusFilter;
+      const cat = p.get('category') as N400CategoryKey;
+      const v = p.get('view');
+
+      setTimeout(() => {
+        if (f && STATUS_OPTIONS.some((o) => o.id === f)) {
+          setStatusFilter(f);
+        }
+        if (cat && CATEGORY_OPTIONS.some((o) => o.id === cat)) {
+          setCategoryFilter(cat);
+        }
+        if (v === 'list') {
+          setView('list');
+        }
+      }, 0);
+    }
+  }, []);
+
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
@@ -191,69 +260,6 @@ export default function FlashcardsPage() {
   const answers = allCorrect.length > 0
     ? allCorrect
     : current.answersEn.map((en, i) => ({ en, vi: current.answersVi[i] ?? en }));
-
-  const goPrev = () => {
-    setIndex((i) => Math.max(0, i - 1));
-    setFlipped(false);
-  };
-  const goNext = () => {
-    setIndex((i) => Math.min(total - 1, i + 1));
-    setFlipped(false);
-  };
-  const markKnown = (k: boolean) => {
-    void setFlashcardKnown(current.id, k);
-    if (index < total - 1) {
-      setIndex((i) => i + 1);
-      setFlipped(false);
-    }
-  };
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (view === 'list') return;
-    // Ignore keypresses if user is typing in an input
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-    switch (e.key.toLowerCase()) {
-      case ' ':
-        e.preventDefault();
-        setFlipped((f) => !f);
-        break;
-      case 'r':
-        markKnown(false);
-        break;
-      case 'm':
-        markKnown(true);
-        break;
-      case 'arrowleft':
-        goPrev();
-        break;
-      case 'arrowright':
-        goNext();
-        break;
-    }
-  }, [view, goPrev, goNext, markKnown]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const p = new URLSearchParams(window.location.search);
-      const f = p.get('filter') as StatusFilter;
-      if (f && STATUS_OPTIONS.some((o) => o.id === f)) {
-        setStatusFilter(f);
-      }
-      const cat = p.get('category') as N400CategoryKey;
-      if (cat && CATEGORY_OPTIONS.some((o) => o.id === cat)) {
-        setCategoryFilter(cat);
-      }
-      if (p.get('view') === 'list') {
-        setView('list');
-      }
-    }
-  }, []);
 
   return (
     <div
@@ -358,58 +364,31 @@ export default function FlashcardsPage() {
           <ChevronLeft size={22} />
         </button>
 
-        {!flipped ? (
-          /* ── Pre-flip: only Flip Card ── */
-          <>
-            {/* Desktop flip button */}
-            <button
-              type="button"
-              onClick={() => setFlipped(true)}
-              className="hidden sm:flex flex-col items-center justify-center px-8 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 shadow-sm transition-all hover:scale-[1.02] active:scale-95"
-            >
-              <div className="flex items-center gap-2 font-bold text-base"><RotateCw size={18} /> Flip Card</div>
-              <span className="text-[10px] text-slate-400 font-medium mt-0.5">Space</span>
-            </button>
+        <button
+          type="button"
+          onClick={() => markKnown(false)}
+          className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
+            !known
+              ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-orange-500/10'
+              : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
+          }`}
+        >
+          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Chưa thuộc</div>
+          <span className="text-[10px] text-slate-400 font-medium mt-0.5 hidden sm:block">R</span>
+        </button>
 
-            {/* Mobile flip button */}
-            <button
-              type="button"
-              onClick={() => setFlipped(true)}
-              className="flex sm:hidden flex-1 items-center justify-center gap-2 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all active:scale-95 font-bold text-sm"
-            >
-              <RotateCw size={18} /> Flip Card
-            </button>
-          </>
-        ) : (
-          /* ── Post-flip: Mastered / Not Mastered ── */
-          <>
-            <button
-              type="button"
-              onClick={() => markKnown(false)}
-              className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
-                !known
-                  ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-orange-500/10'
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Chưa thuộc</div>
-              <span className="text-[10px] text-slate-400 font-medium mt-0.5 hidden sm:block">R</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => markKnown(true)}
-              className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
-                known
-                  ? 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30'
-                  : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
-              }`}
-            >
-              <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Đã thuộc</div>
-              <span className="text-[10px] text-white/60 font-medium mt-0.5 hidden sm:block">M</span>
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          onClick={() => markKnown(true)}
+          className={`flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm ${
+            known
+              ? 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30'
+              : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
+          }`}
+        >
+          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Đã thuộc</div>
+          <span className="text-[10px] text-white/60 font-medium mt-0.5 hidden sm:block">M</span>
+        </button>
 
         <button
           type="button"
