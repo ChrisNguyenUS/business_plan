@@ -18,3 +18,10 @@ export const YESNO_PRESETS: PracticePreset[] = [
   { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', descVi: 'Ghi nhớ kỹ hơn, nhớ lâu hơn.', count: 20, minutes: 10 },
   { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', descVi: 'Ôn toàn bộ 37 câu hỏi.', count: null, minutes: 20 },
 ];
+
+export const WRITING_PRESETS: PracticePreset[] = [
+  { id: 'quick', titleVi: 'Luyện nhanh', titleEn: 'Quick Practice', descVi: 'Nghe và gõ nhanh vài câu.', count: 5, minutes: 4 },
+  { id: 'standard', titleVi: 'Tiêu chuẩn', titleEn: 'Standard Practice', descVi: 'Bài luyện vừa sức mỗi ngày.', count: 10, minutes: 8 },
+  { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', descVi: 'Viết nhiều hơn, nhớ lâu hơn.', count: 20, minutes: 15 },
+  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', descVi: 'Ôn toàn bộ 45 câu viết.', count: null, minutes: 30 },
+];
