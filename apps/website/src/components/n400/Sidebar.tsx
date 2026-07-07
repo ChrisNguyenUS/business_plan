@@ -57,6 +57,7 @@ const DESKTOP_GROUPS: NavGroup[] = [
     heading: 'SPEAKING',
     items: [
       { id: 'whatmean', label: 'Câu hỏi What Mean', href: 'speaking/what-mean', icon: MessageCircleQuestion },
+      { id: 'yesno', label: 'Câu hỏi Yes No', href: 'speaking/yes-no', icon: MessageCircleQuestion },
     ],
   },
   { heading: null, items: [{ id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck }] },
