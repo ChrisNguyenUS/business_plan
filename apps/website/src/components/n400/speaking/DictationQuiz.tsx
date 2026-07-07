@@ -19,6 +19,7 @@ import {
   Target,
   Award,
   Ear,
+  EarOff,
 } from 'lucide-react';
 import type { WritingSentence } from '@/lib/n400/writing-data';
 import { writingAudioUrl } from '@/lib/n400/quiz-engine';
@@ -57,6 +58,9 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  // Learner tapped "Chưa nghe được" — the caption is revealed and they must
+  // retype the whole sentence correctly before they can move on (no skipping).
+  const [revealed, setRevealed] = useState(false);
   // Correctness of the FIRST attempt on the current question — this is what the
   // session score reflects, so later retries don't inflate the result.
   const [firstCorrect, setFirstCorrect] = useState<boolean | null>(null);
@@ -84,6 +88,7 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
       setGradeResult(null);
       setShowFeedback(false);
       setRetryCount(0);
+      setRevealed(false);
       setFirstCorrect(null);
       setResults([]);
     };
@@ -113,11 +118,23 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
   };
 
   // Active recall: clear the field and let the learner retype from scratch.
+  // Keeps `revealed` intact so the caption stays on screen while they retype.
   const onRetry = () => {
     setUserInput('');
     setGradeResult(null);
     setShowFeedback(false);
     setRetryCount((c) => c + 1);
+  };
+
+  // "Chưa nghe được": reveal the caption and force a full retype. Counts as a
+  // miss for the session score (they didn't recall it from listening), and the
+  // learner can't skip ahead until they type the sentence correctly.
+  const onReveal = () => {
+    setRevealed(true);
+    setUserInput('');
+    setGradeResult(null);
+    setShowFeedback(false);
+    if (firstCorrect === null) setFirstCorrect(false);
   };
 
   const onNext = () => {
@@ -134,6 +151,7 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
     setGradeResult(null);
     setShowFeedback(false);
     setRetryCount(0);
+    setRevealed(false);
     setFirstCorrect(null);
     setIndex((i) => i + 1);
   };
@@ -222,6 +240,22 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
               />
             </div>
 
+            {/* Revealed caption — learner tapped "Chưa nghe được" and must now
+                retype this sentence exactly before moving on. */}
+            {revealed && !showFeedback ? (
+              <div className="mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl bg-blue-50 border border-blue-200 p-[clamp(0.625rem,1.5vh,1rem)] animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none">
+                <div className="flex items-center gap-2 mb-1">
+                  <EarOff size={16} className="text-blue-500 shrink-0" />
+                  <span className="font-bold text-blue-800 uppercase tracking-wide" style={{ fontSize: 'clamp(0.6rem, 1vw, 0.7rem)' }}>
+                    Câu đúng — gõ lại để tiếp tục
+                  </span>
+                </div>
+                <div className="font-medium text-blue-900" style={{ fontSize: 'clamp(0.85rem, 1.6vw, 1rem)' }}>
+                  {q.sentenceEn}
+                </div>
+              </div>
+            ) : null}
+
             {/* Feedback */}
             {showFeedback && gradeResult ? (
               <div className="mt-[clamp(0.5rem,1vh,0.75rem)] space-y-[clamp(0.5rem,1vh,0.75rem)] animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none">
@@ -284,21 +318,33 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
           >
             {!showFeedback ? (
-              <button
-                type="button"
-                onClick={onCheck}
-                disabled={!userInput.trim()}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
-                  userInput.trim()
-                    ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                }`}
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-              >
-                <CheckCircle size={16} /> Kiểm tra / Check
-              </button>
+              <div className={`grid gap-3 ${revealed ? 'grid-cols-1' : 'grid-cols-[1fr_auto]'}`}>
+                <button
+                  type="button"
+                  onClick={onCheck}
+                  disabled={!userInput.trim()}
+                  className={`flex items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
+                    userInput.trim()
+                      ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                  }`}
+                  style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+                >
+                  <CheckCircle size={16} /> Kiểm tra / Check
+                </button>
+                {!revealed ? (
+                  <button
+                    type="button"
+                    onClick={onReveal}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-600 hover:bg-gray-50 transition-all"
+                    style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+                  >
+                    <EarOff size={16} /> Chưa nghe được
+                  </button>
+                ) : null}
+              </div>
             ) : (
-              <div className={`grid gap-3 ${isCorrect ? 'grid-cols-1' : 'grid-cols-[1fr_1fr]'}`}>
+              <div className={`grid gap-3 ${!isCorrect && !revealed ? 'grid-cols-[1fr_1fr]' : 'grid-cols-1'}`}>
                 {!isCorrect ? (
                   <button
                     type="button"
@@ -309,15 +355,19 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
                     <RotateCw size={16} /> Thử lại
                   </button>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={onNext}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all"
-                  style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-                >
-                  <span>Tiếp theo / Next</span>
-                  <ArrowRight size={16} />
-                </button>
+                {/* After revealing the caption the learner must type it correctly —
+                    no skipping. Next only appears once the answer is right. */}
+                {isCorrect || !revealed ? (
+                  <button
+                    type="button"
+                    onClick={onNext}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all"
+                    style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+                  >
+                    <span>Tiếp theo / Next</span>
+                    <ArrowRight size={16} />
+                  </button>
+                ) : null}
               </div>
             )}
           </div>
