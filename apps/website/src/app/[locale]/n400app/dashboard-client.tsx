@@ -394,6 +394,22 @@ export default function DashboardPage() {
                     <ProgressBar progress={Math.min(Math.round((yesNoDoneCount / 5) * 100), 100)} heightClass="h-3" colorClass="bg-blue-500" />
                   </div>
                 </Link>
+
+                {/* Goal 5: Writing */}
+                <Link href={`/${locale}/n400app/writing`}>
+                  <div className="group cursor-pointer">
+                    <div className="flex justify-between items-end mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-green-600 shadow-sm group-hover:bg-green-200 transition-colors">
+                          <span className="text-xl">✍️</span>
+                        </div>
+                        <span className="font-bold text-slate-700 text-base group-hover:text-green-700 transition-colors">Luyện tập Writing</span>
+                      </div>
+                      <span className="text-base font-bold text-slate-500">0 <span className="text-sm">/ 45 câu</span></span>
+                    </div>
+                    <ProgressBar progress={0} heightClass="h-3" colorClass="bg-green-500" />
+                  </div>
+                </Link>
               </div>
 
               <button className="w-full mt-10 py-4 rounded-2xl bg-slate-100 text-slate-700 font-bold text-base hover:bg-slate-200 transition-colors">

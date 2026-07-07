@@ -60,6 +60,12 @@ const DESKTOP_GROUPS: NavGroup[] = [
       { id: 'yesno', label: 'Câu hỏi Yes No', href: 'speaking/yes-no', icon: MessageCircleQuestion },
     ],
   },
+  {
+    heading: 'WRITING',
+    items: [
+      { id: 'writing', label: '✍️ Writing (45 câu)', href: 'writing', icon: MessageCircleQuestion },
+    ],
+  },
   { heading: null, items: [{ id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck }] },
 ];
 
