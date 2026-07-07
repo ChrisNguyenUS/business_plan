@@ -1,4 +1,4 @@
-// Phase 6B — Badge evaluator registry.
+// Gamification v2 — Badge evaluator registry.
 //
 // Maps badge slug → evaluator. Each group module exports a record of
 // {slug: evaluator} and we spread them all together. Adding a badge
@@ -11,17 +11,25 @@
 
 import type { BadgeEvaluator } from './types';
 import { streakEvaluators } from './evaluators/streak';
-import { mockTestEvaluators } from './evaluators/mock-test';
-import { coverageEvaluators } from './evaluators/coverage';
-import { volumeEvaluators } from './evaluators/volume';
-import { categoryEvaluators } from './evaluators/category';
+import { civicsEvaluators } from './evaluators/civics';
+import { writingEvaluators } from './evaluators/writing';
+import { yesnoEvaluators } from './evaluators/yesno';
+import { whatmeanEvaluators } from './evaluators/whatmean';
+import { comboEvaluators } from './evaluators/combo';
+import { practiceEvaluators } from './evaluators/practice';
+import { otherEvaluators } from './evaluators/other';
+import { secretEvaluators } from './evaluators/secret';
 
 export const BADGE_EVALUATORS: Record<string, BadgeEvaluator> = {
-  ...streakEvaluators,    // streak-3, streak-7, streak-14, streak-30, streak-60, streak-100
-  ...mockTestEvaluators,  // onboarding-first-session, mock-pass-first, mock-pass-five,
-                          // mock-high-score, mock-perfect, mock-comeback
-  ...coverageEvaluators,  // correct-answers-100, flashcards-mastery, all-128-answered, sessions-100
-  ...volumeEvaluators,    // practice-sessions-10, practice-sessions-30, sessions-50
-  ...categoryEvaluators,  // category-democracy, category-government, category-rights,
-                          // category-history, category-symbols
+  ...streakEvaluators,   // streak-3, streak-7, streak-14, streak-30, streak-60, streak-100
+  ...civicsEvaluators,   // civics-first, civics-10, civics-30, civics-50, civics-100, civics-128
+  ...writingEvaluators,  // writing-first, writing-10, writing-20, writing-35, writing-45, writing-perfect
+  ...yesnoEvaluators,    // yesno-first, yesno-10, yesno-20, yesno-30, yesno-37, yesno-perfect
+  ...whatmeanEvaluators, // whatmean-first, whatmean-15, whatmean-30, whatmean-45, whatmean-62, whatmean-perfect
+  ...comboEvaluators,    // combo-starter, combo-explorer, combo-interview-ready, combo-language-champion, combo-interview-master
+  ...practiceEvaluators, // practice-exam-ready, practice-future-citizen, practice-high-score, practice-excellence,
+                         // practice-perfect-accuracy, practice-perfect-streak, practice-perfect-round, practice-mock-champion
+  ...otherEvaluators,    // other-first-practice, other-mock-rookie, other-test-veteran, other-comeback,
+                         // other-long-term-memory, other-consistent-performer, other-memory-master, other-ultimate
+  ...secretEvaluators,   // secret-early-bird, secret-night-owl, secret-never-give-up, secret-speed-learner, secret-marathon
 };

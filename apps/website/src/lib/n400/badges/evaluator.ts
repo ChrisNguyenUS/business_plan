@@ -1,8 +1,8 @@
-// Phase 6B — Badge evaluator dispatcher.
+// Gamification v2 — Badge evaluator dispatcher.
 //
 // Single entry point: evaluateBadges(userId, ctx, supabase). It:
 //   1. Selects the evaluator subset relevant to the trigger (cheap
-//      filter — running all 24 every time is harmless, but skipping
+//      filter — running all 56 every time is harmless, but skipping
 //      streak evaluators on practice-finalize is free correctness).
 //   2. Runs each evaluator with try/catch — a failing evaluator must
 //      not block the session-finalize that called us.
@@ -20,55 +20,18 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { BADGE_EVALUATORS } from './registry';
 import type { BadgeContext, UnlockResult } from './types';
 
-// Evaluator selection per trigger. Slugs not in the picked set are
-// skipped entirely. When a slug appears here but isn't in
-// BADGE_EVALUATORS yet (mid-implementation), the filter quietly drops
-// it — no error.
+// Evaluator selection per trigger. Most gamification-v2 badges are
+// cross-section (combo/practice/other/secret all read multiple tables
+// regardless of which mode just finished), so mode-based narrowing lost
+// most of its value once the catalog grew past civics-only — we run the
+// full set on every session_complete/manual_recompute and only keep the
+// streak-only fast path for the very-frequent streak_change trigger.
 function pickSlugs(ctx: BadgeContext): string[] {
   const all = Object.keys(BADGE_EVALUATORS);
-  if (ctx.trigger === 'manual_recompute') return all;
   if (ctx.trigger === 'streak_change') {
     return all.filter((s) => s.startsWith('streak-'));
   }
-  // session_complete: narrow by mode
-  switch (ctx.mode) {
-    case 'mock_test':
-      return all.filter(
-        (s) =>
-          s.startsWith('mock-') ||
-          s === 'onboarding-first-session' ||
-          s.startsWith('category-') ||
-          s === 'correct-answers-100' ||
-          s === 'all-128-answered' ||
-          s === 'sessions-100' ||
-          s === 'sessions-50' ||
-          s === 'practice-sessions-10' ||
-          s === 'practice-sessions-30',
-      );
-    case 'practice':
-      return all.filter(
-        (s) =>
-          s === 'onboarding-first-session' ||
-          s.startsWith('category-') ||
-          s === 'correct-answers-100' ||
-          s === 'all-128-answered' ||
-          s === 'sessions-100' ||
-          s === 'sessions-50' ||
-          s === 'practice-sessions-10' ||
-          s === 'practice-sessions-30',
-      );
-    case 'flashcard':
-      return all.filter(
-        (s) =>
-          s === 'onboarding-first-session' ||
-          s === 'flashcards-mastery' ||
-          s === 'all-128-answered' ||
-          s === 'sessions-100' ||
-          s === 'sessions-50',
-      );
-    default:
-      return all;
-  }
+  return all;
 }
 
 export async function evaluateBadges(
