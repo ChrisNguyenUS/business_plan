@@ -1,20 +1,31 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Turtle } from 'lucide-react';
 
 type Props = {
   src: string | null;
   label?: string;
   size?: 'sm' | 'md';
   className?: string;
+  /** Playback rate; modern browsers preserve pitch. Pair with variant="slow". */
+  rate?: number;
+  /** 'slow' renders a turtle icon for đọc-chậm buttons. */
+  variant?: 'default' | 'slow';
 };
 
 /**
  * Renders a small play button. Gracefully handles missing audio (404):
  * the audio element fires onError, we mark unavailable, and the button greys out.
  */
-export function AudioButton({ src, label = 'Nghe', size = 'md', className = '' }: Props) {
+export function AudioButton({
+  src,
+  label = 'Nghe',
+  size = 'md',
+  className = '',
+  rate = 1,
+  variant = 'default',
+}: Props) {
   const [playing, setPlaying] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [prevSrc, setPrevSrc] = useState<string | null>(src);
@@ -58,6 +69,9 @@ export function AudioButton({ src, label = 'Nghe', size = 'md', className = '' }
           audioRef.current = a;
         }
         const audio = audioRef.current;
+        // Re-apply every click so a slow button stays slow across replays.
+        audio.playbackRate = rate;
+        if ('preservesPitch' in audio) audio.preservesPitch = true;
         if (playing) {
           audio.pause();
           audio.currentTime = 0;
@@ -79,7 +93,13 @@ export function AudioButton({ src, label = 'Nghe', size = 'md', className = '' }
             : 'bg-teal-50 text-teal-600 hover:bg-teal-100'
       } ${className}`}
     >
-      {unavailable ? <VolumeX size={icon} /> : <Volume2 size={icon} />}
+      {unavailable ? (
+        <VolumeX size={icon} />
+      ) : variant === 'slow' ? (
+        <Turtle size={icon} />
+      ) : (
+        <Volume2 size={icon} />
+      )}
     </button>
   );
 }
