@@ -7,6 +7,11 @@ import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, UserSettings, UserAddress, N400State } from './storage';
+import {
+  deriveSectionKnown,
+  type SectionAttempt,
+  type SectionKey,
+} from './section-progress';
 
 export type { QuizMode, MockResult, UserSettings, UserAddress, N400State };
 
@@ -19,6 +24,8 @@ const DEFAULT_STATE: N400State = {
   attempts: [],
   bookmarks: [],
   flashcardKnown: [],
+  sectionAttempts: [],
+  sectionKnown: { whatmean: [], yesno: [], writing: [] },
   mockResults: [],
   streak: { current: 0, longest: 0, lastActivityDate: null },
   settings: { stateCode: 'TX', audioEnabled: true },
@@ -53,7 +60,7 @@ interface DbQuiz {
 }
 
 async function loadAll(userId: string): Promise<N400State> {
-  const [profileRes, bookmarksRes, quizzesRes] = await Promise.all([
+  const [profileRes, bookmarksRes, quizzesRes, sectionRes] = await Promise.all([
     supabase
       .from('n400_user_profile')
       .select('city,state_code,zipcode,district_number,current_streak,longest_streak,last_activity_date')
@@ -70,6 +77,11 @@ async function loadAll(userId: string): Promise<N400State> {
       `)
       .eq('user_id', userId)
       .order('started_at', { ascending: true }),
+    supabase
+      .from('n400_section_attempts')
+      .select('section, item_id, mode, was_correct, answered_at')
+      .eq('user_id', userId)
+      .order('answered_at', { ascending: true }),
   ]);
 
   const profile = (profileRes.data ?? null) as DbProfile | null;
@@ -131,10 +143,20 @@ async function loadAll(userId: string): Promise<N400State> {
         .map((r) => ({ questionId: r.question_id, wasCorrect: r.was_correct })),
     }));
 
+  const sectionAttempts: SectionAttempt[] = (sectionRes.data ?? []).map((r) => ({
+    section: r.section as SectionKey,
+    itemId: r.item_id as string,
+    wasCorrect: r.was_correct as boolean,
+    mode: r.mode as QuizMode,
+    at: r.answered_at as string,
+  }));
+
   return {
     attempts,
     bookmarks,
     flashcardKnown,
+    sectionAttempts,
+    sectionKnown: deriveSectionKnown(sectionAttempts),
     mockResults,
     streak: {
       current: profile?.current_streak ?? 0,
@@ -352,6 +374,70 @@ function useN400UserStateInternal() {
     [recordAnswer]
   );
 
+  // Speaking/Writing answer recording. Same optimistic-update + streak
+  // contract as recordAnswer, but rows go to the flat n400_section_attempts
+  // table (string item ids) and badge evaluation is deferred to the
+  // gamification phase.
+  const recordSectionAnswer = useCallback(
+    async (
+      section: SectionKey,
+      itemId: string,
+      wasCorrect: boolean,
+      mode: QuizMode,
+    ): Promise<{ milestone: number | null }> => {
+      if (!user) return { milestone: null };
+      const today = TODAY_LOCAL();
+      const newStreak = nextStreak(state.streak, today);
+      const milestone = milestoneCrossed(state.streak.current, newStreak.current);
+      setState((s) => {
+        const nextSectionAttempts = [
+          ...s.sectionAttempts,
+          { section, itemId, wasCorrect, mode, at: new Date().toISOString() },
+        ].slice(-2000);
+        return {
+          ...s,
+          sectionAttempts: nextSectionAttempts,
+          sectionKnown: deriveSectionKnown(nextSectionAttempts),
+          streak: newStreak,
+        };
+      });
+
+      const { error } = await supabase.from('n400_section_attempts').insert({
+        user_id: user.id,
+        section,
+        item_id: itemId,
+        mode,
+        was_correct: wasCorrect,
+      });
+      if (error) console.error('n400: recordSectionAnswer failed', error);
+
+      await supabase.from('n400_user_profile').upsert(
+        {
+          user_id: user.id,
+          current_streak: newStreak.current,
+          longest_streak: newStreak.longest,
+          last_activity_date: newStreak.lastActivityDate,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
+      return { milestone };
+    },
+    [user, state.streak]
+  );
+
+  const setSectionKnown = useCallback(
+    async (
+      section: SectionKey,
+      itemId: string,
+      known: boolean,
+    ): Promise<{ milestone: number | null }> => {
+      // Reuse recordSectionAnswer so known-state, streak, and DB stay consistent.
+      return recordSectionAnswer(section, itemId, known, 'flashcard');
+    },
+    [recordSectionAnswer]
+  );
+
   const recordMockResult = useCallback(
     async (result: MockResult) => {
       if (!user) return;
@@ -410,6 +496,7 @@ function useN400UserStateInternal() {
     await Promise.all([
       supabase.from('n400_quiz_attempts').delete().eq('user_id', user.id),
       supabase.from('n400_bookmarks').delete().eq('user_id', user.id),
+      supabase.from('n400_section_attempts').delete().eq('user_id', user.id),
       supabase
         .from('n400_user_profile')
         .upsert(
@@ -433,6 +520,8 @@ function useN400UserStateInternal() {
     updateSettings,
     recordAnswer,
     setFlashcardKnown,
+    recordSectionAnswer,
+    setSectionKnown,
     recordMockResult,
     resetAll,
     user,

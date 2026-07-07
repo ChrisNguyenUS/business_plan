@@ -4,6 +4,7 @@
 // MockResult and the streak helper are still imported by the new hook + pages.
 
 import type { StateCode } from './state-data';
+import type { SectionAttempt, SectionKnown } from './section-progress';
 
 export type QuizMode = 'practice' | 'mock_test' | 'flashcard';
 
@@ -43,6 +44,8 @@ export interface N400State {
   attempts: QuestionAttempt[];
   bookmarks: number[];
   flashcardKnown: number[];
+  sectionAttempts: SectionAttempt[];
+  sectionKnown: SectionKnown;
   mockResults: MockResult[];
   streak: {
     current: number;
