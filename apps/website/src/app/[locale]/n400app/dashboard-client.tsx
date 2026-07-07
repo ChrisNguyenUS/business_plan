@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   ArrowRight,
   CheckCircle,
@@ -23,6 +23,10 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { pickNextBadge } from '@/lib/n400/badges/next-badge';
 import { trackSignupComplete } from '@/lib/n400/analytics';
+import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
+import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
+import { sectionDailyFive, dailyFiveDoneCount } from '@/lib/n400/section-daily';
+import { deriveSectionSeen } from '@/lib/n400/section-progress';
 
 export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
@@ -56,6 +60,27 @@ export default function DashboardPage() {
   };
   const todayDate = new Date();
   const todayStrLocal = getLocalDateStr(todayDate);
+
+  // Daily Goals for What Mean and Yes No sections
+  const whatMeanIds = useMemo(() => WHATMEAN_QUESTIONS.map((q) => q.id), []);
+  const yesNoIds = useMemo(() => YESNO_QUESTIONS.map((q) => q.id), []);
+
+  const whatMeanKnown = useMemo(() => new Set(state.sectionKnown.whatmean), [state.sectionKnown.whatmean]);
+  const yesNoKnown = useMemo(() => new Set(state.sectionKnown.yesno), [state.sectionKnown.yesno]);
+
+  const sectionSeen = useMemo(() => deriveSectionSeen(state.sectionAttempts), [state.sectionAttempts]);
+
+  const whatMeanDaily = useMemo(
+    () => sectionDailyFive('whatmean', whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal),
+    [whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal],
+  );
+  const whatMeanDoneCount = dailyFiveDoneCount(whatMeanDaily, whatMeanKnown);
+
+  const yesNoDaily = useMemo(
+    () => sectionDailyFive('yesno', yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal),
+    [yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal],
+  );
+  const yesNoDoneCount = dailyFiveDoneCount(yesNoDaily, yesNoKnown);
 
   const todaysAttempts = state.attempts.filter(a => a.at.startsWith(todayStrLocal));
   const todaysXp = todaysAttempts.length * xpPerAttempt;
@@ -337,6 +362,38 @@ export default function DashboardPage() {
                   </div>
                   <ProgressBar progress={fProgress} heightClass="h-3" colorClass="bg-purple-500" />
                 </div>
+
+                {/* Goal 3: What Mean */}
+                <Link href={`/${locale}/n400app/speaking/what-mean`}>
+                  <div className="group cursor-pointer">
+                    <div className="flex justify-between items-end mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-teal-600 shadow-sm group-hover:bg-teal-200 transition-colors">
+                          <Zap size={24} fill="currentColor" />
+                        </div>
+                        <span className="font-bold text-slate-700 text-base group-hover:text-teal-700 transition-colors">5 thẻ What Mean hôm nay</span>
+                      </div>
+                      <span className="text-base font-bold text-slate-500">{whatMeanDoneCount} <span className="text-sm">/ 5</span></span>
+                    </div>
+                    <ProgressBar progress={Math.min(Math.round((whatMeanDoneCount / 5) * 100), 100)} heightClass="h-3" colorClass="bg-teal-500" />
+                  </div>
+                </Link>
+
+                {/* Goal 4: Yes No */}
+                <Link href={`/${locale}/n400app/speaking/yes-no`}>
+                  <div className="group cursor-pointer">
+                    <div className="flex justify-between items-end mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm group-hover:bg-blue-200 transition-colors">
+                          <CheckCircle size={24} />
+                        </div>
+                        <span className="font-bold text-slate-700 text-base group-hover:text-blue-700 transition-colors">5 thẻ Yes No hôm nay</span>
+                      </div>
+                      <span className="text-base font-bold text-slate-500">{yesNoDoneCount} <span className="text-sm">/ 5</span></span>
+                    </div>
+                    <ProgressBar progress={Math.min(Math.round((yesNoDoneCount / 5) * 100), 100)} heightClass="h-3" colorClass="bg-blue-500" />
+                  </div>
+                </Link>
               </div>
 
               <button className="w-full mt-10 py-4 rounded-2xl bg-slate-100 text-slate-700 font-bold text-base hover:bg-slate-200 transition-colors">
