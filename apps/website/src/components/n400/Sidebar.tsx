@@ -29,6 +29,7 @@ import {
   ClipboardCheck,
   Layers,
   MessageCircleQuestion,
+  Award,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -71,6 +72,7 @@ const DESKTOP_GROUPS: NavGroup[] = [
 
 const SECONDARY_MENU: MenuItem[] = [
   { id: 'statistic', label: 'Tiến độ học tập', href: 'statistic', icon: BarChart2 },
+  { id: 'progress', label: 'Huy hiệu & Thành tích', href: 'progress', icon: Award },
 ];
 
 /** Mobile bottom nav — only primary study features */
