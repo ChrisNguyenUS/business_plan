@@ -69,13 +69,13 @@ apps/website/src/
 
 Core logic: normalize, compare, edit distance, annotate.
 
-- [ ] **Step 1: Install edit-distance package**
+- [x] **Step 1: Install edit-distance package**
 
 ```bash
 npm install edit-distance
 ```
 
-- [ ] **Step 2: Write failing tests**
+- [x] **Step 2: Write failing tests**
 
 Create `src/lib/n400/writing-grader.test.ts`:
 
@@ -182,9 +182,9 @@ describe('Writing Grader', () => {
 });
 ```
 
-- [ ] **Step 3: Run test — expect FAIL** (`npx vitest run src/lib/n400/writing-grader.test.ts`).
+- [x] **Step 3: Run test — expect FAIL** (`npx vitest run src/lib/n400/writing-grader.test.ts`).
 
-- [ ] **Step 4: Implement** `src/lib/n400/writing-grader.ts`:
+- [x] **Step 4: Implement** `src/lib/n400/writing-grader.ts`:
 
 ```ts
 import { levenshteinDistance } from 'edit-distance';
@@ -332,9 +332,9 @@ export function gradeWritingSentence(userInput: string, canonical: string): Grad
 }
 ```
 
-- [ ] **Step 5: Run test — expect PASS.**
+- [x] **Step 5: Run test — expect PASS.**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/n400/writing-grader.ts src/lib/n400/writing-grader.test.ts
@@ -352,7 +352,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Formats annotations into UI-friendly hints and yellow warning boxes.
 
-- [ ] **Step 1: Implement** `src/lib/n400/writing-feedback.ts`:
+- [x] **Step 1: Implement** `src/lib/n400/writing-feedback.ts`:
 
 ```ts
 import type { WordAnnotation } from './writing-grader';
@@ -400,7 +400,7 @@ export function formatAnnotationHint(annotation: WordAnnotation): string {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/lib/n400/writing-feedback.ts
@@ -418,7 +418,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Renders word-by-word comparison with color coding (green = correct, red = wrong, yellow = slip).
 
-- [ ] **Step 1: Implement** `src/components/n400/ui/WordDiff.tsx`:
+- [x] **Step 1: Implement** `src/components/n400/ui/WordDiff.tsx`:
 
 ```tsx
 'use client';
@@ -478,7 +478,7 @@ export function WordDiff({ wordResults, showAnnotations = true }: WordDiffProps)
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/n400/ui/WordDiff.tsx
@@ -496,7 +496,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Dictation UI: audio autoplays, no text, user types, per-word diff on feedback, retype-on-wrong.
 
-- [ ] **Step 1: Implement** `src/components/n400/speaking/DictationQuiz.tsx`:
+- [x] **Step 1: Implement** `src/components/n400/speaking/DictationQuiz.tsx`:
 
 ```tsx
 'use client';
@@ -712,7 +712,7 @@ export function DictationQuiz({ sentences, onSessionEnd }: DictationQuizProps) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/n400/speaking/DictationQuiz.tsx
@@ -731,11 +731,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Immersive layout + landing with session picker + dictation quiz.
 
-- [ ] **Step 1: Create layout** (copy from what-mean or yes-no, identical).
+- [x] **Step 1: Create layout** (copy from what-mean or yes-no, identical).
 
-- [ ] **Step 2: Create page** with session picker and DictationQuiz integration.
+- [x] **Step 2: Create page** with session picker and DictationQuiz integration.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/[locale]/n400app/writing/
@@ -756,7 +756,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Picker shows 3 cards (Thi thử Civics, Thi thử Viết, Thi thử Speaking). Each card has icon, name, description.
 
-- [ ] **Step 1: Create picker page** at `thi-thu/page.tsx`:
+- [x] **Step 1: Create picker page** at `thi-thu/page.tsx`:
 
 ```tsx
 'use client';
@@ -823,19 +823,19 @@ export default function MockTestPickerPage() {
 }
 ```
 
-- [ ] **Step 2: Create Writing mock test** at `thi-thu/viet/page.tsx`:
+- [x] **Step 2: Create Writing mock test** at `thi-thu/viet/page.tsx`:
 
 Renders DictationQuiz with 3 sentences selected deterministically (first 3). On session end, shows result (✓ hoặc ✗, pass ≥1/3).
 
-- [ ] **Step 3: Create Speaking mock test** at `thi-thu/speaking/page.tsx`:
+- [x] **Step 3: Create Speaking mock test** at `thi-thu/speaking/page.tsx`:
 
 Renders a combined 10-item quiz: 5 What Mean MC questions + 5 Yes No Yes/No questions, shuffled. Combines SectionMCQuiz + SectionYesNoQuiz results. Pass ≥8/10.
 
-- [ ] **Step 4: Move existing civics test**
+- [x] **Step 4: Move existing civics test**
 
 The existing `thi-thu/page.tsx` becomes `thi-thu/civics/page.tsx` (no logic changes, just moved).
 
-- [ ] **Step 5: Commit all Thi thử changes**
+- [x] **Step 5: Commit all Thi thử changes**
 
 ```bash
 git add src/app/[locale]/n400app/thi-thu/
@@ -854,11 +854,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Add Writing section link to sidebar and "Viết hôm nay" Daily Goal card to Tổng quan.
 
-- [ ] **Step 1: Add Writing link** to Sidebar (top-level, not nested).
+- [x] **Step 1: Add Writing link** to Sidebar (top-level, not nested).
 
-- [ ] **Step 2: Add Writing Daily Goal card** to Tổng quan (show writing daily progress if applicable).
+- [x] **Step 2: Add Writing Daily Goal card** to Tổng quan (show writing daily progress if applicable).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/[locale]/n400app/page.tsx src/components/n400/Sidebar.tsx
@@ -871,10 +871,10 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### Task 8: Verification gate
 
-- [ ] Run type-check: `npm run type-check`
-- [ ] Run tests: `npm run test` (should include writing-grader tests)
-- [ ] Run build: `npm run build`
-- [ ] Manual smoke test:
+- [x] Run type-check: `npm run type-check`
+- [x] Run tests: `npm run test` (should include writing-grader tests)
+- [x] Run build: `npm run build`
+- [x] Manual smoke test:
   - Navigate to `/n400app/writing` → landing with session picker
   - Start "Luyện nhanh" (3 sentences) → dictation UI should show (audio, input field, check button)
   - Audio autoplays (may be silenced depending on browser autoplay policy)
@@ -889,7 +889,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
   - Verify Tổng quan shows Writing card in Daily Goals
   - Verify Sidebar has Writing link
 
-- [ ] **Final commit (squash or summary):**
+- [x] **Final commit (squash or summary):**
 
 ```bash
 git log --oneline -10  # verify commit messages
