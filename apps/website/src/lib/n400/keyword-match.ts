@@ -18,14 +18,18 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// "Claim to be a U.S. citizen" → /\bclaim(?:ed|d|es|s|ing)?\s+to\s+be\s+a\s+u\.s\.\s+citizen(?:…)?/gi
+// "Claim to be a U.S. citizen" → /\bclaim(?:ed|d|es|s|ing)?\s+to\s+be\s+a\s+u\.s\.\s+citizen(?:…)?(?![a-z])/gi
+// The trailing (?![a-z]) stops a bare term prefixing a longer word — e.g.
+// "Current" must not match inside "currently". A negative lookahead is used
+// instead of a trailing \b so terms ending in punctuation ("...the U.S.")
+// still match at end of sentence.
 function termToRegex(termEn: string): RegExp {
   const words = termEn
     .toLowerCase()
     .split(/\s+/)
     .filter(Boolean)
     .map((w) => `${escapeRegExp(w)}(?:ed|d|es|s|ing)?`);
-  return new RegExp(`\\b${words.join('\\s+')}`, 'gi');
+  return new RegExp(`\\b${words.join('\\s+')}(?![a-z])`, 'gi');
 }
 
 export function findKeywordSpans(text: string, terms: readonly KeywordTerm[]): KeywordSpan[] {

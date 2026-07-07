@@ -46,6 +46,22 @@ describe('findKeywordSpans', () => {
     expect(withSpans.length).toBeGreaterThanOrEqual(19); // > half of 37
   });
 
+  it('does not match a bare term as the prefix of a longer word', () => {
+    // "Current" (a What Mean term) must NOT underline "current" inside "currently".
+    const text = YESNO_QUESTIONS_BY_ID['yn-3'].questionEn; // "Do you currently owe … taxes …"
+    const spans = findKeywordSpans(text, TERMS);
+    for (const s of spans) {
+      expect(text.slice(s.start, s.end).toLowerCase()).not.toBe('current');
+    }
+  });
+
+  it('still matches a term ending in punctuation at end of text', () => {
+    // "Form of government of the U.S." ends in a period; the trailing
+    // negative-lookahead must not break end-of-sentence matches.
+    const spans = findKeywordSpans('Explain the form of government of the U.S.', TERMS);
+    expect(spans.some((s) => s.termId === 'wm-35')).toBe(true);
+  });
+
   it('returns [] for text with no keywords', () => {
     expect(findKeywordSpans('The sky is blue today.', TERMS)).toEqual([]);
   });
