@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 // Vitest is for the unit + integration tests under src/. Playwright owns
@@ -5,6 +6,13 @@ import { defineConfig } from 'vitest/config';
 // this exclude, vitest greedily collects e2e/n400/smoke.spec.ts and
 // fails on the Playwright `test.describe` call.
 export default defineConfig({
+  // Mirror the tsconfig `@/*` -> `src/*` path alias so component tests can
+  // import modules the same way the app does.
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   test: {
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'e2e/**', 'dist'],
