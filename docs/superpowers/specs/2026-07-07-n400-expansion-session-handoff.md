@@ -45,7 +45,9 @@ Speaking/Writing are reached from Tổng quan cards on mobile (those cards land 
   - `2026-07-06-n400-expansion-1-foundation.md` — ✅ DONE
   - `2026-07-06-n400-expansion-2a-speaking-infra.md` — ✅ DONE
   - `2026-07-06-n400-expansion-2b-whatmean-section.md` — ✅ DONE (+ UI-match fix)
-  - Plan 2c, 3, 4 — NOT YET WRITTEN (see §5)
+  - `2026-07-07-n400-expansion-2c-yesno-section.md` — ✅ WRITTEN (ready for execution)
+  - `2026-07-07-n400-expansion-3-writing-section.md` — ✅ WRITTEN (ready for execution)
+  - `2026-07-07-n400-expansion-4-gamification.md` — ✅ WRITTEN (ready for execution)
 
 ### Content files (owner-provided, all present)
 
