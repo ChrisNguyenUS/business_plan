@@ -374,18 +374,17 @@ function useN400UserStateInternal() {
     [recordAnswer]
   );
 
-  // Speaking/Writing answer recording. Same optimistic-update + streak
-  // contract as recordAnswer, but rows go to the flat n400_section_attempts
-  // table (string item ids) and badge evaluation is deferred to the
-  // gamification phase.
+  // Speaking/Writing answer recording. Same optimistic-update + streak +
+  // badge-evaluation contract as recordAnswer, but rows go to the flat
+  // n400_section_attempts table (string item ids).
   const recordSectionAnswer = useCallback(
     async (
       section: SectionKey,
       itemId: string,
       wasCorrect: boolean,
       mode: QuizMode,
-    ): Promise<{ milestone: number | null }> => {
-      if (!user) return { milestone: null };
+    ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
+      if (!user) return { milestone: null, unlockedBadges: [] };
       const today = TODAY_LOCAL();
       const newStreak = nextStreak(state.streak, today);
       const milestone = milestoneCrossed(state.streak.current, newStreak.current);
@@ -402,13 +401,17 @@ function useN400UserStateInternal() {
         };
       });
 
-      const { error } = await supabase.from('n400_section_attempts').insert({
-        user_id: user.id,
-        section,
-        item_id: itemId,
-        mode,
-        was_correct: wasCorrect,
-      });
+      const { data: inserted, error } = await supabase
+        .from('n400_section_attempts')
+        .insert({
+          user_id: user.id,
+          section,
+          item_id: itemId,
+          mode,
+          was_correct: wasCorrect,
+        })
+        .select('id')
+        .single();
       if (error) console.error('n400: recordSectionAnswer failed', error);
 
       await supabase.from('n400_user_profile').upsert(
@@ -421,9 +424,30 @@ function useN400UserStateInternal() {
         },
         { onConflict: 'user_id' }
       );
-      return { milestone };
+
+      // Badge evaluation — same heuristic as recordAnswer: streak_change on
+      // milestone crossings, plus a session_complete sweep every 5th
+      // interaction in this mode so cross-section combo/practice/other
+      // badges get a chance to catch up without running on every answer.
+      const unlockedBadges: string[] = [];
+      try {
+        if (milestone !== null) {
+          const streakUnlocks = await evaluateAfterStreak(newStreak.current);
+          unlockedBadges.push(...streakUnlocks);
+        }
+        const totalThisMode = state.sectionAttempts.filter((a) => a.mode === mode).length + 1;
+        if (totalThisMode % 5 === 0) {
+          const sessionUnlocks = await evaluateAfterAttempt(mode, (inserted?.id as string) ?? '');
+          for (const slug of sessionUnlocks) {
+            if (!unlockedBadges.includes(slug)) unlockedBadges.push(slug);
+          }
+        }
+      } catch (e) {
+        console.error('n400/badges: section evaluator wiring failed', e);
+      }
+      return { milestone, unlockedBadges };
     },
-    [user, state.streak]
+    [user, state.streak, state.sectionAttempts]
   );
 
   const setSectionKnown = useCallback(
@@ -431,7 +455,7 @@ function useN400UserStateInternal() {
       section: SectionKey,
       itemId: string,
       known: boolean,
-    ): Promise<{ milestone: number | null }> => {
+    ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
       // Reuse recordSectionAnswer so known-state, streak, and DB stay consistent.
       return recordSectionAnswer(section, itemId, known, 'flashcard');
     },
@@ -489,6 +513,38 @@ function useN400UserStateInternal() {
     [user, state.streak]
   );
 
+  // Writing/Speaking mock test results — these two mock tests are
+  // client-only (no per-question attempt table like civics mock_test), so
+  // this is their only durable record. Feeds combo/practice badges that
+  // need "did the user pass the writing/speaking mock" (Interview Master,
+  // Mock Champion, Test Veteran, Mock Rookie).
+  const recordSectionMockResult = useCallback(
+    async (
+      section: 'writing' | 'speaking',
+      passed: boolean,
+      score: number,
+      total: number,
+    ): Promise<{ unlockedBadges: string[] }> => {
+      if (!user) return { unlockedBadges: [] };
+      const { data: inserted, error } = await supabase
+        .from('n400_section_mock_results')
+        .insert({ user_id: user.id, section, passed, score, total })
+        .select('id')
+        .single();
+      if (error) console.error('n400: recordSectionMockResult failed', error);
+
+      const unlockedBadges: string[] = [];
+      try {
+        const unlocks = await evaluateAfterAttempt('mock_test', (inserted?.id as string) ?? '');
+        unlockedBadges.push(...unlocks);
+      } catch (e) {
+        console.error('n400/badges: section mock evaluator wiring failed', e);
+      }
+      return { unlockedBadges };
+    },
+    [user]
+  );
+
   const resetAll = useCallback(async () => {
     if (!user) return;
     setState(DEFAULT_STATE);
@@ -497,6 +553,7 @@ function useN400UserStateInternal() {
       supabase.from('n400_quiz_attempts').delete().eq('user_id', user.id),
       supabase.from('n400_bookmarks').delete().eq('user_id', user.id),
       supabase.from('n400_section_attempts').delete().eq('user_id', user.id),
+      supabase.from('n400_section_mock_results').delete().eq('user_id', user.id),
       supabase
         .from('n400_user_profile')
         .upsert(
@@ -523,6 +580,7 @@ function useN400UserStateInternal() {
     recordSectionAnswer,
     setSectionKnown,
     recordMockResult,
+    recordSectionMockResult,
     resetAll,
     user,
   };

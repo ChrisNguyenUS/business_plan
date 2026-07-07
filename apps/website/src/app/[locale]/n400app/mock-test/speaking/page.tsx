@@ -24,6 +24,7 @@ import {
   Rocket,
 } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
 import { buildWhatMeanOptions } from '@/lib/n400/whatmean-options';
@@ -102,6 +103,7 @@ function buildItems(seed: number): MockItem[] {
 export default function ThiThuSpeakingPage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const { recordSectionMockResult } = useN400UserState();
 
   const [seed, setSeed] = useState(0);
   const items = useMemo(() => buildItems(seed), [seed]);
@@ -198,6 +200,7 @@ export default function ThiThuSpeakingPage() {
   const onNext = () => {
     if (isLast) {
       setFinished(true);
+      void recordSectionMockResult('speaking', correctCount >= PASS_THRESHOLD, correctCount, TOTAL);
       return;
     }
     setIndex((i) => i + 1);

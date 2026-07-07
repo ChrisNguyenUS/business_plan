@@ -11,6 +11,7 @@ import { useParams } from 'next/navigation';
 import { Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
 import { shuffle } from '@/lib/n400/quiz-engine';
+import { useN400UserState } from '@/lib/n400/user-state';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 
 const SENTENCE_COUNT = 3;
@@ -24,6 +25,7 @@ interface Outcome {
 export default function ThiThuVietPage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const { recordSectionMockResult } = useN400UserState();
 
   // Fresh random 3 sentences per attempt; `seed` bumps to reshuffle + remount.
   const [seed, setSeed] = useState(0);
@@ -86,7 +88,10 @@ export default function ThiThuVietPage() {
       key={seed}
       questions={questions}
       skipSummary
-      onSessionEnd={({ correct, total }) => setOutcome({ correct, total })}
+      onSessionEnd={({ correct, total }) => {
+        setOutcome({ correct, total });
+        void recordSectionMockResult('writing', correct >= PASS_THRESHOLD, correct, total);
+      }}
     />
   );
 }
