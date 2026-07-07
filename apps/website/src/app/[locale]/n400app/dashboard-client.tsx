@@ -45,23 +45,18 @@ export default function DashboardPage() {
     router.replace(pathname);
   }, [search, hydrated, state.address.stateCode, router, pathname]);
 
-
-
-  if (!hydrated) {
-    return <div className="text-sm font-medium text-slate-500 p-8">Đang tải…</div>;
-  }
-
   // --- Derived Gamification Data ---
-  const xpPerMastered = 10;
-  const xpPerAttempt = 2;
-
   const getLocalDateStr = (d: Date) => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
   const todayDate = new Date();
   const todayStrLocal = getLocalDateStr(todayDate);
 
-  // Daily Goals for What Mean and Yes No sections
+  // Daily Goals for What Mean and Yes No sections.
+  // IMPORTANT: every hook (useMemo) must run before the `hydrated` early
+  // return below. React requires a stable hook count across renders —
+  // placing these after the return crashes with "Rendered more hooks than
+  // during the previous render" (React #310) once hydration flips true.
   const whatMeanIds = useMemo(() => WHATMEAN_QUESTIONS.map((q) => q.id), []);
   const yesNoIds = useMemo(() => YESNO_QUESTIONS.map((q) => q.id), []);
 
@@ -74,12 +69,19 @@ export default function DashboardPage() {
     () => sectionDailyFive('whatmean', whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal),
     [whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal],
   );
-  const whatMeanDoneCount = dailyFiveDoneCount(whatMeanDaily, whatMeanKnown);
-
   const yesNoDaily = useMemo(
     () => sectionDailyFive('yesno', yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal),
     [yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal],
   );
+
+  if (!hydrated) {
+    return <div className="text-sm font-medium text-slate-500 p-8">Đang tải…</div>;
+  }
+
+  const xpPerMastered = 10;
+  const xpPerAttempt = 2;
+
+  const whatMeanDoneCount = dailyFiveDoneCount(whatMeanDaily, whatMeanKnown);
   const yesNoDoneCount = dailyFiveDoneCount(yesNoDaily, yesNoKnown);
 
   const todaysAttempts = state.attempts.filter(a => a.at.startsWith(todayStrLocal));
