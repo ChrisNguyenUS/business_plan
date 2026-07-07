@@ -28,6 +28,7 @@ import {
   Shield,
   ClipboardCheck,
   Layers,
+  MessageCircleQuestion,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -40,11 +41,25 @@ type MenuItem = {
 
 /* ─── Navigation Groups ─── */
 
-const PRIMARY_MENU: MenuItem[] = [
-  { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
-  { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-  { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
-  { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
+type NavGroup = { heading: string | null; items: MenuItem[] };
+
+/** Desktop nav grouped by content area. Mobile keeps the flat 4-item bar. */
+const DESKTOP_GROUPS: NavGroup[] = [
+  { heading: null, items: [{ id: 'dashboard', label: 'Tổng quan', href: '', icon: Home }] },
+  {
+    heading: 'CIVICS (128 câu)',
+    items: [
+      { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
+      { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
+    ],
+  },
+  {
+    heading: 'SPEAKING',
+    items: [
+      { id: 'whatmean', label: 'Câu hỏi What Mean', href: 'speaking/what-mean', icon: MessageCircleQuestion },
+    ],
+  },
+  { heading: null, items: [{ id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck }] },
 ];
 
 const SECONDARY_MENU: MenuItem[] = [
@@ -109,10 +124,19 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Primary navigation */}
+      {/* Primary navigation, grouped by content area */}
       <nav className="flex-1 overflow-y-auto px-4 space-y-1">
-        {PRIMARY_MENU.map((item) => (
-          <NavItem key={item.id} item={item} base={base} pathname={pathname} />
+        {DESKTOP_GROUPS.map((group, gi) => (
+          <div key={group.heading ?? `g-${gi}`} className="space-y-1">
+            {group.heading ? (
+              <div className="px-4 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400">
+                {group.heading}
+              </div>
+            ) : null}
+            {group.items.map((item) => (
+              <NavItem key={item.id} item={item} base={base} pathname={pathname} />
+            ))}
+          </div>
         ))}
 
         {/* Divider */}
