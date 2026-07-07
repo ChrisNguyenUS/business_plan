@@ -85,6 +85,7 @@ export default function ThiThuVietPage() {
     <DictationQuiz
       key={seed}
       questions={questions}
+      skipSummary
       onSessionEnd={({ correct, total }) => setOutcome({ correct, total })}
     />
   );

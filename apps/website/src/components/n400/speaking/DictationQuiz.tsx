@@ -7,7 +7,7 @@
 // (active recall) — there is no retry limit. Feedback shows a per-word diff plus
 // an always-visible guidance box with the USCIS writing rules.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
   SlidersHorizontal,
@@ -39,6 +39,10 @@ interface DictationResult {
 interface DictationQuizProps {
   questions: WritingSentence[];
   onSessionEnd: (results: { correct: number; total: number }) => void;
+  // Mock tests own their single result screen — skip this component's internal
+  // PracticeSessionSummary and hand off to the caller as soon as the last
+  // sentence is graded, instead of showing two result screens back to back.
+  skipSummary?: boolean;
 }
 
 // Strips the **bold** markers the feedback builder uses so guidance reads cleanly
@@ -47,7 +51,7 @@ function stripBold(text: string): string {
   return text.replace(/\*\*/g, '');
 }
 
-export function DictationQuiz({ questions, onSessionEnd }: DictationQuizProps) {
+export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: DictationQuizProps) {
   const [index, setIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null);
@@ -61,7 +65,17 @@ export function DictationQuiz({ questions, onSessionEnd }: DictationQuizProps) {
   const done = index >= questions.length;
   const q = done ? null : questions[index];
 
+  useEffect(() => {
+    if (done && skipSummary) {
+      onSessionEnd({ correct: results.filter((r) => r.correct).length, total: questions.length });
+    }
+    // Only re-fire when a session actually finishes — onSessionEnd/results are
+    // captured fresh at that point, not tracked as deps to avoid re-triggering.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, skipSummary]);
+
   if (done || !q) {
+    if (skipSummary) return null;
     const correct = results.filter((r) => r.correct).length;
     const wrongCount = results.filter((r) => !r.correct).length;
     const restart = () => {
