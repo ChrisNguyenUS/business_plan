@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { YESNO_QUESTIONS } from './yesno-data';
+import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from './yesno-data';
 
 const PUB = resolve(process.cwd(), 'public');
 
@@ -20,6 +20,10 @@ describe('yesno-data', () => {
       expect(q.questionVi.length, q.id).toBeGreaterThan(0);
       expect(['yes', 'no'], q.id).toContain(q.answer);
     }
+  });
+
+  it('yn-29 (never-sentenced special case) normalizes to no', () => {
+    expect(YESNO_QUESTIONS_BY_ID['yn-29'].answer).toBe('no');
   });
 
   it('every record has audio on disk', () => {

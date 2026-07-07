@@ -29,8 +29,13 @@ function parseEn(md) {
     const a = line.match(/^-\s+\*\*Answer:\*\*\s+(.+)$/);
     if (a && lastId !== null) {
       let ans = a[1].trim();
-      // Normalize special cases: "I have never been sentenced" → "no"
-      if (ans.includes('I have never been sentenced')) {
+      // Special case scoped to Q29 only. Q29 asks "have you completed your
+      // suspended sentence, probation, or parole?" — for a clean-record
+      // applicant the standard interview answer is "No, I have never been
+      // sentenced" (the condition doesn't apply), so the source's
+      // "I have never been sentenced" answer maps to 'no'. Delete this
+      // branch if the source doc ever gives #29 a plain Yes/No answer.
+      if (lastId === 29 && ans.includes('I have never been sentenced')) {
         ans = 'no';
       } else if (/^(Yes|No)\b/i.test(ans)) {
         ans = ans.match(/^(Yes|No)/i)[1].toLowerCase();
