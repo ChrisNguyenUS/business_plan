@@ -29,16 +29,27 @@ interface FlashcardProps {
  * - `will-change: transform` is safe here because only one
  *   Flashcard is rendered at a time.
  * - `motion-reduce:` disables animation for accessibility.
- * - Safari/WebKit ignores `backface-visibility: hidden` for a face's
- *   DESCENDANTS (only the face's own background is culled), so the
- *   hidden face's content bleeds through mirrored. Each face is
- *   therefore also gated with `visibility`, swapped 60ms into the
- *   flip — when the card crosses ~90° for the 500ms
- *   cubic-bezier(0.23,1,0.32,1) curve. If you change the flip
- *   duration or easing, retune the 60ms swap delay below.
+ * - Browsers do NOT reliably cull a face's DESCENDANTS via
+ *   `backface-visibility: hidden` (only the face's own background is
+ *   culled), so the hidden face's content bleeds through mirrored.
+ *   Each face is therefore also gated with `visibility`, swapped at
+ *   the exact moment the card crosses 90°.
+ * - CRITICAL: the flip easing MUST be symmetric so that the geometric
+ *   midpoint (90°) coincides with the temporal midpoint of the
+ *   transition. `cubic-bezier(0.4,0,0.6,1)` is symmetric, so 90° is
+ *   reached at FLIP_MS / 2, and the visibility swap is delayed by the
+ *   same amount. A front-loaded easing (e.g. cubic-bezier(0.23,1,...))
+ *   collapses the swap window to a few ms, and any frame jank then
+ *   leaves the mirrored front face visible for a fraction of a second.
+ *   If you change FLIP_MS or the easing, keep the easing symmetric and
+ *   keep the swap delay at FLIP_MS / 2.
  */
+const FLIP_MS = 500;
+const FLIP_EASING = 'cubic-bezier(0.4, 0, 0.6, 1)'; // symmetric ease-in-out
 const faceClass =
-  'absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transition:visibility_0s_60ms] motion-reduce:transition-none';
+  'absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] motion-reduce:transition-none';
+// visibility flips instantly, but only once the card has crossed 90°.
+const faceTransition = { transition: `visibility 0s ${FLIP_MS / 2}ms` };
 export function Flashcard({
   flipped,
   onFlip,
@@ -73,15 +84,18 @@ export function Flashcard({
         className="block w-full h-full outline-none text-left cursor-pointer group"
       >
         <div
-          className="relative w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none motion-reduce:duration-0 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d]"
+          className="relative w-full h-full transition-transform motion-reduce:transition-none motion-reduce:duration-0 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d]"
           style={{
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transitionDuration: `${FLIP_MS}ms`,
+            transitionTimingFunction: FLIP_EASING,
             willChange: 'transform',
           }}
         >
           {/* Front face */}
           <div
             className={`${faceClass} ${flipped ? 'invisible' : 'visible'}`}
+            style={faceTransition}
             aria-hidden={flipped}
           >
             <FlashcardFront
@@ -99,6 +113,7 @@ export function Flashcard({
             className={`${faceClass} ${flipped ? 'visible' : 'invisible'}`}
             style={{
               transform: 'rotateY(180deg)',
+              ...faceTransition,
             }}
             aria-hidden={!flipped}
           >
