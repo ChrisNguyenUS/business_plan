@@ -15,8 +15,11 @@ interface FlashcardProps {
   questionAudioSrc: string | null;
   answerAudioSrc: string | null;
   answers: Answer[];
-  bookmarked: boolean;
-  onToggleBookmark: () => void;
+  bookmarked?: boolean;
+  /** Omit to hide the bookmark control (Speaking/Writing sections don't bookmark). */
+  onToggleBookmark?: () => void;
+  /** Front badge label; defaults to the civics "Câu hỏi / Question #id". */
+  badge?: string;
 }
 
 /**
@@ -59,8 +62,9 @@ export function Flashcard({
   questionAudioSrc,
   answerAudioSrc,
   answers,
-  bookmarked,
+  bookmarked = false,
   onToggleBookmark,
+  badge,
 }: FlashcardProps) {
   return (
     <div
@@ -105,6 +109,7 @@ export function Flashcard({
               audioSrc={questionAudioSrc}
               bookmarked={bookmarked}
               onToggleBookmark={onToggleBookmark}
+              badge={badge}
             />
           </div>
 

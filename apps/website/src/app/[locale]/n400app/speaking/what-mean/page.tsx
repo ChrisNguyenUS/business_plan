@@ -7,16 +7,19 @@ import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmea
 import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
 import { deriveSectionSeen } from '@/lib/n400/section-progress';
 import { sectionDailyFive, dailyFiveDoneCount } from '@/lib/n400/section-daily';
+import { buildWhatMeanOptions } from '@/lib/n400/whatmean-options';
 import {
   shuffle,
   whatMeanQuestionAudioUrl,
   whatMeanAnswerAudioUrl,
   type PracticePreset,
 } from '@/lib/n400/quiz-engine';
-import { AudioButton } from '@/components/n400/AudioButton';
 import { PracticeSessionPicker } from '@/components/n400/PracticeSessionPicker';
-import { SectionFlashcardDeck, type DeckCard } from '@/components/n400/speaking/SectionFlashcardDeck';
-import { WhatMeanPractice } from '@/components/n400/speaking/WhatMeanPractice';
+import {
+  SectionFlashcardScreen,
+  type SectionCard,
+} from '@/components/n400/speaking/SectionFlashcardScreen';
+import { SectionMCQuiz, type MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
 
 const ALL_IDS = WHATMEAN_QUESTIONS.map((q) => q.id);
 
@@ -30,29 +33,38 @@ type Mode =
   | { kind: 'deck'; ids: string[] }
   | { kind: 'practice'; ids: string[]; seed: string };
 
-function toCard(id: string): DeckCard {
+function toCard(id: string): SectionCard {
   const q = WHATMEAN_QUESTIONS_BY_ID[id];
   return {
     id,
+    badge: `Từ vựng / Vocabulary #${q.num}`,
+    questionEn: q.termEn,
+    questionVi: q.termVi,
+    questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
+    answerAudioSrc: whatMeanAnswerAudioUrl(q.num),
+    answers: [{ en: q.definitionEn, vi: q.definitionVi }],
     listPrimary: q.termEn,
     listSecondary: q.definitionEn,
-    front: (
-      <div className="flex h-full w-full flex-col items-center justify-center rounded-[24px] border border-gray-100 bg-white p-6 text-center shadow-sm">
-        <AudioButton src={whatMeanQuestionAudioUrl(q.num)} label="Nghe" />
-        <div className="mt-4 text-2xl font-extrabold text-gray-900">{q.termEn}</div>
-        <div className="mt-2 text-gray-500">{q.questionEn}</div>
-        <div className="mt-6 text-xs text-gray-400">Chạm để xem nghĩa</div>
-      </div>
-    ),
-    back: (
-      <div className="flex h-full w-full flex-col items-center justify-center rounded-[24px] border border-teal-100 bg-teal-50/40 p-6 text-center shadow-sm">
-        <AudioButton src={whatMeanAnswerAudioUrl(q.num)} label="Nghe nghĩa" size="sm" />
-        <div className="mt-4 text-xl font-bold text-gray-900">{q.definitionEn}</div>
-        <div className="mt-3 text-teal-800">
-          {q.termVi} — {q.definitionVi}
-        </div>
-      </div>
-    ),
+  };
+}
+
+function toQuestion(id: string, seed: string, i: number): MCQuestion {
+  const q = WHATMEAN_QUESTIONS_BY_ID[id];
+  const options = buildWhatMeanOptions(q, `${seed}-${i}`).map((o) => ({
+    id: o.id,
+    en: o.text,
+    vi: '',
+    isCorrect: o.isCorrect,
+  }));
+  return {
+    itemId: id,
+    badge: `Từ vựng / Vocabulary #${q.num}`,
+    headerEn: q.termEn,
+    headerVi: q.questionVi,
+    questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
+    answerAudioSrc: whatMeanAnswerAudioUrl(q.num),
+    options,
+    accepted: [{ en: q.definitionEn, vi: q.definitionVi }],
   };
 }
 
@@ -72,12 +84,12 @@ export default function WhatMeanPage() {
   const dailyDone = dailyFiveDoneCount(daily, known);
 
   if (!hydrated) {
-    return <div className="flex flex-1 items-center justify-center text-gray-400">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
 
   if (mode.kind === 'deck') {
     return (
-      <SectionFlashcardDeck
+      <SectionFlashcardScreen
         cards={mode.ids.map(toCard)}
         known={known}
         onSetKnown={(id, v) => void setSectionKnown('whatmean', id, v)}
@@ -89,21 +101,24 @@ export default function WhatMeanPage() {
 
   if (mode.kind === 'practice') {
     return (
-      <WhatMeanPractice
-        itemIds={mode.ids}
-        seed={mode.seed}
+      <SectionMCQuiz
+        questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i))}
         onAnswer={(id, ok) => void recordSectionAnswer('whatmean', id, ok, 'practice')}
         onExit={() => setMode({ kind: 'landing' })}
+        onRestart={() => startPracticeWith(mode.ids.length)}
         title="Câu hỏi What Mean"
       />
     );
   }
 
-  const startPractice = (preset: PracticePreset) => {
+  function startPracticeWith(count: number) {
     const seed = `${Date.now()}`;
-    const count = preset.count ?? ALL_IDS.length;
     const ids = shuffle([...ALL_IDS], `wm-practice-${seed}`).slice(0, count);
     setMode({ kind: 'practice', ids, seed });
+  }
+
+  const startPractice = (preset: PracticePreset) => {
+    startPracticeWith(preset.count ?? ALL_IDS.length);
   };
 
   return (
@@ -111,12 +126,8 @@ export default function WhatMeanPage() {
       <div className="mx-auto flex max-w-2xl flex-col gap-6 pb-8">
         {/* Daily 5 hero */}
         <section className="rounded-[24px] border border-teal-100 bg-gradient-to-br from-teal-50 to-white p-5 shadow-sm">
-          <div className="text-xs font-bold uppercase tracking-wide text-teal-600">
-            Daily 5 hôm nay
-          </div>
-          <div className="mt-1 text-lg font-extrabold text-gray-900">
-            Học 5 từ vựng — {dailyDone}/5
-          </div>
+          <div className="text-xs font-bold uppercase tracking-wide text-teal-600">Daily 5 hôm nay</div>
+          <div className="mt-1 text-lg font-extrabold text-gray-900">Học 5 từ vựng — {dailyDone}/5</div>
           <button
             type="button"
             onClick={() => setMode({ kind: 'deck', ids: daily })}
