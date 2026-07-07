@@ -14,21 +14,20 @@ const badge = (
   description_en: '',
   group_code,
   sort_order,
+  is_secret: false,
 });
 
 const CATALOG: BadgeMeta[] = [
   badge('streak-3', 10),
   badge('streak-7', 20),
   badge('streak-14', 30),
-  badge('onboarding-first-session', 100, 'mock'),
-  badge('mock-pass-first', 110, 'mock'),
-  badge('mock-pass-five', 120, 'mock'),
-  badge('mock-high-score', 130, 'mock'),
-  badge('correct-answers-100', 200, 'coverage'),
-  badge('flashcards-mastery', 210, 'coverage'),
-  badge('all-128-answered', 220, 'coverage'),
-  badge('practice-sessions-10', 300, 'volume'),
-  badge('category-democracy', 400, 'category'),
+  badge('civics-first', 100, 'civics'),
+  badge('civics-128', 150, 'civics'),
+  badge('practice-exam-ready', 600, 'practice'),
+  badge('practice-mock-champion', 670, 'practice'),
+  badge('practice-future-citizen', 610, 'practice'),
+  badge('other-comeback', 730, 'other'),
+  badge('other-first-practice', 700, 'other'),
 ];
 
 const progress = (p: Partial<NextBadgeProgress> = {}): NextBadgeProgress => ({
@@ -46,21 +45,24 @@ describe('pickNextBadge', () => {
   it('never suggests an earned badge (regression: streak-3 earned, streak=3)', () => {
     // Dashboard bug: user already unlocked streak-3 but the card kept
     // showing "3 ngày liên tiếp" because it rendered catalog[0].
-    const earned = new Set(['streak-3', 'onboarding-first-session', 'mock-pass-first']);
+    const earned = new Set(['streak-3', 'other-first-practice', 'practice-exam-ready']);
     const r = pickNextBadge(CATALOG, earned, progress({ currentStreak: 3, mockPassed: 1 }));
     expect(r).not.toBeNull();
     expect(earned.has(r!.badge.slug)).toBe(false);
   });
 
   it('suggests the unearned badge with the highest progress ratio', () => {
-    // streak 3/7 (~0.43) vs 120/128 answered (~0.94) → all-128-answered wins.
-    const earned = new Set(['streak-3']);
+    // streak 3/7 (~0.43) vs 120/128 answered (~0.94) → civics-128 wins.
+    // civics-first is already earned (120 answered implies it was crossed
+    // long ago) — otherwise its threshold of 1 clamps to ratio 1 and wins
+    // by max-progress even though it's not the meaningful "next" badge.
+    const earned = new Set(['streak-3', 'civics-first']);
     const r = pickNextBadge(
       CATALOG,
       earned,
       progress({ currentStreak: 3, distinctAnswered: 120 }),
     );
-    expect(r?.badge.slug).toBe('all-128-answered');
+    expect(r?.badge.slug).toBe('civics-128');
     expect(r?.current).toBe(120);
     expect(r?.target).toBe(128);
   });
@@ -70,16 +72,15 @@ describe('pickNextBadge', () => {
       'streak-3',
       'streak-7',
       'streak-14',
-      'onboarding-first-session',
-      'mock-pass-first',
-      'mock-pass-five',
-      'mock-high-score',
-      'correct-answers-100',
-      'flashcards-mastery',
-      'all-128-answered',
+      'civics-first',
+      'civics-128',
+      'practice-exam-ready',
+      'practice-mock-champion',
+      'practice-future-citizen',
+      'other-comeback',
     ]);
     const r = pickNextBadge(CATALOG, earned, progress());
-    expect(r?.badge.slug).toBe('practice-sessions-10');
+    expect(r?.badge.slug).toBe('other-first-practice');
     expect(r?.ratio).toBe(0);
   });
 
@@ -104,10 +105,10 @@ describe('pickNextBadge', () => {
     expect(pickNextBadge([], new Set(), progress())).toBeNull();
   });
 
-  it('mirrors the reported dashboard state: suggests streak-7 with 3/7 progress', () => {
-    // Screenshot state: streak=3, streak-3 + mock-pass-first + onboarding earned,
-    // 83/128 answered, 1 mock passed.
-    const earned = new Set(['streak-3', 'onboarding-first-session', 'mock-pass-first']);
+  it('mirrors the reported dashboard state: suggests practice-future-citizen with 14/18 progress', () => {
+    // Screenshot state: streak=3, streak-3 + practice-exam-ready + other-first-practice earned,
+    // 83/128 answered (so civics-first is earned too), 1 mock passed.
+    const earned = new Set(['streak-3', 'other-first-practice', 'practice-exam-ready', 'civics-first']);
     const r = pickNextBadge(
       CATALOG,
       earned,
@@ -119,9 +120,9 @@ describe('pickNextBadge', () => {
         bestMockScore: 14,
       }),
     );
-    // bestMockScore 14/18 (~0.78) beats mock-pass-five 1/5, streak 3/7,
-    // 83/128 (~0.65), 70/100 → mock-high-score is genuinely closest.
-    expect(r?.badge.slug).toBe('mock-high-score');
+    // bestMockScore 14/18 (~0.78) beats practice-mock-champion 1/10, streak 3/7,
+    // 83/128 (~0.65) → practice-future-citizen is genuinely closest.
+    expect(r?.badge.slug).toBe('practice-future-citizen');
     expect(r?.badge.slug).not.toBe('streak-3');
   });
 });

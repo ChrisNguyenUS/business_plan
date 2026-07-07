@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { BadgeIcon } from './BadgeIcon';
+import type { BadgeGroupCode } from '@/lib/n400/use-badges';
 
 interface BadgeMeta {
   slug: string;
@@ -10,8 +11,9 @@ interface BadgeMeta {
   title_en: string;
   description_vi: string;
   description_en: string;
-  group_code: 'streak' | 'mock' | 'coverage' | 'volume' | 'category';
+  group_code: BadgeGroupCode;
   sort_order: number;
+  is_secret: boolean;
 }
 
 interface UserBadge {
@@ -24,15 +26,46 @@ interface BadgeGalleryProps {
   earned: UserBadge[];
 }
 
-const GROUP_LABELS: Record<BadgeMeta['group_code'], { vi: string; en: string }> = {
+const GROUP_LABELS: Record<BadgeGroupCode, { vi: string; en: string }> = {
   streak: { vi: 'Chuỗi học tập', en: 'Streak' },
-  mock: { vi: 'Thi thử', en: 'Mock test' },
-  coverage: { vi: 'Bao phủ & thuộc bài', en: 'Coverage & mastery' },
-  volume: { vi: 'Kiên trì', en: 'Persistence' },
-  category: { vi: 'Thuộc theo danh mục', en: 'Category mastery' },
+  civics: { vi: 'Civics', en: 'Civics' },
+  writing: { vi: 'Viết', en: 'Writing' },
+  yesno: { vi: 'Yes/No', en: 'Yes/No' },
+  whatmean: { vi: 'What Mean', en: 'What Mean' },
+  combo: { vi: 'Thành tựu tổng hợp', en: 'Combo achievements' },
+  practice: { vi: 'Thành tích luyện tập', en: 'Practice performance' },
+  other: { vi: 'Thành tựu khác', en: 'Other achievements' },
+  secret: { vi: 'Bí mật', en: 'Secret' },
 };
 
-const GROUP_ORDER: BadgeMeta['group_code'][] = ['streak', 'mock', 'coverage', 'volume', 'category'];
+const GROUP_ORDER: BadgeGroupCode[] = [
+  'streak',
+  'civics',
+  'writing',
+  'yesno',
+  'whatmean',
+  'combo',
+  'practice',
+  'other',
+  'secret',
+];
+
+// Secret badges hide their real name/description until earned, so a
+// scan of the gallery doesn't spoil what triggers them.
+const SECRET_TITLE_VI = '???';
+const SECRET_TITLE_EN = 'Secret badge';
+const SECRET_DESC_VI = 'Tiếp tục học để khám phá huy hiệu bí mật này!';
+const SECRET_DESC_EN = 'Keep studying to discover this secret badge!';
+
+function displayTitle(b: BadgeMeta, isEarned: boolean, locale: 'vi' | 'en'): string {
+  if (b.is_secret && !isEarned) return locale === 'vi' ? SECRET_TITLE_VI : SECRET_TITLE_EN;
+  return locale === 'vi' ? b.title_vi : b.title_en;
+}
+
+function displayDescription(b: BadgeMeta, isEarned: boolean, locale: 'vi' | 'en'): string {
+  if (b.is_secret && !isEarned) return locale === 'vi' ? SECRET_DESC_VI : SECRET_DESC_EN;
+  return locale === 'vi' ? b.description_vi : b.description_en;
+}
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -48,7 +81,7 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
     badges: catalog
       .filter((b) => b.group_code === code)
       .sort((a, b) => a.sort_order - b.sort_order),
-  }));
+  })).filter((g) => g.badges.length > 0);
 
   const totalEarned = earned.filter((e) => catalog.some((c) => c.slug === e.slug)).length;
   const totalCatalog = catalog.length;
@@ -87,13 +120,13 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
                     onClick={() => setOpen(b)}
                     className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-colors text-center"
                   >
-                    <BadgeIcon slug={b.slug} alt={b.title_vi} size={64} earned={isEarned} />
+                    <BadgeIcon slug={b.slug} alt={displayTitle(b, isEarned, 'vi')} size={64} earned={isEarned} />
                     <span
                       className={`text-[11px] font-medium leading-tight ${
                         isEarned ? 'text-gray-700' : 'text-gray-400'
                       }`}
                     >
-                      {b.title_vi}
+                      {displayTitle(b, isEarned, 'vi')}
                     </span>
                   </button>
                 );
@@ -114,11 +147,17 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-200"
           >
-            <BadgeIcon slug={open.slug} alt={open.title_vi} size={120} earned={earnedMap.has(open.slug)} className="mx-auto" />
-            <h4 className="mt-4 text-lg font-bold text-gray-800">{open.title_vi}</h4>
-            <p className="text-xs text-gray-500">{open.title_en}</p>
-            <p className="mt-3 text-sm text-gray-700">{open.description_vi}</p>
-            <p className="text-xs text-gray-500 mt-1">{open.description_en}</p>
+            <BadgeIcon
+              slug={open.slug}
+              alt={displayTitle(open, earnedMap.has(open.slug), 'vi')}
+              size={120}
+              earned={earnedMap.has(open.slug)}
+              className="mx-auto"
+            />
+            <h4 className="mt-4 text-lg font-bold text-gray-800">{displayTitle(open, earnedMap.has(open.slug), 'vi')}</h4>
+            <p className="text-xs text-gray-500">{displayTitle(open, earnedMap.has(open.slug), 'en')}</p>
+            <p className="mt-3 text-sm text-gray-700">{displayDescription(open, earnedMap.has(open.slug), 'vi')}</p>
+            <p className="text-xs text-gray-500 mt-1">{displayDescription(open, earnedMap.has(open.slug), 'en')}</p>
             {earnedMap.has(open.slug) ? (
               <p className="mt-4 text-xs text-teal-700 bg-teal-50 rounded-full inline-block px-3 py-1">
                 Đã mở khóa: {formatDate(earnedMap.get(open.slug)!)}

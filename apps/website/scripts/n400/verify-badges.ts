@@ -1,14 +1,14 @@
-// Phase 6B verification script for badges system.
+// Gamification v2 verification script for badges system.
 // Run with: npx tsx scripts/n400/verify-badges.ts
 //
 // Cross-checks the four invariants we care about:
-//   1. All 24 expected badge PNGs exist at public/images/n400/badges/<slug>.png
-//   2. n400_badges has exactly 24 active rows after seed
+//   1. All 56 expected badge PNGs exist at public/images/n400/badges/<slug>.png
+//   2. n400_badges has exactly 56 active rows after seed
 //   3. Every catalog slug has a registered evaluator in BADGE_EVALUATORS
 //   4. Every registered evaluator has a corresponding catalog row
 //
 // Doubles as a manual recompute driver: pass --recompute <userId> to
-// run all 24 evaluators for that user with trigger='manual_recompute'.
+// run all 56 evaluators for that user with trigger='manual_recompute'.
 // Useful for backfilling existing users when this phase first ships.
 
 import { createClient } from '@supabase/supabase-js';
@@ -25,13 +25,26 @@ const supabase = createClient(
 const BADGES_DIR = join(process.cwd(), 'public', 'images', 'n400', 'badges');
 
 const EXPECTED_SLUGS = [
+  // Streak (6)
   'streak-3', 'streak-7', 'streak-14', 'streak-30', 'streak-60', 'streak-100',
-  'onboarding-first-session', 'mock-pass-first', 'mock-pass-five',
-  'mock-high-score', 'mock-perfect', 'mock-comeback',
-  'correct-answers-100', 'flashcards-mastery', 'all-128-answered', 'sessions-100',
-  'practice-sessions-10', 'practice-sessions-30', 'sessions-50',
-  'category-democracy', 'category-government', 'category-rights',
-  'category-history', 'category-symbols',
+  // Civics (6)
+  'civics-first', 'civics-10', 'civics-30', 'civics-50', 'civics-100', 'civics-128',
+  // Writing (6)
+  'writing-first', 'writing-10', 'writing-20', 'writing-35', 'writing-45', 'writing-perfect',
+  // Yes/No (6)
+  'yesno-first', 'yesno-10', 'yesno-20', 'yesno-30', 'yesno-37', 'yesno-perfect',
+  // What Mean (6)
+  'whatmean-first', 'whatmean-15', 'whatmean-30', 'whatmean-45', 'whatmean-62', 'whatmean-perfect',
+  // Combo (5)
+  'combo-starter', 'combo-explorer', 'combo-interview-ready', 'combo-language-champion', 'combo-interview-master',
+  // Practice (8)
+  'practice-exam-ready', 'practice-future-citizen', 'practice-high-score', 'practice-excellence',
+  'practice-perfect-accuracy', 'practice-perfect-streak', 'practice-perfect-round', 'practice-mock-champion',
+  // Other (8)
+  'other-first-practice', 'other-mock-rookie', 'other-test-veteran', 'other-comeback',
+  'other-long-term-memory', 'other-consistent-performer', 'other-memory-master', 'other-ultimate',
+  // Secret (5)
+  'secret-early-bird', 'secret-night-owl', 'secret-never-give-up', 'secret-speed-learner', 'secret-marathon',
 ];
 
 const fail: string[] = [];
@@ -65,8 +78,8 @@ async function main() {
       return;
     }
     const active = (data ?? []).filter((r) => r.is_active);
-    if (active.length === 24) ok(`24 active catalog rows`);
-    else bad(`expected 24 active, got ${active.length}`);
+    if (active.length === 56) ok(`56 active catalog rows`);
+    else bad(`expected 56 active, got ${active.length}`);
 
     const seenSlugs = new Set(active.map((r) => r.slug));
     for (const slug of EXPECTED_SLUGS) {

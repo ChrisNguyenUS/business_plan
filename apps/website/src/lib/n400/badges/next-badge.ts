@@ -7,10 +7,10 @@
 // to catalog sort_order.
 //
 // Ratios are approximations from client state — the server evaluators
-// remain the source of truth for actual unlocks. Badges whose criteria
-// can't be derived from client state (volume/sessions, category,
-// mock-perfect) get ratio 0 and are only suggested when nothing
-// measurable is in progress.
+// remain the source of truth for actual unlocks. NextBadgeProgress only
+// snapshots civics-mock stats, so writing/yesno/whatmean/combo/secret
+// badges (and anything needing cross-section or timeline data) get ratio 0
+// and are only suggested when nothing measurable is in progress.
 
 import type { BadgeMeta } from '../use-badges';
 
@@ -49,25 +49,31 @@ function progressFor(
   const streakTarget = STREAK_TARGETS[slug];
   if (streakTarget) return { current: p.currentStreak, target: streakTarget };
   switch (slug) {
-    case 'all-128-answered':
+    case 'civics-first':
+      return { current: p.distinctAnswered, target: 1 };
+    case 'civics-10':
+      return { current: p.distinctAnswered, target: 10 };
+    case 'civics-30':
+      return { current: p.distinctAnswered, target: 30 };
+    case 'civics-50':
+      return { current: p.distinctAnswered, target: 50 };
+    case 'civics-100':
+      return { current: p.distinctAnswered, target: 100 };
+    case 'civics-128':
       return { current: p.distinctAnswered, target: 128 };
-    case 'correct-answers-100':
-      return { current: p.correctCount, target: 100 };
-    case 'flashcards-mastery':
-      return { current: p.flashcardsKnown, target: 100 };
-    case 'mock-pass-first':
+    case 'practice-exam-ready':
       return { current: Math.min(p.mockPassed, 1), target: 1 };
-    case 'mock-pass-five':
-      return { current: p.mockPassed, target: 5 };
-    case 'mock-high-score':
+    case 'practice-mock-champion':
+      return { current: p.mockPassed, target: 10 }; // approximation: civics-only passes, real badge spans all 3 mock types
+    case 'practice-future-citizen':
       return { current: p.bestMockScore, target: 18 };
-    case 'mock-comeback':
+    case 'other-comeback':
       return {
         current: (p.mockPassed >= 1 ? 1 : 0) + (p.mockFailed >= 1 ? 1 : 0),
         target: 2,
       };
     default:
-      return null; // sessions/volume, category, mock-perfect: not measurable client-side
+      return null; // writing/yesno/whatmean/combo/other/secret: not measurable from this snapshot
   }
 }
 
