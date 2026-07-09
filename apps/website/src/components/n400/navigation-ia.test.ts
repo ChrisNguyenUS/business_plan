@@ -86,4 +86,16 @@ describe('N400 information architecture contracts', () => {
     expect(source('src/app/[locale]/n400app/statistic/page.tsx')).toContain('ProgressTabs');
     expect(source('src/app/[locale]/n400app/progress/page.tsx')).toContain('ProgressTabs');
   });
+
+  test('hub module exists with the four cards and the bottom sheet', () => {
+    const cards = source('src/components/n400/hub/HubCards.tsx');
+    const sheet = source('src/components/n400/hub/PracticeModesSheet.tsx');
+
+    expect(cards).toContain('HubContinueCard');
+    expect(cards).toContain('HubStudyCardsCard');
+    expect(cards).toContain('HubPracticeCard');
+    expect(cards).toContain('HubWeakAreasCard');
+    expect(sheet).toContain('Chế độ luyện tập');
+    expect(sheet).toContain('role="dialog"');
+  });
 });
