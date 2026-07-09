@@ -324,10 +324,10 @@ export interface PracticePreset {
 }
 
 export const PRACTICE_PRESETS: PracticePreset[] = [
-  { id: 'quick', titleVi: 'Luyện nhanh', titleEn: 'Quick Practice', descVi: 'Ôn nhanh trong vài phút.', count: 5, minutes: 3 },
-  { id: 'standard', titleVi: 'Tiêu chuẩn', titleEn: 'Standard Practice', descVi: 'Bài luyện vừa sức mỗi ngày.', count: 15, minutes: 8 },
-  { id: 'deep', titleVi: 'Chuyên sâu', titleEn: 'Deep Practice', descVi: 'Ghi nhớ kỹ hơn, nhớ lâu hơn.', count: 40, minutes: 20 },
-  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Full Review', descVi: 'Ôn toàn bộ câu hỏi như thi thật.', count: null, minutes: 60 },
+  { id: 'quick', titleVi: 'Ôn nhanh', titleEn: 'Quick Review', descVi: 'Ôn nhanh để làm mới trí nhớ.', count: 5, minutes: 3 },
+  { id: 'standard', titleVi: 'Luyện hằng ngày', titleEn: 'Daily Practice', descVi: 'Bài luyện đề xuất cho hôm nay.', count: 10, minutes: 5 },
+  { id: 'deep', titleVi: 'Thử thách', titleEn: 'Challenge', descVi: 'Thử thách bản thân và lên trình.', count: 20, minutes: 10 },
+  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Master Review', descVi: 'Ôn toàn bộ câu hỏi như thi thật.', count: null, minutes: 35 },
 ];
 
 export function selectPracticeQuestionIds(

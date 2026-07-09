@@ -255,7 +255,7 @@ describe('selectPracticeQuestionIds', () => {
 
   it('exposes the four product presets in display order', () => {
     expect(PRACTICE_PRESETS.map((p) => p.id)).toEqual(['quick', 'standard', 'deep', 'full']);
-    expect(PRACTICE_PRESETS.map((p) => p.count)).toEqual([5, 15, 40, null]);
+    expect(PRACTICE_PRESETS.map((p) => p.count)).toEqual([5, 10, 20, null]);
   });
 
   it('draws only from the requested category when one is given', () => {
