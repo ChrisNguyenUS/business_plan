@@ -30,4 +30,20 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('redirect(');
     expect(page).toContain('view=list&filter=bookmarks');
   });
+
+  test('study picker links to all four skills', () => {
+    const page = source('src/app/[locale]/n400app/study/page.tsx');
+
+    expect(page).toContain('study/civics');
+    expect(page).toContain('speaking/what-mean');
+    expect(page).toContain('speaking/yes-no');
+    expect(page).toContain('/writing');
+  });
+
+  test('civics hub links to the existing flashcards and practice screens', () => {
+    const page = source('src/app/[locale]/n400app/study/civics/page.tsx');
+
+    expect(page).toContain('flashcards');
+    expect(page).toContain('practice');
+  });
 });
