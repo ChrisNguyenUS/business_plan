@@ -46,4 +46,29 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('flashcards');
     expect(page).toContain('practice');
   });
+
+  test('sidebar groups skills under HỌC TẬP and keeps four top-level areas', () => {
+    const sidebar = source('src/components/n400/Sidebar.tsx');
+
+    expect(sidebar).toContain('HỌC TẬP');
+    expect(sidebar).toContain("href: 'study/civics'");
+    expect(sidebar).toContain("href: 'speaking/what-mean'");
+    expect(sidebar).toContain("href: 'speaking/yes-no'");
+    expect(sidebar).toContain("href: 'writing'");
+    // Learning methods are no longer nav destinations:
+    expect(sidebar).not.toContain("href: 'practice'");
+    expect(sidebar).not.toContain("href: 'flashcards'");
+    // One merged progress entry, pointing at statistic:
+    expect(sidebar).not.toContain("href: 'progress'");
+    expect(sidebar).not.toContain('CIVICS (128 câu)');
+  });
+
+  test('mobile nav is Home / Học tập / Thi thử / Tiến độ', () => {
+    const sidebar = source('src/components/n400/Sidebar.tsx');
+    const mobile = sidebar.slice(sidebar.indexOf('MOBILE_MENU'));
+
+    expect(mobile).toContain("href: 'study'");
+    expect(mobile).toContain("href: 'mock-test'");
+    expect(mobile).toContain("href: 'statistic'");
+  });
 });

@@ -19,17 +19,15 @@ import Image from 'next/image';
 import { usePathname, useParams } from 'next/navigation';
 import {
   Home,
-  CheckCircle,
   BarChart2,
-  User,
   Settings,
   LogOut,
   Moon,
-  Shield,
   ClipboardCheck,
-  Layers,
+  Landmark,
   MessageCircleQuestion,
-  Award,
+  PenLine,
+  GraduationCap,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -38,49 +36,38 @@ type MenuItem = {
   label: string;
   href: string;
   icon: typeof Home;
+  /** Extra n400app-relative path prefixes that also count as active. */
+  alsoMatch?: string[];
 };
 
 /* ─── Navigation Groups ─── */
 
 type NavGroup = { heading: string | null; items: MenuItem[] };
 
-/** Desktop nav grouped by content area. Mobile keeps the flat 4-item bar. */
 const DESKTOP_GROUPS: NavGroup[] = [
   { heading: null, items: [{ id: 'dashboard', label: 'Tổng quan', href: '', icon: Home }] },
   {
-    heading: 'CIVICS (128 câu)',
+    heading: 'HỌC TẬP',
     items: [
-      { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-      { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
-    ],
-  },
-  {
-    heading: 'SPEAKING',
-    items: [
-      { id: 'whatmean', label: 'Câu hỏi What Mean', href: 'speaking/what-mean', icon: MessageCircleQuestion },
-      { id: 'yesno', label: 'Câu hỏi Yes No', href: 'speaking/yes-no', icon: MessageCircleQuestion },
-    ],
-  },
-  {
-    heading: 'WRITING',
-    items: [
-      { id: 'writing', label: '✍️ Writing (45 câu)', href: 'writing', icon: MessageCircleQuestion },
+      { id: 'civics', label: 'Civics', href: 'study/civics', icon: Landmark, alsoMatch: ['practice', 'flashcards'] },
+      { id: 'whatmean', label: 'What Mean', href: 'speaking/what-mean', icon: MessageCircleQuestion },
+      { id: 'yesno', label: 'Yes / No', href: 'speaking/yes-no', icon: MessageCircleQuestion },
+      { id: 'writing', label: 'Writing', href: 'writing', icon: PenLine },
     ],
   },
   { heading: null, items: [{ id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck }] },
 ];
 
 const SECONDARY_MENU: MenuItem[] = [
-  { id: 'statistic', label: 'Tiến độ học tập', href: 'statistic', icon: BarChart2 },
-  { id: 'progress', label: 'Huy hiệu & Thành tích', href: 'progress', icon: Award },
+  { id: 'tiendo', label: 'Tiến độ', href: 'statistic', icon: BarChart2, alsoMatch: ['progress'] },
 ];
 
-/** Mobile bottom nav — only primary study features */
+/** Mobile bottom nav — the same four top-level areas as desktop. */
 const MOBILE_MENU: MenuItem[] = [
   { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
-  { id: 'practice', label: 'Luyện tập', href: 'practice', icon: CheckCircle },
-  { id: 'flashcards', label: 'Flashcards', href: 'flashcards', icon: Layers },
+  { id: 'study', label: 'Học tập', href: 'study', icon: GraduationCap, alsoMatch: ['speaking', 'writing', 'practice', 'flashcards'] },
   { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
+  { id: 'tiendo', label: 'Tiến độ', href: 'statistic', icon: BarChart2, alsoMatch: ['progress'] },
 ];
 
 function useN400Navigation() {
@@ -94,7 +81,8 @@ function useN400Navigation() {
 
 function NavItem({ item, base, pathname }: { item: MenuItem; base: string; pathname: string | null }) {
   const href = item.href ? `${base}/${item.href}` : base;
-  const isActive = href === base ? pathname === base : pathname?.startsWith(href);
+  const extraActive = (item.alsoMatch ?? []).some((m) => pathname?.startsWith(`${base}/${m}`));
+  const isActive = (href === base ? pathname === base : pathname?.startsWith(href)) || extraActive;
   const Icon = item.icon;
 
   return (
@@ -198,8 +186,8 @@ export function MobileNav() {
       <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
         {MOBILE_MENU.map((item) => {
           const href = item.href ? `${base}/${item.href}` : base;
-          const isActive =
-            href === base ? pathname === base : pathname?.startsWith(href);
+          const extraActive = (item.alsoMatch ?? []).some((m) => pathname?.startsWith(`${base}/${m}`));
+          const isActive = (href === base ? pathname === base : pathname?.startsWith(href)) || extraActive;
           const Icon = item.icon;
 
           return (
