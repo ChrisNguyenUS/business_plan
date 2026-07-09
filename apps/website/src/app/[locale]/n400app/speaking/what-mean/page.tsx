@@ -1,20 +1,25 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Layers, ArrowRight } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmean-data';
 import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
 import { deriveSectionSeen } from '@/lib/n400/section-progress';
-import { sectionDailyFive, dailyFiveDoneCount } from '@/lib/n400/section-daily';
 import { buildWhatMeanOptions } from '@/lib/n400/whatmean-options';
 import {
   shuffle,
   whatMeanQuestionAudioUrl,
   whatMeanAnswerAudioUrl,
-  type PracticePreset,
 } from '@/lib/n400/quiz-engine';
-import { PracticeSessionPicker } from '@/components/n400/PracticeSessionPicker';
+import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
+import {
+  HubHero,
+  HubContinueCard,
+  HubStudyCardsCard,
+  HubPracticeCard,
+  type StudyCardsFilter,
+} from '@/components/n400/hub/HubCards';
+import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
 import {
   SectionFlashcardScreen,
   type SectionCard,
@@ -22,11 +27,6 @@ import {
 import { SectionMCQuiz, type MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
 
 const ALL_IDS = WHATMEAN_QUESTIONS.map((q) => q.id);
-
-const todayLocal = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
 
 type Mode =
   | { kind: 'landing' }
@@ -77,11 +77,11 @@ export default function WhatMeanPage() {
     () => deriveSectionSeen(state.sectionAttempts).whatmean,
     [state.sectionAttempts],
   );
-  const daily = useMemo(
-    () => sectionDailyFive('whatmean', ALL_IDS, known, seen, todayLocal()),
-    [known, seen],
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const progress = useMemo(
+    () => deriveHubProgress(WHATMEAN_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
+    [seen],
   );
-  const dailyDone = dailyFiveDoneCount(daily, known);
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
@@ -117,54 +117,57 @@ export default function WhatMeanPage() {
     setMode({ kind: 'practice', ids, seed });
   }
 
-  const startPractice = (preset: PracticePreset) => {
-    startPracticeWith(preset.count ?? ALL_IDS.length);
+  const browse = (filter: StudyCardsFilter) => {
+    const ids =
+      filter === 'known'
+        ? ALL_IDS.filter((id) => known.has(id))
+        : filter === 'unknown'
+          ? ALL_IDS.filter((id) => !known.has(id))
+          : [...ALL_IDS];
+    if (ids.length > 0) setMode({ kind: 'deck', ids });
   };
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 pb-8">
-        {/* Daily 5 hero */}
-        <section className="rounded-[24px] border border-teal-100 bg-gradient-to-br from-teal-50 to-white p-5 shadow-sm">
-          <div className="text-xs font-bold uppercase tracking-wide text-teal-600">Daily 5 hôm nay</div>
-          <div className="mt-1 text-lg font-extrabold text-gray-900">Học 5 từ vựng — {dailyDone}/5</div>
-          <button
-            type="button"
-            onClick={() => setMode({ kind: 'deck', ids: daily })}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-semibold text-white shadow-md"
-          >
-            {dailyDone >= 5 ? 'Ôn lại' : 'Bắt đầu'} <ArrowRight size={16} />
-          </button>
-        </section>
-
-        {/* Học tất cả */}
-        <button
-          type="button"
-          onClick={() => setMode({ kind: 'deck', ids: [...ALL_IDS] })}
-          className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm hover:shadow-md"
-        >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-            <Layers size={22} />
-          </div>
-          <div className="flex-1">
-            <div className="font-bold text-gray-800">Học tất cả</div>
-            <div className="text-sm text-gray-500">Lật thẻ toàn bộ {ALL_IDS.length} từ vựng</div>
-          </div>
-        </button>
-
-        {/* Luyện tập MC */}
-        <div>
-          <h2 className="mb-3 text-base font-bold text-gray-800">Luyện tập trắc nghiệm</h2>
-          <PracticeSessionPicker
-            presets={WHATMEAN_PRESETS}
-            totalCount={ALL_IDS.length}
-            resume={null}
-            recommendation={null}
-            onSelect={startPractice}
-            onResume={() => {}}
-            onPracticeRecommendation={() => {}}
-          />
-        </div>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
+        <HubHero
+          emoji="💬"
+          title="What Mean"
+          countLabel={`${ALL_IDS.length} từ vựng`}
+          tagline="Hiểu và trả lời các câu hỏi “What mean” trong buổi phỏng vấn."
+        />
+        <HubContinueCard
+          seenCount={progress.seenCount}
+          totalCount={progress.totalCount}
+          percent={progress.percent}
+          nextLabel={
+            progress.nextNumber !== null
+              ? `Bạn đang ở từ #${progress.nextNumber}`
+              : 'Bạn đã học hết — ôn lại nhé!'
+          }
+          started={progress.started}
+          onContinue={() => setMode({ kind: 'deck', ids: continueOrder(ALL_IDS, (id) => seen.has(id)) })}
+        />
+        <HubStudyCardsCard
+          totalCount={ALL_IDS.length}
+          chips={[
+            { id: 'all', label: 'Tất cả' },
+            { id: 'unknown', label: 'Đang học' },
+            { id: 'known', label: 'Đã thuộc' },
+          ]}
+          onBrowse={browse}
+        />
+        <HubPracticeCard subtitle="Luyện tập trắc nghiệm nghĩa của từ." onStart={() => setSheetOpen(true)} />
+        <PracticeModesSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          presets={WHATMEAN_PRESETS}
+          totalCount={ALL_IDS.length}
+          onSelect={(p) => {
+            setSheetOpen(false);
+            startPracticeWith(p.count ?? ALL_IDS.length);
+          }}
+        />
       </div>
     </div>
   );

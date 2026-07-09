@@ -111,4 +111,19 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain("get('start')");
     expect(page).toContain('study/civics');
   });
+
+  test('section landings use the shared hub module', () => {
+    for (const path of [
+      'src/app/[locale]/n400app/speaking/what-mean/page.tsx',
+      'src/app/[locale]/n400app/speaking/yes-no/page.tsx',
+      'src/app/[locale]/n400app/writing/page.tsx',
+    ]) {
+      const page = source(path);
+      expect(page).toContain('HubContinueCard');
+      expect(page).toContain('PracticeModesSheet');
+      expect(page).not.toContain('PracticeSessionPicker');
+    }
+    // Writing has no flashcards → no Thẻ học card:
+    expect(source('src/app/[locale]/n400app/writing/page.tsx')).not.toContain('HubStudyCardsCard');
+  });
 });
