@@ -40,11 +40,16 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('{base}/writing');
   });
 
-  test('civics hub links to the existing flashcards and practice screens', () => {
+  test('civics hub uses the hub module and deep-links methods', () => {
     const page = source('src/app/[locale]/n400app/study/civics/page.tsx');
 
-    expect(page).toContain('flashcards');
-    expect(page).toContain('practice');
+    expect(page).toContain('HubContinueCard');
+    expect(page).toContain('HubStudyCardsCard');
+    expect(page).toContain('HubPracticeCard');
+    expect(page).toContain('HubWeakAreasCard');
+    expect(page).toContain('PracticeModesSheet');
+    expect(page).toContain('flashcards?filter=');
+    expect(page).toContain('practice?start=');
   });
 
   test('sidebar groups skills under HỌC TẬP and keeps four top-level areas', () => {
