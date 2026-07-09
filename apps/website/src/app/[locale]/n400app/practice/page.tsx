@@ -34,7 +34,7 @@ import {
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
 import { questionAudioUrl, answerAudioUrlFor } from '@/lib/n400/quiz-engine';
-import { PracticeSessionPicker } from '@/components/n400/PracticeSessionPicker';
+import { useRouter, useParams } from 'next/navigation';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
 
@@ -82,6 +82,11 @@ export default function PracticePage() {
     recordAnswer,
     toggleBookmark,
   } = useN400UserState();
+
+  const router = useRouter();
+  const routeParams = useParams();
+  const locale = (routeParams?.locale as string) || 'en';
+  const civicsHubHref = `/${locale}/n400app/study/civics`;
 
   const [seed, setSeed] = useState(() => {
     if (typeof window === 'undefined') return 'init';
@@ -289,8 +294,6 @@ export default function PracticePage() {
     resetQuestionUI();
   };
 
-  const onSelectPreset = (p: PracticePreset) => startSession(p, null);
-
   const onPracticeRecommendation = (rec: PracticeRecommendation) => {
     const quick = PRACTICE_PRESETS.find((p) => p.id === 'quick')!;
     // Fresh shuffle so the review set changes between recommendations.
@@ -310,6 +313,33 @@ export default function PracticePage() {
     setCompleted(false);
     resetQuestionUI();
   };
+
+  // Deep-link entry (hub → practice). ?start=<preset id> starts that mode,
+  // ?start=weak starts a weak-topic session. Bare /practice resumes an
+  // unfinished session, else returns to the Civics hub — the mode picker
+  // moved there (PracticeModesSheet).
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!hydrated || preset !== null || autoStarted.current) return;
+    autoStarted.current = true;
+    const start = new URLSearchParams(window.location.search).get('start');
+    const chosen = PRACTICE_PRESETS.find((p) => p.id === start);
+    if (chosen) {
+      startSession(chosen, null);
+      return;
+    }
+    if (start === 'weak') {
+      if (recommendation) onPracticeRecommendation(recommendation);
+      else startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+      return;
+    }
+    if (resume) {
+      onResume();
+      return;
+    }
+    router.replace(civicsHubHref);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, preset]);
 
   // Retry the same mode with a new shuffle. Always returns to the full mode,
   // even when invoked from a review session.
@@ -338,22 +368,15 @@ export default function PracticePage() {
     resetQuestionUI();
   };
 
-  // Back to the picker. Mid-session progress stays in storage so the picker
-  // can offer "Continue Practice"; after a finished session there is nothing
-  // to resume, so the stored session is cleared.
+  // Back to the Civics hub (the mode picker lives there now). Mid-session
+  // progress stays in storage so a later bare /practice visit resumes it;
+  // a finished session has nothing to resume, so its keys are cleared.
   const onChangeMode = () => {
     if (completed) {
       window.sessionStorage.removeItem(PRESET_STORAGE_KEY);
       window.sessionStorage.removeItem(CATEGORY_STORAGE_KEY);
     }
-    setPreset(null);
-    setReviewIds(null);
-    setWrongIds([]);
-    setIndex(0);
-    setPrevIndex(0);
-    setCorrectCount(0);
-    setCompleted(false);
-    resetQuestionUI();
+    router.push(civicsHubHref);
   };
 
   if (!hydrated) {
@@ -377,16 +400,8 @@ export default function PracticePage() {
 
   if (preset === null) {
     return (
-      <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
-        <PracticeSessionPicker
-          presets={PRACTICE_PRESETS}
-          totalCount={N400_QUESTIONS.length}
-          resume={resume}
-          recommendation={recommendation}
-          onSelect={onSelectPreset}
-          onResume={onResume}
-          onPracticeRecommendation={onPracticeRecommendation}
-        />
+      <div className="flex h-full items-center justify-center text-sm text-gray-500" role="status" aria-label="Đang tải">
+        Đang tải…
       </div>
     );
   }

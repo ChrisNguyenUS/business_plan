@@ -103,4 +103,12 @@ describe('N400 information architecture contracts', () => {
     expect(sheet).toContain('Chế độ luyện tập');
     expect(sheet).toContain('role="dialog"');
   });
+
+  test('practice page is quiz-only, driven by ?start=', () => {
+    const page = source('src/app/[locale]/n400app/practice/page.tsx');
+
+    expect(page).not.toContain('PracticeSessionPicker');
+    expect(page).toContain("get('start')");
+    expect(page).toContain('study/civics');
+  });
 });
