@@ -13,6 +13,7 @@ import {
   Target,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   N400_CATEGORY_LABELS,
@@ -115,18 +116,21 @@ export default function StatisticPage() {
 
   if (totalAnswered === 0) {
     return (
-      <Card className="mx-auto max-w-xl p-6 text-center sm:p-12">
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">Chưa có dữ liệu thống kê</h3>
-        <p className="text-sm text-gray-500 mb-6">
-          Bắt đầu Luyện tập hoặc Thi thử để xem tiến độ và độ chính xác theo từng danh mục.
-        </p>
-        <Link
-          href={`/${locale}/n400app/practice`}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md"
-        >
-          Bắt đầu luyện tập <ArrowRight size={16} />
-        </Link>
-      </Card>
+      <div className="space-y-6 max-w-[1400px] mx-auto">
+        <ProgressTabs />
+        <Card className="mx-auto max-w-xl p-6 text-center sm:p-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">Chưa có dữ liệu thống kê</h3>
+          <p className="text-sm text-gray-500 mb-6">
+            Bắt đầu Luyện tập hoặc Thi thử để xem tiến độ và độ chính xác theo từng danh mục.
+          </p>
+          <Link
+            href={`/${locale}/n400app/practice`}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md"
+          >
+            Bắt đầu luyện tập <ArrowRight size={16} />
+          </Link>
+        </Card>
+      </div>
     );
   }
 
@@ -181,6 +185,7 @@ export default function StatisticPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-[1400px] mx-auto">
+      <ProgressTabs />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {KPIS.map((kpi) => {
           const Icon = kpi.icon;

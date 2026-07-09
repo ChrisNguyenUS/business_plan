@@ -5,6 +5,7 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { deriveSectionSeen } from '@/lib/n400/section-progress';
 import { StatsCard } from '@/components/n400/progress/StatsCard';
+import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { BadgeGallery } from '@/components/n400/BadgeGallery';
 
 const WHATMEAN_TOTAL = 62;
@@ -24,6 +25,7 @@ export default function ProgressPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 max-w-[1100px] mx-auto">
+      <ProgressTabs />
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-teal-900">Huy hiệu &amp; Thành tích</h1>
         <p className="text-sm text-gray-500 mt-1">Theo dõi mức độ thuộc bài ở cả 4 phần và huy hiệu đã đạt được.</p>

@@ -81,4 +81,9 @@ describe('N400 information architecture contracts', () => {
     expect(header).toContain("practice: 'study/civics'");
     expect(header).toContain("flashcards: 'study/civics'");
   });
+
+  test('both progress pages render the shared tab bar', () => {
+    expect(source('src/app/[locale]/n400app/statistic/page.tsx')).toContain('ProgressTabs');
+    expect(source('src/app/[locale]/n400app/progress/page.tsx')).toContain('ProgressTabs');
+  });
 });
