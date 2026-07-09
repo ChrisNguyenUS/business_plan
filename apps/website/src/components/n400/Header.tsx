@@ -40,10 +40,14 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     title: 'Danh mục',
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
   },
+  study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học hôm nay.' },
+  speaking: { title: 'Speaking' },
+  writing: { title: 'Writing', subtitle: 'Nghe và gõ lại câu — luyện phần thi viết N-400.' },
+  progress: { title: 'Tiến độ', subtitle: 'Huy hiệu và thành tích của bạn.' },
 };
 
 /** Primary sections use lateral navigation (no Back button). */
-const PRIMARY_SECTIONS = ['', 'practice', 'flashcards', 'mock-test'];
+const PRIMARY_SECTIONS = ['', 'study', 'mock-test', 'statistic', 'progress'];
 
 /**
  * Deterministic back navigation — navigate to logical parent, not browser history.
@@ -51,10 +55,13 @@ const PRIMARY_SECTIONS = ['', 'practice', 'flashcards', 'mock-test'];
  */
 const PARENT_MAP: Record<string, string> = {
   profile: '',
-  statistic: '',
   categories: '',
   help: '',
   setup: '',
+  practice: 'study/civics',
+  flashcards: 'study/civics',
+  speaking: 'study',
+  writing: 'study',
 };
 
 function detectSection(pathname: string | null, locale: string): string {

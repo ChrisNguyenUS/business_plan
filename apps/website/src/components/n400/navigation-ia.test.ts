@@ -71,4 +71,14 @@ describe('N400 information architecture contracts', () => {
     expect(mobile).toContain("href: 'mock-test'");
     expect(mobile).toContain("href: 'statistic'");
   });
+
+  test('header knows the new sections and parents', () => {
+    const header = source('src/components/n400/Header.tsx');
+
+    expect(header).toContain("study:");
+    expect(header).toContain("speaking:");
+    expect(header).toContain("writing:");
+    expect(header).toContain("practice: 'study/civics'");
+    expect(header).toContain("flashcards: 'study/civics'");
+  });
 });
