@@ -1,17 +1,20 @@
 'use client';
 
-// Writing (dictation) section. Landing shows the session picker + the always-on
-// USCIS writing-rules guidance box; picking a preset drops into DictationQuiz for
-// that many sentences. Mirrors the what-mean / yes-no section shell, minus the
-// Daily 5 / flashcard deck (writing is practice-only).
+// Writing (dictation) section. Landing is a hub (Continue + Practice + the
+// always-on USCIS writing-rules guidance box); picking a mode drops into
+// DictationQuiz for that many sentences. Mirrors the what-mean / yes-no hub
+// shell, minus the Thẻ học card (writing is practice-only, no flashcards).
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
 import { WRITING_PRESETS } from '@/lib/n400/section-presets';
 import { shuffle, type PracticePreset } from '@/lib/n400/quiz-engine';
-import { PracticeSessionPicker } from '@/components/n400/PracticeSessionPicker';
+import { deriveSectionSeen } from '@/lib/n400/section-progress';
+import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
+import { HubHero, HubContinueCard, HubPracticeCard } from '@/components/n400/hub/HubCards';
+import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 
 const ALL = WRITING_SENTENCES;
@@ -27,8 +30,15 @@ const WRITING_RULES = [
 ];
 
 export default function WritingPage() {
-  const { hydrated, recordSectionAnswer } = useN400UserState();
+  const { state, hydrated, recordSectionAnswer } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts).writing, [state.sectionAttempts]);
+  const progress = useMemo(
+    () => deriveHubProgress(ALL, (q) => seen.has(q.id), (q) => q.num),
+    [seen],
+  );
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
@@ -38,6 +48,11 @@ export default function WritingPage() {
     const count = preset.count ?? ALL.length;
     const questions = shuffle([...ALL], `wr-quiz-${Date.now()}`).slice(0, count);
     setMode({ kind: 'quiz', questions });
+  };
+
+  const startContinue = () => {
+    const ordered = continueOrder(ALL, (q) => seen.has(q.id));
+    setMode({ kind: 'quiz', questions: ordered.slice(0, 10) });
   };
 
   if (mode.kind === 'quiz') {
@@ -61,16 +76,27 @@ export default function WritingPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 pb-8">
-        {/* Intro */}
-        <section>
-          <h1 className="text-xl font-extrabold text-gray-900">✍️ Luyện tập Writing</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Nghe câu và gõ lại câu đó. Quy tắc USCIS: viết hoa tên người/địa danh, không viết tắt.
-          </p>
-        </section>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
+        <HubHero
+          emoji="✍️"
+          title="Writing"
+          countLabel={`${ALL.length} câu viết`}
+          tagline="Nghe và gõ lại câu — luyện phần thi viết N-400."
+        />
+        <HubContinueCard
+          seenCount={progress.seenCount}
+          totalCount={progress.totalCount}
+          percent={progress.percent}
+          nextLabel={
+            progress.nextNumber !== null
+              ? `Bạn đang ở câu #${progress.nextNumber}`
+              : 'Bạn đã luyện hết — ôn lại nhé!'
+          }
+          started={progress.started}
+          onContinue={startContinue}
+        />
 
-        {/* Guidance box (always visible) */}
+        {/* Guidance box (always visible) — unchanged */}
         <section className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
           <div className="mb-2 flex items-center gap-2">
             <Lightbulb size={18} className="shrink-0 text-yellow-500" />
@@ -83,19 +109,17 @@ export default function WritingPage() {
           </ul>
         </section>
 
-        {/* Session picker */}
-        <div>
-          <h2 className="mb-3 text-base font-bold text-gray-800">Chọn bài luyện viết</h2>
-          <PracticeSessionPicker
-            presets={WRITING_PRESETS}
-            totalCount={ALL.length}
-            resume={null}
-            recommendation={null}
-            onSelect={startQuiz}
-            onResume={() => {}}
-            onPracticeRecommendation={() => {}}
-          />
-        </div>
+        <HubPracticeCard subtitle="Nghe câu và gõ lại đúng chính tả." onStart={() => setSheetOpen(true)} />
+        <PracticeModesSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          presets={WRITING_PRESETS}
+          totalCount={ALL.length}
+          onSelect={(p) => {
+            setSheetOpen(false);
+            startQuiz(p);
+          }}
+        />
       </div>
     </div>
   );
