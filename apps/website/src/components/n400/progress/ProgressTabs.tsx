@@ -25,6 +25,7 @@ export function ProgressTabs() {
           <Link
             key={t.href}
             href={t.href}
+            aria-current={active ? 'page' : undefined}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
               active ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
             }`}

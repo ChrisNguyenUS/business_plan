@@ -3,15 +3,15 @@
 /**
  * Sidebar (desktop) + MobileNav (bottom navigation).
  *
- * Information Architecture:
- *   Primary:   Dashboard, Practice, Flashcards, Mock Test
- *   Secondary: Learning Progress
- *   Utilities: Account, Settings, Dark Mode, Logout
+ * Information Architecture (4 top-level areas):
+ *   Primary:   Tổng quan · HỌC TẬP group (Civics / What Mean / Yes-No / Writing) · Thi thử
+ *   Secondary: Tiến độ — one entry at /statistic, also covering /progress via alsoMatch
+ *   Utilities: Settings, Dark Mode, Logout
  *
- * Desktop: Permanent sidebar with grouped sections.
- * Mobile:  Bottom nav with 4 primary study features only.
- * Categories: Removed from navigation (now a study filter).
- * Bookmarks: merged into Flashcards (list view + filter).
+ * Desktop: Permanent sidebar with the grouped HỌC TẬP section.
+ * Mobile:  Bottom nav with the same 4 areas — Tổng quan / Học tập / Thi thử / Tiến độ.
+ * alsoMatch: legacy routes (practice, flashcards) are no longer nav destinations;
+ * they keep their parent item (Civics / Học tập tab) highlighted instead.
  */
 
 import Link from 'next/link';

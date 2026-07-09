@@ -37,7 +37,7 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('study/civics');
     expect(page).toContain('speaking/what-mean');
     expect(page).toContain('speaking/yes-no');
-    expect(page).toContain('/writing');
+    expect(page).toContain('{base}/writing');
   });
 
   test('civics hub links to the existing flashcards and practice screens', () => {

@@ -42,7 +42,7 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
   },
   study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học hôm nay.' },
   speaking: { title: 'Speaking' },
-  writing: { title: 'Writing', subtitle: 'Nghe và gõ lại câu — luyện phần thi viết N-400.' },
+  writing: { title: 'Writing' },
   progress: { title: 'Tiến độ', subtitle: 'Huy hiệu và thành tích của bạn.' },
 };
 

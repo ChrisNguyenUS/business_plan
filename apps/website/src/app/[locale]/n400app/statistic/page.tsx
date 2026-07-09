@@ -116,7 +116,7 @@ export default function StatisticPage() {
 
   if (totalAnswered === 0) {
     return (
-      <div className="space-y-6 max-w-[1400px] mx-auto">
+      <div className="space-y-6 animate-in fade-in duration-300 max-w-[1400px] mx-auto">
         <ProgressTabs />
         <Card className="mx-auto max-w-xl p-6 text-center sm:p-12">
           <h3 className="text-2xl font-bold text-gray-800 mb-2">Chưa có dữ liệu thống kê</h3>
