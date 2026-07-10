@@ -214,13 +214,18 @@ export default function DashboardPage() {
           <div
             className="absolute top-0 bottom-0 right-0 hidden lg:block lg:w-[44%] overflow-visible z-[0]"
           >
-            {/* Clipped skyline — rounds top-right & bottom-right to match card */}
-            <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 24px 24px 0' }}>
+            {/* Image clip — extends ABOVE card (top:-80px) so torch
+                breaks out. Only bottom-right corner is rounded since
+                the top extends beyond the card boundary. */}
+            <div
+              className="absolute overflow-hidden"
+              style={{ top: '-80px', bottom: 0, left: 0, right: 0, borderRadius: '0 0 24px 0' }}
+            >
               <Image
                 src="/images/n400/Dashboard-thumbnail.png"
                 alt=""
                 fill
-                className="object-cover object-[center_30%] scale-[1.12]"
+                className="object-cover object-[center_20%] scale-[1.15]"
                 sizes="(min-width: 1024px) 44vw, 0px"
                 priority
               />
