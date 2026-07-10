@@ -5,7 +5,7 @@
 // layout with the question card (header, 2×2 A/B/C/D option grid, reveal
 // feedback, pinned Xem đáp án / Tiếp theo) and the decorative right sidebar.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import {
   SlidersHorizontal,
@@ -46,12 +46,17 @@ export function SectionMCQuiz({
   onExit,
   onRestart,
   title,
+  skipSummary = false,
+  onComplete,
 }: {
   questions: MCQuestion[];
   onAnswer: (itemId: string, wasCorrect: boolean) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
+  /** When true, never render the end-of-session summary; fire onComplete instead. */
+  skipSummary?: boolean;
+  onComplete?: (result: { correct: number; wrong: number }) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<MCOption['id'] | null>(null);
@@ -66,7 +71,16 @@ export function SectionMCQuiz({
     [q, selected],
   );
 
+  useEffect(() => {
+    if (done && skipSummary) {
+      onComplete?.({ correct: correctCount, wrong: wrongCount });
+    }
+    // Only fire when a session actually finishes — counts are frozen then.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, skipSummary]);
+
   if (done || !q) {
+    if (skipSummary) return null;
     return (
       <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
         <PracticeSessionSummary

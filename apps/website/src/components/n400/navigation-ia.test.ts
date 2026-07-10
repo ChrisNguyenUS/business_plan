@@ -130,4 +130,11 @@ describe('N400 information architecture contracts', () => {
   test('PracticeSessionPicker is fully retired', () => {
     expect(existsSync(join(root, 'src/components/n400/PracticeSessionPicker.tsx'))).toBe(false);
   });
+
+  test('SectionMCQuiz supports orchestrated (summary-less) runs', () => {
+    const quiz = source('src/components/n400/speaking/SectionMCQuiz.tsx');
+
+    expect(quiz).toContain('skipSummary');
+    expect(quiz).toContain('onComplete');
+  });
 });
