@@ -203,11 +203,52 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-4 xl:tall:space-y-5">
       {/* 1. HERO — Continue studying the 128 Civics questions */}
-      {/* Outer wrapper: extra top padding so the statue overflow is visible */}
+      {/* Outer wrapper: top padding reserves space for statue overflow */}
       <div className="pt-16 lg:pt-20">
         <Card className="!p-0 !overflow-visible border-slate-200/60 shadow-sm relative">
-          <div className="flex flex-col lg:flex-row">
-            <div className="flex flex-1 flex-col items-center gap-5 p-5 sm:flex-row sm:gap-7 sm:p-6 xl:tall:p-7 z-[2] relative">
+
+          {/* ── Right-side image: absolutely positioned to span FULL card
+              height (both "Tiếp tục học" + hint strip). The outer div is
+              overflow-visible so the torch breaks out above. Inside, a
+              clipped container keeps the skyline within the card border. ── */}
+          <div
+            className="absolute top-0 bottom-0 right-0 hidden lg:block lg:w-[44%] overflow-visible z-[0]"
+          >
+            {/* Clipped skyline — rounds top-right & bottom-right to match card */}
+            <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 24px 24px 0' }}>
+              <Image
+                src="/images/n400/Dashboard-thumbnail.png"
+                alt=""
+                fill
+                className="object-cover object-[center_30%] scale-[1.12]"
+                sizes="(min-width: 1024px) 44vw, 0px"
+                priority
+              />
+            </div>
+
+            {/* Left-edge gradient: blends panorama into white card */}
+            <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-white via-white/80 to-transparent z-[1]" />
+
+            {/* Decorative sparkles — positioned above the card boundary */}
+            <div className="absolute z-[2] pointer-events-none" style={{ top: '-30px', right: '15%' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="2" className="animate-pulse">
+                <line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="4.93" x2="8.46" y2="8.46"/><line x1="15.54" y1="15.54" x2="19.07" y2="19.07"/>
+                <line x1="4.93" y1="19.07" x2="8.46" y2="15.54"/><line x1="15.54" y1="8.46" x2="19.07" y2="4.93"/>
+              </svg>
+            </div>
+            <div className="absolute z-[2] pointer-events-none" style={{ top: '-45px', right: '30%' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="1.5" className="animate-pulse" style={{ animationDelay: '0.5s' }}>
+                <line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* ── Left content: relative z-index so text sits above image ── */}
+          <div className="relative z-[2]">
+            <div className="flex flex-col items-center gap-5 p-5 sm:flex-row sm:gap-7 sm:p-6 xl:tall:p-7 lg:w-[56%]">
               <ProgressRing
                 done={civicsProgress.seenCount}
                 total={civicsProgress.totalCount}
@@ -237,91 +278,43 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Thumbnail — BREAKOUT DESIGN: statue overflows above card.
-                The container is overflow-visible so the statue's torch, crown,
-                and birds/fireworks extend above the card boundary. A left-edge
-                gradient blends the panorama into the white card. */}
-            <div
-              className="relative hidden lg:block lg:w-[44%] overflow-visible"
-              style={{ borderRadius: '0 24px 0 0' }}
-            >
-              {/* Skyline background — clipped to card boundary */}
-              <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 24px 0 0' }}>
-                <Image
-                  src="/images/n400/Dashboard-thumbnail.png"
-                  alt=""
-                  fill
-                  className="object-cover object-bottom scale-[1.08]"
-                  sizes="(min-width: 1024px) 44vw, 0px"
-                  priority
-                />
-              </div>
-
-              {/* Left-edge gradient blend into white */}
-              <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-white via-white/80 to-transparent z-[1]" />
-
-              {/* Decorative sparkles that float above the card */}
-              <div className="absolute z-[2] pointer-events-none" style={{ top: '-30px', right: '15%' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="2" className="animate-pulse">
-                  <line x1="12" y1="2" x2="12" y2="8"/>
-                  <line x1="12" y1="16" x2="12" y2="22"/>
-                  <line x1="2" y1="12" x2="8" y2="12"/>
-                  <line x1="16" y1="12" x2="22" y2="12"/>
-                  <line x1="4.93" y1="4.93" x2="8.46" y2="8.46"/>
-                  <line x1="15.54" y1="15.54" x2="19.07" y2="19.07"/>
-                  <line x1="4.93" y1="19.07" x2="8.46" y2="15.54"/>
-                  <line x1="15.54" y1="8.46" x2="19.07" y2="4.93"/>
-                </svg>
-              </div>
-              <div className="absolute z-[2] pointer-events-none" style={{ top: '-45px', right: '30%' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="1.5" className="animate-pulse" style={{ animationDelay: '0.5s' }}>
-                  <line x1="12" y1="2" x2="12" y2="8"/>
-                  <line x1="12" y1="16" x2="12" y2="22"/>
-                  <line x1="2" y1="12" x2="8" y2="12"/>
-                  <line x1="16" y1="12" x2="22" y2="12"/>
-                </svg>
-              </div>
+            {/* Hint strip — white background, image bleeds through on right */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-100 bg-white/90 px-5 py-3 text-sm sm:px-6 rounded-b-[24px]">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                <Lightbulb size={15} className="text-amber-500" />
+              </span>
+              {recommendation ? (
+                <>
+                  <span className="text-slate-600">
+                    <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Bạn thường sai câu về{' '}
+                    <strong className="font-bold text-slate-800">
+                      {N400_CATEGORY_LABELS[recommendation.category].vi}
+                    </strong>.
+                  </span>
+                  <Link
+                    href={`${base}/practice?start=weak`}
+                    className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
+                  >
+                    Luyện 5 câu ngay <ArrowRight size={15} />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <span className="text-slate-600">
+                    <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Luyện tập mỗi ngày để giữ chuỗi
+                    học tập của bạn.
+                  </span>
+                  <Link
+                    href={`${base}/practice`}
+                    className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
+                  >
+                    Luyện 5 câu ngay <ArrowRight size={15} />
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Hint strip — cream background #f9f7f0 */}
-          <div
-            className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-100 px-5 py-3 text-sm sm:px-6"
-            style={{ backgroundColor: '#f9f7f0', borderRadius: '0 0 24px 24px' }}
-          >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-              <Lightbulb size={15} className="text-amber-500" />
-            </span>
-            {recommendation ? (
-              <>
-                <span className="text-slate-600">
-                  <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Bạn thường sai câu về{' '}
-                  <strong className="font-bold text-slate-800">
-                    {N400_CATEGORY_LABELS[recommendation.category].vi}
-                  </strong>.
-                </span>
-                <Link
-                  href={`${base}/practice?start=weak`}
-                  className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
-                >
-                  Luyện 5 câu ngay <ArrowRight size={15} />
-                </Link>
-              </>
-            ) : (
-              <>
-                <span className="text-slate-600">
-                  <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Luyện tập mỗi ngày để giữ chuỗi
-                  học tập của bạn.
-                </span>
-                <Link
-                  href={`${base}/practice`}
-                  className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
-                >
-                  Luyện 5 câu ngay <ArrowRight size={15} />
-                </Link>
-              </>
-            )}
-          </div>
         </Card>
       </div>
 
