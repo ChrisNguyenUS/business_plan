@@ -69,3 +69,16 @@ export async function evaluateAfterAttempt(
 export async function evaluateAfterStreak(currentStreak: number): Promise<string[]> {
   return runEvaluator({ trigger: 'streak_change', currentStreak });
 }
+
+/**
+ * Full badge recompute — runs every evaluator with the 'manual_recompute'
+ * trigger so any missed unlocks (streak milestones crossed before the badge
+ * system was deployed, session_complete evaluators skipped by the every-5th
+ * heuristic, etc.) get caught up.
+ *
+ * Called lazily from the use-badges hook on mount so badge-display surfaces
+ * (profile page, progress page) auto-heal without user action.
+ */
+export async function recomputeAllBadges(): Promise<string[]> {
+  return runEvaluator({ trigger: 'manual_recompute' });
+}

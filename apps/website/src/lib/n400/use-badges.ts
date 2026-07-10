@@ -6,14 +6,16 @@
 //   1. n400_badges (catalog — 56 rows, RLS public read)
 //   2. n400_user_badges (earned — RLS scoped to auth.uid())
 //
-// Both are cheap. We don't subscribe to realtime — unlocks come back
-// directly from the finalize actions and the page that triggers them
-// is responsible for surfacing the toast. This hook is for read-only
-// surfaces (profile gallery, dashboard preview).
+// On first mount it also fires a non-blocking recomputeAllBadges() call
+// to catch any unlocks that were missed (e.g., streak milestones crossed
+// before badge system was deployed, or session_complete evaluators skipped
+// by the every-5th heuristic). If new badges are unlocked, earned state
+// is re-fetched so the UI updates without a refresh.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { recomputeAllBadges } from './badges/actions';
 
 export type BadgeGroupCode =
   | 'streak'
@@ -54,6 +56,8 @@ export function useN400Badges(): UseN400BadgesResult {
   const [catalog, setCatalog] = useState<BadgeMeta[]>([]);
   const [earned, setEarned] = useState<UserBadge[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  // Only recompute once per mount to avoid hammering the server.
+  const recomputedRef = useRef(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -77,6 +81,29 @@ export function useN400Badges(): UseN400BadgesResult {
       setCatalog((catRes.data ?? []) as BadgeMeta[]);
       setEarned((earnedRes.data ?? []) as UserBadge[]);
       setHydrated(true);
+
+      // Lazy catch-up: recompute all badges once per mount to surface any
+      // unlocks that the heuristic-based triggers missed.
+      if (user && !recomputedRef.current) {
+        recomputedRef.current = true;
+        try {
+          const newSlugs = await recomputeAllBadges();
+          if (!cancelled && newSlugs.length > 0) {
+            // New badges were unlocked — re-fetch earned set.
+            const refreshed = await supabase
+              .from('n400_user_badges')
+              .select('slug,unlocked_at')
+              .eq('user_id', user.id)
+              .order('unlocked_at', { ascending: false });
+            if (!cancelled) {
+              setEarned((refreshed.data ?? []) as UserBadge[]);
+            }
+          }
+        } catch (e) {
+          // Non-critical — don't break the gallery.
+          console.error('n400/badges: lazy recompute failed', e);
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -86,3 +113,4 @@ export function useN400Badges(): UseN400BadgesResult {
   const earnedSlugs = new Set(earned.map((e) => e.slug));
   return { hydrated, catalog, earned, earnedSlugs };
 }
+
