@@ -148,4 +148,11 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain("recordSectionMockResult('speaking'");
     expect(page).toContain("recordSectionMockResult('writing'");
   });
+
+  test('mock test picker offers the full interview', () => {
+    const page = source('src/app/[locale]/n400app/mock-test/page.tsx');
+
+    expect(page).toContain("'full'");
+    expect(page).toContain('Phỏng vấn đầy đủ');
+  });
 });

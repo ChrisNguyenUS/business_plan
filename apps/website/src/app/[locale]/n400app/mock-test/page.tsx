@@ -12,20 +12,31 @@ import {
   BookOpenCheck,
   PenLine,
   Mic,
+  Award,
   ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
 
 interface TestCard {
-  slug: 'civics' | 'viet' | 'speaking';
+  slug: 'full' | 'civics' | 'viet' | 'speaking';
   emoji: string;
   icon: LucideIcon;
   title: string;
   desc: string;
   accent: string; // icon tile bg + text
+  featured?: boolean;
 }
 
 const TESTS: TestCard[] = [
+  {
+    slug: 'full',
+    emoji: '🎤',
+    icon: Award,
+    title: 'Phỏng vấn đầy đủ',
+    desc: 'Cả 3 phần liên tục: Civics (20 câu) → Speaking (10 câu) → Viết (3 câu) — giống buổi phỏng vấn thật.',
+    accent: 'bg-teal-50 text-teal-600',
+    featured: true,
+  },
   {
     slug: 'civics',
     emoji: '📚',
@@ -65,15 +76,22 @@ export default function MockTestPickerPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {TESTS.map((t) => {
           const Icon = t.icon;
           return (
             <Link
               key={t.slug}
               href={`/${locale}/n400app/mock-test/${t.slug}`}
-              className="group flex flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-teal-200 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className={`group flex flex-col rounded-3xl border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+                t.featured ? 'border-teal-300 ring-2 ring-teal-100' : 'border-slate-100 hover:border-teal-200'
+              }`}
             >
+              {t.featured ? (
+                <span className="mb-3 inline-flex w-max rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                  Đề xuất
+                </span>
+              ) : null}
               <div
                 className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
               >
