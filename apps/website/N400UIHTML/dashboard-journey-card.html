@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N400 Dashboard - Hành Trình Nhập Tịch Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --teal: #14847c;
+      --teal-dark: #0f6d66;
+      --teal-light: #e6f5f3;
+      --card-bg: #ffffff;
+      --hint-bg: #f9f7f0;
+      --text-dark: #1a2332;
+      --text-gray: #64748b;
+      --text-gray-dark: #475569;
+      --star-yellow: #ffcc00;
+      --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+      --radius-card: 24px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 100px 24px 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== WRAPPER ===== */
+    .journey-wrapper {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    /* ===== TITLE ABOVE CARD ===== */
+    .journey-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-gray-dark);
+      margin-bottom: 14px;
+    }
+
+    /* ===== MAIN CARD ===== */
+    .journey-card {
+      position: relative;
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      /* ❗ CRITICAL: NO overflow:hidden so statue can break out */
+      overflow: visible;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: row;
+      min-height: 240px;
+    }
+
+    /* ===== LEFT COLUMN ===== */
+    .col-left {
+      flex: 1;
+      padding: 28px 24px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* --- Progress Ring + Session Info row --- */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    /* Circular Progress Ring */
+    .progress-ring-container {
+      position: relative;
+      width: 128px;
+      height: 128px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-container svg {
+      transform: rotate(-90deg);
+      width: 128px;
+      height: 128px;
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: #e8ecf0;
+      stroke-width: 8;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: var(--teal);
+      stroke-width: 8;
+      stroke-linecap: round;
+      /* circumference = 2 * PI * 44 ≈ 276.46 */
+      stroke-dasharray: 276.46;
+      /* 86% progress → offset = 276.46 * (1 - 0.86) ≈ 38.70 */
+      stroke-dashoffset: 38.70;
+      transition: stroke-dashoffset 1.2s ease-out;
+    }
+
+    .progress-ring-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .progress-ring-text .score {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .progress-ring-text .score span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-gray);
+    }
+
+    .progress-ring-text .percent {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--teal);
+      margin-top: 2px;
+    }
+
+    /* --- Session details (right of ring) --- */
+    .session-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .star-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--star-yellow);
+      filter: drop-shadow(0 1px 2px rgba(255, 204, 0, 0.4));
+    }
+
+    .session-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .session-detail {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-gray-dark);
+    }
+
+    /* Horizontal progress bar */
+    .progress-bar-track {
+      width: 100%;
+      max-width: 320px;
+      height: 8px;
+      background: #e8ecf0;
+      border-radius: 100px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 86%;
+      background: var(--teal);
+      border-radius: 100px;
+      transition: width 1s ease-out;
+    }
+
+    /* --- CTA Button --- */
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 13px 28px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 14px rgba(20, 132, 124, 0.25);
+      width: fit-content;
+    }
+
+    .cta-button:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(20, 132, 124, 0.4);
+    }
+
+    .cta-button:active {
+      transform: translateY(0);
+    }
+
+    .cta-button .arrow {
+      font-size: 18px;
+      transition: transform 0.25s ease;
+    }
+
+    .cta-button:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    /* ===== RIGHT COLUMN (IMAGE BREAKOUT & BLENDING) ===== */
+    .col-right {
+      position: relative;
+      width: 44%;
+      flex-shrink: 0;
+      /* ❗ overflow visible so statue breaks out above */
+      overflow: visible;
+      border-radius: 0 var(--radius-card) 0 0;
+    }
+
+    /* Background image — clipped to card boundary */
+    .skyline-clip {
+      position: absolute;
+      inset: 0;
+      border-radius: 0 var(--radius-card) 0 0;
+      overflow: hidden;
+    }
+
+    .skyline-clip img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+      transform: scale(1.08);
+    }
+
+    /* Gradient fade blending into white card on the left */
+    .blend-gradient {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 110px;
+      background: linear-gradient(
+        to right,
+        var(--card-bg) 0%,
+        rgba(255, 255, 255, 0.85) 40%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      z-index: 1;
+    }
+
+    /* Decorative sparkle / firework elements — float above card */
+    .sparkle-wrap {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .sparkle-1 {
+      top: -30px;
+      right: 15%;
+    }
+
+    .sparkle-2 {
+      top: -45px;
+      right: 30%;
+    }
+
+    .sparkle-3 {
+      top: -20px;
+      right: 5%;
+    }
+
+    @keyframes sparkle-pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .sparkle-wrap svg {
+      animation: sparkle-pulse 2.5s ease-in-out infinite;
+    }
+
+    .sparkle-2 svg {
+      animation-delay: 0.6s;
+    }
+
+    .sparkle-3 svg {
+      animation-delay: 1.2s;
+    }
+
+    /* ===== BOTTOM HINT STRIP ===== */
+    .hint-strip {
+      background: var(--hint-bg);
+      border-radius: 0 0 var(--radius-card) var(--radius-card);
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 13px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 4;
+      position: relative;
+    }
+
+    .hint-icon-wrap {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .hint-icon {
+      width: 16px;
+      height: 16px;
+      color: #f59e0b;
+    }
+
+    .hint-text {
+      font-size: 13.5px;
+      color: var(--text-gray-dark);
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .hint-text strong {
+      color: var(--text-dark);
+      font-weight: 700;
+    }
+
+    .hint-link {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--teal);
+      text-decoration: none;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s ease, gap 0.2s ease;
+    }
+
+    .hint-link:hover {
+      color: var(--teal-dark);
+      gap: 8px;
+    }
+
+    /* ===== ENTRANCE ANIMATION ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .journey-card {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      body {
+        padding: 40px 16px;
+      }
+
+      .card-body {
+        flex-direction: column;
+      }
+
+      .col-left {
+        padding: 24px 20px 16px;
+      }
+
+      .col-right {
+        width: 100%;
+        min-height: 180px;
+        border-radius: 0;
+      }
+
+      .skyline-clip {
+        border-radius: 0;
+      }
+
+      .blend-gradient {
+        width: 100%;
+        height: 40%;
+        inset: 0 0 auto 0;
+        background: linear-gradient(to bottom, var(--card-bg) 0%, transparent 100%);
+      }
+
+      .progress-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .session-info {
+        text-align: center;
+      }
+
+      .session-header {
+        justify-content: center;
+      }
+
+      .cta-button {
+        margin: 0 auto;
+      }
+
+      .progress-bar-track {
+        margin: 4px auto 0;
+      }
+
+      .hint-strip {
+        flex-wrap: wrap;
+        padding: 14px 20px;
+        gap: 6px;
+      }
+
+      .sparkle-wrap {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="journey-wrapper">
+    <!-- Title above card -->
+    <p class="journey-title">Ready to continue your citizenship journey?</p>
+
+    <!-- Main Card -->
+    <div class="journey-card">
+      <div class="card-body">
+
+        <!-- ============ LEFT COLUMN ============ -->
+        <div class="col-left">
+          <!-- Progress Ring + Session Info -->
+          <div class="progress-row">
+            <!-- Circular progress ring -->
+            <div class="progress-ring-container">
+              <svg viewBox="0 0 100 100">
+                <circle class="progress-ring-bg" cx="50" cy="50" r="44" />
+                <circle class="progress-ring-fill" cx="50" cy="50" r="44" />
+              </svg>
+              <div class="progress-ring-text">
+                <div class="score">110 <span>/ 128</span></div>
+                <span class="percent">86%</span>
+              </div>
+            </div>
+
+            <!-- Session details -->
+            <div class="session-info">
+              <div class="session-header">
+                <!-- Star icon SVG -->
+                <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <h3>Tiếp tục học</h3>
+              </div>
+              <p class="session-detail">Bạn đang ở câu #11 trong 128 câu Civics</p>
+              <!-- Small horizontal progress bar -->
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button class="cta-button">
+            Tiếp tục học
+            <span class="arrow">→</span>
+          </button>
+        </div>
+
+        <!-- ============ RIGHT COLUMN ============ -->
+        <div class="col-right">
+          <!-- Clipped skyline background -->
+          <div class="skyline-clip">
+            <img
+              src="/images/n400/Dashboard-thumbnail.png"
+              alt="Statue of Liberty with New York City Skyline"
+              loading="eager"
+            />
+          </div>
+
+          <!-- Left-edge gradient blend into white -->
+          <div class="blend-gradient"></div>
+
+          <!-- Decorative sparkles that float above the card boundary -->
+          <div class="sparkle-wrap sparkle-1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" stroke-width="2">
+              <line x1="12" y1="2" x2="12" y2="8"/>
+              <line x1="12" y1="16" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="8" y2="12"/>
+              <line x1="16" y1="12" x2="22" y2="12"/>
+              <line x1="4.93" y1="4.93" x2="8.46" y2="8.46"/>
+              <line x1="15.54" y1="15.54" x2="19.07" y2="19.07"/>
+              <line x1="4.93" y1="19.07" x2="8.46" y2="15.54"/>
+              <line x1="15.54" y1="8.46" x2="19.07" y2="4.93"/>
+            </svg>
+          </div>
+          <div class="sparkle-wrap sparkle-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#daa520" stroke-width="1.5">
+              <line x1="12" y1="2" x2="12" y2="8"/>
+              <line x1="12" y1="16" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="8" y2="12"/>
+              <line x1="16" y1="12" x2="22" y2="12"/>
+            </svg>
+          </div>
+          <div class="sparkle-wrap sparkle-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#daa520" stroke-width="2">
+              <circle cx="12" cy="12" r="2"/>
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+            </svg>
+          </div>
+        </div>
+
+      </div><!-- /.card-body -->
+
+      <!-- ============ BOTTOM HINT STRIP ============ -->
+      <div class="hint-strip">
+        <!-- Lightbulb icon -->
+        <div class="hint-icon-wrap">
+          <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>
+          </svg>
+        </div>
+        <span class="hint-text">
+          <strong>Gợi ý cho bạn:</strong> Bạn thường sai câu về <strong>Lịch Sử Mỹ</strong>.
+        </span>
+        <a href="#" class="hint-link">
+          Luyện 5 câu ngay
+          <span>→</span>
+        </a>
+      </div>
+
+    </div><!-- /.journey-card -->
+  </div><!-- /.journey-wrapper -->
+
+</body>
+</html>
