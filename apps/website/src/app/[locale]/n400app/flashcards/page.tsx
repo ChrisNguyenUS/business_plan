@@ -232,7 +232,7 @@ export default function FlashcardsPage() {
         <div className="flex items-center justify-center gap-3">
           {statusFilter === 'bookmarks' ? (
             <Link
-              href={`/${locale}/n400app/practice`}
+              href={`/${locale}/n400app/study/civics`}
               className="px-4 py-2 rounded-xl bg-teal-600 text-white font-semibold"
             >
               Vào luyện tập

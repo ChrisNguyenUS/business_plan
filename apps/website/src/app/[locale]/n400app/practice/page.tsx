@@ -97,8 +97,9 @@ export default function PracticePage() {
     return next;
   });
 
-  // The picker is always the landing screen; an unfinished session surfaces
-  // there as the "Continue Practice" hero instead of auto-resuming.
+  // null until the ?start= deep link (or the resume snapshot) picks a mode in
+  // the auto-start effect below; bare /practice with nothing to resume
+  // redirects back to the Civics hub, where the mode picker now lives.
   const [preset, setPreset] = useState<PracticePreset | null>(null);
   const [focusCategory, setFocusCategory] = useState<N400CategoryKey | null>(() => readStoredCategory());
   const [completed, setCompleted] = useState(false);
@@ -165,8 +166,8 @@ export default function PracticePage() {
     [reviewIds, seed, preset, focusCategory]
   );
 
-  // Unfinished session (persisted across navigation within the tab) offered
-  // as "Continue Practice" on the picker. Progress is written on each advance.
+  // Unfinished session (persisted across navigation within the tab) picked up
+  // by the auto-start effect on bare /practice. Progress is written on each advance.
   const resume = useMemo(() => {
     if (preset !== null) return null;
     const stored = readStoredPreset();
@@ -323,6 +324,9 @@ export default function PracticePage() {
     if (!hydrated || preset !== null || autoStarted.current) return;
     autoStarted.current = true;
     const start = new URLSearchParams(window.location.search).get('start');
+    // Strip ?start= immediately so a mid-session reload or back-nav lands on
+    // bare /practice and hits the resume branch instead of restarting a mode.
+    if (start) window.history.replaceState(null, '', window.location.pathname);
     const chosen = PRACTICE_PRESETS.find((p) => p.id === start);
     if (chosen) {
       startSession(chosen, null);
@@ -380,8 +384,8 @@ export default function PracticePage() {
   };
 
   if (!hydrated) {
-    // Skeleton mirroring the session picker (the landing screen) to avoid a
-    // layout jump when the real content hydrates in.
+    // Loading skeleton shown until hydration; the auto-start effect then
+    // starts the ?start= mode, resumes a stored session, or redirects to the hub.
     return (
       <div
         className="max-w-[1100px] mx-auto w-full animate-pulse motion-reduce:animate-none"

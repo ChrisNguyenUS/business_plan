@@ -19,6 +19,9 @@ import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 
 const ALL = WRITING_SENTENCES;
 
+// "Tiếp tục học" session length — same size as the standard practice mode.
+const CONTINUE_COUNT = WRITING_PRESETS.find((p) => p.id === 'standard')?.count ?? 10;
+
 type Mode =
   | { kind: 'landing' }
   | { kind: 'quiz'; questions: WritingSentence[] };
@@ -52,7 +55,7 @@ export default function WritingPage() {
 
   const startContinue = () => {
     const ordered = continueOrder(ALL, (q) => seen.has(q.id));
-    setMode({ kind: 'quiz', questions: ordered.slice(0, 10) });
+    setMode({ kind: 'quiz', questions: ordered.slice(0, CONTINUE_COUNT) });
   };
 
   if (mode.kind === 'quiz') {

@@ -23,6 +23,10 @@ describe('deriveHubProgress', () => {
     const p = deriveHubProgress(items, () => true, (it) => it.num);
     expect(p).toEqual({ seenCount: 3, totalCount: 3, percent: 100, nextNumber: null, started: true });
   });
+
+  it('guards against an empty pool', () => {
+    expect(deriveHubProgress([], () => false, () => 0)).toEqual({ seenCount: 0, totalCount: 0, percent: 0, nextNumber: null, started: false });
+  });
 });
 
 describe('continueOrder', () => {

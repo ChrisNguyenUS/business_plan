@@ -145,6 +145,7 @@ export function HubStudyCardsCard({
             <button
               key={c.id}
               type="button"
+              aria-pressed={selected === c.id}
               onClick={() => setSelected(c.id)}
               className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                 selected === c.id

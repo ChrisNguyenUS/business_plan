@@ -99,7 +99,10 @@ export default function CivicsHubPage() {
         onClose={() => setSheetOpen(false)}
         presets={PRACTICE_PRESETS}
         totalCount={N400_QUESTIONS.length}
-        onSelect={(p) => router.push(`${base}/practice?start=${p.id}`)}
+        onSelect={(p) => {
+          setSheetOpen(false);
+          router.push(`${base}/practice?start=${p.id}`);
+        }}
       />
     </div>
   );

@@ -243,7 +243,7 @@ export default function CategoriesPage() {
             </div>
             <div className="flex items-center gap-2">
               <Link
-                href={`/${locale}/n400app/practice`}
+                href={`/${locale}/n400app/study/civics`}
                 className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-semibold flex items-center gap-2 hover:bg-teal-700"
               >
                 Luyện tập <ArrowRight size={14} />

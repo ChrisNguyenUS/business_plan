@@ -124,7 +124,7 @@ export default function StatisticPage() {
             Bắt đầu Luyện tập hoặc Thi thử để xem tiến độ và độ chính xác theo từng danh mục.
           </p>
           <Link
-            href={`/${locale}/n400app/practice`}
+            href={`/${locale}/n400app/study/civics`}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md"
           >
             Bắt đầu luyện tập <ArrowRight size={16} />

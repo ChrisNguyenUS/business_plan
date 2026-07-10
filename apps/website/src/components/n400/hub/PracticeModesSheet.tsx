@@ -4,7 +4,7 @@
 // PracticeSessionPicker grid. Hubs show one "Luyện tập" card and open this
 // on demand (progressive disclosure: one decision per screen).
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X, Zap, Star, Target, Trophy } from 'lucide-react';
 import type { PracticePreset } from '@/lib/n400/quiz-engine';
 
@@ -28,13 +28,49 @@ export function PracticeModesSheet({
   totalCount: number;
   onSelect: (preset: PracticePreset) => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Baseline modal behavior, dependency-free: initial focus into the dialog,
+  // focus restored on close, body scroll locked while open, and Tab wrapped
+  // inside the sheet panel.
   useEffect(() => {
     if (!open) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeBtnRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !panel.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !panel.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+      previouslyFocused?.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -47,7 +83,10 @@ export function PracticeModesSheet({
         onClick={onClose}
         className="absolute inset-0 cursor-pointer bg-slate-900/40 backdrop-blur-[2px]"
       />
-      <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-300 sm:p-8">
+      <div
+        ref={panelRef}
+        className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-300 motion-reduce:animate-none sm:p-8"
+      >
         <div className="mx-auto w-full max-w-4xl">
           <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200 sm:hidden" />
           <div className="flex items-start justify-between gap-4">
@@ -56,6 +95,7 @@ export function PracticeModesSheet({
               <p className="mt-1 text-sm text-gray-500">Chọn chế độ phù hợp với thời gian và mục tiêu của bạn.</p>
             </div>
             <button
+              ref={closeBtnRef}
               type="button"
               onClick={onClose}
               aria-label="Đóng"
