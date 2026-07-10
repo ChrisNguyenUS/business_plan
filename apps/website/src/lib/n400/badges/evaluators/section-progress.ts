@@ -3,8 +3,12 @@
 // differing only by `section` value, item total, and badge thresholds —
 // factored out per Rule of Three (writing.ts/yesno.ts/whatmean.ts all need
 // it) rather than duplicating the query three times.
+//
+// For manual_recompute, we compute the historical date when the Nth
+// distinct item was first answered — so backfilled badges show the
+// correct past date instead of today.
 
-import type { BadgeEvaluator } from '../types';
+import type { BadgeEvaluator, BadgeContext } from '../types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type StudySection = 'writing' | 'yesno' | 'whatmean';
@@ -12,6 +16,12 @@ export type StudySection = 'writing' | 'yesno' | 'whatmean';
 interface AttemptRow {
   item_id: string;
   was_correct: boolean;
+}
+
+interface AttemptRowWithTime {
+  item_id: string;
+  was_correct: boolean;
+  answered_at: string;
 }
 
 // Last-attempt-per-item distinct count + correctness, ordered so map
@@ -35,6 +45,31 @@ export async function loadLastAttemptPerItem(
   return last;
 }
 
+/**
+ * Returns the timestamp at which the user first reached `threshold`
+ * distinct items in a section. Used during manual_recompute.
+ */
+async function dateWhenDistinctReached(
+  userId: string,
+  section: StudySection,
+  threshold: number,
+  supabase: SupabaseClient,
+): Promise<string | undefined> {
+  const { data } = await supabase
+    .from('n400_section_attempts')
+    .select('item_id, was_correct, answered_at')
+    .eq('user_id', userId)
+    .eq('section', section)
+    .order('answered_at', { ascending: true });
+  if (!data) return undefined;
+  const seen = new Set<string>();
+  for (const row of data as AttemptRowWithTime[]) {
+    seen.add(row.item_id);
+    if (seen.size >= threshold) return row.answered_at;
+  }
+  return undefined;
+}
+
 export function makeCountEvaluator(
   slug: string,
   section: StudySection,
@@ -43,7 +78,12 @@ export function makeCountEvaluator(
   return async (userId, ctx, supabase) => {
     const last = await loadLastAttemptPerItem(userId, section, supabase);
     if (last.size < threshold) return null;
-    return { slug, metadata: { distinct: last.size }, triggerAttemptId: ctx.attemptId };
+    // For manual_recompute, find the actual historical date.
+    const unlockedAt =
+      ctx.trigger === 'manual_recompute'
+        ? await dateWhenDistinctReached(userId, section, threshold, supabase)
+        : undefined;
+    return { slug, metadata: { distinct: last.size }, triggerAttemptId: ctx.attemptId, unlockedAt };
   };
 }
 
@@ -64,3 +104,4 @@ export function makePerfectEvaluator(
     return { slug, metadata: { correct, total }, triggerAttemptId: ctx.attemptId };
   };
 }
+

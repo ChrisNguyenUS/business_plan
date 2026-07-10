@@ -35,6 +35,11 @@ export interface UnlockResult {
   slug: string;
   metadata?: Record<string, unknown>;
   triggerAttemptId?: string;
+  // When set, the dispatcher uses this as n400_user_badges.unlocked_at
+  // instead of NOW(). Evaluators set this during manual_recompute to
+  // reflect the historical date when the milestone was actually first
+  // achieved — so backfilled badges show the correct past date.
+  unlockedAt?: string;
 }
 
 export type BadgeEvaluator = (

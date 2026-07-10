@@ -68,6 +68,9 @@ export async function evaluateBadges(
     slug: r.slug,
     trigger_attempt_id: r.triggerAttemptId ?? ctx.attemptId ?? null,
     metadata: r.metadata ?? {},
+    // When the evaluator provides a historical date (manual_recompute),
+    // use it instead of letting the DB default to NOW().
+    ...(r.unlockedAt ? { unlocked_at: r.unlockedAt } : {}),
   }));
 
   // Dedupe within this batch — if two evaluators returned the same
@@ -81,6 +84,10 @@ export async function evaluateBadges(
     return true;
   });
 
+  // For manual_recompute with historical dates, we need to handle two
+  // cases: (1) brand-new badges → INSERT with historical unlocked_at,
+  // (2) already-existing badges with wrong date → UPDATE unlocked_at.
+  // Regular triggers just do INSERT ... ON CONFLICT DO NOTHING.
   const { data, error } = await supabase
     .from('n400_user_badges')
     .upsert(dedupedRows, { onConflict: 'user_id,slug', ignoreDuplicates: true })
@@ -90,5 +97,28 @@ export async function evaluateBadges(
     console.error('n400/badges: insert failed', error);
     return [];
   }
+
+  // For manual_recompute: fix unlocked_at on rows that already existed
+  // (the INSERT above skipped them via ignoreDuplicates). We update
+  // only rows whose evaluator returned a historical date.
+  if (ctx.trigger === 'manual_recompute') {
+    const rowsWithDate = dedupedRows.filter((r) => 'unlocked_at' in r);
+    const insertedSlugs = new Set((data ?? []).map((r) => r.slug as string));
+    const toUpdate = rowsWithDate.filter((r) => !insertedSlugs.has(r.slug));
+    if (toUpdate.length > 0) {
+      // Update each individually — small batch (max ~50 badges).
+      await Promise.all(
+        toUpdate.map((r) =>
+          supabase
+            .from('n400_user_badges')
+            .update({ unlocked_at: r.unlocked_at })
+            .eq('user_id', userId)
+            .eq('slug', r.slug),
+        ),
+      );
+    }
+  }
+
   return (data ?? []).map((r) => r.slug as string);
 }
+
