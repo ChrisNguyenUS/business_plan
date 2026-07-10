@@ -70,7 +70,9 @@
       "Bash(pnpm test *)",
       "Bash(echo \"exit: $?\")",
       "Bash(pnpm lint *)",
-      "Bash(awk '/flashcards\\\\/page\\\\.tsx/{f=1;print;next} f&&/^\\\\//{f=0} f')"
+      "Bash(awk '/flashcards\\\\/page\\\\.tsx/{f=1;print;next} f&&/^\\\\//{f=0} f')",
+      "Bash(git ls-tree *)",
+      "Bash(git diff *)"
     ]
   },
   "enableAllProjectMcpServers": true,
