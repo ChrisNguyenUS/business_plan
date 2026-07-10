@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -125,5 +125,9 @@ describe('N400 information architecture contracts', () => {
     }
     // Writing has no flashcards → no Thẻ học card:
     expect(source('src/app/[locale]/n400app/writing/page.tsx')).not.toContain('HubStudyCardsCard');
+  });
+
+  test('PracticeSessionPicker is fully retired', () => {
+    expect(existsSync(join(root, 'src/components/n400/PracticeSessionPicker.tsx'))).toBe(false);
   });
 });
