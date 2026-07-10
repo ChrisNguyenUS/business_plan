@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Viewport-height variant: upsized "comfortable" layouts only apply on
+   screens tall enough to fit them without scrolling (e.g. n400 dashboard). */
+@custom-variant tall (@media (min-height: 900px));
+
 /* Global: ensure all interactive elements show pointer cursor */
 button,
 [role="button"],
