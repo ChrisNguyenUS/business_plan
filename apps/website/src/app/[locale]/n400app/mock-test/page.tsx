@@ -1,118 +1,222 @@
 'use client';
 
-// Thi thử picker. The single mock exam was split into three focused tests —
-// Civics (128-câu), Viết (dictation), and Speaking (What Mean + Yes/No). This
-// landing lets the learner pick which one to sit. Each card deep-links into its
-// own immersive sub-route; the tests themselves live in ./civics, ./viet and
-// ./speaking.
+// Thi thử landing. Hero banner ("Thi thử như phỏng vấn thật!") + four test
+// cards with thumbnails — Full Interview (featured), Civics, Speaking và
+// Writing. Each card deep-links into its own immersive sub-route; the tests
+// themselves live in ./full, ./civics, ./speaking and ./viet. The page title
+// row comes from the shared Header (TITLES['mock-test']), so no h1 here.
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import {
-  BookOpenCheck,
-  PenLine,
-  Mic,
-  Award,
   ArrowRight,
+  ClipboardList,
+  Clock,
+  Lock,
+  ShieldCheck,
+  Shuffle,
+  Star,
   type LucideIcon,
 } from 'lucide-react';
 
+const THUMB_DIR = '/images/n400/Mock test thumbanil';
+
+const HERO_FEATURES: { icon: LucideIcon; label: string }[] = [
+  { icon: Shuffle, label: 'Câu hỏi ngẫu nhiên' },
+  { icon: Clock, label: 'Giới hạn thời gian' },
+  { icon: ShieldCheck, label: 'Chấm điểm chuẩn USCIS' },
+  { icon: Lock, label: 'Không thể quay lại đáp án' },
+];
+
 interface TestCard {
-  slug: 'full' | 'civics' | 'viet' | 'speaking';
-  emoji: string;
-  icon: LucideIcon;
+  slug: 'full' | 'civics' | 'speaking' | 'viet';
+  image: string;
   title: string;
   desc: string;
-  accent: string; // icon tile bg + text
+  questions: string;
+  duration: string;
+  passRule: string;
+  buttonLabel: string;
+  buttonClass: string;
   featured?: boolean;
 }
 
 const TESTS: TestCard[] = [
   {
     slug: 'full',
-    emoji: '🎤',
-    icon: Award,
-    title: 'Phỏng vấn đầy đủ',
-    desc: 'Cả 3 phần liên tục: Civics (20 câu) → Speaking (10 câu) → Viết (3 câu) — giống buổi phỏng vấn thật.',
-    accent: 'bg-teal-50 text-teal-600',
+    image: `${THUMB_DIR}/fullinterview-mocktest.png`,
+    title: 'Thi thử đầy đủ (Full Interview)',
+    desc: 'Mô phỏng đầy đủ 3 phần: Civics, Speaking và Writing như kỳ thi thật.',
+    questions: '33 câu tổng cộng',
+    duration: '15–18 phút',
+    passRule: 'Đạt cả 3 phần để đậu',
+    buttonLabel: 'Bắt đầu ngay',
+    buttonClass: 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20',
     featured: true,
   },
   {
     slug: 'civics',
-    emoji: '📚',
-    icon: BookOpenCheck,
+    image: `${THUMB_DIR}/Civic-moctest.png`,
     title: 'Thi thử Civics',
-    desc: '128 câu hỏi — 20 câu ngẫu nhiên, vượt qua 12 câu là đạt',
-    accent: 'bg-teal-50 text-teal-600',
-  },
-  {
-    slug: 'viet',
-    emoji: '✍️',
-    icon: PenLine,
-    title: 'Thi thử Viết',
-    desc: '3 câu viết — viết đúng ít nhất 1 câu là đạt',
-    accent: 'bg-orange-50 text-orange-500',
+    desc: '20 câu hỏi trắc nghiệm về kiến thức công dân (128 câu hỏi).',
+    questions: '20 câu hỏi',
+    duration: '7–10 phút',
+    passRule: 'Cần 60% (12/20)',
+    buttonLabel: 'Bắt đầu',
+    buttonClass: 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20',
   },
   {
     slug: 'speaking',
-    emoji: '🎤',
-    icon: Mic,
+    image: `${THUMB_DIR}/Speaking-mocktest.png`,
     title: 'Thi thử Speaking',
-    desc: '10 câu (5 What Mean + 5 Yes No) — trả lời đúng ít nhất 8 câu là đạt',
-    accent: 'bg-purple-50 text-purple-600',
+    desc: 'Trả lời 10 câu hỏi phỏng vấn với 5 What Mean và 5 Yes/No.',
+    questions: '10 câu hỏi',
+    duration: '5–7 phút',
+    passRule: 'Cần 80% (8/10)',
+    buttonLabel: 'Bắt đầu',
+    buttonClass: 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20',
+  },
+  {
+    slug: 'viet',
+    image: `${THUMB_DIR}/Writing-mocktest.png`,
+    title: 'Thi thử Writing',
+    desc: 'Viết lại 3 câu theo yêu cầu của viên chức USCIS.',
+    questions: '3 câu hỏi',
+    duration: '3–5 phút',
+    passRule: 'Đúng 1/3 câu là đậu',
+    buttonLabel: 'Bắt đầu',
+    buttonClass: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
   },
 ];
+
+function CardMeta({ icon: Icon, tone, label }: { icon: LucideIcon; tone: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${tone}`}>
+        <Icon size={13} />
+      </span>
+      {label}
+    </span>
+  );
+}
 
 export default function MockTestPickerPage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const base = `/${locale}/n400app/mock-test`;
 
   return (
-    <div className="mx-auto w-full max-w-5xl animate-in fade-in duration-300">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Chọn bài thi thử</h1>
-        <p className="mt-1.5 text-sm text-gray-500 sm:text-base">
-          Mô phỏng kỳ thi quốc tịch Mỹ (N-400). Chọn phần bạn muốn luyện thi hôm nay.
-        </p>
-      </div>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-8 animate-in fade-in duration-300">
+      {/* Hero banner */}
+      <section className="overflow-hidden rounded-[24px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-sky-50 shadow-sm">
+        <div className="flex flex-col gap-6 p-5 sm:p-8 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">
+              Thi thử như phỏng vấn thật!
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-600 sm:text-base">
+              Mô phỏng đầy đủ kỳ thi quốc tịch Mỹ với câu hỏi ngẫu nhiên, thời gian thực và tiêu
+              chuẩn chấm điểm như USCIS.
+            </p>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {TESTS.map((t) => {
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.slug}
-              href={`/${locale}/n400app/mock-test/${t.slug}`}
-              className={`group flex flex-col rounded-3xl border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
-                t.featured ? 'border-teal-300 ring-2 ring-teal-100' : 'border-slate-100 hover:border-teal-200'
-              }`}
-            >
-              {t.featured ? (
-                <span className="mb-3 inline-flex w-max rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                  Đề xuất
-                </span>
-              ) : null}
-              <div
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${t.accent}`}
+            <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+              {HERO_FEATURES.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <div key={f.label} className="flex items-center gap-2.5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-600 shadow-sm">
+                      <Icon size={18} />
+                    </span>
+                    <span className="text-xs font-semibold leading-snug text-gray-700">
+                      {f.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link
+                href={`${base}/full`}
+                className="group inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
               >
-                <span aria-hidden>{t.emoji}</span>
-              </div>
-              <h2 className="mt-5 flex items-center gap-2 text-xl font-extrabold text-gray-800">
-                <Icon size={20} className="shrink-0 text-teal-600" />
-                {t.title}
-              </h2>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">{t.desc}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-teal-600 transition-colors group-hover:text-teal-700">
-                Bắt đầu
+                Bắt đầu thi thử đầy đủ
                 <ArrowRight
                   size={16}
                   className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
                 />
+              </Link>
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-3 text-xs font-semibold text-gray-600 shadow-sm">
+                <Clock size={14} className="text-teal-600" />
+                Khoảng 15–18 phút
               </span>
-            </Link>
-          );
-        })}
-      </div>
+            </div>
+          </div>
+
+          <div className="relative hidden h-56 w-full shrink-0 overflow-hidden rounded-2xl lg:block lg:w-[46%]">
+            <Image
+              src={`${THUMB_DIR}/Hero bar thumbnail.png`}
+              alt="Buổi phỏng vấn quốc tịch tại văn phòng USCIS"
+              fill
+              sizes="(max-width: 1024px) 0px, 50vw"
+              className="object-cover"
+              preload
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Test picker */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-800 sm:text-xl">Chọn bài thi phù hợp với bạn</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {TESTS.map((t) => (
+            <div
+              key={t.slug}
+              className={`group flex flex-col rounded-3xl border bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+                t.featured
+                  ? 'border-teal-300 ring-2 ring-teal-100'
+                  : 'border-slate-100 hover:border-teal-200'
+              }`}
+            >
+              <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-slate-50">
+                <Image
+                  src={t.image}
+                  alt={t.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                  className="object-cover"
+                />
+                {t.featured ? (
+                  <span className="absolute left-2.5 top-2.5 rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                    Đề xuất
+                  </span>
+                ) : null}
+              </div>
+              <h3 className="mt-4 text-base font-extrabold leading-snug text-gray-800">
+                {t.title}
+              </h3>
+              <p className="mt-1 flex-1 text-sm leading-relaxed text-gray-500">{t.desc}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <CardMeta icon={ClipboardList} tone="bg-teal-50 text-teal-600" label={t.questions} />
+                <CardMeta icon={Clock} tone="bg-indigo-50 text-indigo-600" label={t.duration} />
+                <CardMeta icon={Star} tone="bg-amber-50 text-amber-500" label={t.passRule} />
+              </div>
+              <Link
+                href={`${base}/${t.slug}`}
+                className={`mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-md transition-colors ${t.buttonClass}`}
+              >
+                {t.buttonLabel}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+                />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -157,6 +157,6 @@ describe('N400 information architecture contracts', () => {
     const page = source('src/app/[locale]/n400app/mock-test/page.tsx');
 
     expect(page).toContain("'full'");
-    expect(page).toContain('Phỏng vấn đầy đủ');
+    expect(page).toContain('Thi thử đầy đủ (Full Interview)');
   });
 });

@@ -201,41 +201,53 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-4 xl:tall:space-y-5">
+    <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 1. HERO — Continue studying the 128 Civics questions */}
       {/* Outer wrapper: top padding reserves space for statue overflow */}
-      <div className="pt-16 lg:pt-20">
+      <div className="lg:pt-14 lg:short:pt-10 xl:tall:pt-20">
         <Card className="!p-0 !overflow-visible border-slate-200/60 shadow-sm relative">
 
-          {/* ── Right-side image: absolutely positioned to span FULL card
-              height (both "Tiếp tục học" + hint strip). The outer div is
-              overflow-visible so the torch breaks out above. Inside, a
-              clipped container keeps the skyline within the card border. ── */}
+          {/* ── Right-side image group. The box spans the card height PLUS
+              96px above it. Two layers fill the exact same box so their
+              object-cover geometry is pixel-identical:
+                1. full panorama, clip-path'ed to the card bounds
+                2. statue-top cutout (transparent PNG), unclipped, so only
+                   the torch/head break out above the card ── */}
           <div
-            className="absolute top-0 bottom-0 right-0 hidden lg:block lg:w-[44%] overflow-visible z-[0]"
+            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:88px] short:[--pop:64px]"
+            style={{ top: 'calc(-1 * var(--pop))' }}
           >
-            {/* Image clip — extends ABOVE card (top:-80px) so torch
-                breaks out. Only bottom-right corner is rounded since
-                the top extends beyond the card boundary. */}
+            {/* Base panorama — clipped to the card area (skyline, body,
+                tablet, flag all stay inside the border) */}
             <div
-              className="absolute overflow-hidden"
-              style={{ top: '-80px', bottom: 0, left: 0, right: 0, borderRadius: '0 0 24px 0' }}
+              className="absolute inset-0"
+              style={{ clipPath: 'inset(var(--pop) 0 0 0 round 0 24px 24px 0)' }}
             >
               <Image
                 src="/images/n400/Dashboard-thumbnail.png"
                 alt=""
                 fill
-                className="object-cover object-[center_20%] scale-[1.15]"
+                className="object-cover object-[65%_20%] scale-[1.15] -translate-y-3"
                 sizes="(min-width: 1024px) 44vw, 0px"
                 priority
               />
+              {/* Left-edge gradient: blends panorama into white card */}
+              <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-white via-white/80 to-transparent" />
             </div>
 
-            {/* Left-edge gradient: blends panorama into white card */}
-            <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-white via-white/80 to-transparent z-[1]" />
+            {/* Statue cutout — same canvas + same object-fit as the base, so
+                it lands exactly on top of the statue; torch/head overflow */}
+            <Image
+              src="/images/n400/Dashboard-thumbnail-statue.png"
+              alt=""
+              fill
+              className="object-cover object-[65%_20%] scale-[1.15] -translate-y-3 z-[1]"
+              sizes="(min-width: 1024px) 44vw, 0px"
+              priority
+            />
 
             {/* Decorative sparkles — positioned above the card boundary */}
-            <div className="absolute z-[2] pointer-events-none" style={{ top: '-30px', right: '15%' }}>
+            <div className="absolute z-[2] pointer-events-none" style={{ top: '66px', right: '15%' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="2" className="animate-pulse">
                 <line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/>
                 <line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
@@ -243,7 +255,7 @@ export default function DashboardPage() {
                 <line x1="4.93" y1="19.07" x2="8.46" y2="15.54"/><line x1="15.54" y1="8.46" x2="19.07" y2="4.93"/>
               </svg>
             </div>
-            <div className="absolute z-[2] pointer-events-none" style={{ top: '-45px', right: '30%' }}>
+            <div className="absolute z-[2] pointer-events-none" style={{ top: '51px', right: '30%' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="1.5" className="animate-pulse" style={{ animationDelay: '0.5s' }}>
                 <line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/>
                 <line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
@@ -253,7 +265,7 @@ export default function DashboardPage() {
 
           {/* ── Left content: relative z-index so text sits above image ── */}
           <div className="relative z-[2]">
-            <div className="flex flex-col items-center gap-5 p-5 sm:flex-row sm:gap-7 sm:p-6 xl:tall:p-7 lg:w-[56%]">
+            <div className="flex flex-col items-center gap-5 p-5 sm:flex-row sm:gap-7 xl:tall:p-7 lg:w-[56%]">
               <ProgressRing
                 done={civicsProgress.seenCount}
                 total={civicsProgress.totalCount}
@@ -275,7 +287,7 @@ export default function DashboardPage() {
                 </div>
                 <Link
                   href={`${base}/flashcards?filter=unknown`}
-                  className="group mt-4 xl:tall:mt-5 inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-7 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
+                  className="group mt-3 xl:tall:mt-5 inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-7 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   {civicsProgress.started ? 'Tiếp tục học' : 'Bắt đầu học'}
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
@@ -284,7 +296,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Hint strip — white background, image bleeds through on right */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-100 bg-white/90 px-5 py-3 text-sm sm:px-6 rounded-b-[24px]">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-100 bg-white/90 px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                 <Lightbulb size={15} className="text-amber-500" />
               </span>
@@ -324,8 +336,8 @@ export default function DashboardPage() {
       </div>
 
       {/* 2. MỤC TIÊU HÔM NAY */}
-      <Card className="!p-5 xl:tall:!p-6 border-amber-100 bg-gradient-to-br from-amber-50/60 to-white">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <Card className="!p-4 xl:tall:!p-6 border-amber-100 bg-gradient-to-br from-amber-50/60 to-white">
+        <div className="mb-3 xl:tall:mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500 shadow-sm">
               <Target size={22} />
@@ -347,7 +359,7 @@ export default function DashboardPage() {
             <Link
               key={goal.label + goal.sub}
               href={goal.href}
-              className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 xl:tall:p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
             >
               {goal.done ? (
                 <CheckCircle2 size={24} className="shrink-0 text-green-500" fill="currentColor" stroke="white" />
@@ -371,9 +383,9 @@ export default function DashboardPage() {
             <Link
               key={card.label}
               href={card.href}
-              className="group flex flex-col rounded-[24px] border border-slate-100 bg-white p-4 xl:tall:p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex flex-col rounded-[24px] border border-slate-100 bg-white p-3.5 xl:tall:p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.tint}`}>
+              <div className={`mb-2 xl:tall:mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.tint}`}>
                 <Icon size={20} />
               </div>
               <h4 className="text-sm xl:tall:text-base font-extrabold text-slate-900">{card.label}</h4>
@@ -399,7 +411,7 @@ export default function DashboardPage() {
               <Link
                 key={stat.label}
                 href={stat.href}
-                className="flex items-center gap-3 px-5 py-3.5 xl:tall:py-4 transition-colors hover:bg-slate-50"
+                className="flex items-center gap-3 px-5 py-3 lg:short:py-2.5 xl:tall:py-4 transition-colors hover:bg-slate-50"
               >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${stat.tint}`}>
                   <Icon size={20} fill={stat.filled ? 'currentColor' : 'none'} />

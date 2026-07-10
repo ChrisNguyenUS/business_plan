@@ -3,7 +3,11 @@
 
 /* Viewport-height variant: upsized "comfortable" layouts only apply on
    screens tall enough to fit them without scrolling (e.g. n400 dashboard). */
-@custom-variant tall (@media (min-height: 900px));
+@custom-variant tall (@media (min-height: 1000px));
+
+/* Short-viewport variant: extra-compact spacing so the n400 dashboard fits
+   common laptop viewports (~790px after browser chrome) without scrolling. */
+@custom-variant short (@media (max-height: 849px));
 
 /* Global: ensure all interactive elements show pointer cursor */
 button,
