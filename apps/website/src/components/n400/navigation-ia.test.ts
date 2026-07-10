@@ -137,4 +137,15 @@ describe('N400 information architecture contracts', () => {
     expect(quiz).toContain('skipSummary');
     expect(quiz).toContain('onComplete');
   });
+
+  test('full interview chains the three parts and records results', () => {
+    const page = source('src/app/[locale]/n400app/mock-test/full/page.tsx');
+
+    expect(page).toContain('buildCivicsPhase');
+    expect(page).toContain('buildSpeakingPhase');
+    expect(page).toContain('buildWritingPhase');
+    expect(page).toContain('recordMockResult');
+    expect(page).toContain("recordSectionMockResult('speaking'");
+    expect(page).toContain("recordSectionMockResult('writing'");
+  });
 });
