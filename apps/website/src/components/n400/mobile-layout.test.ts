@@ -21,9 +21,11 @@ describe('N400 mobile layout contracts', () => {
   test('dashboard collapses desktop columns on mobile', () => {
     const dashboard = source('src/app/[locale]/n400app/dashboard-client.tsx');
 
-    // Dashboard main layout collapses to single column on mobile
-    expect(dashboard).toContain('flex-col xl:flex-row');
+    // Hero collapses to a stacked layout on mobile; card grids collapse to
+    // one column.
     expect(dashboard).toContain('flex-col lg:flex-row');
+    expect(dashboard).toContain('grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4');
+    expect(dashboard).toContain('grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4');
   });
 
   test('statistics screen avoids fixed desktop columns on mobile', () => {

@@ -37,11 +37,23 @@ export function HubHero({
   );
 }
 
-function ProgressRing({ done, total, percent }: { done: number; total: number; percent: number }) {
+export function ProgressRing({
+  done,
+  total,
+  percent,
+  size = 'md',
+}: {
+  done: number;
+  total: number;
+  percent: number;
+  /** md — hub continue card. lg — dashboard hero. */
+  size?: 'md' | 'lg';
+}) {
   const R = 44;
   const C = 2 * Math.PI * R;
+  const lg = size === 'lg';
   return (
-    <div className="relative h-28 w-28 shrink-0">
+    <div className={`relative shrink-0 ${lg ? 'h-36 w-36 sm:h-44 sm:w-44' : 'h-28 w-28'}`}>
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
         <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100" />
         <circle
@@ -58,11 +70,11 @@ function ProgressRing({ done, total, percent }: { done: number; total: number; p
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-xl font-extrabold leading-none text-gray-900">
+        <div className={`${lg ? 'text-3xl sm:text-4xl' : 'text-xl'} font-extrabold leading-none text-gray-900`}>
           {done}
-          <span className="text-xs font-bold text-gray-400">/{total}</span>
+          <span className={`${lg ? 'text-base sm:text-lg' : 'text-xs'} font-bold text-gray-400`}>/{total}</span>
         </div>
-        <div className="mt-1 text-xs font-bold text-teal-600">{percent}%</div>
+        <div className={`mt-1 ${lg ? 'text-sm sm:text-base' : 'text-xs'} font-bold text-teal-600`}>{percent}%</div>
       </div>
     </div>
   );

@@ -15,6 +15,8 @@ import { usePathname, useParams } from 'next/navigation';
 import { ChevronLeft, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { getShortName } from '@/lib/profile-utils';
 import { AvatarMenu } from './AvatarMenu';
 
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
@@ -78,8 +80,21 @@ export function Header() {
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
   const section = detectSection(pathname, locale);
-  const meta = TITLES[section] ?? TITLES[''];
   const isSecondary = !PRIMARY_SECTIONS.includes(section);
+
+  // Dashboard greets by name and time of day (per the dashboard redesign
+  // mock); every other page keeps its static title. Falls back to the static
+  // entry while the profile is still loading.
+  const { profile } = useAuth();
+  let meta = TITLES[section] ?? TITLES[''];
+  if (section === '' && profile) {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    meta = {
+      title: `${greeting}, ${getShortName(profile)}! 👋`,
+      subtitle: 'Ready to continue your citizenship journey?',
+    };
+  }
 
   // Deterministic back navigation
   const parentHref = PARENT_MAP[section];
