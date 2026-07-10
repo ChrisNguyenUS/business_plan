@@ -7,13 +7,22 @@ const ctx = (currentStreak?: number): BadgeContext => ({
   currentStreak,
 });
 
-const fakeSupabase = (currentStreak: number | null = null) =>
+const fakeSupabase = (
+  currentStreak: number | null = null,
+  longestStreak?: number | null,
+) =>
   ({
     from: () => ({
       select: () => ({
         eq: () => ({
           maybeSingle: async () => ({
-            data: currentStreak === null ? null : { current_streak: currentStreak },
+            data:
+              currentStreak === null && longestStreak === undefined
+                ? null
+                : {
+                    current_streak: currentStreak ?? 0,
+                    longest_streak: longestStreak ?? currentStreak ?? 0,
+                  },
           }),
         }),
       }),
@@ -51,6 +60,27 @@ describe('streakEvaluators', () => {
     expect(r?.slug).toBe('streak-14');
   });
 
+  it('uses longest_streak when current_streak is lower (past achievement)', async () => {
+    // User's current streak is 1 but they once had a 5-day streak.
+    // streak-3 should still unlock because longest_streak >= 3.
+    const r = await streakEvaluators['streak-3'](
+      'user-1',
+      ctx(undefined),
+      fakeSupabase(1, 5),
+    );
+    expect(r?.slug).toBe('streak-3');
+    expect(r?.metadata).toEqual({ streak: 5 });
+  });
+
+  it('returns null when both current and longest are below threshold', async () => {
+    const r = await streakEvaluators['streak-7'](
+      'user-1',
+      ctx(undefined),
+      fakeSupabase(1, 5),
+    );
+    expect(r).toBeNull();
+  });
+
   it('returns null when DB has no profile row', async () => {
     const r = await streakEvaluators['streak-3'](
       'user-1',
@@ -83,3 +113,4 @@ describe('streakEvaluators registry shape', () => {
 
 // Vitest implicit unused-var keeps `vi` referenced for future use:
 void vi;
+
