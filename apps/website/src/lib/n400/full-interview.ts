@@ -83,7 +83,12 @@ export function buildSpeakingPhase(seed: string): MCQuestion[] {
           { id: 'A', en: 'Yes, officer', vi: 'Có', isCorrect: q.answer === 'yes' },
           { id: 'B', en: 'No, officer', vi: 'Không', isCorrect: q.answer === 'no' },
         ],
-        accepted: [{ en: q.answer === 'yes' ? 'Yes, officer' : 'No, officer', vi: q.questionVi }],
+        accepted: [
+          {
+            en: q.answer === 'yes' ? 'Yes, officer' : 'No, officer',
+            vi: q.answer === 'yes' ? 'Có, thưa cán bộ' : 'Không, thưa cán bộ',
+          },
+        ],
       };
     });
 

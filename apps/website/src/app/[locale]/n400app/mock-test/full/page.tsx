@@ -38,6 +38,16 @@ type Phase =
   | { kind: 'writing' }
   | { kind: 'summary' };
 
+// Guarded id (same pattern as analytics' generateEventId): crypto.randomUUID
+// throws in non-secure contexts / older Safari, and this runs while the quiz
+// renders null — a throw there would strand the user on a blank screen.
+function generateAttemptId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 const PARTS_COPY = [
   { label: 'Phần 1 · Civics', desc: `${FULL_CIVICS_COUNT} câu trắc nghiệm — đúng ≥ ${FULL_CIVICS_PASS} là đạt` },
   { label: 'Phần 2 · Speaking', desc: `${FULL_SPEAKING_COUNT} câu trắc nghiệm (What Mean + Yes/No) — đúng ≥ ${FULL_SPEAKING_PASS} là đạt` },
@@ -73,6 +83,10 @@ export default function FullInterviewPage() {
   }
 
   const begin = () => {
+    // Bump the seed FIRST: quiz keys derive from it, so a mid-part restart
+    // ("Trộn lại") remounts the quiz with fresh questions instead of silently
+    // wiping the refs under a still-mounted session.
+    setSeed((s) => s + 1);
     civicsAnswers.current = [];
     startedAt.current = new Date().toISOString();
     setCivics(null);
@@ -81,8 +95,8 @@ export default function FullInterviewPage() {
     setPhase({ kind: 'civics' });
   };
 
+  // begin() already reshuffles via its seed bump — no double bump here.
   const retake = () => {
-    setSeed((s) => s + 1);
     setPhase({ kind: 'intro' });
   };
 
@@ -99,8 +113,11 @@ export default function FullInterviewPage() {
         onComplete={({ correct }) => {
           const passed = correct >= FULL_CIVICS_PASS;
           setCivics({ correct, total: FULL_CIVICS_COUNT, passed });
+          // Advance BEFORE recording so a recording throw can't strand the
+          // user on the quiz's null (skipSummary) render.
+          setPhase({ kind: 'interlude', next: 'speaking' });
           void recordMockResult({
-            id: crypto.randomUUID(),
+            id: generateAttemptId(),
             startedAt: startedAt.current,
             completedAt: new Date().toISOString(),
             score: correct,
@@ -108,7 +125,6 @@ export default function FullInterviewPage() {
             passed,
             questionResults: civicsAnswers.current,
           });
-          setPhase({ kind: 'interlude', next: 'speaking' });
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -142,11 +158,18 @@ export default function FullInterviewPage() {
         key={`wr-${seed}`}
         questions={writingQuestions}
         skipSummary
-        onSessionEnd={({ correct, total }) => {
+        onSessionEnd={({ correct, total, answered }) => {
+          // Mid-quiz "Đổi chế độ" abandons the part — record nothing, matching
+          // civics/speaking onExit semantics. Only a fully answered session
+          // (fired exactly once by DictationQuiz's skipSummary effect) counts.
+          if (answered < total) {
+            setPhase({ kind: 'intro' });
+            return;
+          }
           const passed = correct >= FULL_WRITING_PASS;
           setWriting({ correct, total, passed });
-          void recordSectionMockResult('writing', passed, correct, total);
           setPhase({ kind: 'summary' });
+          void recordSectionMockResult('writing', passed, correct, total);
         }}
       />
     );
