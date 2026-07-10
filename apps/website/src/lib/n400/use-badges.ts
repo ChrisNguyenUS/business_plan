@@ -83,13 +83,16 @@ export function useN400Badges(): UseN400BadgesResult {
       setHydrated(true);
 
       // Lazy catch-up: recompute all badges once per mount to surface any
-      // unlocks that the heuristic-based triggers missed.
+      // unlocks that the heuristic-based triggers missed AND to fix
+      // unlocked_at dates on already-existing badges.
       if (user && !recomputedRef.current) {
         recomputedRef.current = true;
         try {
-          const newSlugs = await recomputeAllBadges();
-          if (!cancelled && newSlugs.length > 0) {
-            // New badges were unlocked — re-fetch earned set.
+          await recomputeAllBadges();
+          // Always re-fetch: even when no NEW badges were inserted, the
+          // recompute may have corrected unlocked_at dates on existing
+          // badges (e.g., fixing "today" → actual historical date).
+          if (!cancelled) {
             const refreshed = await supabase
               .from('n400_user_badges')
               .select('slug,unlocked_at')
