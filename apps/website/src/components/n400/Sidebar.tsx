@@ -4,14 +4,14 @@
  * Sidebar (desktop) + MobileNav (bottom navigation).
  *
  * Information Architecture (4 top-level areas):
- *   Primary:   Tổng quan · HỌC TẬP group (Civics / What Mean / Yes-No / Writing) · Thi thử
- *   Secondary: Tiến độ — one entry at /statistic, also covering /progress via alsoMatch
+ *   Tổng quan · Học tập (→ /study skill picker) · Thi thử · Tiến độ
  *   Utilities: Settings, Dark Mode, Logout
  *
- * Desktop: Permanent sidebar with the grouped HỌC TẬP section.
- * Mobile:  Bottom nav with the same 4 areas — Tổng quan / Học tập / Thi thử / Tiến độ.
- * alsoMatch: legacy routes (practice, flashcards) are no longer nav destinations;
- * they keep their parent item (Civics / Học tập tab) highlighted instead.
+ * Desktop: Permanent sidebar — each area is a card with title + subtitle and
+ * a chevron, separated by dividers (per the IA redesign mock).
+ * Mobile:  Bottom nav with the same 4 areas.
+ * alsoMatch: skill hubs and legacy routes (speaking, writing, practice,
+ * flashcards) keep the Học tập item highlighted instead of being destinations.
  */
 
 import Link from 'next/link';
@@ -23,10 +23,8 @@ import {
   Settings,
   LogOut,
   Moon,
+  ChevronRight,
   ClipboardCheck,
-  Landmark,
-  MessageCircleQuestion,
-  PenLine,
   GraduationCap,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -36,30 +34,45 @@ type MenuItem = {
   label: string;
   href: string;
   icon: typeof Home;
+  /** Second line shown on the desktop sidebar card. */
+  subtitle?: string;
   /** Extra n400app-relative path prefixes that also count as active. */
   alsoMatch?: string[];
 };
 
-/* ─── Navigation Groups ─── */
+/* ─── Navigation ─── */
 
-type NavGroup = { heading: string | null; items: MenuItem[] };
-
-const DESKTOP_GROUPS: NavGroup[] = [
-  { heading: null, items: [{ id: 'dashboard', label: 'Tổng quan', href: '', icon: Home }] },
+const DESKTOP_MENU: MenuItem[] = [
   {
-    heading: 'HỌC TẬP',
-    items: [
-      { id: 'civics', label: 'Civics', href: 'study/civics', icon: Landmark, alsoMatch: ['practice', 'flashcards'] },
-      { id: 'whatmean', label: 'What Mean', href: 'speaking/what-mean', icon: MessageCircleQuestion },
-      { id: 'yesno', label: 'Yes / No', href: 'speaking/yes-no', icon: MessageCircleQuestion },
-      { id: 'writing', label: 'Writing', href: 'writing', icon: PenLine },
-    ],
+    id: 'dashboard',
+    label: 'Tổng quan',
+    subtitle: 'Xem tổng quan quá trình học của bạn.',
+    href: '',
+    icon: Home,
   },
-  { heading: null, items: [{ id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck }] },
-];
-
-const SECONDARY_MENU: MenuItem[] = [
-  { id: 'tiendo', label: 'Tiến độ', href: 'statistic', icon: BarChart2, alsoMatch: ['progress'] },
+  {
+    id: 'study',
+    label: 'Học tập',
+    subtitle: 'Học và luyện tập theo từng kỹ năng.',
+    href: 'study',
+    icon: GraduationCap,
+    alsoMatch: ['speaking', 'writing', 'practice', 'flashcards'],
+  },
+  {
+    id: 'mock-test',
+    label: 'Thi thử',
+    subtitle: 'Thi thử như kỳ thi thật, đánh giá năng lực.',
+    href: 'mock-test',
+    icon: ClipboardCheck,
+  },
+  {
+    id: 'tiendo',
+    label: 'Tiến độ',
+    subtitle: 'Theo dõi tiến độ và thành tích của bạn.',
+    href: 'statistic',
+    icon: BarChart2,
+    alsoMatch: ['progress'],
+  },
 ];
 
 /** Mobile bottom nav — the same four top-level areas as desktop. */
@@ -88,14 +101,32 @@ function NavItem({ item, base, pathname }: { item: MenuItem; base: string; pathn
   return (
     <Link
       href={href}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-[var(--motion-fast)] text-sm font-medium ${
-        isActive
-          ? 'bg-teal-50 text-teal-700 shadow-sm'
-          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+      className={`group flex w-full items-start gap-3 rounded-2xl px-4 py-4 transition-colors duration-[var(--motion-fast)] ${
+        isActive ? 'bg-teal-50 shadow-sm' : 'hover:bg-gray-50'
       }`}
     >
-      <Icon size={18} className={isActive ? 'text-teal-600' : 'text-gray-400'} />
-      {item.label}
+      <Icon
+        size={20}
+        className={`mt-0.5 shrink-0 ${isActive ? 'text-teal-600' : 'text-gray-400 group-hover:text-gray-600'}`}
+      />
+      <span className="min-w-0 flex-1">
+        <span
+          className={`block text-sm font-bold ${
+            isActive ? 'text-teal-700' : 'text-gray-800'
+          }`}
+        >
+          {item.label}
+        </span>
+        {item.subtitle ? (
+          <span className={`mt-0.5 block text-xs leading-relaxed ${isActive ? 'text-teal-700/70' : 'text-gray-500'}`}>
+            {item.subtitle}
+          </span>
+        ) : null}
+      </span>
+      <ChevronRight
+        size={16}
+        className={`mt-1 shrink-0 ${isActive ? 'text-teal-500' : 'text-gray-300 group-hover:text-gray-400'}`}
+      />
     </Link>
   );
 }
@@ -121,27 +152,12 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Primary navigation, grouped by content area */}
-      <nav className="flex-1 overflow-y-auto px-4 space-y-1">
-        {DESKTOP_GROUPS.map((group, gi) => (
-          <div key={group.heading ?? `g-${gi}`} className="space-y-1">
-            {group.heading ? (
-              <div className="px-4 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400">
-                {group.heading}
-              </div>
-            ) : null}
-            {group.items.map((item) => (
-              <NavItem key={item.id} item={item} base={base} pathname={pathname} />
-            ))}
+      {/* Primary navigation — 4 top-level areas separated by dividers */}
+      <nav className="flex-1 overflow-y-auto px-4">
+        {DESKTOP_MENU.map((item, i) => (
+          <div key={item.id} className={i > 0 ? 'border-t border-gray-100 pt-2 mt-2' : ''}>
+            <NavItem item={item} base={base} pathname={pathname} />
           </div>
-        ))}
-
-        {/* Divider */}
-        <div className="!my-3 border-t border-gray-100" />
-
-        {/* Secondary navigation */}
-        {SECONDARY_MENU.map((item) => (
-          <NavItem key={item.id} item={item} base={base} pathname={pathname} />
         ))}
       </nav>
 

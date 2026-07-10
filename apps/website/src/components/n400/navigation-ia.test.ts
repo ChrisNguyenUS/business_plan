@@ -52,20 +52,24 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('practice?start=');
   });
 
-  test('sidebar groups skills under HỌC TẬP and keeps four top-level areas', () => {
+  test('desktop sidebar collapses to four top-level areas with subtitles', () => {
     const sidebar = source('src/components/n400/Sidebar.tsx');
+    const desktop = sidebar.slice(sidebar.indexOf('DESKTOP_MENU'), sidebar.indexOf('MOBILE_MENU'));
 
-    expect(sidebar).toContain('HỌC TẬP');
-    expect(sidebar).toContain("href: 'study/civics'");
-    expect(sidebar).toContain("href: 'speaking/what-mean'");
-    expect(sidebar).toContain("href: 'speaking/yes-no'");
-    expect(sidebar).toContain("href: 'writing'");
+    expect(desktop).toContain("href: 'study'");
+    expect(desktop).toContain("href: 'mock-test'");
+    expect(desktop).toContain("href: 'statistic'");
+    expect(desktop).toContain('subtitle:');
+    // Individual skills are no longer desktop nav destinations:
+    expect(desktop).not.toContain("href: 'study/civics'");
+    expect(desktop).not.toContain("href: 'speaking/what-mean'");
+    expect(desktop).not.toContain("href: 'speaking/yes-no'");
+    expect(desktop).not.toContain("href: 'writing'");
     // Learning methods are no longer nav destinations:
     expect(sidebar).not.toContain("href: 'practice'");
     expect(sidebar).not.toContain("href: 'flashcards'");
     // One merged progress entry, pointing at statistic:
     expect(sidebar).not.toContain("href: 'progress'");
-    expect(sidebar).not.toContain('CIVICS (128 câu)');
   });
 
   test('mobile nav is Home / Học tập / Thi thử / Tiến độ', () => {
