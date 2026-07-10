@@ -40,7 +40,7 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     title: 'Danh mục',
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
   },
-  study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học hôm nay.' },
+  study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học và luyện tập.' },
   speaking: { title: 'Speaking' },
   writing: { title: 'Writing' },
   progress: { title: 'Tiến độ', subtitle: 'Huy hiệu và thành tích của bạn.' },
