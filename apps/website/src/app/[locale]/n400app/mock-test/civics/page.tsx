@@ -38,7 +38,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
@@ -133,6 +133,14 @@ interface MockStats {
 }
 
 export default function MockTestPage() {
+  return (
+    <Suspense fallback={<div className="text-sm text-gray-500">Đang tải…</div>}>
+      <MockTestPageInner />
+    </Suspense>
+  );
+}
+
+function MockTestPageInner() {
   const { state, hydrated } = useN400UserState();
 
   // Aggregate the user's finished mock attempts for the motivational stats
