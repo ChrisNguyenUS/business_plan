@@ -4,6 +4,11 @@
 // practice page chrome exactly: progress + Đổi chế độ/Trộn lại, a 2-column
 // layout with the question card (header, 2×2 A/B/C/D option grid, reveal
 // feedback, pinned Xem đáp án / Tiếp theo) and the decorative right sidebar.
+//
+// examMode (mock tests / full interview): answers are never revealed during
+// the run — picking just selects (re-pickable), there is no Xem đáp án and no
+// feedback panel, and grading happens silently when the user hits Tiếp theo.
+// Scores surface only after the whole section is finished, like the real exam.
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -47,6 +52,7 @@ export function SectionMCQuiz({
   onRestart,
   title,
   skipSummary = false,
+  examMode = false,
   onComplete,
 }: {
   questions: MCQuestion[];
@@ -56,6 +62,8 @@ export function SectionMCQuiz({
   title: string;
   /** When true, never render the end-of-session summary; fire onComplete instead. */
   skipSummary?: boolean;
+  /** When true, defer grading to Tiếp theo and never reveal the answer mid-run. */
+  examMode?: boolean;
   onComplete?: (result: { correct: number; wrong: number }) => void;
 }) {
   const [index, setIndex] = useState(0);
@@ -105,6 +113,11 @@ export function SectionMCQuiz({
 
   const onPick = (id: MCOption['id']) => {
     if (phase === 'revealed') return;
+    if (examMode) {
+      // Exam: just select (re-pickable) — grading waits for Tiếp theo.
+      setSelected(id);
+      return;
+    }
     const opt = q.options.find((o) => o.id === id);
     reveal(id, !!opt?.isCorrect);
   };
@@ -115,12 +128,23 @@ export function SectionMCQuiz({
   };
 
   const onNext = () => {
+    if (examMode) {
+      if (!selected) return;
+      // Grade silently — no reveal state, straight to the next question.
+      const opt = q.options.find((o) => o.id === selected);
+      const wasCorrect = !!opt?.isCorrect;
+      if (wasCorrect) setCorrectCount((c) => c + 1);
+      else setWrongCount((c) => c + 1);
+      onAnswer(q.itemId, wasCorrect);
+    }
     setSelected(null);
     setPhase('idle');
     setIndex((i) => i + 1);
   };
 
-  const showRevealBtn = phase !== 'revealed';
+  const isLast = index === questions.length - 1;
+  const nextEnabled = examMode ? selected !== null : phase === 'revealed';
+  const showRevealBtn = !examMode && phase !== 'revealed';
 
   return (
     <div
@@ -185,6 +209,13 @@ export function SectionMCQuiz({
                 const isPicked = selected === opt.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';
                 let mark = <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />;
+
+                if (examMode && isPicked) {
+                  // Selected-but-ungraded: teal highlight with a filled radio —
+                  // deliberately no ✓/✗ so nothing hints at correctness.
+                  style = 'border-teal-600 bg-teal-50';
+                  mark = <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />;
+                }
 
                 if (phase === 'revealed') {
                   if (opt.isCorrect) {
@@ -271,15 +302,15 @@ export function SectionMCQuiz({
               <button
                 type="button"
                 onClick={onNext}
-                disabled={phase !== 'revealed'}
+                disabled={!nextEnabled}
                 className={`flex items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
-                  phase === 'revealed'
+                  nextEnabled
                     ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                 }`}
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>Tiếp theo / Next</span>
+                <span>{examMode && isLast ? 'Nộp bài' : 'Tiếp theo / Next'}</span>
                 <ArrowRight size={16} />
               </button>
             </div>

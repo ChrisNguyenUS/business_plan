@@ -224,7 +224,7 @@ export default function DashboardPage() {
               style={{ clipPath: 'inset(var(--pop) 0 0 0 round 0 24px 24px 0)' }}
             >
               <Image
-                src="/images/n400/Dashboard-thumbnail.png"
+                src="/images/n400/Dashboard-thumbnail-panorama.png"
                 alt=""
                 fill
                 className="object-cover object-[65%_20%] scale-[1.15] -translate-y-3"

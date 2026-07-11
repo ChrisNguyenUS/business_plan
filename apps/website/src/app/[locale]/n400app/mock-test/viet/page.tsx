@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
 import { shuffle } from '@/lib/n400/quiz-engine';
@@ -24,6 +24,7 @@ interface Outcome {
 
 export default function ThiThuVietPage() {
   const params = useParams();
+  const router = useRouter();
   const locale = (params?.locale as string) || 'en';
   const { recordSectionMockResult } = useN400UserState();
 
@@ -88,7 +89,14 @@ export default function ThiThuVietPage() {
       key={seed}
       questions={questions}
       skipSummary
-      onSessionEnd={({ correct, total }) => {
+      examMode
+      onSessionEnd={({ correct, total, answered }) => {
+        // "Đổi chế độ" mid-test abandons the attempt — back to the picker
+        // without recording, matching the full interview's abandon semantics.
+        if (answered < total) {
+          router.push(`/${locale}/n400app/mock-test`);
+          return;
+        }
         setOutcome({ correct, total });
         void recordSectionMockResult('writing', correct >= PASS_THRESHOLD, correct, total);
       }}

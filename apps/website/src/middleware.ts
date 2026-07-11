@@ -41,6 +41,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // TEMP-PREVIEW-BYPASS: remove before commit
+  if (process.env.NODE_ENV === 'development' && N400_RE.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // ── Step 2: Auth guard — /admin, /portal, /n400app need protection ──
   const isAdminPath = ADMIN_RE.test(pathname);
   const isPortalPath = PORTAL_RE.test(pathname);

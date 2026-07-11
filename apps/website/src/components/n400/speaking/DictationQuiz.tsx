@@ -49,6 +49,11 @@ interface DictationQuizProps {
   // PracticeSessionSummary and hand off to the caller as soon as the last
   // sentence is graded, instead of showing two result screens back to back.
   skipSummary?: boolean;
+  // Exam mode (mock tests / full interview): no Kiểm tra step, no per-word
+  // diff, no correct answer, no "Chưa nghe được" reveal. The learner types
+  // what they hear and hits Tiếp theo; grading happens silently and the score
+  // only surfaces after the whole section is finished, like the real exam.
+  examMode?: boolean;
 }
 
 // Strips the **bold** markers the feedback builder uses so guidance reads cleanly
@@ -57,7 +62,12 @@ function stripBold(text: string): string {
   return text.replace(/\*\*/g, '');
 }
 
-export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: DictationQuizProps) {
+export function DictationQuiz({
+  questions,
+  onSessionEnd,
+  skipSummary = false,
+  examMode = false,
+}: DictationQuizProps) {
   const [index, setIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null);
@@ -147,12 +157,17 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
   };
 
   const onNext = () => {
+    // Exam mode grades right here — the learner never saw a Kiểm tra step, so
+    // the one submitted attempt IS the graded attempt.
+    const examCorrect = examMode
+      ? gradeWritingSentence(userInput, q.sentenceEn).isCorrect
+      : null;
     setResults((prev) => [
       ...prev,
       {
         sentenceId: q.id,
         userInput,
-        correct: firstCorrect ?? isCorrect,
+        correct: examMode ? !!examCorrect : firstCorrect ?? isCorrect,
         retryCount,
       },
     ]);
@@ -243,7 +258,11 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (!showFeedback) onCheck();
+                    if (examMode) {
+                      if (userInput.trim()) onNext();
+                    } else if (!showFeedback) {
+                      onCheck();
+                    }
                   }
                 }}
                 readOnly={showFeedback && isCorrect}
@@ -332,7 +351,23 @@ export function DictationQuiz({ questions, onSessionEnd, skipSummary = false }: 
             className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
           >
-            {!showFeedback ? (
+            {examMode ? (
+              // Exam: one button — submit what you typed, no checking, no reveal.
+              <button
+                type="button"
+                onClick={onNext}
+                disabled={!userInput.trim()}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
+                  userInput.trim()
+                    ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                }`}
+                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+              >
+                <span>{index === questions.length - 1 ? 'Nộp bài' : 'Tiếp theo / Next'}</span>
+                <ArrowRight size={16} />
+              </button>
+            ) : !showFeedback ? (
               <div className={`grid gap-3 ${revealed ? 'grid-cols-1' : 'grid-cols-[1fr_auto]'}`}>
                 <button
                   type="button"

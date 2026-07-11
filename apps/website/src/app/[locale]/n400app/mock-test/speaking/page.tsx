@@ -3,18 +3,18 @@
 // Thi thử Speaking — hybrid speaking mock test. Combines 5 What Mean
 // multiple-choice items with 5 Yes/No items into a single shuffled 10-question
 // session. Chrome reuses the exact Speaking-section quiz layout (progress strip,
-// question card, reveal feedback, pinned Next, decorative sidebar); the two card
-// bodies (A/B/C/D grid vs Yes/No buttons) are branched per item. Pass rule:
-// answer ≥ 8 / 10 correctly.
+// question card, pinned Next, decorative sidebar); the two card bodies (A/B/C/D
+// grid vs Yes/No buttons) are branched per item. Pass rule: answer ≥ 8 / 10.
+//
+// Exam semantics: picking only selects (re-pickable); grading happens silently
+// on Tiếp theo and the answer is never revealed mid-run — the score surfaces
+// on the result screen only, like the real interview.
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  CheckCircle,
-  XCircle,
-  Lightbulb,
   ArrowRight,
   Trophy,
   RotateCcw,
@@ -109,7 +109,6 @@ export default function ThiThuSpeakingPage() {
   const items = useMemo(() => buildItems(seed), [seed]);
 
   const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
   const [pickedMc, setPickedMc] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
   const [pickedYn, setPickedYn] = useState<Choice | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
@@ -120,7 +119,6 @@ export default function ThiThuSpeakingPage() {
   const retake = () => {
     setSeed((s) => s + 1);
     setIndex(0);
-    setPhase('idle');
     setPickedMc(null);
     setPickedYn(null);
     setCorrectCount(0);
@@ -173,38 +171,34 @@ export default function ThiThuSpeakingPage() {
   if (!item) return null;
 
   const isLast = index === items.length - 1;
+  const hasPick = item.kind === 'mc' ? pickedMc !== null : pickedYn !== null;
 
-  const reveal = (correct: boolean) => {
-    setPhase('revealed');
-    if (correct) setCorrectCount((c) => c + 1);
-  };
-
+  // Picking only selects — re-pickable until Tiếp theo, no grading yet.
   const onPickMc = (id: 'A' | 'B' | 'C' | 'D') => {
-    if (phase === 'revealed' || item.kind !== 'mc') return;
+    if (item.kind !== 'mc') return;
     setPickedMc(id);
-    reveal(!!item.options.find((o) => o.id === id)?.isCorrect);
-  };
-
-  const onRevealMc = () => {
-    if (phase === 'revealed' || item.kind !== 'mc') return;
-    setPickedMc(null);
-    reveal(false); // viewing the answer counts as incorrect, like the practice quiz
   };
 
   const onPickYn = (choice: Choice) => {
-    if (phase === 'revealed' || item.kind !== 'yesno') return;
+    if (item.kind !== 'yesno') return;
     setPickedYn(choice);
-    reveal(choice === item.answer);
   };
 
   const onNext = () => {
+    if (!hasPick) return;
+    // Grade silently on advance; the learner never sees per-question results.
+    const wasCorrect =
+      item.kind === 'mc'
+        ? !!item.options.find((o) => o.id === pickedMc)?.isCorrect
+        : pickedYn === item.answer;
+    const newCount = correctCount + (wasCorrect ? 1 : 0);
+    setCorrectCount(newCount);
     if (isLast) {
       setFinished(true);
-      void recordSectionMockResult('speaking', correctCount >= PASS_THRESHOLD, correctCount, TOTAL);
+      void recordSectionMockResult('speaking', newCount >= PASS_THRESHOLD, newCount, TOTAL);
       return;
     }
     setIndex((i) => i + 1);
-    setPhase('idle');
     setPickedMc(null);
     setPickedYn(null);
   };
@@ -242,33 +236,18 @@ export default function ThiThuSpeakingPage() {
             style={{ scrollbarGutter: 'stable' }}
           >
             {item.kind === 'mc' ? (
-              <McBody item={item} phase={phase} picked={pickedMc} onPick={onPickMc} />
+              <McBody item={item} picked={pickedMc} onPick={onPickMc} />
             ) : (
-              <YesNoBody item={item} phase={phase} picked={pickedYn} onPick={onPickYn} />
+              <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} />
             )}
           </div>
 
-          {/* Pinned actions */}
+          {/* Pinned actions — no Xem đáp án in a mock test */}
           <div
             className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
           >
-            {item.kind === 'mc' && phase !== 'revealed' ? (
-              <div className="grid gap-3 grid-cols-[1fr_2fr]">
-                <button
-                  type="button"
-                  onClick={onRevealMc}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 transition-all"
-                  style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-                >
-                  <Lightbulb size={16} />
-                  <span className="leading-tight">Xem đáp án</span>
-                </button>
-                <NextButton disabled onClick={onNext} isLast={isLast} />
-              </div>
-            ) : (
-              <NextButton disabled={phase !== 'revealed'} onClick={onNext} isLast={isLast} />
-            )}
+            <NextButton disabled={!hasPick} onClick={onNext} isLast={isLast} />
           </div>
         </div>
 
@@ -334,16 +313,13 @@ function NextButton({
 
 function McBody({
   item,
-  phase,
   picked,
   onPick,
 }: {
   item: McItem;
-  phase: 'idle' | 'revealed';
   picked: 'A' | 'B' | 'C' | 'D' | null;
   onPick: (id: 'A' | 'B' | 'C' | 'D') => void;
 }) {
-  const pickedCorrect = !!item.options.find((o) => o.id === picked)?.isCorrect;
   return (
     <>
       {/* Header */}
@@ -370,26 +346,21 @@ function McBody({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
         {item.options.map((opt) => {
           const isPicked = picked === opt.id;
-          let style = 'border-gray-200 hover:border-teal-300 bg-white';
-          let mark = <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />;
-
-          if (phase === 'revealed') {
-            if (opt.isCorrect) {
-              style = 'border-teal-600 bg-teal-50';
-              mark = <CheckCircle size={22} className="text-teal-600 shrink-0" />;
-            } else if (isPicked) {
-              style = 'border-red-400 bg-red-50';
-              mark = <XCircle size={22} className="text-red-500 shrink-0" />;
-            } else {
-              style = 'border-gray-200 bg-white opacity-70';
-            }
-          }
+          // Selected-but-ungraded: teal highlight with a filled radio — no ✓/✗
+          // so nothing hints at correctness before the test is over.
+          const style = isPicked
+            ? 'border-teal-600 bg-teal-50'
+            : 'border-gray-200 hover:border-teal-300 bg-white';
+          const mark = isPicked ? (
+            <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />
+          ) : (
+            <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+          );
 
           return (
             <button
               key={opt.id}
               type="button"
-              disabled={phase === 'revealed'}
               onClick={() => onPick(opt.id)}
               className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
             >
@@ -404,50 +375,19 @@ function McBody({
           );
         })}
       </div>
-
-      {/* Feedback */}
-      {phase === 'revealed' ? (
-        <div
-          className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-            pickedCorrect ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
-          }`}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="text-amber-500 shrink-0" size={16} />
-            <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-              {pickedCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
-            </span>
-            {item.answerAudioSrc ? (
-              <AudioButton src={item.answerAudioSrc} label="Nghe đáp án" size="sm" className="ml-auto" />
-            ) : null}
-          </div>
-          <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-            <li>
-              <span className="font-medium">{item.accepted.en}</span>
-              {item.accepted.vi && item.accepted.vi !== item.accepted.en ? (
-                <span className="text-gray-500"> — {item.accepted.vi}</span>
-              ) : null}
-            </li>
-          </ul>
-        </div>
-      ) : null}
     </>
   );
 }
 
 function YesNoBody({
   item,
-  phase,
   picked,
   onPick,
 }: {
   item: YesNoItem;
-  phase: 'idle' | 'revealed';
   picked: Choice | null;
   onPick: (choice: Choice) => void;
 }) {
-  const wasCorrect = picked === item.answer;
-  const answerLabel = item.answer === 'yes' ? 'Yes, officer' : 'No, officer';
   const choices: { id: Choice; label: string }[] = [
     { id: 'yes', label: 'Yes, officer' },
     { id: 'no', label: 'No, officer' },
@@ -479,27 +419,20 @@ function YesNoBody({
       <div className="grid grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
         {choices.map((choice) => {
           const isPicked = picked === choice.id;
-          const isCorrectChoice = item.answer === choice.id;
-          let style = 'border-gray-200 hover:border-teal-300 bg-white';
-          let mark = <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />;
-
-          if (phase === 'revealed') {
-            if (isCorrectChoice) {
-              style = 'border-teal-600 bg-teal-50';
-              mark = <CheckCircle size={22} className="text-teal-600 shrink-0" />;
-            } else if (isPicked) {
-              style = 'border-red-400 bg-red-50';
-              mark = <XCircle size={22} className="text-red-500 shrink-0" />;
-            } else {
-              style = 'border-gray-200 bg-white opacity-70';
-            }
-          }
+          // Selected-but-ungraded: teal highlight, no ✓/✗ before the test ends.
+          const style = isPicked
+            ? 'border-teal-600 bg-teal-50'
+            : 'border-gray-200 hover:border-teal-300 bg-white';
+          const mark = isPicked ? (
+            <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />
+          ) : (
+            <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+          );
 
           return (
             <button
               key={choice.id}
               type="button"
-              disabled={phase === 'revealed'}
               onClick={() => onPick(choice.id)}
               className={`flex w-full items-center justify-center gap-3 rounded-2xl border-2 text-center transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
             >
@@ -511,31 +444,6 @@ function YesNoBody({
           );
         })}
       </div>
-
-      {/* Feedback */}
-      {phase === 'revealed' ? (
-        <div
-          className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-            wasCorrect ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
-          }`}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="text-amber-500 shrink-0" size={16} />
-            <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-              {wasCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
-            </span>
-            <AudioButton src={item.audioSrc} label="Nghe đáp án" size="sm" className="ml-auto" />
-          </div>
-          <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-            <li>
-              <span className="font-medium">Đáp án chuẩn: {answerLabel}</span>
-            </li>
-            <li>
-              <span className="text-gray-500">{item.questionVi}</span>
-            </li>
-          </ul>
-        </div>
-      ) : null}
     </>
   );
 }

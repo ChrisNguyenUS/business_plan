@@ -107,6 +107,7 @@ export default function FullInterviewPage() {
         questions={civicsQuestions}
         title="Phỏng vấn đầy đủ — Civics"
         skipSummary
+        examMode
         onAnswer={(itemId, ok) =>
           civicsAnswers.current.push({ questionId: Number(itemId.slice(4)), wasCorrect: ok })
         }
@@ -139,6 +140,7 @@ export default function FullInterviewPage() {
         questions={speakingQuestions}
         title="Phỏng vấn đầy đủ — Speaking"
         skipSummary
+        examMode
         onAnswer={() => {}}
         onComplete={({ correct }) => {
           const passed = correct >= FULL_SPEAKING_PASS;
@@ -158,6 +160,7 @@ export default function FullInterviewPage() {
         key={`wr-${seed}`}
         questions={writingQuestions}
         skipSummary
+        examMode
         onSessionEnd={({ correct, total, answered }) => {
           // Mid-quiz "Đổi chế độ" abandons the part — record nothing, matching
           // civics/speaking onExit semantics. Only a fully answered session
