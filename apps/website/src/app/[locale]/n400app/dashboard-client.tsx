@@ -203,8 +203,10 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 1. HERO — Continue studying the 128 Civics questions */}
-      {/* Outer wrapper: top padding reserves space for the torch flame overflow */}
-      <div className="lg:pt-10 lg:short:pt-8 xl:tall:pt-12">
+      {/* Outer wrapper: tiny top padding — the torch flame overflows into the
+          main content's own top padding so the card lines up with the other
+          screens' hero cards */}
+      <div className="lg:pt-2 lg:short:pt-1">
         <Card className="!p-0 !overflow-visible border-slate-200/60 shadow-sm relative">
 
           {/* ── Right-side image group. The box spans the card height PLUS
@@ -214,7 +216,7 @@ export default function DashboardPage() {
                 2. statue-top cutout (transparent PNG), unclipped, so only
                    the torch flame breaks out above the card ── */}
           <div
-            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:36px] short:[--pop:28px]"
+            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:32px] short:[--pop:24px]"
             style={{ top: 'calc(-1 * var(--pop))' }}
           >
             {/* Base panorama — clipped to the card area (skyline, body,
