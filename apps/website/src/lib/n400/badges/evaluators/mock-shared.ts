@@ -4,31 +4,37 @@
 // object) so practice.ts/other.ts import a plain leaf module instead of a
 // sibling group file — avoids the cross-group-file coupling that made the
 // evaluator registry graph harder to reason about.
+//
+// Everything here rides the per-run cache: civicsLastAttemptMap derives
+// from the civics row loader, sectionCounts from the per-section loaders,
+// and passedMockCounts memoizes its own count queries — so combo/practice/
+// other evaluators calling these repeatedly cost one round of queries per
+// evaluateBadges run.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { BadgeContext } from '../types';
+import { cached } from './run-cache';
+import { loadCivicsAttemptRows } from './civics';
 import { loadLastAttemptPerItem, type StudySection } from './section-progress';
 
 export async function civicsLastAttemptMap(
   userId: string,
+  ctx: BadgeContext,
   supabase: SupabaseClient,
 ): Promise<Map<number, boolean>> {
-  const { data } = await supabase
-    .from('n400_question_attempts')
-    .select('question_id, was_correct, answered_at, n400_quiz_attempts!inner(user_id)')
-    .eq('n400_quiz_attempts.user_id', userId)
-    .order('answered_at', { ascending: true });
+  const rows = await loadCivicsAttemptRows(userId, ctx, supabase);
   const last = new Map<number, boolean>();
-  for (const row of (data ?? []) as Array<{ question_id: number; was_correct: boolean }>) {
+  for (const row of rows) {
     last.set(row.question_id, row.was_correct);
   }
   return last;
 }
 
-export async function sectionCounts(userId: string, supabase: SupabaseClient) {
+export async function sectionCounts(userId: string, ctx: BadgeContext, supabase: SupabaseClient) {
   const [writing, yesno, whatmean] = await Promise.all([
-    loadLastAttemptPerItem(userId, 'writing', supabase),
-    loadLastAttemptPerItem(userId, 'yesno', supabase),
-    loadLastAttemptPerItem(userId, 'whatmean', supabase),
+    loadLastAttemptPerItem(userId, 'writing', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'yesno', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'whatmean', ctx, supabase),
   ]);
   return { writing, yesno, whatmean };
 }
@@ -39,32 +45,34 @@ export function accuracy(map: Map<unknown, boolean>, total: number): number {
   return correct / total;
 }
 
-export async function passedMockCounts(userId: string, supabase: SupabaseClient) {
-  const [civicsRes, writingRes, speakingRes] = await Promise.all([
-    supabase
-      .from('n400_quiz_attempts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('mode', 'mock_test')
-      .eq('passed', true),
-    supabase
-      .from('n400_section_mock_results')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('section', 'writing')
-      .eq('passed', true),
-    supabase
-      .from('n400_section_mock_results')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('section', 'speaking')
-      .eq('passed', true),
-  ]);
-  return {
-    civics: civicsRes.count ?? 0,
-    writing: writingRes.count ?? 0,
-    speaking: speakingRes.count ?? 0,
-  };
+export function passedMockCounts(userId: string, ctx: BadgeContext, supabase: SupabaseClient) {
+  return cached(ctx, `passed-mock-counts:${userId}`, async () => {
+    const [civicsRes, writingRes, speakingRes] = await Promise.all([
+      supabase
+        .from('n400_quiz_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('mode', 'mock_test')
+        .eq('passed', true),
+      supabase
+        .from('n400_section_mock_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('section', 'writing')
+        .eq('passed', true),
+      supabase
+        .from('n400_section_mock_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('section', 'speaking')
+        .eq('passed', true),
+    ]);
+    return {
+      civics: civicsRes.count ?? 0,
+      writing: writingRes.count ?? 0,
+      speaking: speakingRes.count ?? 0,
+    };
+  });
 }
 
 export const SECTION_TOTAL: Record<StudySection, number> = { writing: 45, yesno: 37, whatmean: 62 };

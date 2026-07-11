@@ -29,6 +29,12 @@ export interface BadgeContext {
   // Present when trigger='streak_change' — current_streak after the
   // transition. Streak evaluators avoid an extra SELECT by reading this.
   currentStreak?: number;
+  // Per-run request cache, seeded by the dispatcher (evaluator.ts). Shared
+  // history loaders key their in-flight promise here so 50+ concurrent
+  // evaluators trigger each underlying query once per run instead of once
+  // per badge. Absent in unit tests / direct calls — loaders then just
+  // execute the query. See evaluators/run-cache.ts.
+  cache?: Map<string, Promise<unknown>>;
 }
 
 export interface UnlockResult {

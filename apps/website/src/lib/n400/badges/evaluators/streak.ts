@@ -16,6 +16,9 @@
 
 import type { BadgeEvaluator, BadgeContext, UnlockResult } from '../types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { cached } from './run-cache';
+import { loadCivicsAttemptRows } from './civics';
+import { loadSectionAttemptRows, type StudySection } from './section-progress';
 
 const STREAK_BADGES: { slug: string; threshold: number }[] = [
   { slug: 'streak-3', threshold: 3 },
@@ -26,21 +29,24 @@ const STREAK_BADGES: { slug: string; threshold: number }[] = [
   { slug: 'streak-100', threshold: 100 },
 ];
 
-async function readLongestStreak(
+function readLongestStreak(
   userId: string,
+  ctx: BadgeContext,
   supabase: SupabaseClient,
 ): Promise<number> {
-  const { data } = await supabase
-    .from('n400_user_profile')
-    .select('current_streak, longest_streak')
-    .eq('user_id', userId)
-    .maybeSingle();
-  // Use the higher of current and longest — covers edge cases where
-  // longest_streak wasn't backfilled but current is already high.
-  return Math.max(
-    Number(data?.longest_streak ?? 0),
-    Number(data?.current_streak ?? 0),
-  );
+  return cached(ctx, `longest-streak:${userId}`, async () => {
+    const { data } = await supabase
+      .from('n400_user_profile')
+      .select('current_streak, longest_streak')
+      .eq('user_id', userId)
+      .maybeSingle();
+    // Use the higher of current and longest — covers edge cases where
+    // longest_streak wasn't backfilled but current is already high.
+    return Math.max(
+      Number(data?.longest_streak ?? 0),
+      Number(data?.current_streak ?? 0),
+    );
+  });
 }
 
 /**
@@ -49,30 +55,28 @@ async function readLongestStreak(
  */
 async function dateWhenStreakReached(
   userId: string,
+  ctx: BadgeContext,
   threshold: number,
   supabase: SupabaseClient,
 ): Promise<string | undefined> {
-  // Fetch timestamps from both civics and section attempts.
-  const [civicsRes, sectionRes] = await Promise.all([
-    supabase
-      .from('n400_question_attempts')
-      .select('answered_at, n400_quiz_attempts!inner(user_id)')
-      .eq('n400_quiz_attempts.user_id', userId)
-      .order('answered_at', { ascending: true }),
-    supabase
-      .from('n400_section_attempts')
-      .select('answered_at')
-      .eq('user_id', userId)
-      .order('answered_at', { ascending: true }),
+  // Timestamps come from the per-run-cached civics/section row loaders —
+  // manual_recompute (the only trigger that lands here) already loads them
+  // for the civics/writing/yesno/whatmean evaluators, so this is free.
+  const sections: StudySection[] = ['writing', 'yesno', 'whatmean'];
+  const [civicsRows, ...sectionRows] = await Promise.all([
+    loadCivicsAttemptRows(userId, ctx, supabase),
+    ...sections.map((s) => loadSectionAttemptRows(userId, s, ctx, supabase)),
   ]);
 
   // Collect all timestamps and extract unique local dates (YYYY-MM-DD).
   const allTimestamps: string[] = [];
-  for (const row of (civicsRes.data ?? []) as Array<{ answered_at: string }>) {
+  for (const row of civicsRows) {
     allTimestamps.push(row.answered_at);
   }
-  for (const row of (sectionRes.data ?? []) as Array<{ answered_at: string }>) {
-    allTimestamps.push(row.answered_at);
+  for (const rows of sectionRows) {
+    for (const row of rows) {
+      allTimestamps.push(row.answered_at);
+    }
   }
   if (allTimestamps.length === 0) return undefined;
 
@@ -127,13 +131,13 @@ function makeEvaluator(slug: string, threshold: number): BadgeEvaluator {
     const streak =
       typeof ctx.currentStreak === 'number'
         ? ctx.currentStreak
-        : await readLongestStreak(userId, supabase);
+        : await readLongestStreak(userId, ctx, supabase);
     if (streak < threshold) return null;
 
     // For manual_recompute, find the actual historical date.
     const unlockedAt =
       ctx.trigger === 'manual_recompute'
-        ? await dateWhenStreakReached(userId, threshold, supabase)
+        ? await dateWhenStreakReached(userId, ctx, threshold, supabase)
         : undefined;
 
     return { slug, metadata: { streak }, unlockedAt };

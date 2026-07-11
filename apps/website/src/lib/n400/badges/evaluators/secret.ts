@@ -20,21 +20,21 @@ function distinctUtcDatesWithHourMatch(entries: TimelineEntry[], matchesHour: (h
 }
 
 const secretEarlyBird: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const timeline = await loadAttemptTimeline(userId, supabase);
+  const timeline = await loadAttemptTimeline(userId, ctx, supabase);
   const days = distinctUtcDatesWithHourMatch(timeline, (h) => h < 8);
   if (days < 7) return null;
   return { slug: 'secret-early-bird', metadata: { days }, triggerAttemptId: ctx.attemptId };
 };
 
 const secretNightOwl: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const timeline = await loadAttemptTimeline(userId, supabase);
+  const timeline = await loadAttemptTimeline(userId, ctx, supabase);
   const days = distinctUtcDatesWithHourMatch(timeline, (h) => h >= 22);
   if (days < 7) return null;
   return { slug: 'secret-night-owl', metadata: { days }, triggerAttemptId: ctx.attemptId };
 };
 
 const secretNeverGiveUp: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const timeline = await loadAttemptTimeline(userId, supabase);
+  const timeline = await loadAttemptTimeline(userId, ctx, supabase);
   let wrongSeen = 0;
   let twentiethWrongIndex = -1;
   for (let i = 0; i < timeline.length; i++) {
@@ -53,7 +53,7 @@ const secretNeverGiveUp: BadgeEvaluator = async (userId, ctx, supabase) => {
 };
 
 const secretSpeedLearner: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const timeline = await loadAttemptTimeline(userId, supabase);
+  const timeline = await loadAttemptTimeline(userId, ctx, supabase);
   // Sliding window over the full chronological timeline: does any 10-minute
   // span contain >=20 correct answers? Wrong answers inside the window don't
   // disqualify it, they're just not counted.
@@ -73,7 +73,7 @@ const secretSpeedLearner: BadgeEvaluator = async (userId, ctx, supabase) => {
 };
 
 const secretMarathon: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const timeline = await loadAttemptTimeline(userId, supabase);
+  const timeline = await loadAttemptTimeline(userId, ctx, supabase);
   const perDay = new Map<string, number>();
   for (const e of timeline) {
     const day = new Date(e.at).toISOString().slice(0, 10);

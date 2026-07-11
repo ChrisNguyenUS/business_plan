@@ -11,11 +11,40 @@
 // before badge system was deployed, or session_complete evaluators skipped
 // by the every-5th heuristic). If new badges are unlocked, earned state
 // is re-fetched so the UI updates without a refresh.
+//
+// The recompute is throttled to once per RECOMPUTE_INTERVAL_MS per user
+// (localStorage timestamp): the hook mounts on 5 different pages, and an
+// unthrottled recompute ran the full 56-evaluator sweep on every page
+// navigation. Live unlocks don't need it — session_complete/streak_change
+// triggers cover those — it only exists to heal missed/backdated unlocks,
+// so daily is plenty.
 
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { recomputeAllBadges } from './badges/actions';
+
+const RECOMPUTE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const recomputeStorageKey = (userId: string) => `n400-badges-recompute-at:${userId}`;
+
+function shouldRecompute(userId: string): boolean {
+  try {
+    const last = Number(localStorage.getItem(recomputeStorageKey(userId)));
+    return !(last > 0 && Date.now() - last < RECOMPUTE_INTERVAL_MS);
+  } catch {
+    // Storage unavailable (private mode etc.) — recompute; the per-mount
+    // ref still prevents repeats within this mount.
+    return true;
+  }
+}
+
+function markRecomputed(userId: string) {
+  try {
+    localStorage.setItem(recomputeStorageKey(userId), String(Date.now()));
+  } catch {
+    // Best-effort only.
+  }
+}
 
 export type BadgeGroupCode =
   | 'streak'
@@ -82,13 +111,15 @@ export function useN400Badges(): UseN400BadgesResult {
       setEarned((earnedRes.data ?? []) as UserBadge[]);
       setHydrated(true);
 
-      // Lazy catch-up: recompute all badges once per mount to surface any
-      // unlocks that the heuristic-based triggers missed AND to fix
-      // unlocked_at dates on already-existing badges.
-      if (user && !recomputedRef.current) {
+      // Lazy catch-up: recompute all badges to surface any unlocks that the
+      // heuristic-based triggers missed AND to fix unlocked_at dates on
+      // already-existing badges. Throttled to once per day per user — see
+      // the module comment above.
+      if (user && !recomputedRef.current && shouldRecompute(user.id)) {
         recomputedRef.current = true;
         try {
           await recomputeAllBadges();
+          markRecomputed(user.id);
           // Always re-fetch: even when no NEW badges were inserted, the
           // recompute may have corrected unlocked_at dates on existing
           // badges (e.g., fixing "today" → actual historical date).

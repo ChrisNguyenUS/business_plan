@@ -41,6 +41,11 @@ export async function evaluateBadges(
 ): Promise<string[]> {
   const slugs = pickSlugs(ctx);
 
+  // Per-run cache: shared history loaders (civics/section attempts,
+  // timeline, mock counts) memoize their in-flight query here, so the
+  // whole run costs a handful of queries instead of one per evaluator.
+  const runCtx: BadgeContext = { ...ctx, cache: new Map() };
+
   // Evaluators are independent reads, so they run concurrently — the
   // sequential version added one DB round trip of latency per badge to
   // every session finalize.
@@ -49,7 +54,7 @@ export async function evaluateBadges(
       const evaluator = BADGE_EVALUATORS[slug];
       if (!evaluator) return null;
       try {
-        return await evaluator(userId, ctx, supabase);
+        return await evaluator(userId, runCtx, supabase);
       } catch (e) {
         // Failing evaluator must not block session finalize. Swallow + log.
         // Sentry wiring lives at the route layer, so console.error is

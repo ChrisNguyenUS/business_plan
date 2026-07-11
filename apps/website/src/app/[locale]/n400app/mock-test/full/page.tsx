@@ -88,7 +88,15 @@ export default function FullInterviewPage() {
     // Bump the seed FIRST: quiz keys derive from it, so a mid-part restart
     // ("Trộn lại") remounts the quiz with fresh questions instead of silently
     // wiping the refs under a still-mounted session.
-    setSeed((s) => s + 1);
+    //
+    // The bump is randomized (not just +1): seed starts at 0 and resets on every
+    // page load, so a plain +1 would always land on `full-1` for a fresh visit —
+    // making every "Bắt đầu thi" serve the exact same questions. Adding a random
+    // amount keeps the seed strictly increasing (guarantees a remount) while
+    // making the question set unpredictable across page loads. Randomizing only
+    // here (in a client-side handler), not in useState, avoids SSR hydration
+    // mismatch since the initial render stays deterministic at seed 0.
+    setSeed((s) => s + 1 + Math.floor(Math.random() * 1_000_000));
     civicsAnswers.current = [];
     startedAt.current = new Date().toISOString();
     setCivics(null);

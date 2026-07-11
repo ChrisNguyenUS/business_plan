@@ -8,7 +8,15 @@ function fakeSupabase(ids: number[]) {
   return {
     from: () => ({
       select: () => ({
-        eq: async () => ({ data: ids.map((id) => ({ question_id: id })) }),
+        eq: () => ({
+          order: async () => ({
+            data: ids.map((id, i) => ({
+              question_id: id,
+              was_correct: true,
+              answered_at: `2026-01-01T00:00:${String(i % 60).padStart(2, '0')}Z`,
+            })),
+          }),
+        }),
       }),
     }),
   } as any;

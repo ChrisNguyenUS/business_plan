@@ -12,7 +12,7 @@ import {
 } from './mock-shared';
 
 const combosStarter: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const { writing, yesno, whatmean } = await sectionCounts(userId, supabase);
+  const { writing, yesno, whatmean } = await sectionCounts(userId, ctx, supabase);
   if (writing.size >= 10 && yesno.size >= 10 && whatmean.size >= 15) {
     return { slug: 'combo-starter', metadata: {}, triggerAttemptId: ctx.attemptId };
   }
@@ -20,7 +20,7 @@ const combosStarter: BadgeEvaluator = async (userId, ctx, supabase) => {
 };
 
 const combosExplorer: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const { writing, yesno, whatmean } = await sectionCounts(userId, supabase);
+  const { writing, yesno, whatmean } = await sectionCounts(userId, ctx, supabase);
   if (writing.size >= 20 && yesno.size >= 20 && whatmean.size >= 30) {
     return { slug: 'combo-explorer', metadata: {}, triggerAttemptId: ctx.attemptId };
   }
@@ -29,8 +29,8 @@ const combosExplorer: BadgeEvaluator = async (userId, ctx, supabase) => {
 
 const comboInterviewReady: BadgeEvaluator = async (userId, ctx, supabase) => {
   const [civics, { writing, yesno, whatmean }] = await Promise.all([
-    distinctCivicsAnswered(userId, supabase),
-    sectionCounts(userId, supabase),
+    distinctCivicsAnswered(userId, ctx, supabase),
+    sectionCounts(userId, ctx, supabase),
   ]);
   if (civics >= 1 && writing.size >= 1 && yesno.size >= 1 && whatmean.size >= 1) {
     return { slug: 'combo-interview-ready', metadata: {}, triggerAttemptId: ctx.attemptId };
@@ -40,8 +40,8 @@ const comboInterviewReady: BadgeEvaluator = async (userId, ctx, supabase) => {
 
 const comboLanguageChampion: BadgeEvaluator = async (userId, ctx, supabase) => {
   const [civicsMap, { writing, yesno, whatmean }] = await Promise.all([
-    civicsLastAttemptMap(userId, supabase),
-    sectionCounts(userId, supabase),
+    civicsLastAttemptMap(userId, ctx, supabase),
+    sectionCounts(userId, ctx, supabase),
   ]);
   const ok =
     accuracy(civicsMap, CIVICS_TOTAL) >= 0.9 &&
@@ -53,7 +53,7 @@ const comboLanguageChampion: BadgeEvaluator = async (userId, ctx, supabase) => {
 };
 
 const comboInterviewMaster: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const { civics, writing, speaking } = await passedMockCounts(userId, supabase);
+  const { civics, writing, speaking } = await passedMockCounts(userId, ctx, supabase);
   if (civics >= 1 && writing >= 1 && speaking >= 1) {
     return { slug: 'combo-interview-master', metadata: {}, triggerAttemptId: ctx.attemptId };
   }

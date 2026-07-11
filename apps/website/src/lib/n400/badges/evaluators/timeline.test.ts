@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { loadAttemptTimeline, longestCorrectRun } from './timeline';
+import type { BadgeContext } from '../types';
 
 function fakeSupabase(
   civicsRows: Array<{ was_correct: boolean; answered_at: string }>,
   sectionRows: Array<{ was_correct: boolean; answered_at: string }>,
+  onQuery?: (table: string) => void,
 ) {
   return {
     from: (table: string) => {
+      onQuery?.(table);
       if (table === 'n400_question_attempts') {
         return {
           select: () => ({
@@ -31,12 +34,39 @@ function fakeSupabase(
   } as any;
 }
 
+const ctx = (): BadgeContext => ({ trigger: 'session_complete' });
+
 describe('loadAttemptTimeline', () => {
   it('merges and sorts civics + section attempts chronologically', async () => {
     const civics = [{ was_correct: true, answered_at: '2026-01-01T10:00:00Z' }];
     const sections = [{ was_correct: false, answered_at: '2026-01-01T09:00:00Z' }];
-    const timeline = await loadAttemptTimeline('u', fakeSupabase(civics, sections));
+    const timeline = await loadAttemptTimeline('u', ctx(), fakeSupabase(civics, sections));
     expect(timeline.map((e) => e.at)).toEqual(['2026-01-01T09:00:00Z', '2026-01-01T10:00:00Z']);
+  });
+
+  it('queries once per run when the ctx cache is seeded (dispatcher behavior)', async () => {
+    let queries = 0;
+    const supabase = fakeSupabase([], [], () => {
+      queries += 1;
+    });
+    const runCtx: BadgeContext = { trigger: 'session_complete', cache: new Map() };
+    // Concurrent callers (like Promise.all over evaluators) share one fetch.
+    await Promise.all([
+      loadAttemptTimeline('u', runCtx, supabase),
+      loadAttemptTimeline('u', runCtx, supabase),
+      loadAttemptTimeline('u', runCtx, supabase),
+    ]);
+    expect(queries).toBe(2); // one civics + one section query, not 6
+  });
+
+  it('queries every call without a cache (unit-test / direct usage)', async () => {
+    let queries = 0;
+    const supabase = fakeSupabase([], [], () => {
+      queries += 1;
+    });
+    await loadAttemptTimeline('u', ctx(), supabase);
+    await loadAttemptTimeline('u', ctx(), supabase);
+    expect(queries).toBe(4);
   });
 });
 

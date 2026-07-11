@@ -1,7 +1,8 @@
 // Gamification v2 — Misc/other achievement badge evaluators (8 badges).
 
-import type { BadgeEvaluator } from '../types';
+import type { BadgeEvaluator, BadgeContext } from '../types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { cached } from './run-cache';
 import { distinctCivicsAnswered } from './civics';
 import { loadLastAttemptPerItem } from './section-progress';
 import {
@@ -12,26 +13,28 @@ import {
   SECTION_TOTAL,
 } from './mock-shared';
 
-async function completedMockCounts(userId: string, supabase: SupabaseClient) {
-  const [civicsRes, writingRes, speakingRes] = await Promise.all([
-    supabase
-      .from('n400_quiz_attempts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('mode', 'mock_test')
-      .not('completed_at', 'is', null),
-    supabase
-      .from('n400_section_mock_results')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('section', 'writing'),
-    supabase
-      .from('n400_section_mock_results')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('section', 'speaking'),
-  ]);
-  return (civicsRes.count ?? 0) + (writingRes.count ?? 0) + (speakingRes.count ?? 0);
+function completedMockCounts(userId: string, ctx: BadgeContext, supabase: SupabaseClient) {
+  return cached(ctx, `completed-mock-counts:${userId}`, async () => {
+    const [civicsRes, writingRes, speakingRes] = await Promise.all([
+      supabase
+        .from('n400_quiz_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('mode', 'mock_test')
+        .not('completed_at', 'is', null),
+      supabase
+        .from('n400_section_mock_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('section', 'writing'),
+      supabase
+        .from('n400_section_mock_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('section', 'speaking'),
+    ]);
+    return (civicsRes.count ?? 0) + (writingRes.count ?? 0) + (speakingRes.count ?? 0);
+  });
 }
 
 const otherFirstPractice: BadgeEvaluator = async (userId, ctx, supabase) => {
@@ -51,13 +54,13 @@ const otherFirstPractice: BadgeEvaluator = async (userId, ctx, supabase) => {
 };
 
 const otherMockRookie: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const n = await completedMockCounts(userId, supabase);
+  const n = await completedMockCounts(userId, ctx, supabase);
   if (n < 1) return null;
   return { slug: 'other-mock-rookie', metadata: { n }, triggerAttemptId: ctx.attemptId };
 };
 
 const otherTestVeteran: BadgeEvaluator = async (userId, ctx, supabase) => {
-  const n = await completedMockCounts(userId, supabase);
+  const n = await completedMockCounts(userId, ctx, supabase);
   if (n < 50) return null;
   return { slug: 'other-test-veteran', metadata: { n }, triggerAttemptId: ctx.attemptId };
 };
@@ -117,10 +120,10 @@ const otherConsistentPerformer: BadgeEvaluator = async (userId, ctx, supabase) =
 
 const otherMemoryMaster: BadgeEvaluator = async (userId, ctx, supabase) => {
   const [civicsMap, writing, yesno, whatmean] = await Promise.all([
-    civicsLastAttemptMap(userId, supabase),
-    loadLastAttemptPerItem(userId, 'writing', supabase),
-    loadLastAttemptPerItem(userId, 'yesno', supabase),
-    loadLastAttemptPerItem(userId, 'whatmean', supabase),
+    civicsLastAttemptMap(userId, ctx, supabase),
+    loadLastAttemptPerItem(userId, 'writing', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'yesno', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'whatmean', ctx, supabase),
   ]);
   const ratios = [
     accuracy(civicsMap, CIVICS_TOTAL),
@@ -134,11 +137,11 @@ const otherMemoryMaster: BadgeEvaluator = async (userId, ctx, supabase) => {
 
 const otherUltimate: BadgeEvaluator = async (userId, ctx, supabase) => {
   const [civics, writing, yesno, whatmean, mocks] = await Promise.all([
-    distinctCivicsAnswered(userId, supabase),
-    loadLastAttemptPerItem(userId, 'writing', supabase),
-    loadLastAttemptPerItem(userId, 'yesno', supabase),
-    loadLastAttemptPerItem(userId, 'whatmean', supabase),
-    passedMockCounts(userId, supabase),
+    distinctCivicsAnswered(userId, ctx, supabase),
+    loadLastAttemptPerItem(userId, 'writing', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'yesno', ctx, supabase),
+    loadLastAttemptPerItem(userId, 'whatmean', ctx, supabase),
+    passedMockCounts(userId, ctx, supabase),
   ]);
   const sectionsComplete =
     civics >= CIVICS_TOTAL &&

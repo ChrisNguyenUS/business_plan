@@ -12,16 +12,27 @@
 // query bounded for long-tenured users.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { BadgeContext } from '../types';
+import { cached } from './run-cache';
 
 export interface TimelineEntry {
   wasCorrect: boolean;
   at: string; // ISO timestamp
 }
 
-export async function loadAttemptTimeline(
+export function loadAttemptTimeline(
   userId: string,
+  ctx: BadgeContext,
   supabase: SupabaseClient,
   limit = 1000,
+): Promise<TimelineEntry[]> {
+  return cached(ctx, `timeline:${userId}:${limit}`, () => fetchTimeline(userId, supabase, limit));
+}
+
+async function fetchTimeline(
+  userId: string,
+  supabase: SupabaseClient,
+  limit: number,
 ): Promise<TimelineEntry[]> {
   const [civicsRes, sectionRes] = await Promise.all([
     supabase
