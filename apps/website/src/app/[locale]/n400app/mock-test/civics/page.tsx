@@ -15,7 +15,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
   ClipboardCheck,
   ArrowRight,
@@ -165,11 +165,22 @@ export default function MockTestPage() {
   const [error, setError] = useState<string | null>(null);
   const [resumable, setResumable] = useState<PersistedAttempt | null>(null);
   const startedRef = useRef(false);
+  const searchParams = useSearchParams();
+  const autoStart = searchParams.get('start') === '1';
 
   // Surface a persisted in-flight attempt on mount.
   useEffect(() => {
     setResumable(loadPersisted());
   }, []);
+
+  // Auto-start when arriving from the picker card (?start=1).
+  // Skip if there's a resumable in-flight attempt (let the user decide).
+  useEffect(() => {
+    if (!hydrated || !autoStart) return;
+    if (loadPersisted()) return; // let user see resume card instead
+    startNew();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, autoStart]);
 
   // Persist on every state change while taking the test.
   useEffect(() => {
@@ -264,6 +275,17 @@ export default function MockTestPage() {
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
+  }
+
+  // When auto-starting from the picker card, show a loading state
+  // instead of flashing the full intro screen.
+  if (autoStart && stage === 'intro' && !resumable) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20 animate-in fade-in duration-300">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
+        <p className="text-sm font-medium text-gray-600">Đang chuẩn bị câu hỏi…</p>
+      </div>
+    );
   }
 
   if (stage === 'intro') {
