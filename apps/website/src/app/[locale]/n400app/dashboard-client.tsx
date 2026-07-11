@@ -203,18 +203,18 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 1. HERO — Continue studying the 128 Civics questions */}
-      {/* Outer wrapper: top padding reserves space for statue overflow */}
-      <div className="lg:pt-14 lg:short:pt-10 xl:tall:pt-20">
+      {/* Outer wrapper: top padding reserves space for the torch flame overflow */}
+      <div className="lg:pt-10 lg:short:pt-8 xl:tall:pt-12">
         <Card className="!p-0 !overflow-visible border-slate-200/60 shadow-sm relative">
 
           {/* ── Right-side image group. The box spans the card height PLUS
-              96px above it. Two layers fill the exact same box so their
-              object-cover geometry is pixel-identical:
+              the --pop overflow above it. Two layers fill the exact same box
+              so their object-cover geometry is pixel-identical:
                 1. full panorama, clip-path'ed to the card bounds
                 2. statue-top cutout (transparent PNG), unclipped, so only
-                   the torch/head break out above the card ── */}
+                   the torch flame breaks out above the card ── */}
           <div
-            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:88px] short:[--pop:64px]"
+            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:36px] short:[--pop:28px]"
             style={{ top: 'calc(-1 * var(--pop))' }}
           >
             {/* Base panorama — clipped to the card area (skyline, body,
@@ -246,6 +246,10 @@ export default function DashboardPage() {
               priority
             />
 
+            {/* Bottom fade: blends the panorama + statue into the hint strip
+                below, so there is no hard seam where the strip crosses */}
+            <div className="absolute inset-x-0 bottom-0 z-[2] h-20 rounded-br-[24px] bg-gradient-to-t from-white via-white/70 to-transparent" />
+
             {/* Decorative sparkles — positioned above the card boundary */}
             <div className="absolute z-[2] pointer-events-none" style={{ top: '66px', right: '15%' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="2" className="animate-pulse">
@@ -265,7 +269,7 @@ export default function DashboardPage() {
 
           {/* ── Left content: relative z-index so text sits above image ── */}
           <div className="relative z-[2]">
-            <div className="flex flex-col items-center gap-5 p-5 sm:flex-row sm:gap-7 xl:tall:p-7 lg:w-[56%]">
+            <div className="flex flex-col items-center gap-5 p-6 sm:flex-row sm:gap-8 sm:p-8 xl:tall:p-9 lg:w-[56%]">
               <ProgressRing
                 done={civicsProgress.seenCount}
                 total={civicsProgress.totalCount}
@@ -295,8 +299,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Hint strip — white background, image bleeds through on right */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-100 bg-white/90 px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
+            {/* Hint strip — soft gray fading to transparent on the right, so
+                the panorama's water blends into it instead of hitting a seam */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                 <Lightbulb size={15} className="text-amber-500" />
               </span>
