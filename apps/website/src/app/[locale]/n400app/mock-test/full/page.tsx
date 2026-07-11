@@ -6,9 +6,10 @@
 // through the same user-state paths as its standalone mock.
 
 import { useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Trophy, RotateCcw, ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import MockTestResult from './MockTestResult';
+import ReviewWrongAnswers from './ReviewWrongAnswers';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   FULL_CIVICS_COUNT,
@@ -36,7 +37,8 @@ type Phase =
   | { kind: 'interlude'; next: 'speaking' | 'writing' }
   | { kind: 'speaking' }
   | { kind: 'writing' }
-  | { kind: 'summary' };
+  | { kind: 'summary' }
+  | { kind: 'review' };
 
 // Guarded id (same pattern as analytics' generateEventId): crypto.randomUUID
 // throws in non-secure contexts / older Safari, and this runs while the quiz
@@ -212,54 +214,33 @@ export default function FullInterviewPage() {
   }
 
   if (phase.kind === 'summary') {
-    const parts: { label: string; result: PartResult | null }[] = [
-      { label: 'Civics', result: civics },
-      { label: 'Speaking', result: speaking },
-      { label: 'Viết', result: writing },
-    ];
-    const overall = parts.every((p) => p.result?.passed);
+    const totalScore = (civics?.correct ?? 0) + (speaking?.correct ?? 0) + (writing?.correct ?? 0);
+    const totalQuestions = FULL_CIVICS_COUNT + FULL_SPEAKING_COUNT + FULL_WRITING_COUNT;
+    const overall = [civics, speaking, writing].every((p) => p?.passed);
     return (
-      <CenterCard tone={overall ? 'pass' : 'fail'}>
-        <div className="mb-4 flex flex-col items-center gap-3">
-          <Trophy className={overall ? 'text-teal-600' : 'text-orange-500'} size={40} />
-          <h2 className="text-2xl font-extrabold text-gray-800">
-            {overall ? 'Chúc mừng! Bạn đã vượt qua buổi phỏng vấn!' : 'Chưa đạt — luyện thêm rồi thử lại nhé!'}
-          </h2>
-        </div>
-        <div className="space-y-2 text-left">
-          {parts.map(({ label, result }) => (
-            <div
-              key={label}
-              className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3"
-            >
-              <span className="font-semibold text-gray-700">{label}</span>
-              <span className="flex items-center gap-2 text-sm font-bold">
-                {result ? `${result.correct}/${result.total}` : '—'}
-                {result?.passed ? (
-                  <CheckCircle size={18} className="text-teal-600" />
-                ) : (
-                  <XCircle size={18} className="text-orange-500" />
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button
-            type="button"
-            onClick={retake}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
-          >
-            <RotateCcw size={16} /> Thi lại
-          </button>
-          <Link
-            href={`${base}/mock-test`}
-            className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
-          >
-            <ArrowLeft size={16} /> Chọn bài khác
-          </Link>
-        </div>
-      </CenterCard>
+      <MockTestResult
+        civics={civics}
+        speaking={speaking}
+        writing={writing}
+        overall={overall}
+        totalScore={totalScore}
+        totalQuestions={totalQuestions}
+        wrongCount={totalQuestions - totalScore}
+        civicsAnswers={civicsAnswers.current}
+        onRetake={retake}
+        onReviewWrongAnswers={() => setPhase({ kind: 'review' })}
+        basePath={base}
+      />
+    );
+  }
+
+  if (phase.kind === 'review') {
+    return (
+      <ReviewWrongAnswers
+        civicsAnswers={civicsAnswers.current}
+        onBack={() => setPhase({ kind: 'summary' })}
+        onRetake={retake}
+      />
     );
   }
 
