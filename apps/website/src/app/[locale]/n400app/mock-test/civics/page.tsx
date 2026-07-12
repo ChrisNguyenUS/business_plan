@@ -1,9 +1,10 @@
 'use client';
 
 // Phase 4: data layer swapped to server actions, UI preserved from v1.
-// - startMockAttempt builds the slide manifest server-side; the slides we
-//   render here have NO isCorrect flag, so a tampered client cannot mark
-//   itself right.
+// - Slides are built CLIENT-side from a seed (same deterministic shuffle as
+//   the full interview) so the first question renders instantly. The seed is
+//   sent to startMockAttempt in the background, which replays the same
+//   builders and stores the answer key as the attempt's slide_manifest.
 // - User picks are batched in component state. On submit we send all 20
 //   to finalizeMockAttempt; the server replays them through the answer
 //   key and stamps score/passed.
@@ -47,6 +48,8 @@ import { useN400UserState, type MockResult } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
 import {
+  buildOptions,
+  selectMockTestQuestions,
   questionAudioUrl,
   isPass,
   MOCK_TEST_QUESTION_COUNT,
@@ -173,6 +176,11 @@ function MockTestPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [resumable, setResumable] = useState<PersistedAttempt | null>(null);
   const startedRef = useRef(false);
+  // Background registration of the attempt row: startNew fires the server
+  // action without awaiting it so the first question renders instantly.
+  // finish() falls back to these when the attemptId hasn't landed yet.
+  const attemptIdPromise = useRef<Promise<string> | null>(null);
+  const pendingStart = useRef<Parameters<typeof startMockAttempt>[0] | null>(null);
   const searchParams = useSearchParams();
   const autoStart = searchParams.get('start') === '1';
 
@@ -181,11 +189,14 @@ function MockTestPageInner() {
     setResumable(loadPersisted());
   }, []);
 
-  // Auto-start when arriving from the picker card (?start=1).
-  // Skip if there's a resumable in-flight attempt (let the user decide).
+  // Auto-start when arriving from the picker card (?start=1). Only a
+  // persisted attempt with real progress should interrupt this — the intro
+  // only offers resume when answered > 0, so a 0-answer leftover would
+  // otherwise block auto-start forever and strand the user on the intro.
   useEffect(() => {
     if (!hydrated || !autoStart) return;
-    if (loadPersisted()) return; // let user see resume card instead
+    const persisted = loadPersisted();
+    if (persisted && persisted.picks.some((p) => p.pickedId !== null)) return;
     startNew();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, autoStart]);
@@ -196,29 +207,49 @@ function MockTestPageInner() {
     persist({ attemptId, startedAt, savedAt: new Date().toISOString(), slides, picks, index });
   }, [stage, attemptId, startedAt, slides, picks, index]);
 
-  const startNew = async () => {
+  const startNew = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     setError(null);
-    setSubmitting(true);
-    try {
-      trackMockTestStart();
-      const r = await startMockAttempt();
+    trackMockTestStart();
+
+    // Build the slides client-side from a seed — the same deterministic
+    // shuffle the full interview uses — so the test starts with zero
+    // network wait. The server replays the seed to store the answer key.
+    const seed = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const stateCode = state.settings.stateCode;
+    const districtNumber = state.address.districtNumber;
+    // Skip Q29 (your U.S. Representative) when district is unresolved —
+    // mirrors the same filter inside startMockAttempt.
+    const questions = selectMockTestQuestions(seed).filter(
+      (q) => q.id !== 29 || districtNumber !== null,
+    );
+    const built: PublicSlide[] = questions.map((q) => ({
+      questionId: q.id,
+      options: buildOptions(q, stateCode, `mock-${seed}-${q.id}`, districtNumber).map((o) => ({
+        id: o.id,
+        en: o.en,
+        vi: o.vi,
+      })),
+    }));
+
+    setAttemptId(null);
+    setStartedAt(new Date().toISOString());
+    setSlides(built);
+    setPicks(built.map((s) => ({ questionId: s.questionId, pickedId: null })));
+    setIndex(0);
+    setResult(null);
+    setStage('taking');
+
+    // Register the attempt row in the background; finish() awaits it.
+    const args = { seed, stateCode, districtNumber };
+    pendingStart.current = args;
+    const p = startMockAttempt(args).then((r) => {
       setAttemptId(r.attemptId);
-      setStartedAt(r.startedAt);
-      setSlides(r.slides);
-      setPicks(r.slides.map((s) => ({ questionId: s.questionId, pickedId: null })));
-      setIndex(0);
-      setResult(null);
-      setStage('taking');
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Không thể bắt đầu thi thử. / Could not start attempt.',
-      );
-      startedRef.current = false;
-    } finally {
-      setSubmitting(false);
-    }
+      return r.attemptId;
+    });
+    p.catch(() => {}); // surfaced at submit time; avoid an unhandled rejection
+    attemptIdPromise.current = p;
   };
 
   const resume = () => {
@@ -238,18 +269,29 @@ function MockTestPageInner() {
   };
 
   const finish = async (finalPicks: PickState[]) => {
-    if (!attemptId) return;
     setSubmitting(true);
     setError(null);
     try {
+      // The attempt row registers in the background while the user answers;
+      // resolve it here, retrying once if that background call failed.
+      let id = attemptId;
+      if (!id && attemptIdPromise.current) {
+        id = await attemptIdPromise.current.catch(() => null);
+      }
+      if (!id && pendingStart.current) {
+        id = (await startMockAttempt(pendingStart.current)).attemptId;
+        setAttemptId(id);
+      }
+      if (!id) throw new Error('Không thể nộp bài. / Could not submit. Please retry.');
       const r = await finalizeMockAttempt(
-        attemptId,
+        id,
         finalPicks
           .filter((p): p is PickState & { pickedId: QuizOption['id'] } => p.pickedId !== null)
           .map((p) => ({ questionId: p.questionId, selectedOption: p.pickedId })),
       );
       setResult(r);
       setStage('result');
+      startedRef.current = false; // allow "Thi lại" to roll a fresh attempt
       if (r.milestone) trackStreakMilestone(r.milestone);
       persist(null); // attempt finalized server-side; nothing left to resume
     } catch (e) {

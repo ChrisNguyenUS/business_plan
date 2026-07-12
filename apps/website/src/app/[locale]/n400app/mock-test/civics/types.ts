@@ -18,7 +18,6 @@ export interface PublicSlide {
 export interface StartMockAttemptResult {
   attemptId: string
   startedAt: string
-  slides: PublicSlide[]
 }
 
 export interface MockPick {

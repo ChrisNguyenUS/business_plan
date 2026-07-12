@@ -1,20 +1,18 @@
 'use server'
 
 // Mock-test server actions. The data layer for /n400app/mock-test:
-//   - startMockAttempt    builds the slide manifest server-side and persists it.
-//                         The browser receives slides with NO `isCorrect` flag,
-//                         so a tampered client cannot mark itself right.
+//   - startMockAttempt    replays the client's seed through the SAME
+//                         deterministic builders (selectMockTestQuestions +
+//                         buildOptions) and persists the answer key as the
+//                         slide_manifest. The client builds its slides locally
+//                         from that seed for an instant start (same approach
+//                         as the full interview) and registers the attempt
+//                         here in the background — grading still happens
+//                         server-side against this manifest.
 //   - finalizeMockAttempt replays the user's picks through the server-side
 //                         checker in ONE round trip (`finalize_mock_attempt_batch`
 //                         RPC, which derives was_correct from the manifest,
 //                         stamps score/passed/streak, and returns the manifest).
-//
-// Why server-side build of options: buildOptions is deterministic given a
-// seed, but the seed alone is not enough — the user's stateCode (for Q23/
-// Q61/Q62) and the per-question correct-answer roll are inputs the client
-// shouldn't be trusted to compute. So we run buildOptions here, store the
-// answer key in slide_manifest, and only send the option labels + text to
-// the client.
 //
 // Public types live in ./types.ts. Next.js requires `'use server'` modules
 // to export only async functions — so type/interface exports must live in
@@ -35,7 +33,6 @@ import type { StateCode } from '@/lib/n400/state-data'
 import { evaluateAfterAttempt, evaluateAfterStreak } from '@/lib/n400/badges/actions'
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
 import type {
-  PublicSlide,
   StartMockAttemptResult,
   MockPick,
   FinalizeMockAttemptResult,
@@ -56,31 +53,35 @@ async function getSupabase() {
   )
 }
 
-export async function startMockAttempt(): Promise<StartMockAttemptResult> {
+export async function startMockAttempt(input: {
+  seed: string
+  stateCode: StateCode
+  districtNumber: number | null
+}): Promise<StartMockAttemptResult> {
   const supabase = await getSupabase()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) throw new Error('unauthorized')
 
-  // Pull the user's resolved state + district for location-based correct-answer lookup.
-  const { data: profile } = await supabase
-    .from('n400_user_profile')
-    .select('state_code,district_number')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  const stateCode = ((profile?.state_code as StateCode | null) ?? 'TX') as StateCode
-  const districtNumber = (profile?.district_number as number | null) ?? null
+  // The client generated these and built its slides from them; replaying the
+  // same inputs here yields an identical option set, so the stored manifest
+  // matches what the user actually saw. Guard against garbage input.
+  const { seed, stateCode, districtNumber } = input
+  if (typeof seed !== 'string' || seed.length === 0 || seed.length > 64) {
+    throw new Error('invalid seed')
+  }
+  if (districtNumber !== null && !Number.isInteger(districtNumber)) {
+    throw new Error('invalid district')
+  }
 
-  const seed = `${Date.now()}-${user.id}`
   // Skip Q29 (your U.S. Representative) when district is unresolved — without
   // it the question has no buildable answer for this user.
   const questions = selectMockTestQuestions(seed).filter(
     (q) => q.id !== 29 || districtNumber !== null,
   )
 
-  // Build the slides server-side. The manifest stores ONLY the answer key.
-  const slides: PublicSlide[] = []
+  // Replay the option build server-side. The manifest stores ONLY the answer key.
   const manifest: { qid: number; correct: QuizOption['id'] }[] = []
   for (const q of questions) {
     const options = buildOptions(q, stateCode, `mock-${seed}-${q.id}`, districtNumber)
@@ -90,10 +91,6 @@ export async function startMockAttempt(): Promise<StartMockAttemptResult> {
       throw new Error(`quiz-engine: no correct option built for q${q.id}`)
     }
     manifest.push({ qid: q.id, correct: correct.id })
-    slides.push({
-      questionId: q.id,
-      options: options.map((o) => ({ id: o.id, en: o.en, vi: o.vi })),
-    })
   }
 
   const startedAt = new Date().toISOString()
@@ -112,7 +109,7 @@ export async function startMockAttempt(): Promise<StartMockAttemptResult> {
     throw new Error(`failed to start attempt: ${error?.message ?? 'unknown error'}`)
   }
 
-  return { attemptId: attempt.id, startedAt, slides }
+  return { attemptId: attempt.id, startedAt }
 }
 
 export async function finalizeMockAttempt(
