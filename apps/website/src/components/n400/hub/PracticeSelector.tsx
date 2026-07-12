@@ -9,7 +9,7 @@
 //     it never starts practice. Desktop → anchored popover (no overlay);
 //     mobile → native bottom sheet.
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, ChevronDown, Flame, Target, Trophy, X, Zap } from 'lucide-react';
 import type { PracticePreset } from '@/lib/n400/quiz-engine';
 import {
@@ -28,22 +28,13 @@ const MODE_META: Record<ModeId, { icon: React.ReactNode; tone: string }> = {
   full: { icon: <Trophy size={20} />, tone: 'bg-purple-50 text-purple-600' },
 };
 
-/** SSR-safe media query — false on the server / first paint, resolves on mount. */
-function useMediaQuery(query: string): boolean {
-  const subscribe = useCallback(
-    (cb: () => void) => {
-      const mq = window.matchMedia(query);
-      mq.addEventListener('change', cb);
-      return () => mq.removeEventListener('change', cb);
-    },
-    [query],
-  );
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(query).matches,
-    () => false,
-  );
-}
+// Desktop = the popover, mobile = the bottom sheet. Which surface shows is
+// decided by CSS breakpoints (hidden md:block / md:hidden), not JS, so it's
+// correct on first paint with no media-query hydration timing. This helper only
+// gates *behaviour* (scroll-lock, outside-click) at event time.
+const DESKTOP_MQ = '(min-width: 768px)';
+const isDesktopViewport = () =>
+  typeof window !== 'undefined' && window.matchMedia(DESKTOP_MQ).matches;
 
 function metaFor(preset: PracticePreset, totalCount: number) {
   const count = preset.count ?? totalCount;
@@ -131,7 +122,6 @@ export function PracticeSelector({
 }) {
   const [currentId, setCurrentId] = usePracticeModeId(skillKey);
   const [open, setOpen] = useState(false);
-  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const changeBtnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -141,36 +131,33 @@ export function PracticeSelector({
   const currentMeta = MODE_META[current.id];
   const currentRecommended = current.id === RECOMMENDED_PRACTICE_MODE_ID;
 
-  // Close the desktop popover on outside click. (The mobile sheet has its own
-  // backdrop.) Escape-to-close is handled for both below.
-  useEffect(() => {
-    if (!open || !isDesktop) return;
-    const onDown = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (popoverRef.current?.contains(t) || changeBtnRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open, isDesktop]);
-
-  // Mobile sheet: lock body scroll and support Escape.
+  // Escape closes either surface; on desktop an outside click closes the popover
+  // (the mobile sheet dismisses via its own backdrop). Scroll-lock only on the
+  // mobile sheet. All media checks are at event time — no render dependency.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
+    const onDown = (e: MouseEvent) => {
+      if (!isDesktopViewport()) return;
+      const t = e.target as Node;
+      if (popoverRef.current?.contains(t) || changeBtnRef.current?.contains(t)) return;
+      setOpen(false);
+    };
     window.addEventListener('keydown', onKey);
-    if (!isDesktop) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        window.removeEventListener('keydown', onKey);
-        document.body.style.overflow = prev;
-      };
-    }
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, isDesktop]);
+    document.addEventListener('mousedown', onDown);
+
+    const mobile = !isDesktopViewport();
+    const prevOverflow = document.body.style.overflow;
+    if (mobile) document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDown);
+      if (mobile) document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
 
   const pick = (preset: PracticePreset) => {
     setCurrentId(preset.id);
@@ -232,15 +219,17 @@ export function PracticeSelector({
               <ChevronDown size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Desktop: anchored popover (no overlay, no blur). */}
-            {isDesktop && open ? (
+            {/* Desktop only (md+): floating popover anchored to the button —
+                no overlay, no blur. Opens upward since the Practice card sits
+                low in the page. CSS breakpoint, not JS, decides visibility. */}
+            {open ? (
               <div
                 ref={popoverRef}
                 role="dialog"
                 aria-label="Đổi chế độ luyện tập"
-                className="absolute right-0 top-full z-50 mt-2 w-[440px] max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none"
+                className="absolute bottom-full right-0 z-50 mb-2 hidden h-[360px] w-[460px] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none md:flex"
               >
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex shrink-0 items-center justify-between">
                   <h3 className="text-base font-extrabold text-gray-900">Đổi chế độ luyện tập</h3>
                   <button
                     type="button"
@@ -251,16 +240,18 @@ export function PracticeSelector({
                     <X size={18} />
                   </button>
                 </div>
-                <ModeList presets={presets} totalCount={totalCount} currentId={current.id} onPick={pick} />
+                <div className="-mr-1 flex-1 overflow-y-auto pr-1">
+                  <ModeList presets={presets} totalCount={totalCount} currentId={current.id} onPick={pick} />
+                </div>
               </div>
             ) : null}
           </div>
         </div>
       </div>
 
-      {/* Mobile: native bottom sheet. */}
-      {!isDesktop && open ? (
-        <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label="Đổi chế độ luyện tập">
+      {/* Mobile only (below md): native bottom sheet. */}
+      {open ? (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Đổi chế độ luyện tập">
           <button
             type="button"
             aria-label="Đóng"
