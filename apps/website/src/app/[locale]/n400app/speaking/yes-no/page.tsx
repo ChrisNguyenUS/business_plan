@@ -101,7 +101,7 @@ export default function YesNoPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-4 animate-in fade-in duration-300 sm:gap-4">
         <HubHero
           emoji="📋"
           imageSrc="/images/n400/yesno-thumbnail-study.png"

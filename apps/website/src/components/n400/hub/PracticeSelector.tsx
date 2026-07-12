@@ -50,6 +50,15 @@ function RecommendedBadge() {
   );
 }
 
+/** Marks the mode the card will actually launch — shown on the current-mode block. */
+function InUseBadge() {
+  return (
+    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700">
+      Đang dùng
+    </span>
+  );
+}
+
 /** The list of mode rows — shared by the desktop popover and the mobile sheet. */
 function ModeList({
   presets,
@@ -166,87 +175,90 @@ export function PracticeSelector({
   };
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-        {/* Identity */}
-        <div className="flex items-center gap-4 sm:min-w-0 sm:flex-1">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-            <Target size={22} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-extrabold text-gray-900">Luyện tập</h2>
-            <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>
-          </div>
+    // Priority #2 card. Vertical layout that answers "what happens when I tap
+    // Continue": header → highlighted current-mode block → primary CTA → the
+    // secondary "change mode" affordance. Same shape on mobile and desktop.
+    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      {/* Identity */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+          <Target size={20} />
         </div>
+        <div className="min-w-0">
+          <h2 className="font-extrabold text-gray-900">Luyện tập</h2>
+          <p className="text-sm text-gray-500">{subtitle}</p>
+        </div>
+      </div>
 
-        {/* Current mode + actions */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-          <div className="min-w-0 sm:border-l sm:border-gray-100 sm:pl-5">
-            <div className="text-xs font-medium text-gray-400">Chế độ hiện tại</div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1.5 font-bold text-gray-800">
-                <span className={`flex h-5 w-5 items-center justify-center rounded-md ${currentMeta.tone}`}>
-                  <span className="scale-[0.7]">{currentMeta.icon}</span>
-                </span>
-                {current.titleVi}
-              </span>
-              {currentRecommended ? <RecommendedBadge /> : null}
-            </div>
-            <div className="mt-0.5 text-sm text-gray-500">
-              {count} câu
-              {duration}
-            </div>
-          </div>
+      {/* Highlighted current-mode block */}
+      <div className="mt-2.5 rounded-xl border border-teal-100 bg-teal-50/50 px-3 py-2.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-xs font-medium text-gray-400">Chế độ hiện tại</span>
+          {currentRecommended ? <RecommendedBadge /> : <InUseBadge />}
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+          <span className="flex items-center gap-1.5 font-bold text-gray-800">
+            <span className={`flex h-5 w-5 items-center justify-center rounded-md ${currentMeta.tone}`}>
+              <span className="scale-[0.7]">{currentMeta.icon}</span>
+            </span>
+            {current.titleVi}
+          </span>
+          <span className="text-sm text-gray-500">
+            {count} câu
+            {duration}
+          </span>
+        </div>
+        {current.descVi ? <p className="mt-0.5 text-sm text-gray-500">{current.descVi}</p> : null}
+      </div>
 
-          <div className="relative flex shrink-0 flex-col items-stretch gap-1.5">
-            <button
-              type="button"
-              onClick={() => onStart(current)}
-              className="group inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700"
-            >
-              Tiếp tục luyện tập
-              <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-            </button>
-            <button
-              ref={changeBtnRef}
-              type="button"
-              aria-expanded={open}
-              aria-haspopup="dialog"
-              onClick={() => setOpen((v) => !v)}
-              className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-50"
-            >
-              Đổi chế độ
-              <ChevronDown size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-            </button>
+      {/* Actions */}
+      <div className="relative mt-2.5 flex flex-col items-stretch gap-1">
+        <button
+          type="button"
+          onClick={() => onStart(current)}
+          className="group inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700"
+        >
+          Tiếp tục luyện tập
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </button>
+        <button
+          ref={changeBtnRef}
+          type="button"
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-50"
+        >
+          Đổi chế độ
+          <ChevronDown size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
 
-            {/* Desktop only (md+): floating popover anchored to the button —
-                no overlay, no blur. Opens upward since the Practice card sits
-                low in the page. CSS breakpoint, not JS, decides visibility. */}
-            {open ? (
-              <div
-                ref={popoverRef}
-                role="dialog"
-                aria-label="Đổi chế độ luyện tập"
-                className="absolute bottom-full right-0 z-50 mb-2 hidden h-[360px] w-[460px] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none md:flex"
+        {/* Desktop only (md+): floating popover anchored to the button —
+            no overlay, no blur. Opens upward since the Practice card sits
+            low in the page. CSS breakpoint, not JS, decides visibility. */}
+        {open ? (
+          <div
+            ref={popoverRef}
+            role="dialog"
+            aria-label="Đổi chế độ luyện tập"
+            className="absolute bottom-full right-0 z-50 mb-2 hidden h-[360px] w-[460px] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none md:flex"
+          >
+            <div className="mb-3 flex shrink-0 items-center justify-between">
+              <h3 className="text-base font-extrabold text-gray-900">Đổi chế độ luyện tập</h3>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Đóng"
+                className="cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
               >
-                <div className="mb-3 flex shrink-0 items-center justify-between">
-                  <h3 className="text-base font-extrabold text-gray-900">Đổi chế độ luyện tập</h3>
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    aria-label="Đóng"
-                    className="cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="-mr-1 flex-1 overflow-y-auto pr-1">
-                  <ModeList presets={presets} totalCount={totalCount} currentId={current.id} onPick={pick} />
-                </div>
-              </div>
-            ) : null}
+                <X size={18} />
+              </button>
+            </div>
+            <div className="-mr-1 flex-1 overflow-y-auto pr-1">
+              <ModeList presets={presets} totalCount={totalCount} currentId={current.id} onPick={pick} />
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       {/* Mobile only (below md): native bottom sheet. */}

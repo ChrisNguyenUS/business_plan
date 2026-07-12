@@ -52,7 +52,7 @@ export default function CivicsHubPage() {
     : 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-4 animate-in fade-in duration-300 sm:gap-4">
       <HubHero
         emoji="🇺🇸"
         imageSrc="/images/n400/civic-thumbnail-study.png"
