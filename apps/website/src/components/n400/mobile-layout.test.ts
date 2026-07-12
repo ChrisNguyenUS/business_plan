@@ -21,12 +21,16 @@ describe('N400 mobile layout contracts', () => {
   test('dashboard collapses desktop columns on mobile', () => {
     const dashboard = source('src/app/[locale]/n400app/dashboard-client.tsx');
 
-    // Hero content stacks on mobile and the panorama stays desktop-only;
-    // the goals/suggestion row and quick-nav grids collapse to one column.
-    expect(dashboard).toContain('flex flex-col items-center');
-    expect(dashboard).toContain('hidden lg:block lg:w-[44%]');
+    // Hero panorama shows on mobile without the desktop torch overflow.
+    expect(dashboard).toContain('w-[45%] lg:w-[44%]');
+    expect(dashboard).toContain('[--pop:0px] lg:[--pop:32px]');
+    // Hero progress bar goes full-width below lg.
+    expect(dashboard).toContain('w-full lg:w-60');
+    // Goals/suggestion row stacks; quick-nav stays 3-up but compact; stats
+    // strip scrolls horizontally instead of wrapping.
     expect(dashboard).toContain('grid-cols-1 gap-3 lg:grid-cols-5');
-    expect(dashboard).toContain('grid-cols-1 gap-4 sm:grid-cols-3');
+    expect(dashboard).toContain('grid grid-cols-3 gap-2 sm:gap-4');
+    expect(dashboard).toContain('overflow-x-auto xl:grid xl:grid-cols-4');
   });
 
   test('statistics screen avoids fixed desktop columns on mobile', () => {

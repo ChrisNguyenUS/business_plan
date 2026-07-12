@@ -32,6 +32,8 @@ import {
   Target,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { getShortName } from '@/lib/profile-utils';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackSignupComplete } from '@/lib/n400/analytics';
@@ -46,6 +48,7 @@ import { deriveSectionSeen } from '@/lib/n400/section-progress';
 
 export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
+  const { profile } = useAuth();
   const badges = useN400Badges();
   const params = useParams();
   const search = useSearchParams();
@@ -195,6 +198,8 @@ export default function DashboardPage() {
     {
       label: 'Chuỗi học tập',
       value: `${state.streak.current} ngày`,
+      caption: 'Keep it up!',
+      captionTint: 'text-orange-500',
       href: `${base}/statistic`,
       icon: Flame,
       filled: true,
@@ -203,6 +208,8 @@ export default function DashboardPage() {
     {
       label: 'Độ chính xác',
       value: `${stats.accuracy}%`,
+      caption: 'Good progress!',
+      captionTint: 'text-amber-500',
       href: `${base}/statistic`,
       icon: Star,
       filled: true,
@@ -211,21 +218,39 @@ export default function DashboardPage() {
     {
       label: 'Câu đã thuộc',
       value: `${stats.mastered} câu`,
+      caption: 'Continue!',
+      captionTint: 'text-teal-600',
       href: `${base}/flashcards?filter=known`,
       icon: CheckCircle2,
       tint: 'bg-teal-50 text-teal-600',
     },
     {
       label: 'Huy hiệu',
-      value: `${badges.earnedSlugs.size} danh hiệu`,
+      value: `${badges.earnedSlugs.size}`,
+      caption: 'Danh hiệu',
+      captionTint: 'text-yellow-600',
       href: `${base}/progress`,
       icon: Award,
       tint: 'bg-yellow-50 text-yellow-600',
     },
   ];
 
+  // Mobile greeting — the sticky header shows the brand on mobile, so the
+  // time-of-day greeting scrolls with the content (per the mobile mock).
+  const hour = new Date().getHours();
+  const greetingVi = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+
   return (
     <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
+      {/* 0. MOBILE GREETING */}
+      <div className="lg:hidden">
+        <h1 className="text-2xl font-extrabold text-slate-900">
+          {greetingVi}
+          {profile ? `, ${getShortName(profile)}` : ''}! 👋
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">Sẵn sàng cho hành trình trở thành công dân Mỹ?</p>
+      </div>
+
       {/* 1. HERO — Continue studying the 128 Civics questions */}
       {/* Outer wrapper: tiny top padding — the torch flame overflows into the
           main content's own top padding so the card lines up with the other
@@ -239,8 +264,11 @@ export default function DashboardPage() {
                 1. full panorama, clip-path'ed to the card bounds
                 2. statue-top cutout (transparent PNG), unclipped, so only
                    the torch flame breaks out above the card ── */}
+          {/* Mobile shows the same image group without the torch overflow:
+              --pop collapses to 0 so the box (and both cover layers) aligns
+              exactly with the card bounds. Desktop geometry is unchanged. */}
           <div
-            className="absolute bottom-0 right-0 hidden lg:block lg:w-[44%] z-[0] pointer-events-none [--pop:32px] short:[--pop:24px]"
+            className="absolute bottom-0 right-0 w-[45%] lg:w-[44%] z-[0] pointer-events-none [--pop:0px] lg:[--pop:32px] lg:short:[--pop:24px]"
             style={{ top: 'calc(-1 * var(--pop))' }}
           >
             {/* Base panorama — clipped to the card area (skyline, body,
@@ -254,7 +282,7 @@ export default function DashboardPage() {
                 alt=""
                 fill
                 className="object-cover object-[65%_20%] scale-[1.15] -translate-y-3"
-                sizes="(min-width: 1024px) 44vw, 0px"
+                sizes="(min-width: 1024px) 44vw, 45vw"
                 priority
               />
               {/* Left-edge gradient: blends panorama into white card */}
@@ -268,7 +296,7 @@ export default function DashboardPage() {
               alt=""
               fill
               className="object-cover object-[65%_20%] scale-[1.15] -translate-y-3 z-[1]"
-              sizes="(min-width: 1024px) 44vw, 0px"
+              sizes="(min-width: 1024px) 44vw, 45vw"
               priority
             />
 
@@ -295,26 +323,30 @@ export default function DashboardPage() {
 
           {/* ── Left content: relative z-index so text sits above image ── */}
           <div className="relative z-[2]">
-            <div className="flex flex-col items-center gap-3 p-6 text-center sm:items-start sm:p-8 xl:tall:p-9 sm:text-left lg:w-[56%]">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700">
-                <Lightbulb size={12} />
+            <div className="flex flex-col items-start gap-3 p-5 text-left sm:p-8 xl:tall:p-9 lg:w-[56%]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700 shadow-sm">
+                <Star size={12} className="text-amber-400" fill="currentColor" />
                 Gợi ý hôm nay
               </span>
-              <h2 className="text-2xl xl:tall:text-3xl font-extrabold text-slate-900">
-                {hero.emoji} {hero.title}
-              </h2>
-              <p className="text-sm xl:tall:text-base text-slate-600">{hero.subtitle}</p>
-              <div className="mt-1 xl:tall:mt-2 flex flex-wrap justify-center gap-3 sm:justify-start">
+              {/* Title/subtitle keep clear of the statue below lg (image is
+                  visible on mobile); the opaque buttons may overlap it. */}
+              <div className="pr-[38%] lg:pr-0">
+                <h2 className="text-xl sm:text-2xl xl:tall:text-3xl font-extrabold text-slate-900">
+                  {hero.emoji} {hero.title}
+                </h2>
+                <p className="mt-1.5 text-sm xl:tall:text-base text-slate-600">{hero.subtitle}</p>
+              </div>
+              <div className="mt-1 xl:tall:mt-2 flex flex-wrap gap-2.5 sm:gap-3">
                 <Link
                   href={`${base}${hero.cta.href}`}
-                  className="group inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-7 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
+                  className="group inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-xs sm:px-7 sm:py-3 sm:text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   {hero.cta.label}
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link
                   href={`${base}${hero.secondary.href}`}
-                  className="inline-flex items-center rounded-2xl border border-slate-200 bg-white/80 px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:border-teal-200 hover:bg-white"
+                  className="inline-flex items-center rounded-2xl border border-slate-200 bg-white/90 px-4 py-2.5 text-xs sm:px-6 sm:py-3 sm:text-sm font-bold text-slate-700 transition-all hover:border-teal-200 hover:bg-white"
                 >
                   {hero.secondary.label}
                 </Link>
@@ -323,18 +355,26 @@ export default function DashboardPage() {
 
             {/* Progress meta strip — soft gray fading to transparent on the
                 right, so the panorama's water blends into it instead of
-                hitting a seam */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
-              <span className="flex items-center gap-2 font-medium text-slate-600">
+                hitting a seam. Mobile stacks: text line, full-width bar,
+                percent right-aligned (per the mobile mock). */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-3 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
+              <span className="flex w-full items-center gap-2 font-medium text-slate-600 lg:w-auto">
                 <BookOpen size={15} className="shrink-0 text-teal-600" />
-                {civicsProgress.nextNumber !== null
-                  ? `Bạn đang ở câu #${civicsProgress.nextNumber} trong ${civicsProgress.totalCount} câu`
-                  : `Bạn đã học qua cả ${civicsProgress.totalCount} câu Civics`}
+                {civicsProgress.nextNumber !== null ? (
+                  <>
+                    Bạn đang ở câu <strong className="font-bold text-slate-800">#{civicsProgress.nextNumber}</strong>{' '}
+                    trong {civicsProgress.totalCount} câu
+                  </>
+                ) : (
+                  <>Bạn đã học qua cả {civicsProgress.totalCount} câu Civics</>
+                )}
               </span>
-              <span className="w-36 sm:w-52 lg:w-60">
+              <span className="w-full lg:w-60">
                 <ProgressBar progress={civicsProgress.percent} heightClass="h-2" />
               </span>
-              <span className="font-bold text-teal-700">{civicsProgress.percent}% hoàn thành</span>
+              <span className="ml-auto font-bold text-teal-700 lg:ml-0">
+                {civicsProgress.percent}% hoàn thành
+              </span>
             </div>
           </div>
 
@@ -343,8 +383,9 @@ export default function DashboardPage() {
 
       {/* 2. MỤC TIÊU HÔM NAY + GỢI Ý DÀNH CHO BẠN */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-5 xl:tall:gap-5">
-        <Card className="!p-4 xl:tall:!p-6 lg:col-span-3">
-          <div className="mb-3 xl:tall:mb-4 flex flex-wrap items-start justify-between gap-3">
+        {/* Amber-tinted below lg per the mobile mock; plain white on desktop. */}
+        <Card className="!p-4 xl:tall:!p-6 lg:col-span-3 max-lg:border-amber-100 max-lg:bg-gradient-to-br max-lg:from-amber-50/60 max-lg:to-white">
+          <div className="mb-3 xl:tall:mb-4 flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500 shadow-sm">
                 <Target size={22} />
@@ -356,7 +397,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <span className="rounded-xl bg-amber-100 px-3 py-1.5 text-sm font-bold text-amber-700">
+            <span className="shrink-0 whitespace-nowrap rounded-xl bg-amber-100 px-2.5 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm font-bold text-amber-700">
               {goalsDone} / {goals.length} hoàn thành
             </span>
           </div>
@@ -391,7 +432,52 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="!p-4 xl:tall:!p-6 flex flex-col gap-3 lg:col-span-2">
+        {/* Mobile: compact blue banner (per the mobile mock) */}
+        <Card className="lg:hidden !p-4 !border-blue-100 !bg-blue-50/60">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm">
+              <Target size={22} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-extrabold text-slate-900">Gợi ý dành cho bạn</h3>
+              {recommendation ? (
+                <>
+                  <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
+                    Bạn thường sai câu hỏi về{' '}
+                    <strong className="font-bold text-slate-800">
+                      {N400_CATEGORY_LABELS[recommendation.category].vi}
+                    </strong>
+                    . Luyện 5 câu để cải thiện độ chính xác!
+                  </p>
+                  <Link
+                    href={`${base}/practice?start=weak`}
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    Luyện ngay <ArrowRight size={14} />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
+                    Luyện tập mỗi ngày để tiến bộ đều đặn. Làm 5 câu nhanh để khởi động hôm nay!
+                  </p>
+                  <Link
+                    href={`${base}/practice?start=quick`}
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    Luyện ngay <ArrowRight size={14} />
+                  </Link>
+                </>
+              )}
+            </div>
+            <div className="relative h-16 w-20 shrink-0">
+              <Image src="/images/n400/illu-reading.png" alt="" fill className="object-contain" sizes="80px" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Desktop: full suggestion card */}
+        <Card className="!p-4 xl:tall:!p-6 hidden lg:flex flex-col gap-3 lg:col-span-2">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 shadow-sm">
               <Lightbulb size={22} />
@@ -456,54 +542,86 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 3. QUICK-NAV CARDS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* 3. QUICK-NAV CARDS — 3-up on every breakpoint (mobile mock keeps
+          them side by side, just more compact) */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {navCards.map((card) => {
           const Icon = card.icon;
           return (
             <Link
               key={card.label}
               href={card.href}
-              className="group flex flex-col rounded-[24px] border border-slate-100 bg-white p-3.5 xl:tall:p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              className="group relative flex flex-col rounded-[24px] border border-slate-100 bg-white p-3 sm:p-3.5 xl:tall:p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className={`mb-2 xl:tall:mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.tint}`}>
                 <Icon size={20} />
               </div>
               <h4 className="text-sm xl:tall:text-base font-extrabold text-slate-900">{card.label}</h4>
-              <div className="mt-1 flex items-end justify-between gap-3">
-                <p className="text-xs xl:tall:text-sm leading-relaxed text-slate-500">{card.sub}</p>
-                <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-transform group-hover:translate-x-0.5 ${card.tint}`}
-                >
-                  <ArrowRight size={16} />
-                </span>
-              </div>
+              {/* Arrow floats bottom-right so the sub text keeps the full
+                  card width (matters on the narrow mobile cards) */}
+              <p className="mt-1 pr-8 pb-1 text-[11px] sm:text-xs xl:tall:text-sm leading-relaxed text-slate-500">
+                {card.sub}
+              </p>
+              <span
+                className={`absolute bottom-3 right-3 sm:bottom-3.5 sm:right-3.5 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-transform group-hover:translate-x-0.5 ${card.tint}`}
+              >
+                <ArrowRight size={16} />
+              </span>
             </Link>
           );
         })}
       </div>
 
-      {/* 4. STATS STRIP */}
+      {/* 4. STATS STRIP — one scrollable row on mobile with ~3 stats visible
+          (the mock's 4th cell is cut by the screen edge); 4 fixed columns
+          from xl up */}
       <Card className="!p-0 overflow-hidden">
-        <div className="grid grid-cols-2 divide-slate-100 xl:grid-cols-4 xl:divide-x max-xl:gap-y-px">
+        <div className="flex divide-x divide-slate-100 overflow-x-auto xl:grid xl:grid-cols-4">
           {bottomStats.map((stat) => {
             const Icon = stat.icon;
             return (
               <Link
                 key={stat.label}
                 href={stat.href}
-                className="flex items-center gap-3 px-5 py-3 lg:short:py-2.5 xl:tall:py-4 transition-colors hover:bg-slate-50"
+                className="flex min-w-[124px] shrink-0 items-center gap-2 px-3 py-3 sm:min-w-[180px] sm:gap-3 sm:px-5 lg:short:py-2.5 xl:min-w-0 xl:shrink xl:tall:py-4 transition-colors hover:bg-slate-50"
               >
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${stat.tint}`}>
-                  <Icon size={20} fill={stat.filled ? 'currentColor' : 'none'} />
+                <div
+                  className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl ${stat.tint}`}
+                >
+                  <Icon size={18} fill={stat.filled ? 'currentColor' : 'none'} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs xl:tall:text-sm font-medium text-slate-500">{stat.label}</div>
-                  <div className="truncate text-base xl:tall:text-lg font-extrabold text-slate-900">{stat.value}</div>
+                  <div className="truncate text-[10px] sm:text-xs xl:tall:text-sm font-medium text-slate-500">
+                    {stat.label}
+                  </div>
+                  <div className="truncate text-sm sm:text-base xl:tall:text-lg font-extrabold text-slate-900">
+                    {stat.value}
+                  </div>
+                  <div className={`truncate text-[10px] sm:text-[11px] font-bold ${stat.captionTint}`}>
+                    {stat.caption}
+                  </div>
                 </div>
               </Link>
             );
           })}
+        </div>
+      </Card>
+
+      {/* 5. DAILY TIP BANNER — mobile only (per the mobile mock) */}
+      <Card className="lg:hidden !p-4 !border-teal-100 !bg-teal-50/60">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-600 shadow-sm">
+            <BookOpen size={20} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-extrabold text-slate-900">Hãy luyện tập mỗi ngày!</h3>
+            <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
+              Chỉ cần 15-20 phút mỗi ngày sẽ giúp bạn ghi nhớ lâu hơn và tự tin hơn trong buổi phỏng vấn.
+            </p>
+          </div>
+          <div className="relative h-14 w-16 shrink-0">
+            <Image src="/images/n400/illu-wink.png" alt="" fill className="object-contain" sizes="64px" />
+          </div>
         </div>
       </Card>
     </div>

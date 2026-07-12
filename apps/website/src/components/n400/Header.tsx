@@ -13,6 +13,7 @@
 
 import { usePathname, useParams } from 'next/navigation';
 import { ChevronLeft, Flame } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -126,7 +127,20 @@ export function Header() {
             <ChevronLeft size={24} />
           </Link>
         )}
-        <div className="min-w-0">
+        {/* Mobile dashboard shows the brand instead of the page title (per
+            the mobile mock); the greeting moved into the dashboard content. */}
+        {section === '' && (
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <div className="relative h-9 w-9 shrink-0">
+              <Image src="/images/logo-transparent.png" alt="N400 Ready" fill className="object-contain" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-base font-extrabold leading-tight text-gray-800">N400 Ready</h2>
+              <p className="text-[11px] leading-tight text-gray-500">Giấc mơ Mỹ!</p>
+            </div>
+          </div>
+        )}
+        <div className={`min-w-0 ${section === '' ? 'hidden lg:block' : ''}`}>
           <h2 className="text-lg font-bold leading-tight text-gray-800 lg:text-xl">{meta.title}</h2>
           {!isSecondary && meta.subtitle ? (
             <p className="mt-0.5 hidden text-sm text-gray-500 sm:block">{meta.subtitle}</p>
