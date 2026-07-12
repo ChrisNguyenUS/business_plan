@@ -10,9 +10,8 @@
 //   key and stamps score/passed.
 // - The returned manifest lets the result screen show "correct answer was X"
 //   without an extra round-trip.
-// - In-progress state survives a tab close via localStorage keyed by
-//   attemptId. (Resume UI is wired below; the user can tap "Tiếp tục thi
-//   thử" on the intro card if a saved attempt is found.)
+// - No resume: like the real exam, an attempt must be finished in one
+//   sitting. Closing the tab abandons it and the next visit starts fresh.
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -32,7 +31,6 @@ import {
   Calendar,
   Target,
   Clock,
-  RotateCcw,
   Sparkles,
   Bookmark,
   Play,
@@ -70,52 +68,9 @@ interface PickState {
   pickedId: QuizOption['id'] | null;
 }
 
-interface PersistedAttempt {
-  attemptId: string;
-  startedAt: string;
-  // Refreshed on every autosave so the resume card can show "last activity".
-  // Optional for backward-compat with attempts persisted before this field existed.
-  savedAt?: string;
-  slides: PublicSlide[];
-  picks: PickState[];
-  index: number;
-}
-
-const STORAGE_KEY = 'n400.mock.inflight';
-
-function loadPersisted(): PersistedAttempt | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedAttempt;
-    if (!parsed.attemptId || !Array.isArray(parsed.slides)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function persist(state: PersistedAttempt | null) {
-  if (typeof window === 'undefined') return;
-  if (state) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } else {
-    window.localStorage.removeItem(STORAGE_KEY);
-  }
-}
-
-// "10 phút trước" style relative time for the resume card.
-function formatRelativeVi(iso: string): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const min = Math.floor((Date.now() - then) / 60000);
-  if (min < 1) return 'vừa xong';
-  if (min < 60) return `${min} phút trước`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} giờ trước`;
-  return `${Math.floor(hr / 24)} ngày trước`;
-}
+// Legacy key from the removed resume feature — cleared on mount so old
+// in-flight attempts don't linger in localStorage forever.
+const LEGACY_STORAGE_KEY = 'n400.mock.inflight';
 
 // mm:ss for the average-time stat.
 function formatDuration(ms: number): string {
@@ -170,11 +125,9 @@ function MockTestPageInner() {
   const [slides, setSlides] = useState<PublicSlide[]>([]);
   const [picks, setPicks] = useState<PickState[]>([]);
   const [index, setIndex] = useState(0);
-  const [startedAt, setStartedAt] = useState<string>('');
   const [result, setResult] = useState<FinalizeMockAttemptResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resumable, setResumable] = useState<PersistedAttempt | null>(null);
   const startedRef = useRef(false);
   // Background registration of the attempt row: startNew fires the server
   // action without awaiting it so the first question renders instantly.
@@ -184,28 +137,19 @@ function MockTestPageInner() {
   const searchParams = useSearchParams();
   const autoStart = searchParams.get('start') === '1';
 
-  // Surface a persisted in-flight attempt on mount.
+  // Clear leftovers from the removed resume feature.
   useEffect(() => {
-    setResumable(loadPersisted());
+    try {
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {}
   }, []);
 
-  // Auto-start when arriving from the picker card (?start=1). Only a
-  // persisted attempt with real progress should interrupt this — the intro
-  // only offers resume when answered > 0, so a 0-answer leftover would
-  // otherwise block auto-start forever and strand the user on the intro.
+  // Auto-start when arriving from the picker card (?start=1).
   useEffect(() => {
     if (!hydrated || !autoStart) return;
-    const persisted = loadPersisted();
-    if (persisted && persisted.picks.some((p) => p.pickedId !== null)) return;
     startNew();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, autoStart]);
-
-  // Persist on every state change while taking the test.
-  useEffect(() => {
-    if (stage !== 'taking' || !attemptId) return;
-    persist({ attemptId, startedAt, savedAt: new Date().toISOString(), slides, picks, index });
-  }, [stage, attemptId, startedAt, slides, picks, index]);
 
   const startNew = () => {
     if (startedRef.current) return;
@@ -234,7 +178,6 @@ function MockTestPageInner() {
     }));
 
     setAttemptId(null);
-    setStartedAt(new Date().toISOString());
     setSlides(built);
     setPicks(built.map((s) => ({ questionId: s.questionId, pickedId: null })));
     setIndex(0);
@@ -250,22 +193,6 @@ function MockTestPageInner() {
     });
     p.catch(() => {}); // surfaced at submit time; avoid an unhandled rejection
     attemptIdPromise.current = p;
-  };
-
-  const resume = () => {
-    if (!resumable) return;
-    setAttemptId(resumable.attemptId);
-    setStartedAt(resumable.startedAt);
-    setSlides(resumable.slides);
-    setPicks(resumable.picks);
-    setIndex(resumable.index);
-    setResult(null);
-    setStage('taking');
-  };
-
-  const discardResumable = () => {
-    persist(null);
-    setResumable(null);
   };
 
   const finish = async (finalPicks: PickState[]) => {
@@ -293,7 +220,6 @@ function MockTestPageInner() {
       setStage('result');
       startedRef.current = false; // allow "Thi lại" to roll a fresh attempt
       if (r.milestone) trackStreakMilestone(r.milestone);
-      persist(null); // attempt finalized server-side; nothing left to resume
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Không thể nộp bài. / Could not submit. Please retry.',
@@ -329,7 +255,7 @@ function MockTestPageInner() {
 
   // When auto-starting from the picker card, show a loading state
   // instead of flashing the full intro screen.
-  if (autoStart && stage === 'intro' && !resumable) {
+  if (autoStart && stage === 'intro') {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 animate-in fade-in duration-300">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
@@ -344,9 +270,6 @@ function MockTestPageInner() {
         onStart={startNew}
         starting={submitting}
         error={error}
-        resumable={resumable}
-        onResume={resume}
-        onDiscard={discardResumable}
         stats={mockStats}
         results={state.mockResults}
       />
@@ -507,31 +430,19 @@ function Intro({
   onStart,
   starting,
   error,
-  resumable,
-  onResume,
-  onDiscard,
   stats,
   results,
 }: {
   onStart: () => void;
   starting: boolean;
   error: string | null;
-  resumable: PersistedAttempt | null;
-  onResume: () => void;
-  onDiscard: () => void;
   stats: MockStats | null;
   results: MockResult[];
 }) {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
 
-  const answered = resumable ? resumable.picks.filter((p) => p.pickedId !== null).length : 0;
-  const total = resumable && resumable.slides.length ? resumable.slides.length : MOCK_TEST_QUESTION_COUNT;
-  const pct = total ? Math.round((answered / total) * 100) : 0;
-  // Section 3: only surface the resume card once there's real progress.
-  const hasResume = !!resumable && answered > 0;
-  const lastActivity = resumable ? formatRelativeVi(resumable.savedAt ?? resumable.startedAt) : '';
-  const isFirstTime = !stats && !hasResume;
+  const isFirstTime = !stats;
 
   // Last 5 attempts, newest first. Each carries its score delta vs the
   // chronologically previous attempt so the tiles can show a trend arrow.
@@ -546,12 +457,6 @@ function Intro({
       .reverse();
   }, [results]);
   const latestDelta = recentAttempts[0]?.delta ?? null;
-
-  // "Làm lại từ đầu" — abandon the in-flight attempt and roll a fresh one.
-  const onRestart = () => {
-    onDiscard();
-    onStart();
-  };
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[3fr_2fr] lg:gap-8 animate-in fade-in duration-300">
@@ -630,78 +535,35 @@ function Intro({
               />
             </div>
 
-            {/* Resume card / empty state / primary CTA */}
-            {hasResume ? (
-              <div className="mt-7 rounded-2xl border border-teal-100 bg-teal-50/60 p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h4 className="text-base font-bold text-gray-800">Tiếp tục bài thi của bạn</h4>
-                    {lastActivity ? (
-                      <p className="mt-0.5 text-xs text-gray-500">Lần làm gần nhất: {lastActivity}</p>
-                    ) : null}
-                  </div>
-                  <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-sm font-bold text-teal-700 shadow-sm">
-                    {pct}%
-                  </span>
-                </div>
-                <div className="mt-3">
-                  <ProgressBar progress={pct} heightClass="h-2.5" />
-                  <div className="mt-1.5 text-xs font-medium text-gray-600">
-                    {answered} / {total} câu
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={onResume}
-                    disabled={starting}
-                    className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg disabled:opacity-60"
-                  >
-                    Tiếp tục bài thi
-                    <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onRestart}
-                    disabled={starting}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-5 py-3 text-sm font-semibold text-teal-700 transition-colors duration-200 hover:bg-teal-50 disabled:opacity-60"
-                  >
-                    <RotateCcw size={15} /> Làm lại từ đầu
-                  </button>
-                </div>
+            {/* Empty state / primary CTA */}
+            {isFirstTime ? (
+              <div className="mt-7">
+                <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
+                  không xem đáp án cho tới khi bạn hoàn thành.
+                </p>
               </div>
-            ) : (
-              <>
-                {isFirstTime ? (
-                  <div className="mt-7">
-                    <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
-                      không xem đáp án cho tới khi bạn hoàn thành.
-                    </p>
-                  </div>
-                ) : null}
+            ) : null}
 
-                <button
-                  type="button"
-                  onClick={onStart}
-                  disabled={starting}
-                  aria-busy={starting}
-                  className="group mt-7 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-teal-600/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/30 active:translate-y-0 active:shadow-md disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:py-5 sm:text-lg"
-                >
-                  <Play size={18} className="shrink-0 fill-current" />
-                  {starting
-                    ? 'Đang chuẩn bị câu hỏi...'
-                    : isFirstTime
-                      ? 'Bắt đầu thi thử'
-                      : 'Bắt đầu thi thử mới'}
-                  <ArrowRight
-                    size={18}
-                    className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-                  />
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={onStart}
+              disabled={starting}
+              aria-busy={starting}
+              className="group mt-7 flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-teal-600/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/30 active:translate-y-0 active:shadow-md disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:py-5 sm:text-lg"
+            >
+              <Play size={18} className="shrink-0 fill-current" />
+              {starting
+                ? 'Đang chuẩn bị câu hỏi...'
+                : isFirstTime
+                  ? 'Bắt đầu thi thử'
+                  : 'Bắt đầu thi thử mới'}
+              <ArrowRight
+                size={18}
+                className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+              />
+            </button>
 
             {error ? (
               <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
