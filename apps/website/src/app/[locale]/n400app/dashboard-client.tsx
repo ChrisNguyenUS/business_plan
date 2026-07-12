@@ -1,11 +1,11 @@
 'use client';
 
 // Dashboard — single-column layout per the dashboard redesign mock:
-//   1. Hero: Civics continue card (ring + next question + thumbnail) with a
-//      weak-topic hint strip.
-//   2. Mục tiêu hôm nay: 4 daily-goal tiles (Civics / Yes-No / What Mean /
-//      Writing), each deep-linking into its practice screen.
-//   3. Quick-nav cards mirroring the sidebar's 4 top-level areas.
+//   1. Hero: intent-based daily recommendation (recommendDailyHero) with the
+//      statue thumbnail and a civics-progress meta strip at the bottom.
+//   2. Two-column row: Mục tiêu hôm nay (4 daily-goal rows, deep-linked) and
+//      Gợi ý dành cho bạn (weak-topic drill + streak nudge).
+//   3. Quick-nav cards: Học tập / Thi thử / Tiến độ.
 //   4. Stats strip: streak · accuracy · mastered · badges.
 
 import Image from 'next/image';
@@ -16,23 +16,28 @@ import {
   ArrowRight,
   Award,
   BarChart2,
+  BookOpen,
+  CalendarDays,
   CheckCircle2,
   Circle,
   ClipboardCheck,
   Flame,
   GraduationCap,
-  Home,
+  Landmark,
   Lightbulb,
+  MessageCircle,
+  MessagesSquare,
+  Pencil,
   Star,
   Target,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { ProgressRing } from '@/components/n400/hub/HubCards';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackSignupComplete } from '@/lib/n400/analytics';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
 import { recommendWeakCategory } from '@/lib/n400/quiz-engine';
+import { recommendDailyHero } from '@/lib/n400/hero-recommendation';
 import { deriveHubProgress } from '@/lib/n400/hub-progress';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
@@ -110,40 +115,59 @@ export default function DashboardPage() {
   const goals = [
     {
       label: `Trả lời ${GOAL_QUESTIONS} câu hỏi`,
-      sub: `Civics · ${Math.min(todayQuestions, GOAL_QUESTIONS)}/${GOAL_QUESTIONS}`,
+      sub: 'Civics',
+      count: `${Math.min(todayQuestions, GOAL_QUESTIONS)}/${GOAL_QUESTIONS}`,
       done: todayQuestions >= GOAL_QUESTIONS,
       href: `${base}/practice`,
+      icon: Landmark,
+      tint: 'bg-teal-50 text-teal-600',
     },
     {
       label: 'Luyện 5 câu hỏi',
-      sub: `Yes / No · ${yesNoDoneCount}/5`,
+      sub: 'Yes / No',
+      count: `${yesNoDoneCount}/5`,
       done: yesNoDoneCount >= 5,
       href: `${base}/speaking/yes-no`,
+      icon: MessageCircle,
+      tint: 'bg-sky-50 text-sky-600',
     },
     {
       label: 'Luyện 5 câu hỏi',
-      sub: `What Mean · ${whatMeanDoneCount}/5`,
+      sub: 'What Mean',
+      count: `${whatMeanDoneCount}/5`,
       done: whatMeanDoneCount >= 5,
       href: `${base}/speaking/what-mean`,
+      icon: MessagesSquare,
+      tint: 'bg-indigo-50 text-indigo-600',
     },
     {
       label: 'Luyện tập Writing',
-      sub: writingToday > 0 ? `Đã luyện ${writingToday} câu hôm nay` : 'Chép chính tả ít nhất 1 câu',
+      sub: 'Chép chính tả ít nhất 1 câu',
+      count: `${Math.min(writingToday, 1)}/1`,
       done: writingToday > 0,
       href: `${base}/writing`,
+      icon: Pencil,
+      tint: 'bg-orange-50 text-orange-500',
     },
   ];
   const goalsDone = goals.filter((g) => g.done).length;
 
-  // Quick-nav cards — mirror the sidebar's 4 top-level areas.
+  // Intent-based hero: "what action creates the highest learning value right
+  // now?" — see hero-recommendation.ts for the priority ladder.
+  const hero = recommendDailyHero({
+    now: new Date(),
+    civicsSeen: civicsProgress.seenCount,
+    civicsTotal: civicsProgress.totalCount,
+    attempts: state.attempts,
+    mockResults: state.mockResults,
+    sectionAttempts: state.sectionAttempts,
+    goalsDone,
+    goalsTotal: goals.length,
+  });
+
+  // Quick-nav cards — Tổng quan dropped (this page IS the overview; Tiến độ
+  // covers the stats deep-dive).
   const navCards = [
-    {
-      label: 'Tổng quan',
-      sub: 'Xem tổng quan quá trình học của bạn.',
-      href: base,
-      icon: Home,
-      tint: 'bg-teal-50 text-teal-600',
-    },
     {
       label: 'Học tập',
       sub: 'Học và luyện tập theo từng kỹ năng.',
@@ -271,119 +295,169 @@ export default function DashboardPage() {
 
           {/* ── Left content: relative z-index so text sits above image ── */}
           <div className="relative z-[2]">
-            <div className="flex flex-col items-center gap-5 p-6 sm:flex-row sm:gap-8 sm:p-8 xl:tall:p-9 lg:w-[56%]">
-              <ProgressRing
-                done={civicsProgress.seenCount}
-                total={civicsProgress.totalCount}
-                percent={civicsProgress.percent}
-                size="lg"
-              />
-              <div className="min-w-0 flex-1 text-center sm:text-left">
-                <div className="flex items-center justify-center gap-2 sm:justify-start">
-                  <Star size={18} className="text-amber-400" fill="currentColor" />
-                  <h2 className="text-xl xl:tall:text-2xl font-extrabold text-slate-900">Tiếp tục học</h2>
-                </div>
-                <p className="mt-1.5 text-sm xl:tall:text-base text-slate-600">
-                  {civicsProgress.nextNumber !== null
-                    ? `Bạn đang ở câu #${civicsProgress.nextNumber} trong 128 câu Civics`
-                    : `Bạn đã học qua cả ${civicsProgress.totalCount} câu Civics — ôn lại nhé!`}
-                </p>
-                <div className="mt-3 max-w-md mx-auto sm:mx-0">
-                  <ProgressBar progress={civicsProgress.percent} heightClass="h-2.5" />
-                </div>
+            <div className="flex flex-col items-center gap-3 p-6 text-center sm:items-start sm:p-8 xl:tall:p-9 sm:text-left lg:w-[56%]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700">
+                <Lightbulb size={12} />
+                Gợi ý hôm nay
+              </span>
+              <h2 className="text-2xl xl:tall:text-3xl font-extrabold text-slate-900">
+                {hero.emoji} {hero.title}
+              </h2>
+              <p className="text-sm xl:tall:text-base text-slate-600">{hero.subtitle}</p>
+              <div className="mt-1 xl:tall:mt-2 flex flex-wrap justify-center gap-3 sm:justify-start">
                 <Link
-                  href={`${base}/flashcards?filter=unknown`}
-                  className="group mt-3 xl:tall:mt-5 inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-7 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
+                  href={`${base}${hero.cta.href}`}
+                  className="group inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-7 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  {civicsProgress.started ? 'Tiếp tục học' : 'Bắt đầu học'}
+                  {hero.cta.label}
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href={`${base}${hero.secondary.href}`}
+                  className="inline-flex items-center rounded-2xl border border-slate-200 bg-white/80 px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:border-teal-200 hover:bg-white"
+                >
+                  {hero.secondary.label}
                 </Link>
               </div>
             </div>
 
-            {/* Hint strip — soft gray fading to transparent on the right, so
-                the panorama's water blends into it instead of hitting a seam */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                <Lightbulb size={15} className="text-amber-500" />
+            {/* Progress meta strip — soft gray fading to transparent on the
+                right, so the panorama's water blends into it instead of
+                hitting a seam */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-2.5 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
+              <span className="flex items-center gap-2 font-medium text-slate-600">
+                <BookOpen size={15} className="shrink-0 text-teal-600" />
+                {civicsProgress.nextNumber !== null
+                  ? `Bạn đang ở câu #${civicsProgress.nextNumber} trong ${civicsProgress.totalCount} câu`
+                  : `Bạn đã học qua cả ${civicsProgress.totalCount} câu Civics`}
               </span>
-              {recommendation ? (
-                <>
-                  <span className="text-slate-600">
-                    <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Bạn thường sai câu về{' '}
-                    <strong className="font-bold text-slate-800">
-                      {N400_CATEGORY_LABELS[recommendation.category].vi}
-                    </strong>.
-                  </span>
-                  <Link
-                    href={`${base}/practice?start=weak`}
-                    className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
-                  >
-                    Luyện 5 câu ngay <ArrowRight size={15} />
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <span className="text-slate-600">
-                    <strong className="font-bold text-slate-800">Gợi ý cho bạn:</strong> Luyện tập mỗi ngày để giữ chuỗi
-                    học tập của bạn.
-                  </span>
-                  <Link
-                    href={`${base}/practice`}
-                    className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800"
-                  >
-                    Luyện 5 câu ngay <ArrowRight size={15} />
-                  </Link>
-                </>
-              )}
+              <span className="w-36 sm:w-52 lg:w-60">
+                <ProgressBar progress={civicsProgress.percent} heightClass="h-2" />
+              </span>
+              <span className="font-bold text-teal-700">{civicsProgress.percent}% hoàn thành</span>
             </div>
           </div>
 
         </Card>
       </div>
 
-      {/* 2. MỤC TIÊU HÔM NAY */}
-      <Card className="!p-4 xl:tall:!p-6 border-amber-100 bg-gradient-to-br from-amber-50/60 to-white">
-        <div className="mb-3 xl:tall:mb-4 flex flex-wrap items-start justify-between gap-3">
+      {/* 2. MỤC TIÊU HÔM NAY + GỢI Ý DÀNH CHO BẠN */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-5 xl:tall:gap-5">
+        <Card className="!p-4 xl:tall:!p-6 lg:col-span-3">
+          <div className="mb-3 xl:tall:mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500 shadow-sm">
+                <Target size={22} />
+              </div>
+              <div>
+                <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">Mục tiêu hôm nay</h3>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Hoàn thành 1 hoạt động để tiến gần hơn đến buổi phỏng vấn quốc tịch!
+                </p>
+              </div>
+            </div>
+            <span className="rounded-xl bg-amber-100 px-3 py-1.5 text-sm font-bold text-amber-700">
+              {goalsDone} / {goals.length} hoàn thành
+            </span>
+          </div>
+
+          <div className="space-y-2.5 xl:tall:space-y-3">
+            {goals.map((goal) => {
+              const Icon = goal.icon;
+              return (
+                <Link
+                  key={goal.label + goal.sub}
+                  href={goal.href}
+                  className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 xl:tall:p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
+                >
+                  {goal.done ? (
+                    <CheckCircle2 size={24} className="shrink-0 text-green-500" fill="currentColor" stroke="white" />
+                  ) : (
+                    <Circle size={24} className="shrink-0 text-slate-300" />
+                  )}
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${goal.tint}`}>
+                    <Icon size={18} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold text-slate-800 group-hover:text-teal-700">
+                      {goal.label}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs font-medium text-slate-500">{goal.sub}</span>
+                  </span>
+                  <span className="shrink-0 text-sm font-bold text-slate-400">{goal.count}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card className="!p-4 xl:tall:!p-6 flex flex-col gap-3 lg:col-span-2">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500 shadow-sm">
-              <Target size={22} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 shadow-sm">
+              <Lightbulb size={22} />
             </div>
             <div>
-              <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">Mục tiêu hôm nay</h3>
-              <p className="mt-0.5 text-sm text-slate-500">
-                Hoàn thành 1 hoạt động để tiến gần đến buổi phỏng vấn quốc tịch!
-              </p>
+              <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">Gợi ý dành cho bạn</h3>
+              <p className="mt-0.5 text-sm text-slate-500">Dựa trên quá trình học của bạn.</p>
             </div>
           </div>
-          <span className="rounded-xl bg-amber-100 px-3 py-1.5 text-sm font-bold text-amber-700">
-            {goalsDone} / {goals.length} hoàn thành
-          </span>
-        </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {goals.map((goal) => (
-            <Link
-              key={goal.label + goal.sub}
-              href={goal.href}
-              className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 xl:tall:p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
-            >
-              {goal.done ? (
-                <CheckCircle2 size={24} className="shrink-0 text-green-500" fill="currentColor" stroke="white" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-2xl border border-blue-100 bg-blue-50/60 p-5 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm">
+              <Target size={24} />
+            </span>
+            {recommendation ? (
+              <>
+                <p className="text-sm font-bold leading-snug text-slate-800">
+                  Bạn thường sai câu hỏi về{' '}
+                  <span className="text-blue-700">{N400_CATEGORY_LABELS[recommendation.category].vi}</span>.
+                </p>
+                <p className="text-xs text-slate-500">Luyện 5 câu để cải thiện độ chính xác!</p>
+                <Link
+                  href={`${base}/practice?start=weak`}
+                  className="group mt-1 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  Luyện ngay
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-bold leading-snug text-slate-800">
+                  Luyện tập mỗi ngày để tiến bộ đều đặn.
+                </p>
+                <p className="text-xs text-slate-500">Làm 5 câu nhanh để khởi động hôm nay!</p>
+                <Link
+                  href={`${base}/practice?start=quick`}
+                  className="group mt-1 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  Luyện ngay
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+              <CalendarDays size={18} />
+            </span>
+            <p className="text-sm leading-snug text-slate-600">
+              {state.streak.current > 0 ? (
+                <>
+                  Đã <strong className="font-bold text-slate-800">{state.streak.current} ngày liên tiếp</strong> bạn
+                  duy trì việc học. Cố gắng giữ chuỗi nhé!
+                </>
               ) : (
-                <Circle size={24} className="shrink-0 text-slate-300" />
+                <>Bắt đầu chuỗi học tập của bạn ngay hôm nay!</>
               )}
-              <span className="min-w-0">
-                <span className="block text-sm font-bold text-slate-800 group-hover:text-teal-700">{goal.label}</span>
-                <span className="mt-0.5 block truncate text-xs font-medium text-slate-500">{goal.sub}</span>
-              </span>
-            </Link>
-          ))}
-        </div>
-      </Card>
+            </p>
+          </div>
+        </Card>
+      </div>
 
       {/* 3. QUICK-NAV CARDS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {navCards.map((card) => {
           const Icon = card.icon;
           return (

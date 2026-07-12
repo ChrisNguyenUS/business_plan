@@ -21,11 +21,12 @@ describe('N400 mobile layout contracts', () => {
   test('dashboard collapses desktop columns on mobile', () => {
     const dashboard = source('src/app/[locale]/n400app/dashboard-client.tsx');
 
-    // Hero collapses to a stacked layout on mobile; card grids collapse to
-    // one column.
-    expect(dashboard).toContain('flex-col lg:flex-row');
-    expect(dashboard).toContain('grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4');
-    expect(dashboard).toContain('grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4');
+    // Hero content stacks on mobile and the panorama stays desktop-only;
+    // the goals/suggestion row and quick-nav grids collapse to one column.
+    expect(dashboard).toContain('flex flex-col items-center');
+    expect(dashboard).toContain('hidden lg:block lg:w-[44%]');
+    expect(dashboard).toContain('grid-cols-1 gap-3 lg:grid-cols-5');
+    expect(dashboard).toContain('grid-cols-1 gap-4 sm:grid-cols-3');
   });
 
   test('statistics screen avoids fixed desktop columns on mobile', () => {
