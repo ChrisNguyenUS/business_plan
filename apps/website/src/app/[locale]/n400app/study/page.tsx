@@ -102,10 +102,10 @@ function BadgeChip({ kind, className = '' }: { kind: StudyBadgeKind; className?:
   const Icon = b.Icon;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${b.chip} ${className}`}
+      className={`inline-flex items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${b.chip} ${className}`}
     >
-      <Icon size={13} className={b.iconClass} />
-      {b.label}
+      <Icon size={13} className={`shrink-0 ${b.iconClass ?? ''}`} />
+      <span className="truncate">{b.label}</span>
     </span>
   );
 }
@@ -323,9 +323,13 @@ export default function StudyPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 pb-4 animate-in fade-in duration-300">
-      {/* Four learning modules — fixed order, one smart badge each. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+    // Mobile: fill the viewport (h-full) and let the card grid absorb spare
+    // height so the whole page fits without scrolling on any phone size.
+    // Desktop (lg): natural flow, centered max-width.
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-3 animate-in fade-in duration-300 lg:h-auto lg:gap-5 lg:pb-4">
+      {/* Four learning modules — fixed order, one smart badge each.
+          Mobile = 2×2 grid that grows to fill remaining height; desktop = 4 cols. */}
+      <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-3 lg:flex-none lg:grid-cols-4 lg:grid-rows-1 lg:gap-4">
         {configs.map((c) => {
           const sig = signalById.get(c.id)!;
           const isRec = c.id === recommendedId;
@@ -333,8 +337,8 @@ export default function StudyPage() {
           const percent = modulePercent(sig);
           const btnClass = badge === 'completed' ? c.btnOutline : c.btnFilled;
 
-          // Secondary link: a finished module has no wrongs to review, so we
-          // surface saved questions instead; otherwise the review pool.
+          // Secondary link (desktop only): a finished module has no wrongs to
+          // review, so surface saved questions instead; otherwise the review pool.
           const secondary =
             badge === 'completed'
               ? { label: 'Câu đã lưu', count: state.bookmarks.length, href: `${base}/bookmark` }
@@ -347,96 +351,92 @@ export default function StudyPage() {
           return (
             <div
               key={c.id}
-              className={`group flex flex-row gap-4 rounded-3xl border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 lg:flex-col lg:gap-0 lg:p-4 ${
+              className={`group flex min-h-0 flex-col overflow-hidden rounded-2xl border p-2.5 transition-all duration-200 hover:shadow-lg motion-reduce:transition-none lg:rounded-3xl lg:p-4 lg:hover:-translate-y-0.5 ${
                 isRec ? c.recFrame + ' ' + c.recBg : 'border-slate-100 bg-white shadow-sm'
               }`}
             >
-              {/* Thumbnail — square on mobile (image left), 4:3 on desktop (image top) */}
-              <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-2xl bg-slate-50 sm:w-40 lg:aspect-[4/3] lg:w-full">
+              {/* Thumbnail — image on top at every size. On mobile it flexes to
+                  absorb/release vertical space; on desktop it's a fixed 4:3. */}
+              <div className="relative min-h-[56px] w-full flex-1 overflow-hidden rounded-xl bg-slate-50 lg:aspect-[4/3] lg:min-h-0 lg:flex-none lg:rounded-2xl">
                 <Image
                   src={c.image}
                   alt={c.title}
                   fill
-                  sizes="(max-width: 1024px) 160px, 25vw"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                   className="object-cover"
                 />
-                {/* Desktop: badge overlays the thumbnail */}
-                <BadgeChip kind={badge} className="absolute left-3 top-3 hidden lg:inline-flex" />
+                {/* Single badge — overlays the thumbnail at all sizes. */}
+                <BadgeChip
+                  kind={badge}
+                  className="absolute left-2 top-2 max-w-[calc(100%-1rem)] px-2 py-0.5 text-[11px] lg:left-3 lg:top-3 lg:px-2.5 lg:py-1 lg:text-xs"
+                />
               </div>
 
               {/* Content */}
-              <div className="flex min-w-0 flex-1 flex-col lg:mt-4">
-                {/* Mobile: badge sits inline above the title */}
-                <BadgeChip kind={badge} className="mb-2 self-start lg:hidden" />
-
-                <h3 className="text-base font-extrabold text-gray-800 lg:mt-0 lg:text-lg">
+              <div className="flex min-w-0 flex-col lg:mt-4 lg:flex-1">
+                <h3 className="mt-2 truncate text-sm font-extrabold text-gray-800 lg:mt-0 lg:whitespace-normal lg:text-lg">
                   {c.title}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500 lg:flex-1">
+                {/* Description: desktop only (saves vertical space on mobile). */}
+                <p className="mt-1 hidden text-sm leading-relaxed text-gray-500 lg:line-clamp-2 lg:block lg:flex-1">
                   {c.desc}
                 </p>
 
                 {/* Progress */}
-                <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="font-semibold text-gray-700">
+                <div className="mt-1.5 flex items-center justify-between text-xs lg:mt-3 lg:text-sm">
+                  <span className="truncate font-semibold text-gray-700">
                     {sig.done}/{sig.total} câu
                   </span>
-                  <span className="font-semibold text-gray-400">{percent}%</span>
+                  <span className="shrink-0 font-semibold text-gray-400">{percent}%</span>
                 </div>
-                <div className="mt-1.5">
+                <div className="mt-1 lg:mt-1.5">
                   <ProgressBar progress={percent} colorClass={c.barClass} />
                 </div>
 
-                {/* Footer: on mobile, secondary link (left) + CTA (right) share a
-                    row; on desktop the CTA is full-width above the link. */}
-                <div className="mt-3 flex flex-row-reverse items-center justify-between gap-2 lg:flex-col lg:items-stretch lg:gap-3">
+                <Link
+                  href={c.href}
+                  className={`mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors lg:mt-3 lg:gap-2 lg:rounded-xl lg:px-4 lg:py-2.5 lg:text-sm ${btnClass}`}
+                >
+                  <span className="truncate">{ctaLabel}</span>
+                  <ArrowRight
+                    size={15}
+                    className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+                  />
+                </Link>
+
+                {/* Secondary review link — desktop only. */}
+                {secondary.count > 0 && (
                   <Link
-                    href={c.href}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors lg:w-full ${btnClass}`}
+                    href={secondary.href}
+                    className="mt-3 hidden items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-800 lg:inline-flex"
                   >
-                    {ctaLabel}
-                    <ArrowRight
-                      size={16}
-                      className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-                    />
+                    <BookMarked size={14} />
+                    {secondary.label} ({secondary.count})
                   </Link>
-                  {secondary.count > 0 ? (
-                    <Link
-                      href={secondary.href}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-800"
-                    >
-                      <BookMarked size={14} />
-                      {secondary.label} ({secondary.count})
-                    </Link>
-                  ) : (
-                    <span className="hidden lg:block lg:h-[18px]" aria-hidden />
-                  )}
-                </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Personalized tip — one dynamic recommendation, never generic. */}
-      <section className="flex flex-col gap-4 rounded-3xl border border-teal-100 bg-gradient-to-r from-teal-50/80 to-emerald-50/50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-600 shadow-sm">
-            <Lightbulb size={22} />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-extrabold text-gray-900">Gợi ý dành cho bạn</h3>
-            <p className="mt-0.5 text-sm leading-relaxed text-gray-600">
-              {tip.line1}
-              <br className="hidden sm:block" /> {tip.line2}
-            </p>
-          </div>
+      {/* Personalized tip — one dynamic recommendation, never generic. Stays a
+          compact single strip on mobile so it never forces a scroll. */}
+      <section className="flex shrink-0 items-center gap-3 rounded-2xl border border-teal-100 bg-gradient-to-r from-teal-50/80 to-emerald-50/50 p-3 lg:gap-4 lg:rounded-3xl lg:p-6">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-teal-600 shadow-sm lg:h-11 lg:w-11 lg:rounded-2xl">
+          <Lightbulb size={20} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-extrabold text-gray-900 lg:text-base">Gợi ý dành cho bạn</h3>
+          <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-gray-600 lg:text-sm">
+            {tip.line1} {tip.line2}
+          </p>
         </div>
         <Link
           href={`${base}${tip.href}`}
-          className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl border border-teal-200 bg-white px-4 py-2.5 text-sm font-semibold text-teal-700 shadow-sm transition-colors hover:bg-teal-50 sm:self-auto"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-teal-700 shadow-sm transition-colors hover:bg-teal-50 lg:px-4 lg:py-2.5"
         >
-          Xem gợi ý
+          <span className="hidden sm:inline">Xem gợi ý</span>
           <ArrowRight size={16} />
         </Link>
       </section>
