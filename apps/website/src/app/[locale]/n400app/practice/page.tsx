@@ -34,6 +34,7 @@ import {
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
 import { questionAudioUrl, answerAudioUrlFor } from '@/lib/n400/quiz-engine';
+import { pendingMockReviewIds } from '@/lib/n400/hero-recommendation';
 import { useRouter, useParams } from 'next/navigation';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
@@ -315,9 +316,25 @@ export default function PracticePage() {
     resetQuestionUI();
   };
 
+  // Replay a specific id list as an ephemeral (non-resumable) review session.
+  // Same reset choreography as onReviewWrong; used by the ?start=review deep
+  // link from the dashboard hero.
+  const startReviewSession = (ids: number[]) => {
+    window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+    setPreset(PRACTICE_PRESETS.find((p) => p.id === 'quick')!);
+    setReviewIds(ids);
+    setWrongIds([]);
+    setIndex(0);
+    setPrevIndex(0);
+    setCorrectCount(0);
+    setCompleted(false);
+    resetQuestionUI();
+  };
+
   // Deep-link entry (hub → practice). ?start=<preset id> starts that mode,
-  // ?start=weak starts a weak-topic session. Bare /practice resumes an
-  // unfinished session, else returns to the Civics hub — the mode picker
+  // ?start=weak starts a weak-topic session, ?start=review replays the
+  // uncorrected wrong answers of the latest mock test. Bare /practice resumes
+  // an unfinished session, else returns to the Civics hub — the mode picker
   // moved there (PracticeModesSheet).
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -335,6 +352,19 @@ export default function PracticePage() {
     if (start === 'weak') {
       if (recommendation) onPracticeRecommendation(recommendation);
       else startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+      return;
+    }
+    if (start === 'review') {
+      const ids = pendingMockReviewIds(state.mockResults, state.attempts, new Date());
+      if (ids.length > 0) {
+        startReviewSession(ids);
+      } else if (recommendation) {
+        // Nothing left to review (stale link / already cleared) — fall back
+        // to the closest useful session instead of dead-ending.
+        onPracticeRecommendation(recommendation);
+      } else {
+        startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+      }
       return;
     }
     if (resume) {
