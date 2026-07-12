@@ -45,9 +45,8 @@ describe('N400 information architecture contracts', () => {
 
     expect(page).toContain('HubContinueCard');
     expect(page).toContain('HubStudyCardsCard');
-    expect(page).toContain('HubPracticeCard');
     expect(page).toContain('HubWeakAreasCard');
-    expect(page).toContain('PracticeModesSheet');
+    expect(page).toContain('PracticeSelector');
     expect(page).toContain('flashcards?filter=');
     expect(page).toContain('practice?start=');
   });
@@ -96,16 +95,17 @@ describe('N400 information architecture contracts', () => {
     expect(source('src/app/[locale]/n400app/progress/page.tsx')).toContain('ProgressTabs');
   });
 
-  test('hub module exists with the four cards and the bottom sheet', () => {
+  test('hub module exists with the cards and the practice selector', () => {
     const cards = source('src/components/n400/hub/HubCards.tsx');
-    const sheet = source('src/components/n400/hub/PracticeModesSheet.tsx');
+    const selector = source('src/components/n400/hub/PracticeSelector.tsx');
 
     expect(cards).toContain('HubContinueCard');
     expect(cards).toContain('HubStudyCardsCard');
-    expect(cards).toContain('HubPracticeCard');
     expect(cards).toContain('HubWeakAreasCard');
-    expect(sheet).toContain('Chế độ luyện tập');
-    expect(sheet).toContain('role="dialog"');
+    // Practice card + mode picker: current-mode-first, desktop popover + mobile sheet.
+    expect(selector).toContain('Chế độ hiện tại');
+    expect(selector).toContain('Tiếp tục luyện tập');
+    expect(selector).toContain('role="dialog"');
   });
 
   test('practice page is quiz-only, driven by ?start=', () => {
@@ -124,7 +124,7 @@ describe('N400 information architecture contracts', () => {
     ]) {
       const page = source(path);
       expect(page).toContain('HubContinueCard');
-      expect(page).toContain('PracticeModesSheet');
+      expect(page).toContain('PracticeSelector');
       expect(page).not.toContain('PracticeSessionPicker');
     }
     // Writing has no flashcards → no Thẻ học card:

@@ -404,16 +404,20 @@ export default function StudyPage() {
                   />
                 </Link>
 
-                {/* Secondary review link — desktop only. */}
-                {secondary.count > 0 && (
-                  <Link
-                    href={secondary.href}
-                    className="mt-3 hidden items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-800 lg:inline-flex"
-                  >
-                    <BookMarked size={14} />
-                    {secondary.label} ({secondary.count})
-                  </Link>
-                )}
+                {/* Secondary review link — desktop only. The row height is
+                    always reserved (even when there's nothing to review) so the
+                    primary CTA buttons line up across all four cards. */}
+                <div className="mt-3 hidden h-5 items-center lg:flex">
+                  {secondary.count > 0 && (
+                    <Link
+                      href={secondary.href}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-800"
+                    >
+                      <BookMarked size={14} />
+                      {secondary.label} ({secondary.count})
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           );

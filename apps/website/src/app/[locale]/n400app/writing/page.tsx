@@ -13,8 +13,8 @@ import { WRITING_PRESETS } from '@/lib/n400/section-presets';
 import { shuffle, type PracticePreset } from '@/lib/n400/quiz-engine';
 import { deriveSectionSeen } from '@/lib/n400/section-progress';
 import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
-import { HubHero, HubContinueCard, HubPracticeCard } from '@/components/n400/hub/HubCards';
-import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
+import { HubHero, HubContinueCard } from '@/components/n400/hub/HubCards';
+import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 
 const ALL = WRITING_SENTENCES;
@@ -36,7 +36,6 @@ export default function WritingPage() {
   const { state, hydrated, recordSectionAnswer } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
 
-  const [sheetOpen, setSheetOpen] = useState(false);
   const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts).writing, [state.sectionAttempts]);
   const progress = useMemo(
     () => deriveHubProgress(ALL, (q) => seen.has(q.id), (q) => q.num),
@@ -82,9 +81,11 @@ export default function WritingPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
         <HubHero
           emoji="✍️"
+          imageSrc="/images/n400/writing-thumbnail-study.png"
           title="Writing"
           countLabel={`${ALL.length} câu viết`}
           tagline="Nghe và gõ lại câu — luyện phần thi viết N-400."
+          stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
         />
         <HubContinueCard
           seenCount={progress.seenCount}
@@ -112,16 +113,12 @@ export default function WritingPage() {
           </ul>
         </section>
 
-        <HubPracticeCard subtitle="Nghe câu và gõ lại đúng chính tả." onStart={() => setSheetOpen(true)} />
-        <PracticeModesSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
+        <PracticeSelector
+          skillKey="writing"
+          subtitle="Nghe câu và gõ lại đúng chính tả."
           presets={WRITING_PRESETS}
           totalCount={ALL.length}
-          onSelect={(p) => {
-            setSheetOpen(false);
-            startQuiz(p);
-          }}
+          onStart={(p) => startQuiz(p)}
         />
       </div>
     </div>

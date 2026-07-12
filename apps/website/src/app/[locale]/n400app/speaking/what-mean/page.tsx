@@ -16,10 +16,9 @@ import {
   HubHero,
   HubContinueCard,
   HubStudyCardsCard,
-  HubPracticeCard,
   type StudyCardsFilter,
 } from '@/components/n400/hub/HubCards';
-import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
+import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
 import {
   SectionFlashcardScreen,
   type SectionCard,
@@ -77,7 +76,6 @@ export default function WhatMeanPage() {
     () => deriveSectionSeen(state.sectionAttempts).whatmean,
     [state.sectionAttempts],
   );
-  const [sheetOpen, setSheetOpen] = useState(false);
   const progress = useMemo(
     () => deriveHubProgress(WHATMEAN_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
     [seen],
@@ -132,9 +130,16 @@ export default function WhatMeanPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
         <HubHero
           emoji="💬"
+          imageSrc="/images/n400/whatmean-thumbnail-study.png"
           title="What Mean"
           countLabel={`${ALL_IDS.length} từ vựng`}
           tagline="Hiểu và trả lời các câu hỏi “What mean” trong buổi phỏng vấn."
+          stats={{
+            seenCount: progress.seenCount,
+            totalCount: progress.totalCount,
+            percent: progress.percent,
+            unitLabel: 'từ',
+          }}
         />
         <HubContinueCard
           seenCount={progress.seenCount}
@@ -157,16 +162,12 @@ export default function WhatMeanPage() {
           ]}
           onBrowse={browse}
         />
-        <HubPracticeCard subtitle="Luyện tập trắc nghiệm nghĩa của từ." onStart={() => setSheetOpen(true)} />
-        <PracticeModesSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
+        <PracticeSelector
+          skillKey="whatmean"
+          subtitle="Luyện tập trắc nghiệm nghĩa của từ."
           presets={WHATMEAN_PRESETS}
           totalCount={ALL_IDS.length}
-          onSelect={(p) => {
-            setSheetOpen(false);
-            startPracticeWith(p.count ?? ALL_IDS.length);
-          }}
+          onStart={(p) => startPracticeWith(p.count ?? ALL_IDS.length)}
         />
       </div>
     </div>

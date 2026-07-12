@@ -9,29 +9,78 @@
 //   HubWeakAreasCard → civics-only weak-topic shortcut
 
 import { useState } from 'react';
-import { ArrowRight, Star, TrendingDown, Layers, Target } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Star, TrendingDown, Layers, PieChart } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
+
+/** Progress numbers for the hero stat pills. */
+export interface HubHeroStats {
+  seenCount: number;
+  totalCount: number;
+  percent: number;
+  /** Noun for the count pill, e.g. "câu" / "từ vựng". Defaults to "câu". */
+  unitLabel?: string;
+}
+
+function HeroStat({ icon, tone, label, value }: { icon: React.ReactNode; tone: string; label: string; value: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm">
+      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${tone}`}>{icon}</span>
+      <span className="leading-tight">
+        <span className="block text-[11px] text-gray-400">{label}</span>
+        <span className="block text-sm font-bold text-gray-900">{value}</span>
+      </span>
+    </div>
+  );
+}
 
 export function HubHero({
   emoji,
+  imageSrc,
   title,
   countLabel,
   tagline,
+  stats,
 }: {
   emoji: string;
+  /** Skill illustration; falls back to the emoji tile when absent. */
+  imageSrc?: string;
   title: string;
   countLabel: string;
   tagline: string;
+  stats?: HubHeroStats;
 }) {
   return (
-    <section className="flex items-center gap-4">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-3xl">
-        <span aria-hidden>{emoji}</span>
-      </div>
-      <div className="min-w-0">
+    <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+      {imageSrc ? (
+        <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-2xl bg-teal-50/50 sm:h-28 sm:w-44">
+          <Image src={imageSrc} alt={title} fill sizes="(max-width: 640px) 100vw, 176px" className="object-cover" />
+        </div>
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-3xl">
+          <span aria-hidden>{emoji}</span>
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
         <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{title}</h1>
         <div className="text-sm font-bold text-teal-600">{countLabel}</div>
         <p className="mt-0.5 text-sm text-gray-500">{tagline}</p>
+        {stats ? (
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            <HeroStat
+              icon={<Layers size={16} />}
+              tone="bg-indigo-50 text-indigo-500"
+              label="Tiến độ"
+              value={`${stats.seenCount}/${stats.totalCount} ${stats.unitLabel ?? 'câu'}`}
+            />
+            <HeroStat
+              icon={<PieChart size={16} />}
+              tone="bg-teal-50 text-teal-600"
+              label="Hoàn thành"
+              value={`${stats.percent}%`}
+            />
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -182,29 +231,8 @@ export function HubStudyCardsCard({
   );
 }
 
-export function HubPracticeCard({ subtitle, onStart }: { subtitle: string; onStart: () => void }) {
-  return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-          <Target size={22} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-extrabold text-gray-900">Luyện tập</h2>
-          <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onStart}
-          className="group inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700"
-        >
-          Bắt đầu
-          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-        </button>
-      </div>
-    </section>
-  );
-}
+// Practice is no longer a Hub*Card here — the Practice card + mode picker live
+// in components/n400/hub/PracticeSelector.tsx (current-mode-first design).
 
 export function HubWeakAreasCard({
   topicLabel,

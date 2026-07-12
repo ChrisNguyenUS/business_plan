@@ -113,6 +113,10 @@ export function Header() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   })();
   const activeToday = hydrated && state.streak.lastActivityDate === today && streak > 0;
+  // The flame lights up whenever there's a live streak — not only on the days
+  // the user has already studied. A streak that isn't "kept today yet" should
+  // still read as ON FIRE, nudging the user to keep it going.
+  const hasStreak = hydrated && streak > 0;
 
   return (
     <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between gap-3 border-b border-gray-200/50 bg-slate-50/90 px-4 py-3 backdrop-blur-md lg:min-h-20 lg:px-8 lg:py-0">
@@ -153,7 +157,7 @@ export function Header() {
         {/* Study streak badge */}
         <div
           className={`flex items-center gap-2 rounded-xl border px-3 py-2 shadow-sm transition-colors lg:px-4 ${
-            activeToday
+            hasStreak
               ? 'bg-orange-50 border-orange-100'
               : 'bg-white border-gray-100'
           }`}
@@ -166,7 +170,7 @@ export function Header() {
           }
         >
           <Flame
-            className={activeToday ? 'text-orange-500' : 'text-gray-300'}
+            className={hasStreak ? 'text-orange-500' : 'text-gray-300'}
             size={18}
           />
           <div className="flex min-w-0 flex-col">
@@ -175,7 +179,7 @@ export function Header() {
             </span>
             <span
               className={`text-sm font-bold leading-tight whitespace-nowrap ${
-                activeToday ? 'text-orange-700' : 'text-gray-800'
+                hasStreak ? 'text-orange-700' : 'text-gray-800'
               }`}
             >
               {streak} ngày

@@ -4,7 +4,7 @@
 // Practice and Weak Areas are learning methods here, not destinations: the
 // cards deep-link into the existing screens (which are unchanged).
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
@@ -14,11 +14,10 @@ import {
   HubHero,
   HubContinueCard,
   HubStudyCardsCard,
-  HubPracticeCard,
   HubWeakAreasCard,
   type StudyCardsFilter,
 } from '@/components/n400/hub/HubCards';
-import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
+import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
 
 const CIVICS_CHIPS: { id: StudyCardsFilter; label: string }[] = [
   { id: 'all', label: 'Tất cả' },
@@ -33,7 +32,6 @@ export default function CivicsHubPage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const attempted = useMemo(() => new Set(state.attempts.map((a) => a.questionId)), [state.attempts]);
   const progress = useMemo(
@@ -57,9 +55,11 @@ export default function CivicsHubPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
       <HubHero
         emoji="🇺🇸"
+        imageSrc="/images/n400/civic-thumbnail-study.png"
         title="Civics"
         countLabel={`${N400_QUESTIONS.length} câu hỏi`}
         tagline={`Học ${N400_QUESTIONS.length} câu Civics của kỳ thi quốc tịch Mỹ, từng bước một.`}
+        stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
       />
 
       <HubContinueCard
@@ -83,7 +83,13 @@ export default function CivicsHubPage() {
         }
       />
 
-      <HubPracticeCard subtitle="Luyện tập với câu hỏi trắc nghiệm." onStart={() => setSheetOpen(true)} />
+      <PracticeSelector
+        skillKey="civics"
+        subtitle="Luyện tập với câu hỏi trắc nghiệm."
+        presets={PRACTICE_PRESETS}
+        totalCount={N400_QUESTIONS.length}
+        onStart={(p) => router.push(`${base}/practice?start=${p.id}`)}
+      />
 
       {recommendation ? (
         <HubWeakAreasCard
@@ -93,17 +99,6 @@ export default function CivicsHubPage() {
           onPractice={() => router.push(`${base}/practice?start=weak`)}
         />
       ) : null}
-
-      <PracticeModesSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        presets={PRACTICE_PRESETS}
-        totalCount={N400_QUESTIONS.length}
-        onSelect={(p) => {
-          setSheetOpen(false);
-          router.push(`${base}/practice?start=${p.id}`);
-        }}
-      />
     </div>
   );
 }

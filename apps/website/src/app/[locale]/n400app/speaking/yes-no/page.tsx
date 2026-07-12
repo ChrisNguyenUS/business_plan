@@ -11,10 +11,9 @@ import {
   HubHero,
   HubContinueCard,
   HubStudyCardsCard,
-  HubPracticeCard,
   type StudyCardsFilter,
 } from '@/components/n400/hub/HubCards';
-import { PracticeModesSheet } from '@/components/n400/hub/PracticeModesSheet';
+import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
 import {
   SectionFlashcardScreen,
   type SectionCard,
@@ -52,7 +51,6 @@ export default function YesNoPage() {
 
   const known = useMemo(() => new Set(state.sectionKnown.yesno), [state.sectionKnown.yesno]);
   const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts).yesno, [state.sectionAttempts]);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const progress = useMemo(
     () => deriveHubProgress(YESNO_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
     [seen],
@@ -106,9 +104,11 @@ export default function YesNoPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8 animate-in fade-in duration-300">
         <HubHero
           emoji="📋"
+          imageSrc="/images/n400/yesno-thumbnail-study.png"
           title="Yes / No"
           countLabel={`${ALL_IDS.length} câu hỏi`}
           tagline="Trả lời Yes/No về bản thân, tiền án, thuế,… như trong phỏng vấn."
+          stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
         />
         <HubContinueCard
           seenCount={progress.seenCount}
@@ -131,16 +131,12 @@ export default function YesNoPage() {
           ]}
           onBrowse={browse}
         />
-        <HubPracticeCard subtitle="Luyện trả lời Yes/No với hai nút bấm." onStart={() => setSheetOpen(true)} />
-        <PracticeModesSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
+        <PracticeSelector
+          skillKey="yesno"
+          subtitle="Luyện trả lời Yes/No với hai nút bấm."
           presets={YESNO_PRESETS}
           totalCount={ALL_IDS.length}
-          onSelect={(p) => {
-            setSheetOpen(false);
-            startQuizWith(p.count ?? ALL_IDS.length);
-          }}
+          onStart={(p) => startQuizWith(p.count ?? ALL_IDS.length)}
         />
       </div>
     </div>
