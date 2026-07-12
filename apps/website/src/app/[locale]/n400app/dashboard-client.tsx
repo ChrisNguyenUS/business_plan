@@ -41,10 +41,7 @@ import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data'
 import { recommendWeakCategory } from '@/lib/n400/quiz-engine';
 import { recommendDailyHero } from '@/lib/n400/hero-recommendation';
 import { deriveHubProgress } from '@/lib/n400/hub-progress';
-import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
-import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
-import { sectionDailyFive, dailyFiveDoneCount } from '@/lib/n400/section-daily';
-import { deriveSectionSeen } from '@/lib/n400/section-progress';
+import type { SectionKey } from '@/lib/n400/section-progress';
 
 export default function DashboardPage() {
   const { state, hydrated, stats } = useN400UserState();
@@ -70,27 +67,18 @@ export default function DashboardPage() {
   };
   const todayStrLocal = getLocalDateStr(new Date());
 
-  // Daily Goals for What Mean and Yes No sections.
-  // IMPORTANT: every hook (useMemo) must run before the `hydrated` early
-  // return below. React requires a stable hook count across renders —
-  // placing these after the return crashes with "Rendered more hooks than
-  // during the previous render" (React #310) once hydration flips true.
-  const whatMeanIds = useMemo(() => WHATMEAN_QUESTIONS.map((q) => q.id), []);
-  const yesNoIds = useMemo(() => YESNO_QUESTIONS.map((q) => q.id), []);
-
-  const whatMeanKnown = useMemo(() => new Set(state.sectionKnown.whatmean), [state.sectionKnown.whatmean]);
-  const yesNoKnown = useMemo(() => new Set(state.sectionKnown.yesno), [state.sectionKnown.yesno]);
-
-  const sectionSeen = useMemo(() => deriveSectionSeen(state.sectionAttempts), [state.sectionAttempts]);
-
-  const whatMeanDaily = useMemo(
-    () => sectionDailyFive('whatmean', whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal),
-    [whatMeanIds, whatMeanKnown, sectionSeen.whatmean, todayStrLocal],
-  );
-  const yesNoDaily = useMemo(
-    () => sectionDailyFive('yesno', yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal),
-    [yesNoIds, yesNoKnown, sectionSeen.yesno, todayStrLocal],
-  );
+  // Daily goals for the Yes/No and What Mean sections count distinct questions
+  // *practiced today* (any mode) — matching the "Luyện 5 câu hỏi" label and the
+  // Writing goal below. Mastery ("known") is derived from flashcard mode only,
+  // so measuring the goal by mastery left it stuck after a practice session.
+  const todaySectionCount = useMemo(() => {
+    const seen: Record<string, Set<string>> = {};
+    for (const a of state.sectionAttempts) {
+      if (!a.at.startsWith(todayStrLocal)) continue;
+      (seen[a.section] ??= new Set()).add(a.itemId);
+    }
+    return (section: SectionKey) => seen[section]?.size ?? 0;
+  }, [state.sectionAttempts, todayStrLocal]);
 
   // Civics "Tiếp tục học" — same derivation as the Civics hub so both screens
   // always agree on where the user left off.
@@ -109,8 +97,8 @@ export default function DashboardPage() {
   const GOAL_QUESTIONS = 20;
   const todaysAttempts = state.attempts.filter((a) => a.at.startsWith(todayStrLocal));
   const todayQuestions = todaysAttempts.filter((a) => a.mode !== 'flashcard').length;
-  const whatMeanDoneCount = dailyFiveDoneCount(whatMeanDaily, whatMeanKnown);
-  const yesNoDoneCount = dailyFiveDoneCount(yesNoDaily, yesNoKnown);
+  const whatMeanDoneCount = Math.min(todaySectionCount('whatmean'), 5);
+  const yesNoDoneCount = Math.min(todaySectionCount('yesno'), 5);
   const writingToday = state.sectionAttempts.filter(
     (a) => a.section === 'writing' && a.at.startsWith(todayStrLocal),
   ).length;
