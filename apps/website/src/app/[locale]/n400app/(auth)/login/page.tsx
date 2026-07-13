@@ -120,23 +120,23 @@ function ShieldIcon() {
 const FEATURES = [
   {
     icon: <BookIcon />,
-    title: 'Học tập cá nhân hóa',
-    desc: 'Nội dung bám sát N-400, gợi ý thông minh theo tiến độ của bạn.',
+    title: 'Lộ trình cá nhân hóa',
+    desc: 'Học tập thông minh dựa trên tiến độ và điểm yếu của riêng bạn.',
   },
   {
     icon: <TargetIcon />,
-    title: 'Luyện tập hiệu quả',
-    desc: 'Học theo từng chủ đề, luyện câu hỏi, từ vựng, Yes/No và Writing.',
+    title: 'Ôn luyện toàn diện',
+    desc: 'Bao phủ đầy đủ 100 câu Civics, Từ vựng, Reading, Writing và Yes/No.',
   },
   {
     icon: <ChartIcon />,
-    title: 'Theo dõi tiến độ',
-    desc: 'Thống kê chi tiết, giúp bạn cải thiện mỗi ngày.',
+    title: 'Phân tích tiến độ',
+    desc: 'Theo dõi kết quả trực quan để đảm bảo bạn luôn đi đúng hướng.',
   },
   {
     icon: <ShieldIcon />,
-    title: 'Sẵn sàng cho buổi phỏng vấn',
-    desc: 'Tự tin trả lời, chinh phục giấc mơ trở thành công dân Mỹ.',
+    title: 'Thi thử thực tế (Mock Test)',
+    desc: 'Trải nghiệm không khí phỏng vấn thật để loại bỏ sự tự ti và lo âu.',
   },
 ];
 
@@ -226,14 +226,15 @@ export default function N400LoginPage() {
           {/* Hero Headline */}
           <div className={styles.heroHeadline}>
             <h1>
-              Học thông minh.<br />
-              <strong>Đậu phỏng vấn.</strong><br />
-              <strong>Trở thành công dân Mỹ.</strong>
+              Ôn luyện thông minh.<br />
+              <strong>Vượt qua phỏng vấn.</strong><br />
+              Trở thành <strong>công dân Mỹ.</strong>
             </h1>
           </div>
 
           <p className={styles.heroSub}>
-            N400 Ready là ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400) một cách hiệu quả, dễ dàng và thú vị.
+            Học cá nhân hóa chuyên sâu cho kỳ thi N-400: Civics, Reading & Writing, và Yes/No.<br />
+            Trải nghiệm Mock Interview sát thực tế giúp bạn tự tin trong ngày phỏng vấn.
           </p>
 
           {/* Feature List */}
@@ -281,13 +282,13 @@ export default function N400LoginPage() {
 
           <div className={styles.mobileHeadline}>
             <h1>
-              Học thông minh.<br />
-              <strong>Đậu phỏng vấn.</strong><br />
-              <strong>Trở thành công dân Mỹ.</strong>
+              Ôn luyện thông minh.<br />
+              <strong>Vượt qua phỏng vấn.</strong><br />
+              Trở thành <strong>công dân Mỹ.</strong>
             </h1>
           </div>
           <p className={styles.mobileHeroSub}>
-            Ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400) hiệu quả, dễ dàng và thú vị.
+            Lộ trình học cá nhân hóa: Civics, Yes/No, Writing & Mock Test.
           </p>
         </div>
       </div>

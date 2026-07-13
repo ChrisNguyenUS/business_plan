@@ -61,16 +61,24 @@
   .desktopBg {
     display: block;
     position: absolute;
-    inset: 0;
+    inset: -5% -5% 0 -5%; /* slightly larger to allow scaling down without edge cut-offs if needed, but we'll use transform */
     z-index: 0;
     background-image: url('/images/n400/login%20thumbnail/desktop-login-backgroun-final.png');
     background-repeat: no-repeat;
-    background-position: center bottom;
+    background-position: right bottom;
     background-size: cover;
     pointer-events: none;
-    /* Fade background illustration to 40-60% opacity + atmospheric blur */
-    opacity: 0.45;
-    filter: blur(1.5px);
+    /* Scale down slightly to reduce statue size */
+    transform: scale(0.9);
+    transform-origin: right bottom;
+    
+    /* Fade background illustration + atmospheric blur */
+    opacity: 0.4;
+    filter: blur(2.5px);
+    
+    /* Fade the top skyline smoothly into the background */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
+    mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
   }
 }
 
@@ -114,15 +122,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 36px;
   min-height: 0;
   justify-content: center;
 }
 
 @media (min-width: 1280px) {
   .leftContent {
-    padding: 56px 72px;
-    gap: 36px;
+    padding: 64px 80px;
+    gap: 48px;
   }
 }
 
@@ -169,7 +177,7 @@
   font-size: 48px;
   font-weight: 700;
   color: #1B2430;
-  line-height: 1.05;
+  line-height: 1.1;
   letter-spacing: -0.03em;
   margin: 0;
 }
@@ -216,12 +224,12 @@
 .features {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 }
 
 @media (min-height: 900px) {
   .features {
-    gap: 24px;
+    gap: 36px;
   }
 }
 
