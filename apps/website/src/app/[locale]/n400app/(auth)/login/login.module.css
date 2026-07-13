@@ -54,7 +54,7 @@
        reference's scale (statue ≈ lower third of the viewport, never cropped).
        The skyline extends to the right beneath the login card, which covers it
        — so the lower-right stays clean like the reference. */
-    background-size: auto 66%;
+    background-size: auto 64%;
     /* Crisp: no fade, no blur, no mask, no blend. The artwork already fades
        into the sky on its own. */
     opacity: 1;
@@ -98,7 +98,7 @@
     width: min(100%, 1440px);
     margin-inline: auto;
     padding-inline: clamp(24px, 4vw, 64px);
-    gap: clamp(48px, 6vw, 120px);
+    gap: clamp(40px, 4.5vw, 96px);
   }
 }
 
@@ -124,7 +124,7 @@
 
 @media (min-width: 1280px) {
   .leftPanel {
-    flex-basis: 45%;
+    flex-basis: 46%;
   }
 }
 
@@ -216,10 +216,10 @@
 }
 
 .heroSub {
-  font-size: clamp(15px, min(1.2vw, 1.9vh), 18px);
+  font-size: clamp(14px, min(1.1vw, 1.75vh), 16px);
   color: #6B7280;
   line-height: 1.7;
-  max-width: 560px;
+  max-width: 580px;
   margin: clamp(18px, 2.6vh, 32px) 0 0;
 }
 
@@ -288,15 +288,15 @@
   top: -20px;
   left: -20px;
   right: -20px;
-  height: 120vh;
+  height: 55vh;
   z-index: 0;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 90%);
-  mask-image: linear-gradient(to bottom, black 40%, transparent 90%);
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
 }
 
 .mobileHeroBgImg {
-  object-fit: contain;
+  object-fit: cover;
   object-position: right top;
   opacity: 0.85;
 }
