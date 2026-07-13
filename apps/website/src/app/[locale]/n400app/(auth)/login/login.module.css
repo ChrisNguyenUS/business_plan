@@ -8,14 +8,31 @@
      Border:        #E6F2EF
      Text:          #1B2430
      Muted:         #6B7280
+
+   VIEWPORT-LOCKED: No scrolling — everything fits within 100dvh.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Page container ─── */
 .page {
   display: flex;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   background: #F8FCFB;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Mobile: stack vertically */
+@media (max-width: 1023px) {
+  .page {
+    flex-direction: column;
+  }
+}
+
+/* Desktop: side by side */
+@media (min-width: 1024px) {
+  .page {
+    flex-direction: row;
+  }
 }
 
 /* ═══════════════════════════════════
@@ -25,7 +42,7 @@
   display: none;
   position: relative;
   width: 48%;
-  min-height: 100dvh;
+  height: 100dvh;
   background: linear-gradient(160deg, #F8FCFB 0%, #EDF9F6 40%, #DFF7F3 100%);
   overflow: hidden;
   flex-direction: column;
@@ -40,11 +57,19 @@
 .leftContent {
   position: relative;
   z-index: 2;
-  padding: 40px 48px;
+  padding: 32px 40px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 20px;
+  min-height: 0;
+}
+
+@media (min-width: 1280px) {
+  .leftContent {
+    padding: 40px 48px;
+    gap: 24px;
+  }
 }
 
 /* ─── Brand ─── */
@@ -87,7 +112,7 @@
 
 /* ─── Hero Headline ─── */
 .heroHeadline h1 {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 600;
   color: #1B2430;
   line-height: 1.25;
@@ -101,62 +126,99 @@
 
 @media (min-width: 1280px) {
   .heroHeadline h1 {
+    font-size: 38px;
+  }
+}
+
+@media (min-height: 900px) and (min-width: 1280px) {
+  .heroHeadline h1 {
     font-size: 42px;
   }
 }
 
 .heroSub {
-  font-size: 15px;
+  font-size: 14px;
   color: #6B7280;
-  line-height: 1.6;
+  line-height: 1.5;
   max-width: 420px;
   margin: 0;
+}
+
+@media (min-height: 900px) {
+  .heroSub {
+    font-size: 15px;
+    line-height: 1.6;
+  }
 }
 
 /* ─── Features ─── */
 .features {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 4px;
+  gap: 12px;
+}
+
+@media (min-height: 900px) {
+  .features {
+    gap: 16px;
+  }
 }
 
 .featureRow {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
 }
 
 .featureIcon {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: rgba(22, 163, 148, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+@media (min-height: 900px) {
+  .featureIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+}
+
 .featureTitle {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #1B2430;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .featureDesc {
-  font-size: 13px;
+  font-size: 12px;
   color: #6B7280;
   line-height: 1.4;
+}
+
+@media (min-height: 900px) {
+  .featureTitle {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .featureDesc {
+    font-size: 13px;
+  }
 }
 
 /* ─── Bottom illustration ─── */
 .leftIllustration {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 200px;
   margin-top: auto;
+  flex-shrink: 0;
 }
 
 .illustrationImg {
@@ -164,7 +226,19 @@
   object-position: center bottom;
 }
 
-@media (min-width: 1280px) {
+@media (min-height: 800px) {
+  .leftIllustration {
+    height: 240px;
+  }
+}
+
+@media (min-height: 900px) {
+  .leftIllustration {
+    height: 280px;
+  }
+}
+
+@media (min-height: 1000px) {
   .leftIllustration {
     height: 320px;
   }
@@ -177,7 +251,10 @@
   display: block;
   position: relative;
   width: 100%;
-  min-height: 340px;
+  flex-shrink: 0;
+  height: 35dvh;
+  min-height: 180px;
+  max-height: 300px;
   overflow: hidden;
 }
 
@@ -201,14 +278,23 @@
 .mobileHeroContent {
   position: relative;
   z-index: 1;
-  padding: 48px 24px 32px;
+  padding: 40px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  height: 100%;
+  justify-content: center;
+}
+
+@media (max-height: 700px) {
+  .mobileHeroContent {
+    padding: 24px 20px 16px;
+    gap: 8px;
+  }
 }
 
 .mobileHeadline h1 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   color: #1B2430;
   line-height: 1.3;
@@ -222,68 +308,83 @@
 
 @media (min-width: 640px) {
   .mobileHeadline h1 {
-    font-size: 34px;
+    font-size: 30px;
+  }
+}
+
+@media (min-height: 800px) {
+  .mobileHeadline h1 {
+    font-size: 28px;
   }
 }
 
 .mobileHeroSub {
-  font-size: 14px;
+  font-size: 13px;
   color: #4B5563;
-  line-height: 1.6;
+  line-height: 1.5;
   max-width: 340px;
   margin: 0;
+}
+
+@media (max-height: 700px) {
+  .mobileHeroSub {
+    display: none;
+  }
 }
 
 /* ═══════════════════════════════════
    RIGHT PANEL / LOGIN CARD
    ═══════════════════════════════════ */
 
-/* Mobile: card overlaps hero */
+/* Mobile: card overlaps hero, takes remaining space */
 .rightPanel {
   position: relative;
   z-index: 2;
-  margin-top: -40px;
-  padding: 0 16px 32px;
+  margin-top: -28px;
+  padding: 0 16px 16px;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 1024px) {
   .rightPanel {
     width: 52%;
+    flex: none;
     margin-top: 0;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
-  }
-
-  .page {
-    flex-direction: row;
-  }
-}
-
-/* Mobile: stack vertically */
-@media (max-width: 1023px) {
-  .page {
-    flex-direction: column;
+    height: 100dvh;
+    overflow-y: auto;
   }
 }
 
 .loginCard {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   background: #FFFFFF;
-  border-radius: 28px;
-  padding: 36px 32px;
+  border-radius: 24px;
+  padding: 28px 24px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.04),
     0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 640px) {
+  .loginCard {
+    border-radius: 28px;
+    padding: 36px 36px;
+    max-width: 440px;
+  }
+}
+
+@media (min-height: 900px) and (min-width: 1024px) {
   .loginCard {
     padding: 44px 40px;
   }
@@ -294,8 +395,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .cardLogo {
@@ -304,33 +405,55 @@
 }
 
 .cardBrand {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #1B2430;
   letter-spacing: -0.02em;
 }
 
+@media (min-height: 900px) {
+  .cardBrand {
+    font-size: 20px;
+  }
+  .cardHeader {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+}
+
 .cardTitle {
   text-align: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #1B2430;
-  margin: 0 0 4px;
+  margin: 0 0 2px;
 }
 
 .cardSubtitle {
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
   color: #6B7280;
-  margin: 0 0 24px;
-  line-height: 1.5;
+  margin: 0 0 20px;
+  line-height: 1.4;
+}
+
+@media (min-height: 900px) {
+  .cardTitle {
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+  .cardSubtitle {
+    font-size: 14px;
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
 }
 
 /* ─── Error box ─── */
 .errorBox {
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  border-radius: 14px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
   background: #FEF2F2;
   border: 1px solid #FECACA;
   font-size: 13px;
@@ -342,8 +465,15 @@
 .oauthButtons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+@media (min-height: 900px) {
+  .oauthButtons {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
 }
 
 .oauthBtn {
@@ -352,15 +482,23 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  height: 48px;
-  border-radius: 14px;
+  height: 44px;
+  border-radius: 12px;
   border: 1.5px solid #E6F2EF;
   background: #FFFFFF;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #1B2430;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+@media (min-height: 900px) {
+  .oauthBtn {
+    height: 48px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
 }
 
 .oauthBtn:hover {
@@ -389,7 +527,13 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+@media (min-height: 900px) {
+  .divider {
+    margin-bottom: 20px;
+  }
 }
 
 .dividerLine {
@@ -399,7 +543,7 @@
 }
 
 .dividerText {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #9CA3AF;
   letter-spacing: 0.05em;
@@ -411,16 +555,24 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  height: 48px;
+  height: 44px;
   padding: 0 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1.5px solid #E6F2EF;
   background: #FFFFFF;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #1B2430;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+@media (min-height: 900px) {
+  .emailBtn {
+    height: 48px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
 }
 
 .emailBtn:hover {
@@ -439,20 +591,28 @@
 .emailForm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .input {
   width: 100%;
-  height: 48px;
-  border-radius: 14px;
+  height: 44px;
+  border-radius: 12px;
   border: 1.5px solid #E6F2EF;
   background: #F8FCFB;
   padding: 0 16px;
-  font-size: 15px;
+  font-size: 14px;
   color: #1B2430;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+@media (min-height: 900px) {
+  .input {
+    height: 48px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
 }
 
 .input::placeholder {
@@ -467,16 +627,25 @@
 /* ─── Sign In Button ─── */
 .signInBtn {
   width: 100%;
-  height: 48px;
-  border-radius: 14px;
+  height: 44px;
+  border-radius: 12px;
   border: none;
   background: #16A394;
   color: #FFFFFF;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 4px;
+  margin-top: 2px;
+}
+
+@media (min-height: 900px) {
+  .signInBtn {
+    height: 48px;
+    border-radius: 14px;
+    font-size: 16px;
+    margin-top: 4px;
+  }
 }
 
 .signInBtn:hover {
@@ -529,73 +698,36 @@
   text-decoration: underline;
 }
 
-/* ─── Guest CTA ─── */
-.guestBtn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1.5px dashed #D1E8E2;
-  background: #F8FCFB;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 16px;
-  text-align: left;
-}
-
-.guestBtn:hover {
-  background: #EDF9F6;
-  border-color: #16A394;
-}
-
-.guestText {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
-
-.guestLabel {
-  font-size: 14px;
-  font-weight: 700;
-  color: #16A394;
-}
-
-.guestDesc {
-  font-size: 12px;
-  color: #6B7280;
-  margin-top: 1px;
-}
-
-.guestBadge {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: #16A394;
-  padding: 3px 10px;
-  border-radius: 8px;
-  border: 1px solid #C8E6E0;
-  background: #DFF7F3;
-}
-
 /* ─── Security Note ─── */
 .securityNote {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 24px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid #E6F2EF;
   text-align: center;
 }
 
+@media (min-height: 900px) {
+  .securityNote {
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+}
+
 .securityNote span {
-  font-size: 12px;
+  font-size: 11px;
   color: #9CA3AF;
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+@media (min-height: 900px) {
+  .securityNote span {
+    font-size: 12px;
+    line-height: 1.5;
+  }
 }
 
 /* ─── Spinner ─── */
@@ -617,3 +749,12 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ═══════════════════════════════════
+   UNUSED (kept for reference, no-ops)
+   ═══════════════════════════════════ */
+.guestBtn { display: none; }
+.guestText { display: none; }
+.guestLabel { display: none; }
+.guestDesc { display: none; }
+.guestBadge { display: none; }
