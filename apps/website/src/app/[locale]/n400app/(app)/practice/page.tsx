@@ -706,7 +706,9 @@ export default function PracticePage() {
             illustration + one Learning Tip. No stats, streak, or KPI cards
             compete with the question. */}
         <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:w-[280px] xl:w-[320px] shrink-0 self-start">
-          <div className="relative h-44 w-full overflow-hidden rounded-3xl xl:h-48">
+          {/* Aspect matches the source (1402×1122) so the full statue — torch
+              to base — always shows without cropping, scaling with panel width. */}
+          <div className="relative aspect-[1402/1122] w-full overflow-hidden rounded-3xl">
             <Image
               src="/images/n400/practace-thumbnail.png"
               alt="Statue of Liberty with the city skyline"
