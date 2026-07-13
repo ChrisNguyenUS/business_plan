@@ -73,6 +73,15 @@ function StatueIcon() {
   );
 }
 
+function UserIcon() {
+  return (
+    <svg className={styles.providerIcon} viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+  );
+}
+
 /* ─── Feature icons (desktop left panel) ─── */
 function FeatureIcon({ children }: { children: React.ReactNode }) {
   return <div className={styles.featureIcon}>{children}</div>;
@@ -203,6 +212,51 @@ export default function N400LoginPage() {
       {/* ─── DESKTOP FULL-SCREEN BACKGROUND (spans both columns, behind the card) ─── */}
       <div className={styles.desktopBg} aria-hidden="true" />
 
+      {/* ─── MOBILE HERO ─── */}
+      <div className={styles.mobileHero}>
+        <div className={styles.mobileHeroBg}>
+          <Image
+            src="/images/n400/login thumbnail/mobile-login-background.png"
+            alt="Statue of Liberty"
+            fill
+            className={styles.mobileHeroBgImg}
+            priority
+          />
+        </div>
+        <div className={styles.mobileHeroContent}>
+          <div className={styles.brand}>
+            <Image
+              src="/images/logo-official.png"
+              alt="Manna One Solution"
+              width={32}
+              height={32}
+              className={styles.logo}
+            />
+            <div className={styles.brandText}>
+              <span className={styles.brandName}>
+                N400 <span className={styles.brandAccent}>Ready</span>
+              </span>
+              <span className={styles.brandTagline}>TỰ TIN CHINH PHỤC{'\n'}GIẤC MƠ MỸ!</span>
+            </div>
+          </div>
+
+          <div className={styles.mobileHeadline}>
+            <h1>
+              Học thông minh.<br />
+              <strong>Đậu phỏng vấn.</strong><br />
+              <strong>Trở thành công dân Mỹ.</strong>
+            </h1>
+          </div>
+          <p className={styles.mobileHeroSub}>
+            Ứng dụng giúp bạn học và luyện thi<br />
+            quốc tịch Mỹ (N-400) hiệu quả,<br />
+            dễ dàng và thú vị.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── CENTERED DESKTOP CONTAINER (max 1440px) ─── */}
+      <div className={styles.desktopMain}>
       {/* ─── DESKTOP LEFT PANEL ─── */}
       <div className={styles.leftPanel}>
         <div className={styles.leftContent}>
@@ -254,69 +308,19 @@ export default function N400LoginPage() {
         </div>
       </div>
 
-      {/* ─── MOBILE HERO ─── */}
-      <div className={styles.mobileHero}>
-        <div className={styles.mobileHeroBg}>
-          <Image
-            src="/images/n400/login thumbnail/mobile-login-background.png"
-            alt="Statue of Liberty"
-            fill
-            className={styles.mobileHeroBgImg}
-            priority
-          />
-        </div>
-        <div className={styles.mobileHeroContent}>
-          <div className={styles.brand}>
-            <Image
-              src="/images/logo-official.png"
-              alt="Manna One Solution"
-              width={32}
-              height={32}
-              className={styles.logo}
-            />
-            <div className={styles.brandText}>
-              <span className={styles.brandName}>
-                N400 <span className={styles.brandAccent}>Ready</span>
-              </span>
-              <span className={styles.brandTagline}>TỰ TIN CHINH PHỤC{'\n'}GIẤC MƠ MỸ!</span>
-            </div>
-          </div>
-
-          <div className={styles.mobileHeadline}>
-            <h1>
-              Học thông minh.<br />
-              <strong>Đậu phỏng vấn.</strong><br />
-              <strong>Trở thành công dân Mỹ.</strong>
-            </h1>
-          </div>
-          <p className={styles.mobileHeroSub}>
-            Ứng dụng giúp bạn học và luyện thi<br />
-            quốc tịch Mỹ (N-400) hiệu quả,<br />
-            dễ dàng và thú vị.
-          </p>
-        </div>
-      </div>
-
       {/* ─── RIGHT PANEL / LOGIN CARD ─── */}
       <div className={styles.rightPanel}>
         <div className={styles.loginCard}>
           {/* Card header */}
           <div className={styles.cardHeader}>
-            <Image
-              src="/images/logo-official.png"
-              alt="Manna One Solution"
-              width={48}
-              height={48}
-              className={styles.cardLogo}
-            />
-            <div className={styles.cardBrand}>
-              N400 <span className={styles.brandAccent}>Ready</span>
-            </div>
+            <StatueIcon />
           </div>
 
-          <h2 className={styles.cardTitle}>Welcome back! 👋</h2>
+          <h2 className={styles.cardTitle}>
+            Welcome to <span className={styles.brandAccent}>N400 Ready</span>
+          </h2>
           <p className={styles.cardSubtitle}>
-            Đăng nhập để tiếp tục hành trình chinh phục quốc tịch Mỹ.
+            Tiếp tục hành trình chinh phục quốc tịch Mỹ 👋
           </p>
 
           {/* Error */}
@@ -409,6 +413,16 @@ export default function N400LoginPage() {
             </form>
           )}
 
+          {/* Guest Button */}
+          <Link href={`/${locale}/portal`} className={styles.guestBtn}>
+            <UserIcon />
+            <div className={styles.guestText}>
+              <span className={styles.guestLabel}>Tiếp tục với tư cách khách</span>
+              <span className={styles.guestDesc}>Khám phá ứng dụng. Không cần đăng ký.</span>
+            </div>
+            <span className={styles.guestBadge}>Đề xuất</span>
+          </Link>
+
 
           {/* Security note */}
           <div className={styles.securityNote}>
@@ -419,6 +433,7 @@ export default function N400LoginPage() {
             </span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
