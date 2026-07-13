@@ -1,25 +1,16 @@
 'use client';
 
-// Yes/No answer quiz screen for the Speaking sections. Mirrors SectionMCQuiz
-// chrome exactly (progress + Đổi chế độ/Trộn lại, question card with header,
-// reveal feedback, pinned Tiếp theo, decorative right sidebar) but swaps the
-// 2×2 A/B/C/D option grid for two big [Yes, officer] / [No, officer] buttons.
+// Yes/No answer quiz screen for the Speaking sections. Uses the shared calm
+// "Luyện tập" chrome (PracticeProgressRow + PracticeSupportPanel) like the
+// Civics practice page, but swaps the A/B/C/D option grid for two big
+// [Yes, officer] / [No, officer] buttons. Picking reveals feedback; the bottom
+// Tiếp theo bar only appears after answering.
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
-import {
-  SlidersHorizontal,
-  RotateCw,
-  CheckCircle,
-  XCircle,
-  Lightbulb,
-  ArrowRight,
-  Target,
-  Award,
-  Rocket,
-} from 'lucide-react';
+import { CheckCircle, XCircle, Lightbulb, ArrowRight } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
+import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
 import { yesNoAudioUrl } from '@/lib/n400/quiz-engine';
 import type { YesNoQuestion } from '@/lib/n400/yesno-data';
 
@@ -96,29 +87,8 @@ export function SectionYesNoQuiz({
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress row */}
-      <div className="shrink-0 flex items-center justify-between gap-2">
-        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
-          Câu hỏi {index + 1} / {questions.length}
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onExit}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            <SlidersHorizontal size={14} /> Đổi chế độ
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            <RotateCw size={14} /> Trộn lại
-          </button>
-        </div>
-      </div>
-      <ProgressStrip value={((index + 1) / questions.length) * 100} />
+      {/* Progress — calm shared row. Subtle Back returns to the section hub. */}
+      <PracticeProgressRow index={index} total={questions.length} onBack={onExit} />
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -128,17 +98,17 @@ export function SectionYesNoQuiz({
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
-            {/* Header */}
+            {/* Header — question is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
                     Câu hỏi Yes/No #{q.num}
                   </div>
-                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+                  <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                     {q.questionVi}
                   </div>
                 </div>
@@ -150,12 +120,12 @@ export function SectionYesNoQuiz({
             </div>
 
             {/* Answer buttons — Yes / No */}
-            <div className="grid grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
+            <div className="grid grid-cols-2 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {choices.map((choice) => {
                 const isPicked = selected === choice.id;
                 const isCorrectChoice = q.answer === choice.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';
-                let mark = <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />;
+                let mark = <span className="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0" />;
 
                 if (phase === 'revealed') {
                   if (isCorrectChoice) {
@@ -175,7 +145,7 @@ export function SectionYesNoQuiz({
                     type="button"
                     disabled={phase === 'revealed'}
                     onClick={() => onPick(choice.id)}
-                    className={`flex w-full items-center justify-center gap-3 rounded-2xl border-2 text-center transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
+                    className={`flex w-full items-center justify-center gap-3 rounded-2xl border-2 text-center transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
                   >
                     <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
                       {choice.label}
@@ -185,6 +155,15 @@ export function SectionYesNoQuiz({
                 );
               })}
             </div>
+
+            {/* Learning Tip — mobile only, before answering */}
+            {phase !== 'revealed' ? (
+              <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+                <LearningTipCard>
+                  Đọc kỹ câu hỏi — chú ý các từ phủ định (never, not) dễ làm đổi đáp án.
+                </LearningTipCard>
+              </div>
+            ) : null}
 
             {/* Feedback */}
             {phase === 'revealed' ? (
@@ -212,94 +191,36 @@ export function SectionYesNoQuiz({
             ) : null}
           </div>
 
-          {/* Pinned actions */}
-          <div
-            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
-            style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
-          >
-            <button
-              type="button"
-              onClick={onNext}
-              disabled={phase !== 'revealed'}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
-                phase === 'revealed'
-                  ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-              }`}
-              style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+          {/* Pinned actions — only after answering */}
+          {phase === 'revealed' ? (
+            <div
+              className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
+              style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
             >
-              <span>Tiếp theo / Next</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={onNext}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-colors"
+                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+              >
+                <span>Tiếp theo / Next</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          ) : null}
         </div>
 
-        {/* Decorative sidebar */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
-          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
-            <Image
-              src="/images/n400/illu-statue-city.png"
-              alt="Statue of Liberty with American flag and city skyline"
-              fill
-              className="object-contain object-bottom"
-              sizes="400px"
-              priority
-            />
-          </div>
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-800 leading-snug">
-              Mỗi câu trả lời đúng
-              <br />
-              là một bước gần hơn đến ước mơ!
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">Giữ vững phong độ và chinh phục N400 nhé! 💪</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <TipCard icon={<Target size={20} />} tone="teal" title="Tập trung mỗi ngày" desc="Tiến bộ hơn 1% hôm nay tốt hơn ngày mai." />
-            <TipCard icon={<Award size={20} />} tone="orange" title="Thử thách bản thân" desc="Càng luyện tập nhiều, kết quả càng bứt phá." />
-            <TipCard icon={<Rocket size={20} />} tone="purple" title="Chinh phục mục tiêu" desc="N400 không còn xa khi bạn không bỏ cuộc." />
-          </div>
-        </div>
+        {/* Support panel — illustration + one Learning Tip */}
+        <PracticeSupportPanel
+          tip={
+            <LearningTipCard>
+              Đọc kỹ câu hỏi — chú ý các từ phủ định (never, not) dễ làm đổi đáp án.
+            </LearningTipCard>
+          }
+        />
       </div>
 
       <span className="sr-only">{title}</span>
-    </div>
-  );
-}
-
-function ProgressStrip({ value }: { value: number }) {
-  return (
-    <div className="w-full bg-slate-100 rounded-full overflow-hidden h-[clamp(4px,0.5vw,10px)] shrink-0">
-      <div
-        className="h-full bg-teal-600 rounded-full transition-all duration-1000 ease-out"
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  );
-}
-
-function TipCard({
-  icon,
-  tone,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  tone: 'teal' | 'orange' | 'purple';
-  title: string;
-  desc: string;
-}) {
-  const styles = {
-    teal: 'bg-teal-50 text-teal-600',
-    orange: 'bg-orange-50 text-orange-500',
-    purple: 'bg-purple-50 text-purple-600',
-  } as const;
-
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles[tone]}`}>{icon}</div>
-      <div className="font-bold text-sm text-gray-800 mb-1 leading-tight">{title}</div>
-      <div className="text-[11px] text-gray-500 leading-snug">{desc}</div>
     </div>
   );
 }

@@ -11,10 +11,9 @@
  * - Every question begins from a predictable clean state.
  */
 
-import Image from 'next/image';
-import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { ProgressBar } from '@/components/n400/ui';
+import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
@@ -194,12 +193,6 @@ export default function PracticePage() {
 
   const isBookmarked = state.bookmarks.includes(question.id);
   const pickedOption = options.find((o) => o.id === selected) ?? null;
-
-  // Progress readouts for the compact header row. `percent` matches the bar
-  // (the current question already counts as reached, so Q7/20 → 35%);
-  // `minutesRemaining` estimates ~0.85 min per remaining question (incl. this one).
-  const percent = ((index + 1) / order.length) * 100;
-  const minutesRemaining = Math.max(1, Math.round((order.length - index) * 0.85));
 
   const markWrong = (questionId: number) => {
     setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
@@ -477,24 +470,11 @@ export default function PracticePage() {
 
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
-      {/* Progress — one calm row: counter · bar · % complete · remaining time.
-          Session controls (change mode / reshuffle) intentionally live off this
-          screen: the header Back button returns to the hub where the mode
-          picker lives, keeping the answering surface distraction-free. */}
-      <div className="shrink-0 flex items-center gap-[clamp(0.5rem,1.5vw,1rem)] rounded-2xl bg-white border border-slate-100 shadow-sm px-[clamp(0.75rem,2vw,1.25rem)] py-[clamp(0.5rem,1.2vh,0.875rem)]">
-        <span className="font-bold text-gray-700 whitespace-nowrap" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.9375rem)' }}>
-          Câu hỏi {index + 1} / {order.length}
-        </span>
-        <div className="flex-1 min-w-0">
-          <ProgressBar progress={percent} heightClass="h-[clamp(6px,0.6vw,10px)]" />
-        </div>
-        <span className="hidden whitespace-nowrap text-gray-700 sm:inline" style={{ fontSize: 'clamp(0.75rem, 1.4vw, 0.875rem)' }}>
-          <span className="font-bold">{Math.round(percent)}%</span> <span className="text-gray-500">hoàn thành</span>
-        </span>
-        <span className="flex items-center gap-1.5 whitespace-nowrap text-gray-500" style={{ fontSize: 'clamp(0.7rem, 1.3vw, 0.8125rem)' }}>
-          <Clock size={14} className="shrink-0" /> Còn ~ {minutesRemaining} phút
-        </span>
-      </div>
+      {/* Progress — one calm row (counter · bar · % · time). Session controls
+          (change mode / reshuffle) intentionally live off this screen: the app
+          header Back button returns to the Civics hub where the mode picker
+          lives, keeping the answering surface distraction-free. */}
+      <PracticeProgressRow index={index} total={order.length} />
 
       {/* Main area — flex-1, grid on desktop */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -702,46 +682,9 @@ export default function PracticePage() {
           )}
         </div>
 
-        {/* Desktop Support Panel — intentionally quiet: one decorative
-            illustration + one Learning Tip. No stats, streak, or KPI cards
-            compete with the question. */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:w-[280px] xl:w-[320px] shrink-0 self-start">
-          {/* Aspect matches the source (1402×1122) so the full statue — torch
-              to base — always shows without cropping, scaling with panel width. */}
-          <div className="relative aspect-[1402/1122] w-full overflow-hidden rounded-3xl">
-            <Image
-              src="/images/n400/practace-thumbnail.png"
-              alt="Statue of Liberty with the city skyline"
-              fill
-              className="object-cover object-center"
-              sizes="320px"
-              priority
-            />
-          </div>
-
-          <LearningTipCard />
-        </div>
+        {/* Desktop Support Panel — quiet: one illustration + one Learning Tip. */}
+        <PracticeSupportPanel />
       </div>
-    </div>
-  );
-}
-
-/**
- * The single supportive note shown beside/below the question. Decorative and
- * calm — it reinforces the one behaviour that helps before answering (read
- * every choice), never stats or progress.
- */
-function LearningTipCard() {
-  return (
-    <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
-      <div className="mb-1.5 flex items-center gap-2">
-        <span className="text-base" aria-hidden>💡</span>
-        <span className="text-sm font-bold text-gray-800">Mẹo học tập / Learning Tip</span>
-      </div>
-      <p className="text-[13px] leading-relaxed text-gray-600">
-        Đọc kỹ tất cả các đáp án trước khi chọn. Nhiều đáp án sai được thiết kế
-        để rất dễ gây nhầm lẫn.
-      </p>
     </div>
   );
 }

@@ -1,34 +1,33 @@
 'use client';
 
-// Writing (dictation) practice screen. Reuses the SectionMCQuiz chrome: progress
-// strip + a card holding the exercise and the decorative right sidebar. The user
-// hears the sentence (normal + slow), types what they hear, and checks it. Wrong
-// answers stay on the card so the learner must retype the sentence correctly
-// (active recall) — there is no retry limit. Feedback shows a per-word diff plus
-// an always-visible guidance box with the USCIS writing rules.
+// Writing (dictation) practice screen. Uses the shared calm "Luyện tập" chrome
+// (PracticeProgressRow + PracticeSupportPanel) like the Civics practice page.
+// The learner hears the sentence (Listen / Slow), types what they hear, and
+// checks it. Wrong answers stay on the card so the learner must retype the
+// sentence correctly (active recall) — there is no retry limit. Feedback shows a
+// per-word diff plus an always-visible guidance box with the USCIS writing rules.
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 import {
-  SlidersHorizontal,
-  RotateCw,
   CheckCircle,
   XCircle,
   Lightbulb,
   ArrowRight,
-  Target,
-  Award,
-  Ear,
+  RotateCw,
   EarOff,
+  Volume2,
+  Pause,
+  Turtle,
+  RotateCcw,
+  Check,
 } from 'lucide-react';
 import type { WritingSentence } from '@/lib/n400/writing-data';
 import { writingAudioUrl } from '@/lib/n400/quiz-engine';
 import { gradeWritingSentence, type GradeResult } from '@/lib/n400/writing-grader';
 import { buildFeedbackBlocks } from '@/lib/n400/writing-feedback';
-import { AudioButton } from '@/components/n400/AudioButton';
-import { ProgressBar } from '@/components/n400/ui';
 import { WordDiff } from '@/components/n400/ui/WordDiff';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
+import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
 
 interface DictationResult {
   sentenceId: string;
@@ -66,6 +65,104 @@ interface DictationQuizProps {
 // as plain text inside the yellow box.
 function stripBold(text: string): string {
   return text.replace(/\*\*/g, '');
+}
+
+const WRITING_TIP = (
+  <>Nghe kỹ, dùng nút <b className="font-semibold">Đọc chậm</b> nếu chưa rõ. Viết hoa tên
+  riêng &amp; địa danh, không viết tắt (viết <i>United States</i>, không <i>U.S.</i>).</>
+);
+
+/**
+ * Audio transport for the dictation card (image mock): a strong primary
+ * "Listen" button + a lighter secondary "Slow" button. Listen flips to
+ * "Đang phát… / Playing" while audio plays and to "Nghe lại / Replay" once it
+ * finishes. Single shared audio element — no duplicate audio buttons elsewhere.
+ */
+function DictationAudio({ src }: { src: string | null }) {
+  const [playing, setPlaying] = useState(false);
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Dispose the audio element on unmount. The parent remounts this component per
+  // sentence (key={audioSrc}), so transport state resets without an effect.
+  useEffect(() => () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+  }, []);
+
+  if (!src) return null;
+
+  const ensure = () => {
+    if (!audioRef.current) {
+      const a = new Audio(src);
+      a.addEventListener('ended', () => {
+        setPlaying(false);
+        setHasPlayed(true);
+      });
+      a.addEventListener('error', () => {
+        setUnavailable(true);
+        setPlaying(false);
+      });
+      audioRef.current = a;
+    }
+    return audioRef.current;
+  };
+
+  const start = (rate: number) => {
+    if (unavailable) return;
+    const audio = ensure();
+    audio.pause();
+    audio.currentTime = 0;
+    audio.playbackRate = rate;
+    if ('preservesPitch' in audio) audio.preservesPitch = true;
+    const p = audio.play();
+    if (p && typeof p.then === 'function') {
+      p.then(() => setPlaying(true)).catch(() => setUnavailable(true));
+    } else {
+      setPlaying(true);
+    }
+  };
+
+  const onListen = () => {
+    if (playing) {
+      // Toggle: stop what's playing.
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.currentTime = 0;
+      setPlaying(false);
+      setHasPlayed(true);
+      return;
+    }
+    start(1);
+  };
+
+  const ListenIcon = playing ? Pause : hasPlayed ? RotateCcw : Volume2;
+  const listenLabel = playing ? 'Đang phát… / Playing' : hasPlayed ? 'Nghe lại / Replay' : 'Nghe / Listen';
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        onClick={onListen}
+        disabled={unavailable}
+        className="flex items-center gap-2.5 rounded-2xl bg-teal-600 px-5 py-3 font-semibold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+        style={{ fontSize: 'clamp(0.875rem, 1.6vw, 1rem)' }}
+      >
+        <ListenIcon size={18} className="shrink-0" />
+        <span>{listenLabel}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => start(0.7)}
+        disabled={unavailable}
+        className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+        style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}
+      >
+        <Turtle size={17} className="shrink-0" />
+        <span>Đọc chậm / Slow</span>
+      </button>
+    </div>
+  );
 }
 
 export function DictationQuiz({
@@ -106,6 +203,26 @@ export function DictationQuiz({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, skipSummary]);
 
+  // Restore any saved draft when entering a sentence (truthful "Auto saving…"
+  // resume: a mid-sentence reload keeps what was typed). Practice only — never
+  // in exam mode, where a leftover practice draft would be an unfair hint.
+  useEffect(() => {
+    if (done || examMode || typeof window === 'undefined') return;
+    const id = questions[index]?.id;
+    const saved = id ? window.sessionStorage.getItem(`n400.writing.draft.${id}`) : null;
+    if (saved) setUserInput(saved);
+    // Only when the sentence index changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
+
+  // Persist the draft as the learner types (practice only).
+  useEffect(() => {
+    if (!q || examMode || typeof window === 'undefined') return;
+    const key = `n400.writing.draft.${q.id}`;
+    if (userInput) window.sessionStorage.setItem(key, userInput);
+    else window.sessionStorage.removeItem(key);
+  }, [userInput, q, examMode]);
+
   if (done || !q) {
     if (skipSummary) return null;
     const correct = results.filter((r) => r.correct).length;
@@ -135,6 +252,7 @@ export function DictationQuiz({
   }
 
   const isCorrect = gradeResult?.isCorrect ?? false;
+  const wordCount = userInput.trim() ? userInput.trim().split(/\s+/).length : 0;
 
   const onCheck = () => {
     if (!userInput.trim()) return;
@@ -171,6 +289,7 @@ export function DictationQuiz({
     const examCorrect = examMode
       ? gradeWritingSentence(userInput, q.sentenceEn).isCorrect
       : null;
+    if (typeof window !== 'undefined') window.sessionStorage.removeItem(`n400.writing.draft.${q.id}`);
     setResults((prev) => [
       ...prev,
       {
@@ -199,22 +318,14 @@ export function DictationQuiz({
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress row */}
-      <div className="shrink-0 flex items-center justify-between gap-2">
-        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
-          Câu {index + 1} / {questions.length}
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onSessionEnd(sessionResults())}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            <SlidersHorizontal size={14} /> Đổi chế độ
-          </button>
-        </div>
-      </div>
-      <ProgressBar progress={((index + 1) / questions.length) * 100} heightClass="h-[clamp(4px,0.5vw,10px)]" />
+      {/* Progress — calm shared row. Subtle Back returns to the writing hub. */}
+      <PracticeProgressRow
+        index={index}
+        total={questions.length}
+        unit="Câu"
+        onBack={() => onSessionEnd(sessionResults())}
+        showTime={!examMode}
+      />
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -224,37 +335,25 @@ export function DictationQuiz({
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
-            {/* Header */}
+            {/* Header — instruction is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
                 Câu viết / Writing #{q.num} · {q.topicVi}
               </div>
-              <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+              <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                 Nghe và gõ lại câu bạn nghe
               </div>
-              <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+              <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                 Listen and type the sentence you hear
               </div>
             </div>
 
-            {/* Audio controls */}
-            <div className="flex items-center gap-3 rounded-2xl bg-teal-50/60 border border-teal-100 p-[clamp(0.625rem,1.5vh,1rem)]">
-              <div className="flex items-center gap-2">
-                <AudioButton src={audioSrc} label="Nghe" size="md" />
-                <span className="font-semibold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                  Nghe
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <AudioButton src={audioSrc} label="Đọc chậm" size="md" rate={0.7} variant="slow" />
-                <span className="font-semibold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                  Đọc chậm
-                </span>
-              </div>
-            </div>
+            {/* Audio controls — Listen (primary) + Slow (secondary).
+                key remounts the transport for each new sentence. */}
+            <DictationAudio key={audioSrc} src={audioSrc} />
 
             {/* Input */}
-            <div className="mt-[clamp(0.5rem,1.5vh,1rem)]">
+            <div className="mt-[clamp(0.75rem,1.5vh,1.25rem)]">
               <textarea
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
@@ -269,12 +368,23 @@ export function DictationQuiz({
                   }
                 }}
                 readOnly={showFeedback && isCorrect}
-                placeholder="Gõ câu bạn nghe..."
+                placeholder="Gõ chính xác câu bạn nghe... / Type exactly what you hear..."
                 rows={2}
                 className="w-full resize-none rounded-2xl border-2 border-gray-200 bg-white p-[clamp(0.625rem,1.5vh,1rem)] text-gray-800 leading-relaxed outline-none transition-colors focus:border-teal-400"
                 style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1.05rem)' }}
                 autoFocus
               />
+              {/* Word count while empty → truthful "Auto saving…" once typing
+                  starts (practice only; exam never persists drafts). */}
+              <div className="mt-1.5 flex items-center justify-end text-xs">
+                {userInput.length > 0 && !examMode ? (
+                  <span className="flex items-center gap-1 font-medium text-teal-600">
+                    <Check size={13} className="shrink-0" /> Auto saving…
+                  </span>
+                ) : (
+                  <span className="text-gray-400">{wordCount} từ / words</span>
+                )}
+              </div>
             </div>
 
             {/* Revealed caption — learner tapped "Chưa nghe được" and must now
@@ -345,6 +455,13 @@ export function DictationQuiz({
                     ) : null}
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+
+            {/* Learning Tip — mobile only, before checking */}
+            {!examMode && !showFeedback && !revealed ? (
+              <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+                <LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>
               </div>
             ) : null}
           </div>
@@ -426,59 +543,11 @@ export function DictationQuiz({
           </div>
         </div>
 
-        {/* Decorative sidebar */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
-          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
-            <Image
-              src="/images/n400/illu-statue-city.png"
-              alt="Statue of Liberty with American flag and city skyline"
-              fill
-              className="object-contain object-bottom"
-              sizes="400px"
-              priority
-            />
-          </div>
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-800 leading-snug">
-              Luyện viết mỗi ngày
-              <br />
-              để tự tin trong ngày thi!
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">Nghe kỹ, viết đúng chính tả và viết hoa nhé! ✍️</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <TipCard icon={<Ear size={20} />} tone="teal" title="Nghe kỹ hai lần" desc="Dùng nút Đọc chậm nếu chưa nghe rõ." />
-            <TipCard icon={<Target size={20} />} tone="orange" title="Viết hoa đúng chỗ" desc="Tên người, địa danh luôn viết hoa." />
-            <TipCard icon={<Award size={20} />} tone="purple" title="Không viết tắt" desc="Viết đầy đủ: United States, không U.S." />
-          </div>
-        </div>
+        {/* Support panel — illustration + one writing tip */}
+        <PracticeSupportPanel
+          tip={<LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>}
+        />
       </div>
-    </div>
-  );
-}
-
-function TipCard({
-  icon,
-  tone,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  tone: 'teal' | 'orange' | 'purple';
-  title: string;
-  desc: string;
-}) {
-  const styles = {
-    teal: 'bg-teal-50 text-teal-600',
-    orange: 'bg-orange-50 text-orange-500',
-    purple: 'bg-purple-50 text-purple-600',
-  } as const;
-
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles[tone]}`}>{icon}</div>
-      <div className="font-bold text-sm text-gray-800 mb-1 leading-tight">{title}</div>
-      <div className="text-[11px] text-gray-500 leading-snug">{desc}</div>
     </div>
   );
 }
