@@ -145,6 +145,7 @@ type OAuthId = 'google' | 'apple' | 'facebook';
 const PROVIDERS: { id: OAuthId; label: string; Icon: () => React.ReactElement }[] = [
   { id: 'google', label: 'Tiếp tục với Google', Icon: GoogleIcon },
   { id: 'apple', label: 'Tiếp tục với Apple', Icon: AppleIcon },
+  { id: 'facebook', label: 'Tiếp tục với Facebook', Icon: FacebookIcon },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -289,7 +290,9 @@ export default function N400LoginPage() {
             </h1>
           </div>
           <p className={styles.mobileHeroSub}>
-            Ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400) hiệu quả, dễ dàng và thú vị.
+            Ứng dụng giúp bạn học và luyện thi<br />
+            quốc tịch Mỹ (N-400) hiệu quả,<br />
+            dễ dàng và thú vị.
           </p>
         </div>
       </div>
