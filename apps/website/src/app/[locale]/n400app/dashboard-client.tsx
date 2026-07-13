@@ -2,7 +2,7 @@
 
 // Dashboard — single-column layout per the dashboard redesign mock:
 //   1. Hero: intent-based daily recommendation (recommendDailyHero) with the
-//      statue thumbnail and a civics-progress meta strip at the bottom.
+//      statue thumbnail.
 //   2. Two-column row: Mục tiêu hôm nay (4 daily-goal rows, deep-linked) and
 //      Gợi ý dành cho bạn (weak-topic drill + streak nudge).
 //   3. Quick-nav cards: Học tập / Thi thử / Tiến độ.
@@ -31,7 +31,7 @@ import {
   Star,
   Target,
 } from 'lucide-react';
-import { Card, ProgressBar } from '@/components/n400/ui';
+import { Card } from '@/components/n400/ui';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getShortName } from '@/lib/profile-utils';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -288,10 +288,6 @@ export default function DashboardPage() {
               priority
             />
 
-            {/* Bottom fade: blends the panorama + statue into the hint strip
-                below, so there is no hard seam where the strip crosses */}
-            <div className="absolute inset-x-0 bottom-0 z-[2] h-20 rounded-br-[24px] bg-gradient-to-t from-white via-white/70 to-transparent" />
-
             {/* Decorative sparkles — positioned above the card boundary */}
             <div className="absolute z-[2] pointer-events-none" style={{ top: '66px', right: '15%' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#daa520" strokeWidth="2" className="animate-pulse">
@@ -341,29 +337,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Progress meta strip — soft gray fading to transparent on the
-                right, so the panorama's water blends into it instead of
-                hitting a seam. Mobile stacks: text line, full-width bar,
-                percent right-aligned (per the mobile mock). */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent px-5 py-3 xl:tall:py-3 text-sm sm:px-6 rounded-b-[24px]">
-              <span className="flex w-full items-center gap-2 font-medium text-slate-600 lg:w-auto">
-                <BookOpen size={15} className="shrink-0 text-teal-600" />
-                {civicsProgress.nextNumber !== null ? (
-                  <>
-                    Bạn đang ở câu <strong className="font-bold text-slate-800">#{civicsProgress.nextNumber}</strong>{' '}
-                    trong {civicsProgress.totalCount} câu
-                  </>
-                ) : (
-                  <>Bạn đã học qua cả {civicsProgress.totalCount} câu Civics</>
-                )}
-              </span>
-              <span className="w-full lg:w-60">
-                <ProgressBar progress={civicsProgress.percent} heightClass="h-2" />
-              </span>
-              <span className="ml-auto font-bold text-teal-700 lg:ml-0">
-                {civicsProgress.percent}% hoàn thành
-              </span>
-            </div>
           </div>
 
         </Card>
