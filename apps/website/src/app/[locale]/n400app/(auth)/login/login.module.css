@@ -45,16 +45,12 @@
     z-index: 0;
     background-image: url('/images/n400/login%20thumbnail/desktop-login-backgroun-final.png');
     background-repeat: no-repeat;
-    /* Full-bleed at the bottom, sized by width so the whole illustration reads
-       exactly like the PNG opened in an image viewer — statue lower-left,
-       bridge, skyline across the bottom. No crop of the statue/bridge (they
-       live at the bottom edge); only the empty sky overflows above. */
-    background-position: bottom left;
-    /* Sized by HEIGHT so the whole illustration is shown bottom-left at the
-       reference's scale (statue ≈ lower third of the viewport, never cropped).
-       The skyline extends to the right beneath the login card, which covers it
-       — so the lower-right stays clean like the reference. */
-    background-size: auto 64%;
+    /* The WHOLE illustration spans the full page width, anchored to the bottom
+       — exactly the PNG opened in an image viewer. The skyline runs edge to
+       edge (continuing to the right beneath the card); only the empty sky at
+       the top of the artwork overflows above the viewport. No flat/split half. */
+    background-position: bottom center;
+    background-size: 100% auto;
     /* Crisp: no fade, no blur, no mask, no blend. The artwork already fades
        into the sky on its own. */
     opacity: 1;
