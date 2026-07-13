@@ -118,6 +118,8 @@ export default function FullInterviewPage() {
         title="Phỏng vấn đầy đủ — Civics"
         skipSummary
         examMode
+        mockMode="full"
+        examSection={{ current: 1, total: 3, label: 'Civics', labelVi: 'Kiến thức công dân' }}
         onAnswer={(itemId, ok) =>
           civicsAnswers.current.push({ questionId: Number(itemId.slice(4)), wasCorrect: ok })
         }
@@ -151,6 +153,8 @@ export default function FullInterviewPage() {
         title="Phỏng vấn đầy đủ — Speaking"
         skipSummary
         examMode
+        mockMode="full"
+        examSection={{ current: 2, total: 3, label: 'Speaking', labelVi: 'Kỹ năng nói' }}
         onAnswer={() => {}}
         onComplete={({ correct }) => {
           const passed = correct >= FULL_SPEAKING_PASS;
@@ -171,6 +175,8 @@ export default function FullInterviewPage() {
         questions={writingQuestions}
         skipSummary
         examMode
+        mockMode="full"
+        examSection={{ current: 3, total: 3, label: 'Writing', labelVi: 'Kỹ năng viết' }}
         onSessionEnd={({ correct, total, answered }) => {
           // Mid-quiz "Đổi chế độ" abandons the part — record nothing, matching
           // civics/speaking onExit semantics. Only a fully answered session

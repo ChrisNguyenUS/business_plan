@@ -11,19 +11,11 @@
 // on the result screen only, like the real interview.
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import {
-  ArrowRight,
-  Trophy,
-  RotateCcw,
-  ArrowLeft,
-  Target,
-  Award,
-  Rocket,
-} from 'lucide-react';
+import { ArrowRight, Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { MockExamProgress, MockExamPanel, MockExamRulesCard } from '@/components/n400/mock-test-chrome';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
@@ -208,24 +200,8 @@ export default function ThiThuSpeakingPage() {
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress row */}
-      <div className="shrink-0 flex items-center justify-between gap-2">
-        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
-          Câu {index + 1} / {TOTAL}
-        </span>
-        <Link
-          href={`/${locale}/n400app/mock-test`}
-          className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-        >
-          <ArrowLeft size={14} /> Thoát
-        </Link>
-      </div>
-      <div className="w-full bg-slate-100 rounded-full overflow-hidden h-[clamp(4px,0.5vw,10px)] shrink-0">
-        <div
-          className="h-full bg-teal-600 rounded-full transition-all duration-1000 ease-out"
-          style={{ width: `${((index + 1) / TOTAL) * 100}%` }}
-        />
-      </div>
+      {/* Progress — calm exam card: counter · bar · questions remaining */}
+      <MockExamProgress index={index} total={TOTAL} />
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -240,6 +216,11 @@ export default function ThiThuSpeakingPage() {
             ) : (
               <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} />
             )}
+
+            {/* Mobile Exam Rules (desktop shows it in the right rail) */}
+            <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+              <MockExamRulesCard />
+            </div>
           </div>
 
           {/* Pinned actions — no Xem đáp án in a mock test */}
@@ -251,34 +232,8 @@ export default function ThiThuSpeakingPage() {
           </div>
         </div>
 
-        {/* Decorative sidebar */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
-          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
-            <Image
-              src="/images/n400/illu-statue-city.png"
-              alt="Statue of Liberty with American flag and city skyline"
-              fill
-              className="object-contain object-bottom"
-              sizes="400px"
-              priority
-            />
-          </div>
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-800 leading-snug">
-              Bình tĩnh và tự tin
-              <br />
-              như đang thi thật!
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">
-              Đạt ≥ {PASS_THRESHOLD}/{TOTAL} câu để vượt qua. Bạn làm được! 💪
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <TipCard icon={<Target size={20} />} tone="teal" title="Tập trung mỗi câu" desc="Nghe kỹ câu hỏi trước khi trả lời." />
-            <TipCard icon={<Award size={20} />} tone="orange" title="What Mean + Yes/No" desc="5 câu giải nghĩa và 5 câu Yes/No." />
-            <TipCard icon={<Rocket size={20} />} tone="purple" title="Chinh phục mục tiêu" desc="Trả lời đúng 8/10 là bạn đã sẵn sàng." />
-          </div>
-        </div>
+        {/* Right rail — exam illustration + Exam Rules */}
+        <MockExamPanel mode="speaking" />
       </div>
     </div>
   );
@@ -298,14 +253,14 @@ function NextButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
+      className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
         disabled
-          ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+          ? 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
           : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
       }`}
       style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
     >
-      <span>{isLast ? 'Nộp bài' : 'Tiếp theo / Next'}</span>
+      <span>{isLast ? 'Nộp bài' : 'Next'}</span>
       <ArrowRight size={16} />
     </button>
   );
@@ -338,12 +293,13 @@ function McBody({
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <AudioButton src={item.questionAudioSrc} label="Nghe câu hỏi" size="sm" />
+            <AudioButton src={item.questionAudioSrc} label="Đọc chậm / Speak Slower" size="sm" rate={0.7} variant="slow" />
           </div>
         </div>
       </div>
 
-      {/* Options — 2-up on desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
+      {/* Options — calm stacked column, chip + radio on the right */}
+      <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
         {item.options.map((opt) => {
           const isPicked = picked === opt.id;
           // Selected-but-ungraded: teal highlight with a filled radio — no ✓/✗
@@ -362,12 +318,12 @@ function McBody({
               key={opt.id}
               type="button"
               onClick={() => onPick(opt.id)}
-              className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
+              className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
             >
-              <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 font-bold text-gray-700" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
                 {opt.id}
               </div>
-              <div className="flex-1 text-gray-800 font-medium" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
+              <div className="flex-1 text-gray-800 font-medium" style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>
                 {opt.en}
               </div>
               {mark}
@@ -410,7 +366,7 @@ function YesNoBody({
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <AudioButton src={item.audioSrc} label="Nghe câu hỏi" size="sm" />
-            <AudioButton src={item.audioSrc} label="Nghe chậm" size="sm" rate={0.7} variant="slow" />
+            <AudioButton src={item.audioSrc} label="Đọc chậm / Speak Slower" size="sm" rate={0.7} variant="slow" />
           </div>
         </div>
       </div>
@@ -448,28 +404,3 @@ function YesNoBody({
   );
 }
 
-function TipCard({
-  icon,
-  tone,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  tone: 'teal' | 'orange' | 'purple';
-  title: string;
-  desc: string;
-}) {
-  const styles = {
-    teal: 'bg-teal-50 text-teal-600',
-    orange: 'bg-orange-50 text-orange-500',
-    purple: 'bg-purple-50 text-purple-600',
-  } as const;
-
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles[tone]}`}>{icon}</div>
-      <div className="font-bold text-sm text-gray-800 mb-1 leading-tight">{title}</div>
-      <div className="text-[11px] text-gray-500 leading-snug">{desc}</div>
-    </div>
-  );
-}

@@ -28,6 +28,13 @@ import { buildFeedbackBlocks } from '@/lib/n400/writing-feedback';
 import { WordDiff } from '@/components/n400/ui/WordDiff';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
+import {
+  MockExamProgress,
+  MockExamPanel,
+  MockExamRulesCard,
+  type MockExamSection,
+  type MockMode,
+} from '@/components/n400/mock-test-chrome';
 
 interface DictationResult {
   sentenceId: string;
@@ -59,6 +66,10 @@ interface DictationQuizProps {
   // what they hear and hits Tiếp theo; grading happens silently and the score
   // only surfaces after the whole section is finished, like the real exam.
   examMode?: boolean;
+  /** Full Interview section badge shown in the exam progress card. */
+  examSection?: MockExamSection;
+  /** Which exam-page thumbnail the exam right rail shows. */
+  mockMode?: MockMode;
 }
 
 // Strips the **bold** markers the feedback builder uses so guidance reads cleanly
@@ -78,7 +89,7 @@ const WRITING_TIP = (
  * "Đang phát… / Playing" while audio plays and to "Nghe lại / Replay" once it
  * finishes. Single shared audio element — no duplicate audio buttons elsewhere.
  */
-function DictationAudio({ src }: { src: string | null }) {
+function DictationAudio({ src, examMode = false }: { src: string | null; examMode?: boolean }) {
   const [playing, setPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -159,7 +170,9 @@ function DictationAudio({ src }: { src: string | null }) {
         style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}
       >
         <Turtle size={17} className="shrink-0" />
-        <span>Đọc chậm / Slow</span>
+        {/* Exam renames this "Speak Slower" — a real USCIS interview request,
+            not a media control. Practice keeps the plainer "Slow". */}
+        <span>Đọc chậm / {examMode ? 'Speak Slower' : 'Slow'}</span>
       </button>
     </div>
   );
@@ -170,6 +183,8 @@ export function DictationQuiz({
   onSessionEnd,
   skipSummary = false,
   examMode = false,
+  examSection,
+  mockMode = 'full',
 }: DictationQuizProps) {
   const [index, setIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
@@ -318,14 +333,18 @@ export function DictationQuiz({
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress — calm shared row. Subtle Back returns to the writing hub. */}
-      <PracticeProgressRow
-        index={index}
-        total={questions.length}
-        unit="Câu"
-        onBack={() => onSessionEnd(sessionResults())}
-        showTime={!examMode}
-      />
+      {/* Progress — exam uses the calm mock card; practice keeps the estimate row. */}
+      {examMode ? (
+        <MockExamProgress index={index} total={questions.length} section={examSection} />
+      ) : (
+        <PracticeProgressRow
+          index={index}
+          total={questions.length}
+          unit="Câu"
+          onBack={() => onSessionEnd(sessionResults())}
+          showTime
+        />
+      )}
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -350,7 +369,7 @@ export function DictationQuiz({
 
             {/* Audio controls — Listen (primary) + Slow (secondary).
                 key remounts the transport for each new sentence. */}
-            <DictationAudio key={audioSrc} src={audioSrc} />
+            <DictationAudio key={audioSrc} src={audioSrc} examMode={examMode} />
 
             {/* Input */}
             <div className="mt-[clamp(0.75rem,1.5vh,1.25rem)]">
@@ -458,8 +477,12 @@ export function DictationQuiz({
               </div>
             ) : null}
 
-            {/* Learning Tip — mobile only, before checking */}
-            {!examMode && !showFeedback && !revealed ? (
+            {/* Mobile support — exam shows Exam Rules; practice shows a Writing Tip */}
+            {examMode ? (
+              <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+                <MockExamRulesCard />
+              </div>
+            ) : !showFeedback && !revealed ? (
               <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
                 <LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>
               </div>
@@ -477,14 +500,14 @@ export function DictationQuiz({
                 type="button"
                 onClick={onNext}
                 disabled={!userInput.trim()}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
                   userInput.trim()
                     ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
                 }`}
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>{index === questions.length - 1 ? 'Nộp bài' : 'Tiếp theo / Next'}</span>
+                <span>{index === questions.length - 1 ? 'Nộp bài' : 'Next'}</span>
                 <ArrowRight size={16} />
               </button>
             ) : !showFeedback ? (
@@ -543,10 +566,14 @@ export function DictationQuiz({
           </div>
         </div>
 
-        {/* Support panel — illustration + one writing tip */}
-        <PracticeSupportPanel
-          tip={<LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>}
-        />
+        {/* Right rail — exam: illustration + Exam Rules; practice: illustration + Writing Tip */}
+        {examMode ? (
+          <MockExamPanel mode={mockMode} />
+        ) : (
+          <PracticeSupportPanel
+            tip={<LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>}
+          />
+        )}
       </div>
     </div>
   );

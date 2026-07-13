@@ -38,8 +38,9 @@ import {
   TrendingDown,
 } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Card, ProgressBar } from '@/components/n400/ui';
+import { Card } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { MockExamProgress, MockExamPanel, MockExamRulesCard } from '@/components/n400/mock-test-chrome';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState, type MockResult } from '@/lib/n400/user-state';
@@ -285,7 +286,6 @@ function MockTestPageInner() {
   if (!slide || !pick) return null;
   const question = N400_QUESTIONS_BY_ID.get(slide.questionId);
   if (!question) return null;
-  const answeredCount = picks.filter((p) => p.pickedId !== null).length;
   const isLast = index === slides.length - 1;
 
   return (
@@ -293,16 +293,8 @@ function MockTestPageInner() {
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress — shrink-0, compact on mobile */}
-      <div className="shrink-0 flex items-center justify-between gap-2">
-        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
-          Câu {index + 1} / {MOCK_TEST_QUESTION_COUNT}
-        </span>
-        <span className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.875rem)' }}>
-          Đã trả lời: {answeredCount} / {MOCK_TEST_QUESTION_COUNT}
-        </span>
-      </div>
-      <ProgressBar progress={((index + 1) / MOCK_TEST_QUESTION_COUNT) * 100} heightClass="h-[clamp(4px,0.5vw,10px)] shrink-0" />
+      {/* Progress — calm exam card: counter · bar · questions remaining */}
+      <MockExamProgress index={index} total={MOCK_TEST_QUESTION_COUNT} />
 
       {/* Main area — flex-1, grid on desktop */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -313,15 +305,18 @@ function MockTestPageInner() {
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vw,2rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
-            {/* Question header — compact on mobile */}
+            {/* Question header — question is the hero, English + Vietnamese */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                    Câu hỏi / Question #{question.id}
+                    Civics – Question {index + 1}
                   </div>
-                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+                  <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {question.questionEn}
+                  </div>
+                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
+                    {question.questionVi}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -330,33 +325,45 @@ function MockTestPageInner() {
               </div>
             </div>
 
-            {/* Answer Options */}
-            <div className="space-y-[clamp(0.375rem,1vw,0.75rem)]">
+            {/* Answer Options — calm stacked column, chip + EN/VI, radio on the right */}
+            <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {slide.options.map((opt) => {
                 const isPicked = pick.pickedId === opt.id;
+                // Selected-but-ungraded: teal highlight with a filled radio — no
+                // ✓/✗ so nothing hints at correctness before the test is over.
+                const style = isPicked
+                  ? 'border-teal-600 bg-teal-50'
+                  : 'border-gray-200 hover:border-teal-300 bg-white';
+                const mark = isPicked ? (
+                  <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />
+                ) : (
+                  <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+                );
                 return (
                   <button
                     key={opt.id}
                     type="button"
                     onClick={() => onPick(opt.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 sm:gap-4 min-h-[72px] p-[clamp(0.625rem,1.5vw,1rem)] ${
-                      isPicked
-                        ? 'border-teal-600 bg-teal-50 shadow-sm'
-                        : 'border-gray-200 hover:border-teal-300 bg-white'
-                    }`}
+                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
                   >
-                    <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
-                    <div className="flex-1 text-gray-800 font-medium">
-                      <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 font-bold text-gray-700" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
+                      {opt.id}
                     </div>
-                    {isPicked ? (
-                      <CheckCircle size={22} className="text-teal-600 shrink-0" />
-                    ) : (
-                      <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
-                    )}
+                    <div className="flex-1 text-gray-800 font-medium">
+                      <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
+                      {opt.vi && opt.vi !== opt.en ? (
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
+                      ) : null}
+                    </div>
+                    {mark}
                   </button>
                 );
               })}
+            </div>
+
+            {/* Mobile Exam Rules (desktop shows it in the right rail) */}
+            <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+              <MockExamRulesCard />
             </div>
 
             {error ? (
@@ -366,61 +373,30 @@ function MockTestPageInner() {
             ) : null}
           </div>
 
-          {/* Pinned Actions — always visible, never scroll */}
+          {/* Pinned Action — one primary Next, disabled until an answer is picked */}
           <div
-            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vw,2rem)] pt-3"
+            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="hidden text-gray-500 sm:block lg:hidden" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>
-                ⚠️ Đáp án sẽ chỉ hiển thị khi bạn hoàn thành tất cả {MOCK_TEST_QUESTION_COUNT} câu.
-              </div>
-              <button
-                type="button"
-                onClick={onNext}
-                disabled={pick.pickedId === null || submitting}
-                className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 font-semibold text-white shadow-md hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 max-sm:w-full"
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-              >
-                {submitting && isLast
-                  ? 'Đang chấm bài...'
-                  : isLast
-                    ? 'Nộp bài'
-                    : 'Tiếp theo'}{' '}
-                <ArrowRight size={16} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={pick.pickedId === null || submitting}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
+                pick.pickedId === null || submitting
+                  ? 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
+                  : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
+              }`}
+              style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+            >
+              <span>{submitting && isLast ? 'Đang chấm bài...' : isLast ? 'Nộp bài' : 'Next'}</span>
+              <ArrowRight size={16} />
+            </button>
           </div>
         </div>
 
-        {/* Desktop Sidebar — decorative, mirrors Luyện tập */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
-          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
-            <Image
-              src="/images/n400/illu-flag-holding-transparent.png"
-              alt=""
-              fill
-              className="object-contain"
-              sizes="400px"
-              priority
-            />
-          </div>
-
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-800 leading-snug">
-              Bình tĩnh và tự tin
-              <br />
-              như đang thi thật!
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">
-              Đạt ≥ {MOCK_TEST_PASS_THRESHOLD}/{MOCK_TEST_QUESTION_COUNT} câu để vượt qua. Bạn làm được! 💪
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 text-sm text-gray-700">
-            ⚠️ Đáp án sẽ chỉ hiển thị sau khi bạn hoàn thành tất cả {MOCK_TEST_QUESTION_COUNT} câu — giống như kỳ thi thật.
-          </div>
-        </div>
+        {/* Right rail — exam illustration + Exam Rules */}
+        <MockExamPanel mode="civics" />
       </div>
     </div>
   );

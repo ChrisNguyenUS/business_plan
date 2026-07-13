@@ -12,7 +12,7 @@
  */
 
 import { usePathname, useParams } from 'next/navigation';
-import { ChevronLeft, Flame } from 'lucide-react';
+import { ChevronLeft, Flame, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -53,6 +53,30 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
 const PRIMARY_SECTIONS = ['', 'study', 'mock-test', 'statistic', 'progress'];
 
 /**
+ * Mock-test sub-routes get their own exam-serious header: "Mock Test – <mode>"
+ * with a group icon + subtitle, and a Back chevron to the Thi thử hub. The hub
+ * itself (bare /mock-test) keeps the primary "Thi thử" title from TITLES.
+ */
+const MOCK_SUBROUTES: Record<string, { title: string; subtitle: string }> = {
+  full: {
+    title: 'Mock Test – Full Interview',
+    subtitle: 'Mô phỏng buổi phỏng vấn nhập tịch đầy đủ như thật.',
+  },
+  civics: {
+    title: 'Mock Test – Civics',
+    subtitle: 'Mô phỏng phần thi kiến thức công dân (Civics) như thật.',
+  },
+  speaking: {
+    title: 'Mock Test – Speaking',
+    subtitle: 'Mô phỏng phần phỏng vấn nói với viên chức USCIS.',
+  },
+  viet: {
+    title: 'Mock Test – Writing',
+    subtitle: 'Mô phỏng phần thi viết theo yêu cầu của viên chức USCIS.',
+  },
+};
+
+/**
  * Deterministic back navigation — navigate to logical parent, not browser history.
  * This creates predictable navigation regardless of how the user originally arrived.
  */
@@ -81,13 +105,19 @@ export function Header() {
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
   const section = detectSection(pathname, locale);
-  const isSecondary = !PRIMARY_SECTIONS.includes(section);
+  // Second path segment under /mock-test/<sub> selects the exam-specific header.
+  const mockSub =
+    section === 'mock-test' && pathname
+      ? pathname.slice(base.length + 1).split('/')[1] ?? ''
+      : '';
+  const mockMeta = MOCK_SUBROUTES[mockSub];
+  const isSecondary = mockMeta ? true : !PRIMARY_SECTIONS.includes(section);
 
   // Dashboard greets by name and time of day (per the dashboard redesign
   // mock); every other page keeps its static title. Falls back to the static
   // entry while the profile is still loading.
   const { profile } = useAuth();
-  let meta = TITLES[section] ?? TITLES[''];
+  let meta = mockMeta ?? TITLES[section] ?? TITLES[''];
   if (section === '' && profile) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -97,10 +127,12 @@ export function Header() {
     };
   }
 
-  // Deterministic back navigation
+  // Deterministic back navigation. Mock sub-routes always return to the Thi thử
+  // hub; everything else follows PARENT_MAP.
   const parentHref = PARENT_MAP[section];
-  const backHref =
-    parentHref !== undefined
+  const backHref = mockMeta
+    ? `${base}/mock-test`
+    : parentHref !== undefined
       ? parentHref
         ? `${base}/${parentHref}`
         : base
@@ -145,8 +177,11 @@ export function Header() {
           </div>
         )}
         <div className={`min-w-0 ${section === '' ? 'hidden lg:block' : ''}`}>
-          <h2 className="text-lg font-bold leading-tight text-gray-800 lg:text-xl">{meta.title}</h2>
-          {!isSecondary && meta.subtitle ? (
+          <div className="flex items-center gap-2">
+            <h2 className="truncate text-lg font-bold leading-tight text-gray-800 lg:text-xl">{meta.title}</h2>
+            {mockMeta ? <Users size={18} className="shrink-0 text-gray-400" aria-hidden /> : null}
+          </div>
+          {(!isSecondary || mockMeta) && meta.subtitle ? (
             <p className="mt-0.5 hidden text-sm text-gray-500 sm:block">{meta.subtitle}</p>
           ) : null}
         </div>

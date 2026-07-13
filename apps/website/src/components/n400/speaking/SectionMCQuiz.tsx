@@ -17,6 +17,13 @@ import { CheckCircle, XCircle, Lightbulb, ArrowRight } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
+import {
+  MockExamProgress,
+  MockExamPanel,
+  MockExamRulesCard,
+  type MockExamSection,
+  type MockMode,
+} from '@/components/n400/mock-test-chrome';
 
 export interface MCOption {
   id: 'A' | 'B' | 'C' | 'D';
@@ -45,6 +52,8 @@ export function SectionMCQuiz({
   title,
   skipSummary = false,
   examMode = false,
+  examSection,
+  mockMode = 'full',
   onComplete,
 }: {
   questions: MCQuestion[];
@@ -56,6 +65,10 @@ export function SectionMCQuiz({
   skipSummary?: boolean;
   /** When true, defer grading to Tiếp theo and never reveal the answer mid-run. */
   examMode?: boolean;
+  /** Full Interview section badge shown in the exam progress card. */
+  examSection?: MockExamSection;
+  /** Which exam-page thumbnail the exam right rail shows. */
+  mockMode?: MockMode;
   onComplete?: (result: { correct: number; wrong: number }) => void;
 }) {
   const [index, setIndex] = useState(0);
@@ -127,15 +140,22 @@ export function SectionMCQuiz({
   };
 
   const isLast = index === questions.length - 1;
-  const twoUp = phase === 'revealed' || examMode;
+  // Exam options stay a calm stacked column (like the pre-answer practice
+  // screen); only the practice reveal switches to a 2-up grid.
+  const twoUp = phase === 'revealed';
 
   return (
     <div
       className="flex flex-col h-full overflow-hidden gap-[clamp(0.25rem,1vw,1rem)] max-w-[1100px] mx-auto w-full animate-in fade-in duration-300"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
-      {/* Progress — calm shared row. Subtle Back returns to the section hub. */}
-      <PracticeProgressRow index={index} total={questions.length} onBack={onExit} showTime={!examMode} />
+      {/* Progress — exam uses the calm mock card (Section · counter · bar ·
+          remaining); practice keeps the estimate row with a Back chevron. */}
+      {examMode ? (
+        <MockExamProgress index={index} total={questions.length} section={examSection} />
+      ) : (
+        <PracticeProgressRow index={index} total={questions.length} onBack={onExit} showTime />
+      )}
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -150,7 +170,9 @@ export function SectionMCQuiz({
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                    {q.badge}
+                    {/* Exam uses the running position ("Civics – Question 7") to
+                        mirror the progress card; practice keeps the item badge. */}
+                    {examMode && examSection ? `${examSection.label} – Question ${index + 1}` : q.badge}
                   </div>
                   <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.headerEn}
@@ -217,8 +239,13 @@ export function SectionMCQuiz({
               })}
             </div>
 
-            {/* Learning Tip — mobile only, before answering (desktop shows it in the panel) */}
-            {!examMode && phase !== 'revealed' ? (
+            {/* Mobile support — exam shows the Exam Rules card; practice shows a
+                Learning Tip. Desktop shows either in the right rail. */}
+            {examMode ? (
+              <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+                <MockExamRulesCard />
+              </div>
+            ) : phase !== 'revealed' ? (
               <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
                 <LearningTipCard />
               </div>
@@ -262,22 +289,22 @@ export function SectionMCQuiz({
                 type="button"
                 onClick={onNext}
                 disabled={examMode && !selected}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all ${
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
                   examMode && !selected
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                    ? 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
                     : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
                 }`}
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>{examMode && isLast ? 'Nộp bài' : 'Tiếp theo / Next'}</span>
+                <span>{examMode ? (isLast ? 'Nộp bài' : 'Next') : 'Tiếp theo / Next'}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
           ) : null}
         </div>
 
-        {/* Support panel — illustration + one Learning Tip */}
-        <PracticeSupportPanel />
+        {/* Right rail — exam: illustration + Exam Rules; practice: illustration + Learning Tip */}
+        {examMode ? <MockExamPanel mode={mockMode} /> : <PracticeSupportPanel />}
       </div>
 
       <span className="sr-only">{title}</span>
