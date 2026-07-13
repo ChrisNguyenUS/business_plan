@@ -247,16 +247,8 @@ export default function N400LoginPage() {
           </div>
         </div>
 
-        {/* Bottom illustration — uses the desktop background image */}
-        <div className={styles.leftIllustration}>
-          <Image
-            src="/images/n400/login thumbnail/desktop-login-background.png"
-            alt="NYC skyline illustration"
-            fill
-            className={styles.illustrationImg}
-            priority
-          />
-        </div>
+        {/* Bottom illustration — desktop background, anchored bottom-left, full-bleed */}
+        <div className={styles.leftIllustration} aria-hidden="true" />
       </div>
 
       {/* ─── MOBILE HERO ─── */}

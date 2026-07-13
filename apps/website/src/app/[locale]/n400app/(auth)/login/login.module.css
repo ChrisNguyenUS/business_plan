@@ -212,36 +212,24 @@
   }
 }
 
-/* ─── Bottom illustration ─── */
+/* ─── Bottom illustration ───
+   Full-bleed background layer anchored to the bottom-left of the panel.
+   The source PNG is opaque (baked light sky/water), so it spans the full
+   panel width (100% auto) to avoid side seams and reproduce the approved
+   mockup exactly: full statue + full Brooklyn Bridge visible, skyline
+   settled along the bottom edge, light sky fading up behind the content. */
 .leftIllustration {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  margin-top: auto;
-  flex-shrink: 0;
-}
-
-.illustrationImg {
-  object-fit: cover;
-  object-position: center bottom;
-}
-
-@media (min-height: 800px) {
-  .leftIllustration {
-    height: 240px;
-  }
-}
-
-@media (min-height: 900px) {
-  .leftIllustration {
-    height: 280px;
-  }
-}
-
-@media (min-height: 1000px) {
-  .leftIllustration {
-    height: 320px;
-  }
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: 100%;
+  background-image: url('/images/n400/login%20thumbnail/desktop-login-background.png');
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 100% auto;
+  pointer-events: none;
 }
 
 /* ═══════════════════════════════════
