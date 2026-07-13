@@ -83,6 +83,14 @@ describe('pendingMockReviewIds', () => {
     const mocks = [mock(hoursAgo(50), [10]), mock(hoursAgo(2), [99])];
     expect(pendingMockReviewIds(mocks, [], NOW)).toEqual([99]);
   });
+
+  it('flashcard self-grades after the mock do not clear review debt', () => {
+    const mocks = [mock(hoursAgo(5), [10])];
+    const attempts: QuestionAttempt[] = [
+      { questionId: 10, wasCorrect: true, mode: 'flashcard', at: hoursAgo(3) },
+    ];
+    expect(pendingMockReviewIds(mocks, attempts, NOW)).toEqual([10]);
+  });
 });
 
 describe('recommendDailyHero — priority ladder', () => {

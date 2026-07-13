@@ -93,10 +93,12 @@ export function pendingMockReviewIds(
   }
   if (wrong.length === 0) return [];
 
-  // Cleared when the LAST attempt after the mock is correct — a later wrong
-  // answer re-opens the question.
+  // Cleared when the LAST graded attempt after the mock is correct — a later
+  // wrong answer re-opens the question. Flashcard self-grades are recognition,
+  // not retrieval, so they cannot pay down mock-review debt (spec D1).
   const lastAfterMock = new Map<number, boolean>();
   for (const a of attempts) {
+    if (a.mode === 'flashcard') continue;
     if (new Date(a.at).getTime() > completedAt) lastAfterMock.set(a.questionId, a.wasCorrect);
   }
   return wrong.filter((id) => lastAfterMock.get(id) !== true);

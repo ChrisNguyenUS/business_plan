@@ -124,45 +124,42 @@ export interface StudyTip {
 }
 
 export interface StudyTipSignals {
-  /** Civics topic the user gets wrong most; null when there's no clear one. */
-  weakestCategory: { label: string; count: number } | null;
-  /** A Speaking/Writing skill that went cold ≥7 days; null otherwise. */
-  staleSection: { label: string; days: number; href: string } | null;
-  /** Civics questions left to reach 128. */
-  civicsRemaining: number;
-  /** Lowest-accuracy started module, for the accuracy fallback. */
+  /** Module with the most wrong-unreviewed items (graded modes only). */
+  topWrongModule: { id: StudyModuleId; label: string; count: number; href: string } | null;
+  /** Weakest civics category per recommendWeakCategory; null when none qualifies. */
+  weakCategory: { label: string } | null;
+  /** Lowest-accuracy started module. */
   lowestModule: { label: string; accuracy: number; href: string } | null;
+  /** Lowest-coverage incomplete module; only set once the user has started something. */
+  lowestCoverage: { label: string; done: number; total: number; href: string } | null;
 }
 
-export const WEAK_CATEGORY_MIN_WRONG = 2;
-export const FINISH_CIVICS_THRESHOLD = 20;
+export const TIP_MIN_WRONGS = 3;
+export const TIP_REVIEW_CHUNK = 10;
 
 /**
- * One dynamic tip, chosen from real learning data — never generic motivation.
- * Ladder mirrors "what would help most right now": fix a recurring weakness →
- * revive a stale skill → sprint to the civics finish → nudge low accuracy →
- * start the habit.
+ * One dynamic tip — "chữa lỗi trước, mở rộng sau". The dashboard hero owns the
+ * journey nudges (stale skills, civics sprint, mock tests); this ladder only
+ * diagnoses weaknesses inside the study modules: pay down wrong-answer debt →
+ * drill the weak civics topic → lift the lowest accuracy → expand coverage.
+ * Debt is offered as a ≤10-question chunk; the total is never shown.
  */
 export function buildStudyTip(s: StudyTipSignals): StudyTip {
-  if (s.weakestCategory && s.weakestCategory.count >= WEAK_CATEGORY_MIN_WRONG) {
+  if (s.topWrongModule && s.topWrongModule.count >= TIP_MIN_WRONGS) {
+    const n = Math.min(s.topWrongModule.count, TIP_REVIEW_CHUNK);
     return {
-      line1: `Bạn thường sai các câu hỏi về ${s.weakestCategory.label}.`,
-      line2: 'Luyện thêm 5 câu để cải thiện độ chính xác.',
-      href: '/study/civics',
+      line1: `Ôn lại ${n} câu ${s.topWrongModule.label} bạn trả lời sai.`,
+      line2: 'Chỉ ~5 phút — xoá lỗi cũ giúp bạn nhớ lâu hơn.',
+      // Civics has a real review session; sections land on their hub until
+      // their practice pages support ?start=review (Phase 2).
+      href: s.topWrongModule.id === 'civics' ? '/practice?start=wrongs' : s.topWrongModule.href,
     };
   }
-  if (s.staleSection) {
+  if (s.weakCategory) {
     return {
-      line1: `Đã ${s.staleSection.days} ngày bạn chưa luyện ${s.staleSection.label}.`,
-      line2: 'Luyện 1 câu để duy trì kỹ năng.',
-      href: s.staleSection.href,
-    };
-  }
-  if (s.civicsRemaining > 0 && s.civicsRemaining <= FINISH_CIVICS_THRESHOLD) {
-    return {
-      line1: `Bạn chỉ còn ${s.civicsRemaining} câu nữa để hoàn thành Civics.`,
-      line2: 'Hoàn thành ngay hôm nay nhé!',
-      href: '/study/civics',
+      line1: `Bạn thường sai chủ đề ${s.weakCategory.label}.`,
+      line2: 'Luyện một bài tập trung để cải thiện độ chính xác.',
+      href: '/practice?start=weak',
     };
   }
   if (s.lowestModule) {
@@ -170,6 +167,13 @@ export function buildStudyTip(s: StudyTipSignals): StudyTip {
       line1: `Độ chính xác ${s.lowestModule.label} đang ở mức ${s.lowestModule.accuracy}%.`,
       line2: 'Luyện thêm vài câu để cải thiện độ chính xác nhé.',
       href: s.lowestModule.href,
+    };
+  }
+  if (s.lowestCoverage) {
+    return {
+      line1: `${s.lowestCoverage.label} mới học ${s.lowestCoverage.done}/${s.lowestCoverage.total} câu.`,
+      line2: 'Học thêm vài câu mới hôm nay nhé.',
+      href: s.lowestCoverage.href,
     };
   }
   return {

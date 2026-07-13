@@ -25,11 +25,8 @@ import {
 import { ProgressBar } from '@/components/n400/ui';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { deriveSectionSeen, type SectionKey } from '@/lib/n400/section-progress';
-import {
-  N400_QUESTIONS,
-  N400_CATEGORY_LABELS,
-  type N400CategoryKey,
-} from '@/lib/n400/questions-data';
+import { N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
+import { recommendWeakCategory, gradedOnly, lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
 import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
@@ -42,11 +39,10 @@ import {
   type StudyModuleId,
   type StudyModuleSignal,
   type StudyBadgeKind,
+  type StudyTipSignals,
 } from '@/lib/n400/study-modules';
 
 const CIVICS_TOTAL = 128;
-const STALE_DAYS = 7;
-const DAY_MS = 86_400_000;
 
 // Static presentation config — colors, copy, images, routes. Fixed order:
 // civics → what-mean → yes/no → writing (preserves muscle memory). Only the
@@ -173,30 +169,14 @@ export default function StudyPage() {
   // ── Derive raw learning signals from user state ──────────────────────────
   const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts), [state.sectionAttempts]);
 
-  // Civics: last-attempt-per-question drives both "wrong to review" and the
-  // weakest-topic tip. state.attempts is civics-only (question_id rows).
-  const civics = useMemo(() => {
-    const last = new Map<number, boolean>();
-    for (const a of state.attempts) last.set(a.questionId, a.wasCorrect);
-    let wrong = 0;
-    const catWrong = new Map<N400CategoryKey, number>();
-    const byId = new Map(N400_QUESTIONS.map((q) => [q.id, q]));
-    for (const [qid, ok] of last) {
-      if (ok) continue;
-      wrong += 1;
-      const q = byId.get(qid);
-      if (q) catWrong.set(q.category, (catWrong.get(q.category) ?? 0) + 1);
-    }
-    let weakest: { label: string; count: number } | null = null;
-    for (const [key, count] of catWrong) {
-      if (!weakest || count > weakest.count) {
-        weakest = { label: N400_CATEGORY_LABELS[key].en, count };
-      }
-    }
-    return { done: stats.distinctAnswered, wrong, weakest };
-  }, [state.attempts, stats.distinctAnswered]);
+  // Civics review debt: last GRADED attempt per question — flashcard
+  // self-grades neither create nor clear debt (spec D1).
+  const civics = useMemo(
+    () => ({ done: stats.distinctAnswered, wrong: lastWrongQuestionIds(state.attempts).length }),
+    [state.attempts, stats.distinctAnswered],
+  );
 
-  // Sections: last-attempt-per-item wrong counts, graded accuracy, staleness.
+  // Sections: last-graded-attempt-per-item wrong counts + accuracy tallies.
   const sections = useMemo(() => {
     const last: Record<SectionKey, Map<string, boolean>> = {
       whatmean: new Map(),
@@ -208,19 +188,15 @@ export default function StudyPage() {
       yesno: { total: 0, correct: 0 },
       writing: { total: 0, correct: 0 },
     };
-    const lastAt: Record<SectionKey, number> = { whatmean: 0, yesno: 0, writing: 0 };
     for (const a of state.sectionAttempts) {
-      last[a.section].set(a.itemId, a.wasCorrect);
+      if (a.mode !== 'flashcard') last[a.section].set(a.itemId, a.wasCorrect);
       graded[a.section].total += 1;
       if (a.wasCorrect) graded[a.section].correct += 1;
-      const t = new Date(a.at).getTime();
-      if (t > lastAt[a.section]) lastAt[a.section] = t;
     }
     const wrong = (k: SectionKey) => [...last[k].values()].filter((v) => !v).length;
     return {
       wrong: { whatmean: wrong('whatmean'), yesno: wrong('yesno'), writing: wrong('writing') },
       graded,
-      lastAt,
     };
   }, [state.sectionAttempts]);
 
@@ -269,47 +245,68 @@ export default function StudyPage() {
   const recommendedId = useMemo(() => pickRecommendedModule(signals), [signals]);
   const signalById = useMemo(() => new Map(signals.map((s) => [s.id, s])), [signals]);
 
-  // Personalized tip: weakest topic → stale skill → civics sprint → low accuracy.
+  // Personalized tip: pay down wrong-answer debt → weak civics topic → lowest
+  // accuracy → expand coverage. Journey nudges (stale skill, civics sprint,
+  // mock tests) belong to the dashboard hero, not this strip.
   const tip = useMemo(() => {
-    const sectionMeta: { key: SectionKey; label: string; href: string }[] = [
-      { key: 'writing', label: 'Writing', href: `${base}/writing` },
-      { key: 'yesno', label: 'Yes / No', href: `${base}/speaking/yes-no` },
-      { key: 'whatmean', label: 'What Mean', href: `${base}/speaking/what-mean` },
-    ];
-    const now = Date.now();
-    let staleSection: { label: string; days: number; href: string } | null = null;
-    for (const m of sectionMeta) {
-      const last = sections.lastAt[m.key];
-      if (last === 0) continue; // never started → not "stale"
-      const days = Math.floor((now - last) / DAY_MS);
-      if (days >= STALE_DAYS && (!staleSection || days > staleSection.days)) {
-        staleSection = { label: m.label, days, href: m.href };
-      }
-    }
-
     const labels: Record<StudyModuleId, string> = {
       civics: 'Civics',
       whatmean: 'What Mean',
       yesno: 'Yes / No',
       writing: 'Writing',
     };
-    let lowestModule: { label: string; accuracy: number; href: string } | null = null;
+    // StudyTip hrefs are base-relative (the strip's CTA prepends `base`);
+    // config hrefs are absolute, so keep a relative map here.
+    const relHref: Record<StudyModuleId, string> = {
+      civics: '/study/civics',
+      whatmean: '/speaking/what-mean',
+      yesno: '/speaking/yes-no',
+      writing: '/writing',
+    };
+    const wrongCounts: Record<StudyModuleId, number> = {
+      civics: civics.wrong,
+      whatmean: sections.wrong.whatmean,
+      yesno: sections.wrong.yesno,
+      writing: sections.wrong.writing,
+    };
+
+    let topWrongModule: StudyTipSignals['topWrongModule'] = null;
     for (const c of configs) {
-      const sig = signalById.get(c.id)!;
-      const acc = moduleAccuracy(sig);
-      if (acc === null || sig.done === 0 || sig.done >= sig.total) continue;
-      if (!lowestModule || acc < lowestModule.accuracy) {
-        lowestModule = { label: labels[c.id], accuracy: acc, href: c.href };
+      const count = wrongCounts[c.id];
+      if (count > 0 && (!topWrongModule || count > topWrongModule.count)) {
+        topWrongModule = { id: c.id, label: labels[c.id], count, href: relHref[c.id] };
       }
     }
 
-    return buildStudyTip({
-      weakestCategory: civics.weakest,
-      staleSection,
-      civicsRemaining: Math.max(totals.civics - civics.done, 0),
-      lowestModule,
-    });
-  }, [base, sections.lastAt, configs, signalById, civics.weakest, civics.done, totals.civics]);
+    const weak = recommendWeakCategory(gradedOnly(state.attempts));
+    const weakCategory = weak ? { label: N400_CATEGORY_LABELS[weak.category].en } : null;
+
+    let lowestModule: StudyTipSignals['lowestModule'] = null;
+    let lowestCoverage: StudyTipSignals['lowestCoverage'] = null;
+    let lowestPct = Number.POSITIVE_INFINITY;
+    let anyStarted = false;
+    for (const c of configs) {
+      const sig = signalById.get(c.id)!;
+      if (sig.done > 0) anyStarted = true;
+      const acc = moduleAccuracy(sig);
+      if (acc !== null && sig.done > 0 && sig.done < sig.total) {
+        if (!lowestModule || acc < lowestModule.accuracy) {
+          lowestModule = { label: labels[c.id], accuracy: acc, href: relHref[c.id] };
+        }
+      }
+      if (sig.done < sig.total) {
+        const pct = modulePercent(sig);
+        if (pct < lowestPct) {
+          lowestPct = pct;
+          lowestCoverage = { label: labels[c.id], done: sig.done, total: sig.total, href: relHref[c.id] };
+        }
+      }
+    }
+    // A brand-new user gets the "start civics" fallback, not a coverage nudge.
+    if (!anyStarted) lowestCoverage = null;
+
+    return buildStudyTip({ topWrongModule, weakCategory, lowestModule, lowestCoverage });
+  }, [configs, signalById, civics.wrong, sections.wrong, state.attempts]);
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
@@ -414,7 +411,7 @@ export default function StudyPage() {
                       className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-gray-800"
                     >
                       <BookMarked size={14} />
-                      {secondary.label} ({secondary.count})
+                      {secondary.label} ({secondary.count > 15 ? '15+' : secondary.count})
                     </Link>
                   )}
                 </div>
@@ -440,7 +437,7 @@ export default function StudyPage() {
           href={`${base}${tip.href}`}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-teal-700 shadow-sm transition-colors hover:bg-teal-50 lg:px-4 lg:py-2.5"
         >
-          <span className="hidden sm:inline">Xem gợi ý</span>
+          <span className="hidden sm:inline">Luyện ngay</span>
           <ArrowRight size={16} />
         </Link>
       </section>

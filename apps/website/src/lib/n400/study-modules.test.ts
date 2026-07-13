@@ -85,42 +85,51 @@ describe('decideModuleBadge — exactly one badge per card', () => {
   });
 });
 
-describe('buildStudyTip — dynamic ladder', () => {
+describe('buildStudyTip — chữa lỗi trước, mở rộng sau', () => {
   const base: StudyTipSignals = {
-    weakestCategory: null,
-    staleSection: null,
-    civicsRemaining: 0,
+    topWrongModule: null,
+    weakCategory: null,
     lowestModule: null,
+    lowestCoverage: null,
   };
 
-  it('leads with a recurring weakness', () => {
+  it('leads with the module owing the most unreviewed wrongs, chunked — never exposes total debt', () => {
     const tip = buildStudyTip({
       ...base,
-      weakestCategory: { label: 'System of Government', count: 5 },
+      topWrongModule: { id: 'civics', label: 'Civics', count: 56, href: '/study/civics' },
     });
-    expect(tip.line1).toContain('System of Government');
-    expect(tip.href).toBe('/study/civics');
+    expect(tip.line1).toContain('10 câu Civics');
+    expect(tip.line1).not.toContain('56');
+    expect(tip.href).toBe('/practice?start=wrongs');
   });
-  it('ignores a weak category below the wrong-count threshold', () => {
+  it('shows the real count when the debt is smaller than a chunk', () => {
     const tip = buildStudyTip({
       ...base,
-      weakestCategory: { label: 'System of Government', count: 1 },
-      civicsRemaining: 16,
+      topWrongModule: { id: 'civics', label: 'Civics', count: 4, href: '/study/civics' },
     });
-    expect(tip.line1).toContain('16 câu');
+    expect(tip.line1).toContain('4 câu Civics');
   });
-  it('surfaces a stale section before the civics sprint', () => {
+  it('section debt links to that module (Phase 1: hub; Phase 2: review session)', () => {
     const tip = buildStudyTip({
       ...base,
-      staleSection: { label: 'Writing', days: 8, href: '/writing' },
-      civicsRemaining: 16,
+      topWrongModule: { id: 'writing', label: 'Writing', count: 8, href: '/writing' },
     });
-    expect(tip.line1).toContain('8 ngày');
+    expect(tip.line1).toContain('8 câu Writing');
     expect(tip.href).toBe('/writing');
   });
-  it('nudges the civics finish line when close', () => {
-    const tip = buildStudyTip({ ...base, civicsRemaining: 16 });
-    expect(tip.line1).toContain('16 câu');
+  it('ignores debt below the minimum and moves to the weak category', () => {
+    const tip = buildStudyTip({
+      ...base,
+      topWrongModule: { id: 'civics', label: 'Civics', count: 2, href: '/study/civics' },
+      weakCategory: { label: 'American History' },
+    });
+    expect(tip.line1).toContain('American History');
+    expect(tip.href).toBe('/practice?start=weak');
+  });
+  it('weak civics category deep-links straight into a focused session', () => {
+    const tip = buildStudyTip({ ...base, weakCategory: { label: 'System of Government' } });
+    expect(tip.line1).toContain('System of Government');
+    expect(tip.href).toBe('/practice?start=weak');
   });
   it('falls back to lowest-accuracy module', () => {
     const tip = buildStudyTip({
@@ -130,7 +139,15 @@ describe('buildStudyTip — dynamic ladder', () => {
     expect(tip.line1).toContain('33%');
     expect(tip.href).toBe('/speaking/yes-no');
   });
-  it('has a non-generic final fallback', () => {
+  it('expands the lowest-coverage module when nothing is weak', () => {
+    const tip = buildStudyTip({
+      ...base,
+      lowestCoverage: { label: 'What Mean', done: 14, total: 62, href: '/speaking/what-mean' },
+    });
+    expect(tip.line1).toContain('14/62');
+    expect(tip.href).toBe('/speaking/what-mean');
+  });
+  it('has a brand-new-user fallback', () => {
     expect(buildStudyTip(base).href).toBe('/study/civics');
   });
 });

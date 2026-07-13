@@ -2,6 +2,7 @@ import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question, type N400Categ
 import { N400_DISTRACTORS } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
+import type { QuestionAttempt, QuizMode } from './storage';
 
 // ── Audio paths (served from public/n400-audio/*) ──
 
@@ -388,6 +389,34 @@ export function recommendWeakCategory(
     }
   }
   return best;
+}
+
+// ── Review debt (graded modes only — spec D1) ────────────────────────────────
+
+/**
+ * Attempts that count toward review debt and weakness signals. Flashcard
+ * self-grades are recognition, not retrieval: they neither create nor clear
+ * wrong-answer debt.
+ */
+export function gradedOnly<T extends { mode: QuizMode }>(attempts: readonly T[]): T[] {
+  return attempts.filter((a) => a.mode !== 'flashcard');
+}
+
+/**
+ * Question ids whose LAST graded attempt is wrong, most recently wrong first.
+ * The single source of truth for "câu sai chưa ôn" — a later correct graded
+ * attempt clears an id, a later wrong one re-opens it.
+ */
+export function lastWrongQuestionIds(attempts: readonly QuestionAttempt[]): number[] {
+  const last = new Map<number, QuestionAttempt>();
+  for (const a of attempts) {
+    if (a.mode === 'flashcard') continue;
+    last.set(a.questionId, a);
+  }
+  return [...last.values()]
+    .filter((a) => !a.wasCorrect)
+    .sort((x, y) => new Date(y.at).getTime() - new Date(x.at).getTime())
+    .map((a) => a.questionId);
 }
 
 /**

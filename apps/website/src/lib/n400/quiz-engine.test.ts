@@ -18,7 +18,10 @@ import {
   whatMeanAnswerAudioUrl,
   yesNoAudioUrl,
   writingAudioUrl,
+  gradedOnly,
+  lastWrongQuestionIds,
 } from './quiz-engine';
+import type { QuizMode } from './storage';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
 
 // These tests lock in the security-critical invariants of the quiz engine.
@@ -306,6 +309,33 @@ describe('recommendWeakCategory', () => {
       ...systemIds.slice(0, 10).map((id) => attempt(id, true)),
     ];
     expect(recommendWeakCategory(attempts)).toBeNull();
+  });
+});
+
+describe('gradedOnly / lastWrongQuestionIds — flashcard excluded from review debt', () => {
+  const at = (daysAgo: number) =>
+    new Date(Date.UTC(2026, 6, 12) - daysAgo * 86_400_000).toISOString();
+  const g = (questionId: number, wasCorrect: boolean, daysAgo: number, mode: QuizMode = 'practice') =>
+    ({ questionId, wasCorrect, mode, at: at(daysAgo) });
+
+  it('gradedOnly keeps practice and mock_test attempts, drops flashcard', () => {
+    const kept = gradedOnly([g(1, true, 3), g(2, false, 2, 'mock_test'), g(3, true, 1, 'flashcard')]);
+    expect(kept.map((a) => a.questionId)).toEqual([1, 2]);
+  });
+
+  it('returns ids whose last graded attempt is wrong, most recently wrong first', () => {
+    const ids = lastWrongQuestionIds([g(1, false, 5), g(2, false, 1), g(3, true, 2)]);
+    expect(ids).toEqual([2, 1]);
+  });
+
+  it('a later correct graded attempt clears the debt; a later wrong one re-opens it', () => {
+    expect(lastWrongQuestionIds([g(1, false, 5), g(1, true, 3)])).toEqual([]);
+    expect(lastWrongQuestionIds([g(1, false, 5), g(1, true, 3), g(1, false, 1)])).toEqual([1]);
+  });
+
+  it('flashcard self-grades neither create nor clear debt', () => {
+    expect(lastWrongQuestionIds([g(1, false, 3, 'flashcard')])).toEqual([]);
+    expect(lastWrongQuestionIds([g(1, false, 3), g(1, true, 1, 'flashcard')])).toEqual([1]);
   });
 });
 

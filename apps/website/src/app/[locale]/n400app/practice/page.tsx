@@ -28,6 +28,8 @@ import {
   selectPracticeQuestionIds,
   isPersonalizedAnswerUnavailable,
   recommendWeakCategory,
+  gradedOnly,
+  lastWrongQuestionIds,
   PRACTICE_PRESETS,
   type PracticePreset,
   type PracticeRecommendation,
@@ -180,8 +182,10 @@ export default function PracticePage() {
     return { preset: stored, index: progress.index, total, correct: progress.correct, wrong: progress.wrong };
   }, [preset]);
 
+  // Weakness signals come from graded attempts only — flashcard self-grades
+  // are recognition, not retrieval (spec D1).
   const recommendation = useMemo(
-    () => recommendWeakCategory(state.attempts),
+    () => recommendWeakCategory(gradedOnly(state.attempts)),
     [state.attempts]
   );
 
@@ -333,7 +337,8 @@ export default function PracticePage() {
 
   // Deep-link entry (hub → practice). ?start=<preset id> starts that mode,
   // ?start=weak starts a weak-topic session, ?start=review replays the
-  // uncorrected wrong answers of the latest mock test. Bare /practice resumes
+  // uncorrected wrong answers of the latest mock test, ?start=wrongs pays down
+  // a ≤10-question chunk of overall review debt. Bare /practice resumes
   // an unfinished session, else returns to the Civics hub — the mode picker
   // moved there (PracticeModesSheet).
   const autoStarted = useRef(false);
@@ -361,6 +366,21 @@ export default function PracticePage() {
       } else if (recommendation) {
         // Nothing left to review (stale link / already cleared) — fall back
         // to the closest useful session instead of dead-ending.
+        onPracticeRecommendation(recommendation);
+      } else {
+        startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+      }
+      return;
+    }
+    if (start === 'wrongs') {
+      // One chunk of overall review debt (study-tip deep link): freshest mock
+      // wrongs first, then the remaining graded wrongs, most recent first.
+      const pending = pendingMockReviewIds(state.mockResults, state.attempts, new Date());
+      const rest = lastWrongQuestionIds(state.attempts).filter((id) => !pending.includes(id));
+      const ids = [...pending, ...rest].slice(0, 10);
+      if (ids.length > 0) {
+        startReviewSession(ids);
+      } else if (recommendation) {
         onPracticeRecommendation(recommendation);
       } else {
         startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
