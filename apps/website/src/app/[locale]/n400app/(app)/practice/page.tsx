@@ -12,7 +12,7 @@
  */
 
 import Image from 'next/image';
-import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, Target, Award, Rocket, RotateCw, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { Bookmark, CheckCircle, XCircle, ArrowRight, Lightbulb, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { ProgressBar } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
@@ -121,7 +121,6 @@ export default function PracticePage() {
   const [milestone, setMilestone] = useState<number | null>(null);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
-  const [revealExiting, setRevealExiting] = useState(false);
   const badges = useN400Badges();
   const studyBodyRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -133,7 +132,6 @@ export default function PracticePage() {
     setSelected(null);
     setPhase('idle');
     setShowAllAnswers(false);
-    setRevealExiting(false);
     setMilestone(null);
     setUnlockedBadges([]);
   }
@@ -143,16 +141,6 @@ export default function PracticePage() {
     studyBodyRef.current?.scrollTo({ top: 0 });
     cardRef.current?.focus({ preventScroll: true });
   }, [index]);
-
-  // Reveal button fade-out animation
-  const showRevealBtn = phase !== 'revealed' || revealExiting;
-  useEffect(() => {
-    if (phase === 'revealed') {
-      setRevealExiting(true);
-      const timer = setTimeout(() => setRevealExiting(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [phase]);
 
   // The feedback renders below the options grid; nudge it into view on the
   // rare screens where the study body still overflows.
@@ -207,6 +195,12 @@ export default function PracticePage() {
   const isBookmarked = state.bookmarks.includes(question.id);
   const pickedOption = options.find((o) => o.id === selected) ?? null;
 
+  // Progress readouts for the compact header row. `percent` matches the bar
+  // (the current question already counts as reached, so Q7/20 → 35%);
+  // `minutesRemaining` estimates ~0.85 min per remaining question (incl. this one).
+  const percent = ((index + 1) / order.length) * 100;
+  const minutesRemaining = Math.max(1, Math.round((order.length - index) * 0.85));
+
   const markWrong = (questionId: number) => {
     setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
   };
@@ -250,30 +244,11 @@ export default function PracticePage() {
     setIndex((i) => i + 1);
   };
 
-  const onReveal = () => {
-    if (phase !== 'idle') return;
-    // Auto-select the correct answer when using Reveal
-    const correct = options.find((o) => o.isCorrect);
-    if (correct) {
-      setSelected(correct.id);
-    }
-    setPhase('revealed');
-    markWrong(question.id);
-    void recordAnswer(question.id, false, 'practice').then((result) => {
-      if (result.milestone) {
-        setMilestone(result.milestone);
-        trackStreakMilestone(result.milestone);
-      }
-      if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
-    });
-  };
-
   // Per-question UI back to a clean state (mirrors the index-change reset).
   const resetQuestionUI = () => {
     setSelected(null);
     setPhase('idle');
     setShowAllAnswers(false);
-    setRevealExiting(false);
     setMilestone(null);
     setUnlockedBadges([]);
   };
@@ -502,29 +477,24 @@ export default function PracticePage() {
 
       {milestone !== null ? <MilestoneBanner days={milestone} /> : null}
 
-      {/* Progress — shrink-0, compact on mobile */}
-      <div className="shrink-0 flex items-center justify-between gap-2">
-        <span className="font-bold text-gray-700" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }}>
+      {/* Progress — one calm row: counter · bar · % complete · remaining time.
+          Session controls (change mode / reshuffle) intentionally live off this
+          screen: the header Back button returns to the hub where the mode
+          picker lives, keeping the answering surface distraction-free. */}
+      <div className="shrink-0 flex items-center gap-[clamp(0.5rem,1.5vw,1rem)] rounded-2xl bg-white border border-slate-100 shadow-sm px-[clamp(0.75rem,2vw,1.25rem)] py-[clamp(0.5rem,1.2vh,0.875rem)]">
+        <span className="font-bold text-gray-700 whitespace-nowrap" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.9375rem)' }}>
           Câu hỏi {index + 1} / {order.length}
         </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onChangeMode}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            <SlidersHorizontal size={14} /> Đổi chế độ
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
-          >
-            <RotateCw size={14} /> Trộn lại
-          </button>
+        <div className="flex-1 min-w-0">
+          <ProgressBar progress={percent} heightClass="h-[clamp(6px,0.6vw,10px)]" />
         </div>
+        <span className="hidden whitespace-nowrap text-gray-700 sm:inline" style={{ fontSize: 'clamp(0.75rem, 1.4vw, 0.875rem)' }}>
+          <span className="font-bold">{Math.round(percent)}%</span> <span className="text-gray-500">hoàn thành</span>
+        </span>
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-gray-500" style={{ fontSize: 'clamp(0.7rem, 1.3vw, 0.8125rem)' }}>
+          <Clock size={14} className="shrink-0" /> Còn ~ {minutesRemaining} phút
+        </span>
       </div>
-      <ProgressBar progress={((index + 1) / order.length) * 100} heightClass="h-[clamp(4px,0.5vw,10px)] shrink-0" />
 
       {/* Main area — flex-1, grid on desktop */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
@@ -547,10 +517,10 @@ export default function PracticePage() {
                   <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
                     Câu hỏi / Question #{question.id}
                   </div>
-                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+                  <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {question.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                     {question.questionVi}
                   </div>
                 </div>
@@ -578,13 +548,16 @@ export default function PracticePage() {
               </div>
             ) : null}
 
-            {/* Answer Options — 2-up on desktop so all four fit without scrolling */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[clamp(0.375rem,1vh,0.625rem)]">
+            {/* Answer Options — before answering: one calm stacked column so the
+                question stays the hero and each choice is easy to scan/tap. After
+                answering: 2-up to free vertical room for the feedback panel. */}
+            <div className={`grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)] ${phase === 'revealed' ? 'sm:grid-cols-2' : ''}`}>
               {options.map((opt) => {
                 const isPicked = selected === opt.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';
+                const chip = 'bg-gray-100 text-gray-700';
                 let mark = (
-                  <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+                  <span className="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0" />
                 );
 
                 if (phase === 'revealed') {
@@ -605,13 +578,13 @@ export default function PracticePage() {
                     type="button"
                     disabled={phase === 'revealed'}
                     onClick={() => onPick(opt.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(52px,7vh,68px)] p-[clamp(0.5rem,1.2vh,0.875rem)] ${style}`}
+                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
                   >
-                    <div className="w-6 shrink-0 font-bold text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${chip}`} style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
                     <div className="flex-1 text-gray-800 font-medium">
-                      <div style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.en}</div>
+                      <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
                       {opt.vi !== opt.en ? (
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.75rem)' }}>{opt.vi}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
                       ) : null}
                     </div>
                     {mark}
@@ -619,6 +592,15 @@ export default function PracticePage() {
                 );
               })}
             </div>
+
+            {/* Learning Tip — mobile only (desktop shows it in the right panel).
+                Rendered before answering so the pre-answer screen matches the
+                Header → Progress → Question → Choices → Tip mobile order. */}
+            {phase !== 'revealed' ? (
+              <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
+                <LearningTipCard />
+              </div>
+            ) : null}
 
             {/* Feedback — full width below the options grid */}
             {phase === 'revealed' && pickedOption && (
@@ -685,120 +667,79 @@ export default function PracticePage() {
             )}
           </div>
 
-          {/* Pinned Actions — always visible, never scroll */}
-          <div
-            className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5"
-            style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
-          >
-            <div className={`grid gap-3 transition-all duration-300 motion-reduce:duration-0 ${
-              showRevealBtn ? 'grid-cols-[1fr_2fr]' : 'grid-cols-1'
-            }`}>
-              {showRevealBtn && (
+          {/* Pinned Actions — only AFTER answering. Before answering, the single
+              task is to select an answer, so nothing competes at the bottom. */}
+          {phase === 'revealed' && (
+            <div
+              className="mt-auto shrink-0 border-t border-gray-100 px-[clamp(0.75rem,2vh,1.5rem)] pt-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
+              style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
+            >
+              <div className="grid grid-cols-[auto_1fr] gap-3">
                 <button
                   type="button"
-                  onClick={onReveal}
-                  disabled={phase === 'revealed'}
-                  className={`flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 motion-reduce:duration-0 ${
-                    revealExiting ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
+                  onClick={() => toggleBookmark(question.id)}
+                  className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold transition-colors ${
+                    isBookmarked
+                      ? 'border-amber-200 bg-amber-50 text-amber-600'
+                      : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                 >
-                  <Lightbulb size={16} />
-                  <span className="leading-tight">Xem đáp án</span>
+                  <Bookmark size={16} fill={isBookmarked ? 'currentColor' : 'none'} />
+                  <span className="leading-tight">Lưu lại<span className="hidden sm:inline"> / Review Later</span></span>
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={onNext}
-                disabled={phase !== 'revealed'}
-                className={`flex items-center justify-center gap-2 rounded-xl py-3 font-semibold shadow-md transition-all duration-300 motion-reduce:duration-0 ${
-                  phase === 'revealed'
-                    ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                }`}
-                style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
-              >
-                <span>Tiếp theo / Next</span>
-                <ArrowRight size={16} />
-              </button>
+                <button
+                  type="button"
+                  onClick={onNext}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
+                  style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
+                >
+                  <span>Tiếp theo / Next</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Desktop Sidebar — decorative, never reduces study readability */}
-        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:max-w-[300px] xl:max-w-[400px] shrink-0 self-start">
-          <div className="relative h-60 w-full overflow-hidden rounded-3xl">
+        {/* Desktop Support Panel — intentionally quiet: one decorative
+            illustration + one Learning Tip. No stats, streak, or KPI cards
+            compete with the question. */}
+        <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:w-[280px] xl:w-[320px] shrink-0 self-start">
+          <div className="relative h-44 w-full overflow-hidden rounded-3xl xl:h-48">
             <Image
-              src="/images/n400/illu-statue-city.png"
-              alt="Statue of Liberty with American flag and city skyline"
+              src="/images/n400/practace-thumbnail.png"
+              alt="Statue of Liberty with the city skyline"
               fill
-              className="object-contain object-bottom"
-              sizes="400px"
+              className="object-cover object-center"
+              sizes="320px"
               priority
             />
           </div>
 
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-800 leading-snug">
-              Mỗi câu trả lời đúng
-              <br />
-              là một bước gần hơn đến ước mơ!
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">
-              Giữ vững phong độ và chinh phục N400 nhé! 💪
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            <TipCard
-              icon={<Target size={20} />}
-              tone="teal"
-              title="Tập trung mỗi ngày"
-              desc="Tiến bộ hơn 1% hôm nay tốt hơn ngày mai."
-            />
-            <TipCard
-              icon={<Award size={20} />}
-              tone="orange"
-              title="Thử thách bản thân"
-              desc="Càng luyện tập nhiều, kết quả càng bứt phá."
-            />
-            <TipCard
-              icon={<Rocket size={20} />}
-              tone="purple"
-              title="Chinh phục mục tiêu"
-              desc="N400 không còn xa khi bạn không bỏ cuộc."
-            />
-          </div>
+          <LearningTipCard />
         </div>
       </div>
     </div>
   );
 }
 
-function TipCard({
-  icon,
-  tone,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  tone: 'teal' | 'orange' | 'purple';
-  title: string;
-  desc: string;
-}) {
-  const styles = {
-    teal: 'bg-teal-50 text-teal-600',
-    orange: 'bg-orange-50 text-orange-500',
-    purple: 'bg-purple-50 text-purple-600',
-  } as const;
-
+/**
+ * The single supportive note shown beside/below the question. Decorative and
+ * calm — it reinforces the one behaviour that helps before answering (read
+ * every choice), never stats or progress.
+ */
+function LearningTipCard() {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles[tone]}`}>
-        {icon}
+    <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
+      <div className="mb-1.5 flex items-center gap-2">
+        <span className="text-base" aria-hidden>💡</span>
+        <span className="text-sm font-bold text-gray-800">Mẹo học tập / Learning Tip</span>
       </div>
-      <div className="font-bold text-sm text-gray-800 mb-1 leading-tight">{title}</div>
-      <div className="text-[11px] text-gray-500 leading-snug">{desc}</div>
+      <p className="text-[13px] leading-relaxed text-gray-600">
+        Đọc kỹ tất cả các đáp án trước khi chọn. Nhiều đáp án sai được thiết kế
+        để rất dễ gây nhầm lẫn.
+      </p>
     </div>
   );
 }
