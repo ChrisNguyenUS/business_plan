@@ -23,7 +23,9 @@
   min-height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #F8FCFB;
+  /* Matches the PNG's light mint sky so there is no visible seam where the
+     illustration ends and the page base begins. */
+  background: #F2F8F8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -52,7 +54,7 @@
        reference's scale (statue ≈ lower third of the viewport, never cropped).
        The skyline extends to the right beneath the login card, which covers it
        — so the lower-right stays clean like the reference. */
-    background-size: auto 72%;
+    background-size: auto 66%;
     /* Crisp: no fade, no blur, no mask, no blend. The artwork already fades
        into the sky on its own. */
     opacity: 1;
@@ -182,7 +184,7 @@
    so the composition still fits within 100dvh. Scoped to the desktop left
    panel so the mobile brand is untouched. */
 .leftPanel .brand {
-  margin-bottom: clamp(40px, 7vh, 72px);
+  margin-bottom: clamp(32px, 5.5vh, 60px);
 }
 
 /* ─── Hero Text Group ─── */
@@ -190,17 +192,19 @@
   display: flex;
   flex-direction: column;
   max-width: 560px;
-  margin-bottom: clamp(40px, 7vh, 72px);
+  margin-bottom: clamp(32px, 5vh, 56px);
 }
 
 /* ─── Hero Headline ───
    Bold, tight, oversized display type. Size is driven by both width and height
    so it never forces the column past 100dvh. */
 .heroHeadline h1 {
-  font-size: clamp(38px, min(4.6vw, 6.4vh), 72px);
+  /* Sized so each hero line stays on one line within the (max 1440px)
+     container while shrinking gracefully on narrower / shorter screens. */
+  font-size: clamp(30px, min(3.4vw, 5vh), 44px);
   font-weight: 800;
   color: #1B2430;
-  line-height: 1.04;
+  line-height: 1.06;
   letter-spacing: -0.03em;
   margin: 0;
   max-width: 560px;
@@ -212,18 +216,18 @@
 }
 
 .heroSub {
-  font-size: clamp(16px, min(1.5vw, 2.4vh), 24px);
+  font-size: clamp(15px, min(1.2vw, 1.9vh), 18px);
   color: #6B7280;
-  line-height: 1.75;
-  max-width: 520px;
-  margin: clamp(20px, 3vh, 36px) 0 0;
+  line-height: 1.7;
+  max-width: 560px;
+  margin: clamp(18px, 2.6vh, 32px) 0 0;
 }
 
 /* ─── Features ─── */
 .features {
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 2.8vh, 28px);
+  gap: clamp(16px, 2.4vh, 24px);
 }
 
 .featureRow {
@@ -234,9 +238,9 @@
 
 .featureIcon {
   flex-shrink: 0;
-  width: clamp(48px, 5vh, 56px);
-  height: clamp(48px, 5vh, 56px);
-  border-radius: 16px;
+  width: clamp(44px, 4.6vh, 52px);
+  height: clamp(44px, 4.6vh, 52px);
+  border-radius: 15px;
   background: rgba(22, 163, 148, 0.08);
   display: flex;
   align-items: center;
@@ -270,7 +274,7 @@
   flex-shrink: 0;
   height: auto;
   overflow: visible;
-  padding-bottom: 24px;
+  padding-bottom: 8px;
 }
 
 @media (min-width: 1024px) {
@@ -300,10 +304,10 @@
 .mobileHeroContent {
   position: relative;
   z-index: 1;
-  padding: 40px 24px 8px;
+  padding: 32px 24px 4px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 @media (max-height: 700px) {
@@ -371,7 +375,7 @@
   position: relative;
   z-index: 2;
   margin-top: 0;
-  padding: 0 16px 32px;
+  padding: 0 16px 16px;
   flex: 1;
   display: flex;
   justify-content: center;
@@ -404,7 +408,7 @@
   max-width: 440px;
   background: #FFFFFF;
   border-radius: 32px;
-  padding: 32px 24px 28px;
+  padding: 24px 20px 20px;
   /* Card stands out through elevation — NOT by fading the background. */
   box-shadow:
     0 24px 60px rgba(16, 24, 40, 0.10),
@@ -435,8 +439,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .cardLogo {
@@ -463,17 +467,17 @@
 
 .cardTitle {
   text-align: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #1B2430;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .cardSubtitle {
   text-align: center;
   font-size: 14px;
   color: #6B7280;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   line-height: 1.5;
 }
 
@@ -508,8 +512,8 @@
 .oauthButtons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 @media (min-height: 900px) {
@@ -525,7 +529,7 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  height: 60px;
+  height: 52px;
   border-radius: 18px;
   border: 1px solid #E5E7EB;
   background: #FFFFFF;
@@ -572,7 +576,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 @media (min-height: 900px) {
@@ -601,8 +605,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   width: 100%;
-  height: 60px;
+  height: 52px;
   padding: 0 24px;
   border-radius: 18px;
   border: 1px solid #E5E7EB;
@@ -613,11 +618,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-}
-
-.emailBtn .providerIcon {
-  position: absolute;
-  left: 20px;
 }
 
 @media (min-width: 1024px) {
@@ -812,14 +812,14 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 16px;
   background: #F0FAF9;
   border: 1px solid rgba(22, 163, 148, 0.2);
-  margin-top: 16px;
+  margin-top: 12px;
   text-decoration: none;
   transition: all 0.2s ease;
-  gap: 16px;
+  gap: 12px;
 }
 
 @media (min-height: 900px) {
