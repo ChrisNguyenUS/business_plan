@@ -300,6 +300,20 @@ export default function N400LoginPage() {
               N400 Ready là ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400)<br />
               một cách hiệu quả, dễ dàng và thú vị.
             </p>
+
+            <div className={styles.socialProof}>
+              <div className={styles.socialProofIconWrapper}>
+                <ShieldCheckIcon width="24" height="24" className={styles.socialProofShield} />
+              </div>
+              <div className={styles.socialProofContent}>
+                <div className={styles.stars}>
+                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                </div>
+                <p className={styles.socialProofText}>
+                  Được xây dựng từ trải nghiệm phỏng vấn quốc tịch Mỹ thực tế và hướng dẫn chính thức mới nhất của USCIS.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Feature List */}
