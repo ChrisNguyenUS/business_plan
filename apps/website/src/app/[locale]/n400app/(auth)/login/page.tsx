@@ -80,7 +80,7 @@ function FeatureIcon({ children }: { children: React.ReactNode }) {
 
 function BookIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
@@ -89,7 +89,7 @@ function BookIcon() {
 
 function TargetIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
@@ -99,7 +99,7 @@ function TargetIcon() {
 
 function ChartIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
@@ -109,7 +109,7 @@ function ChartIcon() {
 
 function ShieldIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
