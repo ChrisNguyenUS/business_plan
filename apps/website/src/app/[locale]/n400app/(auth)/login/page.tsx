@@ -200,6 +200,9 @@ export default function N400LoginPage() {
 
   return (
     <div className={styles.page}>
+      {/* ─── DESKTOP FULL-SCREEN BACKGROUND (spans both columns, behind the card) ─── */}
+      <div className={styles.desktopBg} aria-hidden="true" />
+
       {/* ─── DESKTOP LEFT PANEL ─── */}
       <div className={styles.leftPanel}>
         <div className={styles.leftContent}>
@@ -246,9 +249,6 @@ export default function N400LoginPage() {
             ))}
           </div>
         </div>
-
-        {/* Bottom illustration — desktop background, anchored bottom-left, full-bleed */}
-        <div className={styles.leftIllustration} aria-hidden="true" />
       </div>
 
       {/* ─── MOBILE HERO ─── */}

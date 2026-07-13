@@ -14,11 +14,34 @@
 
 /* ─── Page container ─── */
 .page {
+  position: relative;
   display: flex;
   height: 100dvh;
   overflow: hidden;
   background: #F8FCFB;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ─── Desktop full-screen background ───
+   The illustration is a single layer that spans the entire viewport (both
+   the left content column and the right login card), so there is no vertical
+   split/seam. Content and the login card float above it via z-index. */
+.desktopBg {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktopBg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url('/images/n400/login%20thumbnail/desktop-login-backgroun-final.png');
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: cover;
+    pointer-events: none;
+  }
 }
 
 /* Mobile: stack vertically */
@@ -41,10 +64,10 @@
 .leftPanel {
   display: none;
   position: relative;
+  z-index: 1;
   width: 48%;
   height: 100dvh;
-  background: linear-gradient(160deg, #F8FCFB 0%, #EDF9F6 40%, #DFF7F3 100%);
-  overflow: hidden;
+  background: transparent;
   flex-direction: column;
 }
 
@@ -211,26 +234,6 @@
   .featureDesc {
     font-size: 13px;
   }
-}
-
-/* ─── Bottom illustration ───
-   Full-bleed background layer anchored to the bottom-left of the panel.
-   The source PNG is opaque (baked light sky/water), so it spans the full
-   panel width (100% auto) to avoid side seams and reproduce the approved
-   mockup exactly: full statue + full Brooklyn Bridge visible, skyline
-   settled along the bottom edge, light sky fading up behind the content. */
-.leftIllustration {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  height: 100%;
-  background-image: url('/images/n400/login%20thumbnail/desktop-login-backgroun-final.png');
-  background-repeat: no-repeat;
-  background-position: left bottom;
-  background-size: 100% auto;
-  pointer-events: none;
 }
 
 /* ═══════════════════════════════════
