@@ -89,6 +89,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    if (isN400Path) {
+      return NextResponse.redirect(new URL(`/${locale}/n400app/login`, request.url));
+    }
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
@@ -112,7 +115,7 @@ export async function middleware(request: NextRequest) {
 
   // N400 paths: any signed-in user (client or admin). Anonymous already redirected above.
   if (isN400Path && role !== 'client' && role !== 'admin') {
-    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    return NextResponse.redirect(new URL(`/${locale}/n400app/login`, request.url));
   }
 
   // N400 profile gate: redirect to /setup when no n400_user_profile row exists,
