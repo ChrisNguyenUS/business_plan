@@ -5,12 +5,6 @@
 // Writing. Each card deep-links into its own immersive sub-route; the tests
 // themselves live in ./full, ./civics, ./speaking and ./viet. The page title
 // row comes from the shared Header (TITLES['mock-test']), so no h1 here.
-//
-// Desktop (xl) is a no-scroll layout: the page fills the main area's height,
-// the hero stays fixed and the card grid absorbs the remaining space — each
-// card's thumbnail flexes (xl:flex-1 instead of a fixed aspect ratio) so the
-// whole screen fits without vertical scrolling. Below xl the cards stack and
-// the page scrolls normally.
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -113,7 +107,7 @@ export default function MockTestPickerPage() {
   const base = `/${locale}/n400app/mock-test`;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 animate-in fade-in duration-300 xl:h-full">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 animate-in fade-in duration-300">
       {/* Hero banner */}
       <section className="shrink-0 overflow-hidden rounded-[24px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-sky-50 shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center">
@@ -174,19 +168,19 @@ export default function MockTestPickerPage() {
       </section>
 
       {/* Test picker */}
-      <section className="flex flex-col xl:min-h-0 xl:flex-1">
+      <section className="flex flex-col">
         <h2 className="shrink-0 text-lg font-bold text-gray-800">Chọn bài thi phù hợp với bạn</h2>
-        <div className="mt-3 grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 xl:min-h-0 xl:flex-1 xl:grid-cols-4 xl:pb-0">
+        <div className="mt-3 grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 xl:grid-cols-4 xl:pb-0">
           {TESTS.map((t) => (
             <div
               key={t.slug}
-              className={`group flex flex-col rounded-3xl border bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 xl:min-h-0 ${
+              className={`group flex flex-col rounded-3xl border bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
                 t.featured
                   ? 'border-teal-300 ring-2 ring-teal-100'
                   : 'border-slate-100 hover:border-teal-200'
               }`}
             >
-              <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-slate-50 xl:aspect-auto xl:min-h-[88px] xl:flex-1">
+              <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-slate-50 xl:aspect-[4/3]">
                 <Image
                   src={t.image}
                   alt={t.title}
