@@ -6,12 +6,13 @@ const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
-// Whole /n400app surface is auth-gated for v1 (dashboard lives at the root, no public landing yet).
 const N400_RE = /^\/[a-z]{2}\/n400app(\/|$)/;
+// Auth pages inside /n400app that must be accessible without a session.
+const N400_PUBLIC_RE = /^\/[a-z]{2}\/n400app\/login(\/|$)/;
 // Routes that signed-in users can hit before completing /setup. /setup itself
 // would loop without this exemption; /help is informational and can render
 // without a profile row.
-const N400_NO_PROFILE_GATE_RE = /^\/[a-z]{2}\/n400app\/(setup|help)(\/|$)/;
+const N400_NO_PROFILE_GATE_RE = /^\/[a-z]{2}\/n400app\/(setup|help|login)(\/|$)/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -50,6 +51,12 @@ export async function middleware(request: NextRequest) {
   const isAdminPath = ADMIN_RE.test(pathname);
   const isPortalPath = PORTAL_RE.test(pathname);
   const isN400Path = N400_RE.test(pathname);
+  const isN400Public = N400_PUBLIC_RE.test(pathname);
+
+  // N400 public pages (e.g. /n400app/login) skip auth entirely.
+  if (isN400Public) {
+    return NextResponse.next();
+  }
 
   if (!isAdminPath && !isPortalPath && !isN400Path) {
     return NextResponse.next();
