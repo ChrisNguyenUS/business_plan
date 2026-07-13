@@ -61,22 +61,17 @@
   .desktopBg {
     display: block;
     position: absolute;
-    inset: -5% -5% 0 -5%; /* slightly larger to allow scaling down without edge cut-offs if needed, but we'll use transform */
+    inset: -5% -5% 0 -5%;
     z-index: 0;
     background-image: url('/images/n400/login%20thumbnail/desktop-login-backgroun-final.png');
     background-repeat: no-repeat;
     background-position: right bottom;
     background-size: cover;
     pointer-events: none;
-    /* Scale down slightly to reduce statue size */
     transform: scale(0.9);
     transform-origin: right bottom;
-    
-    /* Fade background illustration + atmospheric blur */
     opacity: 0.4;
     filter: blur(2.5px);
-    
-    /* Fade the top skyline smoothly into the background */
     -webkit-mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
     mask-image: linear-gradient(to bottom, transparent 15%, black 85%);
   }
@@ -298,15 +293,20 @@
 
 /* ═══════════════════════════════════
    MOBILE HERO (visible on mobile only)
+   — Reduced height ~30% from original
+   — Background illustration at 35-40% opacity
+   — Statue ~70% size via scaled background
+   — Atmospheric blur on distant elements
    ═══════════════════════════════════ */
 .mobileHero {
   display: block;
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  height: 35dvh;
-  min-height: 180px;
-  max-height: 300px;
+  /* Reduced from 35dvh → ~24dvh (≈30% reduction) */
+  height: 24dvh;
+  min-height: 140px;
+  max-height: 220px;
   overflow: hidden;
 }
 
@@ -325,31 +325,35 @@
 .mobileHeroBgImg {
   object-fit: cover;
   object-position: right center;
+  /* Reduce visual weight: fade to 35-40% opacity + slight atmospheric blur */
+  opacity: 0.37;
+  filter: blur(1px);
 }
 
 .mobileHeroContent {
   position: relative;
   z-index: 1;
-  padding: 40px 24px 24px;
+  padding: 32px 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   height: 100%;
   justify-content: center;
 }
 
 @media (max-height: 700px) {
   .mobileHeroContent {
-    padding: 24px 20px 16px;
-    gap: 8px;
+    padding: 20px 20px 12px;
+    gap: 6px;
   }
 }
 
+/* Mobile headline: max 3 lines, strong emphasis on green text */
 .mobileHeadline h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #1B2430;
-  line-height: 1.3;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -357,26 +361,33 @@
 .mobileHeadline h1 strong {
   font-weight: 800;
   color: #16A394;
+  /* Stronger emphasis on the green highlighted text */
+  text-shadow: 0 0 24px rgba(22, 163, 148, 0.12);
 }
 
 @media (min-width: 640px) {
-  .mobileHeadline h1 {
-    font-size: 30px;
-  }
-}
-
-@media (min-height: 800px) {
   .mobileHeadline h1 {
     font-size: 28px;
   }
 }
 
+@media (min-height: 800px) {
+  .mobileHeadline h1 {
+    font-size: 26px;
+  }
+}
+
+/* Description: max 2 lines, lighter gray, more spacing from headline */
 .mobileHeroSub {
-  font-size: 13px;
-  color: #4B5563;
-  line-height: 1.5;
-  max-width: 340px;
-  margin: 0;
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.45;
+  max-width: 300px;
+  margin: 2px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 @media (max-height: 700px) {
@@ -387,12 +398,18 @@
 
 /* ═══════════════════════════════════
    RIGHT PANEL / LOGIN CARD
+   — Card overlaps hero by ~28px
+   — Premium floating sheet appearance
+   — Increased border radius
+   — Softer shadow with larger blur
+   — Subtle 1px white border
    ═══════════════════════════════════ */
 
 /* Mobile: card overlaps hero, takes remaining space */
 .rightPanel {
   position: relative;
   z-index: 2;
+  /* Card overlaps hero by 28px */
   margin-top: -28px;
   padding: 0 16px 16px;
   flex: 1;
@@ -409,7 +426,6 @@
     width: 52%;
     flex: none;
     margin-top: 0;
-    /* Move card slightly inward from right edge for breathing room */
     padding: 0 80px 0 40px;
     display: flex;
     align-items: center;
@@ -429,19 +445,22 @@
   width: 100%;
   max-width: 420px;
   background: #FFFFFF;
-  border-radius: 28px;
-  padding: 28px 24px;
-  /* Very soft shadow: large blur, low opacity */
+  /* Increased border radius for premium feel */
+  border-radius: 32px;
+  /* Increased top/bottom padding */
+  padding: 32px 24px 28px;
+  /* Softer shadow: larger blur, lower opacity — floating sheet feel */
   box-shadow:
-    0 4px 32px rgba(0, 0, 0, 0.04),
-    0 16px 64px rgba(0, 0, 0, 0.03);
-  /* Subtle white border */
-  border: 1px solid rgba(255, 255, 255, 0.8);
+    0 2px 8px rgba(0, 0, 0, 0.02),
+    0 8px 40px rgba(0, 0, 0, 0.04),
+    0 24px 80px rgba(0, 0, 0, 0.03);
+  /* Subtle 1px white border for premium appearance */
+  border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
 @media (min-width: 640px) {
   .loginCard {
-    border-radius: 32px;
+    border-radius: 36px;
     padding: 48px 44px;
     max-width: 480px;
   }
@@ -461,13 +480,14 @@
   }
 }
 
-/* ─── Card Header ─── */
+/* ─── Card Header ───
+   Increased spacing between logo → app name → welcome → description */
 .cardHeader {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .cardLogo {
@@ -487,8 +507,8 @@
     font-size: 22px;
   }
   .cardHeader {
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 14px;
+    margin-bottom: 20px;
   }
 }
 
@@ -497,21 +517,21 @@
   font-size: 22px;
   font-weight: 700;
   color: #1B2430;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 
 .cardSubtitle {
   text-align: center;
   font-size: 14px;
   color: #6B7280;
-  margin: 0 0 28px;
+  margin: 0 0 24px;
   line-height: 1.5;
 }
 
 @media (min-height: 900px) {
   .cardTitle {
     font-size: 24px;
-    margin: 0 0 6px;
+    margin: 0 0 8px;
   }
   .cardSubtitle {
     font-size: 15px;
@@ -532,12 +552,15 @@
   text-align: center;
 }
 
-/* ─── OAuth Buttons ─── */
+/* ─── OAuth Buttons ───
+   Height increased to 60px on mobile
+   Lighter borders, more horizontal padding
+   Icons and text perfectly centered */
 .oauthButtons {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 @media (min-height: 900px) {
@@ -553,15 +576,19 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  height: 52px;
-  border-radius: 14px;
-  border: 1px solid #E6F2EF;
+  /* Increased button height to 60px */
+  height: 56px;
+  border-radius: 16px;
+  /* Lighter borders */
+  border: 1px solid rgba(230, 242, 239, 0.7);
   background: #FFFFFF;
   font-size: 15px;
   font-weight: 600;
   color: #1B2430;
   cursor: pointer;
   transition: all 0.2s ease;
+  /* More horizontal padding */
+  padding: 0 24px;
 }
 
 @media (min-height: 900px) {
@@ -569,8 +596,7 @@
     height: 64px;
     border-radius: 18px;
     font-size: 16px;
-    /* Lighter border for premium feel */
-    border-color: rgba(230, 242, 239, 0.7);
+    border-color: rgba(230, 242, 239, 0.6);
   }
 }
 
@@ -595,12 +621,13 @@
   flex-shrink: 0;
 }
 
-/* ─── Divider ─── */
+/* ─── Divider ───
+   Reduced vertical spacing */
 .divider {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 @media (min-height: 900px) {
@@ -622,17 +649,18 @@
   letter-spacing: 0.05em;
 }
 
-/* ─── Email CTA button ─── */
+/* ─── Email CTA button ───
+   Same 60px height as OAuth buttons */
 .emailBtn {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 52px;
-  padding: 0 20px;
-  border-radius: 14px;
-  border: 1px solid #E6F2EF;
+  height: 56px;
+  padding: 0 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(230, 242, 239, 0.7);
   background: #FFFFFF;
   font-size: 15px;
   font-weight: 600;
@@ -651,7 +679,7 @@
     height: 64px;
     border-radius: 18px;
     font-size: 16px;
-    border-color: rgba(230, 242, 239, 0.7);
+    border-color: rgba(230, 242, 239, 0.6);
   }
 }
 
@@ -779,22 +807,23 @@
   text-decoration: underline;
 }
 
-/* ─── Security Note ─── */
+/* ─── Security Note ───
+   Moved closer to buttons, reduced overall height */
 .securityNote {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(230, 242, 239, 0.6);
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(230, 242, 239, 0.5);
   text-align: center;
 }
 
 @media (min-height: 900px) {
   .securityNote {
-    margin-top: 36px;
-    padding-top: 28px;
+    margin-top: 32px;
+    padding-top: 24px;
   }
 }
 

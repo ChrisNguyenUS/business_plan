@@ -47,7 +47,7 @@ function EmailIcon() {
 
 function ShieldCheckIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#16A394" opacity="0.15" />
       <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="#16A394" strokeWidth="1.5" />
       <path d="M9 12l2 2 4-4" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -145,7 +145,6 @@ type OAuthId = 'google' | 'apple' | 'facebook';
 const PROVIDERS: { id: OAuthId; label: string; Icon: () => React.ReactElement }[] = [
   { id: 'google', label: 'Tiếp tục với Google', Icon: GoogleIcon },
   { id: 'apple', label: 'Tiếp tục với Apple', Icon: AppleIcon },
-  { id: 'facebook', label: 'Tiếp tục với Facebook', Icon: FacebookIcon },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -270,8 +269,8 @@ export default function N400LoginPage() {
             <Image
               src="/images/logo-official.png"
               alt="Manna One Solution"
-              width={36}
-              height={36}
+              width={32}
+              height={32}
               className={styles.logo}
             />
             <div className={styles.brandText}>
@@ -290,8 +289,7 @@ export default function N400LoginPage() {
             </h1>
           </div>
           <p className={styles.mobileHeroSub}>
-            N400 Ready là ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400)<br />
-            một cách hiệu quả, dễ dàng và thú vị.
+            Ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400) hiệu quả, dễ dàng và thú vị.
           </p>
         </div>
       </div>
@@ -304,8 +302,8 @@ export default function N400LoginPage() {
             <Image
               src="/images/logo-official.png"
               alt="Manna One Solution"
-              width={56}
-              height={56}
+              width={48}
+              height={48}
               className={styles.cardLogo}
             />
             <div className={styles.cardBrand}>
