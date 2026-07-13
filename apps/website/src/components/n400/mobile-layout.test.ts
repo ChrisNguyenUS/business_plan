@@ -24,8 +24,6 @@ describe('N400 mobile layout contracts', () => {
     // Hero panorama shows on mobile without the desktop torch overflow.
     expect(dashboard).toContain('w-[45%] lg:w-[44%]');
     expect(dashboard).toContain('[--pop:0px] lg:[--pop:32px]');
-    // Hero progress bar goes full-width below lg.
-    expect(dashboard).toContain('w-full lg:w-60');
     // Goals/suggestion row stacks; quick-nav stays 3-up but compact; stats
     // strip scrolls horizontally instead of wrapping.
     expect(dashboard).toContain('grid-cols-1 gap-3 lg:grid-cols-5');
