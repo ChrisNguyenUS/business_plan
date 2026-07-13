@@ -124,7 +124,11 @@ export interface StudyTip {
 }
 
 export interface StudyTipSignals {
-  /** Module with the most wrong-unreviewed items (graded modes only). */
+  /**
+   * Module with the most wrong-unreviewed items (graded modes only).
+   * `href` must point at that module's review session deep link
+   * (`/practice?start=wrongs` for civics, `<hub>?start=wrongs` for sections).
+   */
   topWrongModule: { id: StudyModuleId; label: string; count: number; href: string } | null;
   /** Weakest civics category per recommendWeakCategory; null when none qualifies. */
   weakCategory: { label: string } | null;
@@ -150,9 +154,7 @@ export function buildStudyTip(s: StudyTipSignals): StudyTip {
     return {
       line1: `Ôn lại ${n} câu ${s.topWrongModule.label} bạn trả lời sai.`,
       line2: 'Chỉ ~5 phút — xoá lỗi cũ giúp bạn nhớ lâu hơn.',
-      // Civics has a real review session; sections land on their hub until
-      // their practice pages support ?start=review (Phase 2).
-      href: s.topWrongModule.id === 'civics' ? '/practice?start=wrongs' : s.topWrongModule.href,
+      href: s.topWrongModule.href,
     };
   }
   if (s.weakCategory) {

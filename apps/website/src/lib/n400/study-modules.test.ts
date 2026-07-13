@@ -96,7 +96,7 @@ describe('buildStudyTip — chữa lỗi trước, mở rộng sau', () => {
   it('leads with the module owing the most unreviewed wrongs, chunked — never exposes total debt', () => {
     const tip = buildStudyTip({
       ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 56, href: '/study/civics' },
+      topWrongModule: { id: 'civics', label: 'Civics', count: 56, href: '/practice?start=wrongs' },
     });
     expect(tip.line1).toContain('10 câu Civics');
     expect(tip.line1).not.toContain('56');
@@ -105,22 +105,22 @@ describe('buildStudyTip — chữa lỗi trước, mở rộng sau', () => {
   it('shows the real count when the debt is smaller than a chunk', () => {
     const tip = buildStudyTip({
       ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 4, href: '/study/civics' },
+      topWrongModule: { id: 'civics', label: 'Civics', count: 4, href: '/practice?start=wrongs' },
     });
     expect(tip.line1).toContain('4 câu Civics');
   });
-  it('section debt links to that module (Phase 1: hub; Phase 2: review session)', () => {
+  it('section debt links to that module review session', () => {
     const tip = buildStudyTip({
       ...base,
-      topWrongModule: { id: 'writing', label: 'Writing', count: 8, href: '/writing' },
+      topWrongModule: { id: 'writing', label: 'Writing', count: 8, href: '/writing?start=wrongs' },
     });
     expect(tip.line1).toContain('8 câu Writing');
-    expect(tip.href).toBe('/writing');
+    expect(tip.href).toBe('/writing?start=wrongs');
   });
   it('ignores debt below the minimum and moves to the weak category', () => {
     const tip = buildStudyTip({
       ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 2, href: '/study/civics' },
+      topWrongModule: { id: 'civics', label: 'Civics', count: 2, href: '/practice?start=wrongs' },
       weakCategory: { label: 'American History' },
     });
     expect(tip.line1).toContain('American History');

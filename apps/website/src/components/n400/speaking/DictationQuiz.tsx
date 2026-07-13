@@ -42,9 +42,15 @@ interface DictationQuizProps {
   /**
    * `answered` = sentences actually graded; when the session is abandoned
    * mid-quiz (Đổi chế độ) it is < total, so orchestrating callers can tell
-   * an abandon apart from a real completion.
+   * an abandon apart from a real completion. `perItem` carries the per-sentence
+   * verdicts so callers can record real attempts (review debt needs them).
    */
-  onSessionEnd: (results: { correct: number; total: number; answered: number }) => void;
+  onSessionEnd: (results: {
+    correct: number;
+    total: number;
+    answered: number;
+    perItem: { sentenceId: string; correct: boolean }[];
+  }) => void;
   // Mock tests own their single result screen — skip this component's internal
   // PracticeSessionSummary and hand off to the caller as soon as the last
   // sentence is graded, instead of showing two result screens back to back.
@@ -84,13 +90,16 @@ export function DictationQuiz({
   const done = index >= questions.length;
   const q = done ? null : questions[index];
 
+  const sessionResults = () => ({
+    correct: results.filter((r) => r.correct).length,
+    total: questions.length,
+    answered: results.length,
+    perItem: results.map((r) => ({ sentenceId: r.sentenceId, correct: r.correct })),
+  });
+
   useEffect(() => {
     if (done && skipSummary) {
-      onSessionEnd({
-        correct: results.filter((r) => r.correct).length,
-        total: questions.length,
-        answered: results.length,
-      });
+      onSessionEnd(sessionResults());
     }
     // Only re-fire when a session actually finishes — onSessionEnd/results are
     // captured fresh at that point, not tracked as deps to avoid re-triggering.
@@ -119,7 +128,7 @@ export function DictationQuiz({
           wrongCount={wrongCount}
           onReviewWrong={restart}
           onRetry={restart}
-          onChangeMode={() => onSessionEnd({ correct, total: questions.length, answered: results.length })}
+          onChangeMode={() => onSessionEnd(sessionResults())}
         />
       </div>
     );
@@ -198,13 +207,7 @@ export function DictationQuiz({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              onSessionEnd({
-                correct: results.filter((r) => r.correct).length,
-                total: questions.length,
-                answered: results.length,
-              })
-            }
+            onClick={() => onSessionEnd(sessionResults())}
             className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
           >
             <SlidersHorizontal size={14} /> Đổi chế độ

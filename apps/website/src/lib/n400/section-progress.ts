@@ -44,3 +44,25 @@ export function deriveSectionSeen(attempts: SectionAttempt[]): Record<SectionKey
   for (const a of attempts) out[a.section].add(a.itemId);
   return out;
 }
+
+/**
+ * Item ids in one section whose LAST graded attempt is wrong, most recently
+ * wrong first. Section twin of quiz-engine's lastWrongQuestionIds — the single
+ * source of truth for "câu sai chưa ôn" (spec D1): flashcard self-grades
+ * neither create nor clear debt; a later correct graded attempt clears an id,
+ * a later wrong one re-opens it.
+ */
+export function lastWrongSectionItemIds(
+  attempts: readonly SectionAttempt[],
+  section: SectionKey,
+): string[] {
+  const last = new Map<string, SectionAttempt>();
+  for (const a of attempts) {
+    if (a.section !== section || a.mode === 'flashcard') continue;
+    last.set(a.itemId, a);
+  }
+  return [...last.values()]
+    .filter((a) => !a.wasCorrect)
+    .sort((x, y) => new Date(y.at).getTime() - new Date(x.at).getTime())
+    .map((a) => a.itemId);
+}
