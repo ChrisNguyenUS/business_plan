@@ -313,7 +313,13 @@ export default function N400LoginPage() {
         <div className={styles.loginCard}>
           {/* Card header */}
           <div className={styles.cardHeader}>
-            <StatueIcon />
+            <Image
+              src="/images/logo-official.png"
+              alt="Manna One Solution"
+              width={48}
+              height={48}
+              className={styles.cardLogo}
+            />
           </div>
 
           <h2 className={styles.cardTitle}>
