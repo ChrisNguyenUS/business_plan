@@ -269,12 +269,20 @@ export default function StudyPage() {
       yesno: sections.wrong.yesno,
       writing: sections.wrong.writing,
     };
+    // Review-session deep links: civics practice replays a debt chunk;
+    // section hubs auto-start their wrongs quiz via ?start=wrongs.
+    const reviewHref: Record<StudyModuleId, string> = {
+      civics: '/practice?start=wrongs',
+      whatmean: '/speaking/what-mean?start=wrongs',
+      yesno: '/speaking/yes-no?start=wrongs',
+      writing: '/writing?start=wrongs',
+    };
 
     let topWrongModule: StudyTipSignals['topWrongModule'] = null;
     for (const c of configs) {
       const count = wrongCounts[c.id];
       if (count > 0 && (!topWrongModule || count > topWrongModule.count)) {
-        topWrongModule = { id: c.id, label: labels[c.id], count, href: relHref[c.id] };
+        topWrongModule = { id: c.id, label: labels[c.id], count, href: reviewHref[c.id] };
       }
     }
 
@@ -335,14 +343,15 @@ export default function StudyPage() {
           const btnClass = badge === 'completed' ? c.btnOutline : c.btnFilled;
 
           // Secondary link (desktop only): a finished module has no wrongs to
-          // review, so surface saved questions instead; otherwise the review pool.
+          // review, so surface saved questions instead; otherwise deep-link
+          // straight into that module's review session (one ≤10-item chunk).
           const secondary =
             badge === 'completed'
               ? { label: 'Câu đã lưu', count: state.bookmarks.length, href: `${base}/bookmark` }
               : {
                   label: c.id === 'whatmean' ? 'Ôn lại từ sai' : 'Ôn lại câu sai',
                   count: wrongById[c.id],
-                  href: c.href,
+                  href: c.id === 'civics' ? `${base}/practice?start=wrongs` : `${c.href}?start=wrongs`,
                 };
 
           return (

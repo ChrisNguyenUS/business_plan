@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from '@/lib/n400/yesno-data';
 import { YESNO_PRESETS } from '@/lib/n400/section-presets';
-import { deriveSectionSeen } from '@/lib/n400/section-progress';
+import { deriveSectionSeen, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
 import { shuffle, yesNoAudioUrl } from '@/lib/n400/quiz-engine';
 import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
 import {
@@ -55,6 +55,24 @@ export default function YesNoPage() {
     () => deriveHubProgress(YESNO_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
     [seen],
   );
+
+  // ?start=wrongs deep link (study tip / card review link): one 10-question
+  // chunk of review debt. Param is stripped immediately; with no debt the hub
+  // itself is the fallback.
+  const startWrongsReview = () => {
+    const ids = lastWrongSectionItemIds(state.sectionAttempts, 'yesno').slice(0, 10);
+    if (ids.length > 0) setMode({ kind: 'quiz', ids });
+  };
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!hydrated || autoStarted.current) return;
+    if (new URLSearchParams(window.location.search).get('start') !== 'wrongs') return;
+    autoStarted.current = true;
+    window.history.replaceState(null, '', window.location.pathname);
+    // One-shot URL-to-state sync (same deep-link pattern as practice/page.tsx).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    startWrongsReview();
+  });
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;

@@ -5,13 +5,13 @@
 // DictationQuiz for that many sentences. Mirrors the what-mean / yes-no hub
 // shell, minus the Thẻ học card (writing is practice-only, no flashcards).
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
 import { WRITING_PRESETS } from '@/lib/n400/section-presets';
 import { shuffle, type PracticePreset } from '@/lib/n400/quiz-engine';
-import { deriveSectionSeen } from '@/lib/n400/section-progress';
+import { deriveSectionSeen, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
 import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
 import { HubHero, HubContinueCard } from '@/components/n400/hub/HubCards';
 import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
@@ -42,6 +42,27 @@ export default function WritingPage() {
     [seen],
   );
 
+  // ?start=wrongs deep link (study tip / card review link): one 10-sentence
+  // chunk of review debt. Param is stripped immediately so back-nav or reload
+  // lands on the plain hub; with no debt the hub itself is the fallback.
+  const startWrongsReview = () => {
+    const wrongIds = lastWrongSectionItemIds(state.sectionAttempts, 'writing').slice(0, 10);
+    const questions = wrongIds
+      .map((id) => ALL.find((s) => s.id === id))
+      .filter((s): s is WritingSentence => s !== undefined);
+    if (questions.length > 0) setMode({ kind: 'quiz', questions });
+  };
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!hydrated || autoStarted.current) return;
+    if (new URLSearchParams(window.location.search).get('start') !== 'wrongs') return;
+    autoStarted.current = true;
+    window.history.replaceState(null, '', window.location.pathname);
+    // One-shot URL-to-state sync (same deep-link pattern as practice/page.tsx).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    startWrongsReview();
+  });
+
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
@@ -62,13 +83,12 @@ export default function WritingPage() {
     return (
       <DictationQuiz
         questions={questions}
-        onSessionEnd={({ correct }) => {
-          // DictationQuiz reports only an aggregate score, so record each sentence
-          // in the session as a practice attempt: this advances the streak and marks
-          // the sentences "seen". Practice-mode attempts never feed known-state
-          // (that is flashcard-only), so the arbitrary correct/wrong split is safe.
-          questions.forEach((q, i) => {
-            void recordSectionAnswer('writing', q.id, i < correct, 'practice');
+        onSessionEnd={({ perItem }) => {
+          // Record each graded sentence with its REAL verdict — review debt
+          // ("câu sai chưa ôn") is derived from these attempts, so the split
+          // must match what the learner actually got wrong.
+          perItem.forEach(({ sentenceId, correct }) => {
+            void recordSectionAnswer('writing', sentenceId, correct, 'practice');
           });
           setMode({ kind: 'landing' });
         }}
