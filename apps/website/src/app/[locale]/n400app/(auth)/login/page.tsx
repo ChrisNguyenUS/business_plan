@@ -45,9 +45,9 @@ function EmailIcon() {
   );
 }
 
-function ShieldCheckIcon() {
+function ShieldCheckIcon({ width = 16, height = 16, className }: { width?: number | string; height?: number | string; className?: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width={width} height={height} className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#16A394" opacity="0.15" />
       <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="#16A394" strokeWidth="1.5" />
       <path d="M9 12l2 2 4-4" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -78,6 +78,15 @@ function UserIcon() {
     <svg className={styles.providerIcon} viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
       <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+  );
+}
+
+
+function StarIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#FBBF24" aria-hidden="true">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </svg>
   );
 }

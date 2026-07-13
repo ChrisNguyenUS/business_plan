@@ -114,13 +114,13 @@
 @media (min-width: 1024px) {
   .leftPanel {
     display: flex;
-    flex: 0 0 48%;
+    flex: 0 0 54%;
   }
 }
 
 @media (min-width: 1280px) {
   .leftPanel {
-    flex-basis: 46%;
+    flex-basis: 56%;
   }
 }
 
@@ -129,7 +129,7 @@
 .leftContent {
   position: relative;
   z-index: 2;
-  padding: clamp(40px, 6vh, 72px) 0 0;
+  padding: clamp(40px, 6vh, 72px) 0 0 clamp(16px, 4vw, 64px);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -219,7 +219,64 @@
   margin: clamp(18px, 2.6vh, 32px) 0 0;
 }
 
-/* ─── Features ─── */
+
+/* ─── Social Proof ─── */
+.socialProof {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(22, 163, 148, 0.04);
+  border: 1px solid rgba(22, 163, 148, 0.12);
+  border-radius: 24px;
+  padding: 16px 20px;
+  margin-top: 24px;
+  max-width: 500px;
+}
+
+.socialProofIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #E5F6F4;
+  flex-shrink: 0;
+}
+
+.socialProofShield {
+  color: #16A394;
+}
+
+.socialProofContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.socialProofText {
+  font-size: 13px;
+  color: #1B2430;
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (min-height: 900px) {
+  .socialProof {
+    padding: 20px 24px;
+    margin-top: 32px;
+  }
+  .socialProofText {
+    font-size: 14px;
+  }
+}
+\n/* ─── Features ─── */
 .features {
   display: flex;
   flex-direction: column;
@@ -380,7 +437,7 @@
 
 @media (min-width: 1024px) {
   .rightPanel {
-    flex: 0 0 52%;
+    flex: 0 0 46%;
     width: auto;
     margin-top: 0;
     /* Horizontal spacing / gap is owned by the centered .desktopMain shell. */
@@ -395,7 +452,7 @@
 
 @media (min-width: 1280px) {
   .rightPanel {
-    flex-basis: 55%;
+    flex-basis: 44%;
   }
 }
 
@@ -416,14 +473,14 @@
   .loginCard {
     border-radius: 40px;
     padding: 44px 40px;
-    max-width: 480px;
+    max-width: 440px;
   }
 }
 
 /* Desktop: content-driven height, spec width, premium elevation. */
 @media (min-width: 1024px) {
   .loginCard {
-    max-width: clamp(460px, 42vw, 640px);
+    max-width: clamp(380px, 35vw, 480px);
     border-radius: 40px;
     padding: clamp(36px, 4vh, 56px) clamp(32px, 3vw, 56px);
   }
