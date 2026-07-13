@@ -419,15 +419,6 @@ export default function N400LoginPage() {
             </form>
           )}
 
-          {/* Guest Button */}
-          <Link href={`/${locale}/portal`} className={styles.guestBtn}>
-            <UserIcon />
-            <div className={styles.guestText}>
-              <span className={styles.guestLabel}>Tiếp tục với tư cách khách</span>
-              <span className={styles.guestDesc}>Khám phá ứng dụng. Không cần đăng ký.</span>
-            </div>
-            <span className={styles.guestBadge}>Đề xuất</span>
-          </Link>
 
 
           {/* Security note */}
