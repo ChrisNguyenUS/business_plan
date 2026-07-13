@@ -406,24 +406,6 @@ export default function N400LoginPage() {
             </form>
           )}
 
-          {/* Guest CTA */}
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href = `/${locale}/n400app`;
-            }}
-            className={styles.guestBtn}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <div className={styles.guestText}>
-              <span className={styles.guestLabel}>Tiếp tục với tư cách khách</span>
-              <span className={styles.guestDesc}>Khám phá ứng dụng. Không cần đăng ký.</span>
-            </div>
-            <span className={styles.guestBadge}>Đề xuất</span>
-          </button>
 
           {/* Security note */}
           <div className={styles.securityNote}>
