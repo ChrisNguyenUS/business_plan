@@ -107,12 +107,12 @@ export default function MockTestPickerPage() {
   const base = `/${locale}/n400app/mock-test`;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 animate-in fade-in duration-300">
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-col justify-center gap-[clamp(1rem,2.5vh,1.5rem)] animate-in fade-in duration-300 pb-2 lg:pb-0">
       {/* Hero banner */}
       <section className="shrink-0 overflow-hidden rounded-[24px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-sky-50 shadow-sm">
-        <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center">
+        <div className="flex flex-col gap-[clamp(1rem,2vh,1.25rem)] p-[clamp(1rem,2.5vh,1.5rem)] lg:flex-row lg:items-center">
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-extrabold leading-tight text-gray-900 sm:text-2xl">
+            <h2 className="text-[clamp(1.25rem,3vh,1.5rem)] font-extrabold leading-tight text-gray-900">
               Thi thử như phỏng vấn thật!
             </h2>
             <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-gray-600">
@@ -120,7 +120,7 @@ export default function MockTestPickerPage() {
               chuẩn chấm điểm như USCIS.
             </p>
 
-            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2.5 xl:grid-cols-4">
+            <div className="mt-[clamp(0.5rem,1.5vh,1rem)] grid grid-cols-2 gap-x-3 gap-y-2 xl:grid-cols-4">
               {HERO_FEATURES.map((f) => {
                 const Icon = f.icon;
                 return (
@@ -136,7 +136,7 @@ export default function MockTestPickerPage() {
               })}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="mt-[clamp(0.75rem,2vh,1rem)] flex flex-wrap items-center gap-3">
               <Link
                 href={`${base}/full`}
                 className="group inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
@@ -154,7 +154,7 @@ export default function MockTestPickerPage() {
             </div>
           </div>
 
-          <div className="relative hidden w-full shrink-0 self-stretch overflow-hidden rounded-2xl lg:block lg:min-h-[176px] lg:w-[42%]">
+          <div className="relative hidden w-full shrink-0 self-stretch overflow-hidden rounded-2xl lg:block lg:min-h-[140px] lg:w-[42%]">
             <Image
               src={`${THUMB_DIR}/Hero bar thumbnail.png`}
               alt="Buổi phỏng vấn quốc tịch tại văn phòng USCIS"
@@ -168,19 +168,19 @@ export default function MockTestPickerPage() {
       </section>
 
       {/* Test picker */}
-      <section className="flex flex-col">
-        <h2 className="shrink-0 text-lg font-bold text-gray-800">Chọn bài thi phù hợp với bạn</h2>
-        <div className="mt-3 grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 xl:grid-cols-4 xl:pb-0">
+      <section className="flex flex-col min-h-0 flex-1">
+        <h2 className="shrink-0 text-[clamp(1.125rem,2.5vh,1.25rem)] font-bold text-gray-800">Chọn bài thi phù hợp với bạn</h2>
+        <div className="mt-[clamp(0.5rem,1.5vh,0.75rem)] grid grid-cols-1 gap-[clamp(0.75rem,2vh,1rem)] pb-4 sm:grid-cols-2 xl:grid-cols-4 xl:pb-0">
           {TESTS.map((t) => (
             <div
               key={t.slug}
-              className={`group flex flex-col rounded-3xl border bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+              className={`group flex flex-col rounded-3xl border bg-white p-[clamp(0.75rem,2vh,1rem)] shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
                 t.featured
                   ? 'border-teal-300 ring-2 ring-teal-100'
                   : 'border-slate-100 hover:border-teal-200'
               }`}
             >
-              <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-slate-50 xl:aspect-[4/3]">
+              <div className="relative aspect-[2/1] w-full shrink-0 overflow-hidden rounded-2xl bg-slate-50 xl:aspect-[16/9]">
                 <Image
                   src={t.image}
                   alt={t.title}
@@ -194,20 +194,20 @@ export default function MockTestPickerPage() {
                   </span>
                 ) : null}
               </div>
-              <h3 className="mt-3 shrink-0 text-base font-extrabold leading-snug text-gray-800">
+              <h3 className="mt-[clamp(0.5rem,1.5vh,0.75rem)] shrink-0 text-[clamp(0.9375rem,2vh,1rem)] font-extrabold leading-snug text-gray-800">
                 {t.title}
               </h3>
               <p className="mt-1 flex-1 text-sm leading-relaxed text-gray-500">
                 {t.desc}
               </p>
-              <div className="mt-3 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+              <div className="mt-[clamp(0.5rem,1.5vh,0.75rem)] flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5">
                 <CardMeta icon={ClipboardList} tone="bg-teal-50 text-teal-600" label={t.questions} />
                 <CardMeta icon={Clock} tone="bg-indigo-50 text-indigo-600" label={t.duration} />
                 <CardMeta icon={Star} tone="bg-amber-50 text-amber-500" label={t.passRule} />
               </div>
               <Link
                 href={`${base}/${t.slug}${t.slug === 'civics' ? '?start=1' : ''}`}
-                className={`mt-3 inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-colors ${t.buttonClass}`}
+                className={`mt-[clamp(0.5rem,1.5vh,0.75rem)] inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-[clamp(0.8125rem,1.5vh,0.875rem)] font-semibold text-white shadow-md transition-colors ${t.buttonClass}`}
               >
                 {t.buttonLabel}
                 <ArrowRight
