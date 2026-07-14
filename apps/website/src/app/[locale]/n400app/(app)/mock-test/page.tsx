@@ -68,7 +68,7 @@ const TESTS: TestCard[] = [
   },
   {
     slug: 'speaking',
-    image: `${THUMB_DIR}/Speaking-mocktest.png`,
+    image: `${THUMB_DIR}/mock-test-page/mocktest-speaking.png`,
     title: 'Thi thử Speaking',
     desc: 'Trả lời 10 câu hỏi phỏng vấn với 5 What Mean và 5 Yes/No.',
     questions: '10 câu hỏi',
@@ -79,7 +79,7 @@ const TESTS: TestCard[] = [
   },
   {
     slug: 'viet',
-    image: `${THUMB_DIR}/Writing-mocktest.png`,
+    image: `${THUMB_DIR}/mock-test-page/mocktest-writing.png`,
     title: 'Thi thử Writing',
     desc: 'Viết lại 3 câu theo yêu cầu của viên chức USCIS.',
     questions: '3 câu hỏi',
