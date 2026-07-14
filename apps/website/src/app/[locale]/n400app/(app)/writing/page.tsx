@@ -3,7 +3,7 @@
 // Writing (dictation) section. Landing is a hub (Continue + Practice + the
 // always-on USCIS writing-rules guidance box); picking a mode drops into
 // DictationQuiz for that many sentences. Mirrors the what-mean / yes-no hub
-// shell, minus the Thẻ học card (writing is practice-only, no flashcards).
+// shell, minus the Flashcards card (writing is practice-only, no flashcards).
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lightbulb } from 'lucide-react';

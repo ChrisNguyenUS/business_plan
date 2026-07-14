@@ -206,7 +206,7 @@ export function HubStudyCardsCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-extrabold text-gray-900">Thẻ học</h2>
+            <h2 className="font-extrabold text-gray-900">Flashcards</h2>
             <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">
               {totalCount} {unitLabel}
             </span>

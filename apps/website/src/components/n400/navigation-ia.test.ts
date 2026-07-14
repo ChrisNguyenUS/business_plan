@@ -127,7 +127,7 @@ describe('N400 information architecture contracts', () => {
       expect(page).toContain('PracticeSelector');
       expect(page).not.toContain('PracticeSessionPicker');
     }
-    // Writing has no flashcards → no Thẻ học card:
+    // Writing has no flashcards → no Flashcards card:
     expect(source('src/app/[locale]/n400app/writing/page.tsx')).not.toContain('HubStudyCardsCard');
   });
 
