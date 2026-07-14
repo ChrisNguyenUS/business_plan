@@ -197,7 +197,7 @@ export default function MockTestPickerPage() {
               <h3 className="mt-3 shrink-0 text-base font-extrabold leading-snug text-gray-800">
                 {t.title}
               </h3>
-              <p className="mt-1 flex-1 text-sm leading-relaxed text-gray-500 xl:line-clamp-2 xl:flex-none">
+              <p className="mt-1 flex-1 text-sm leading-relaxed text-gray-500">
                 {t.desc}
               </p>
               <div className="mt-3 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5">
