@@ -25,7 +25,7 @@ const ALL_IDS = YESNO_QUESTIONS.map((q) => q.id);
 type Mode =
   | { kind: 'landing' }
   | { kind: 'deck'; ids: string[] }
-  | { kind: 'quiz'; ids: string[] };
+  | { kind: 'quiz'; ids: string[]; minutes?: number | null };
 
 const answerLabel = (answer: 'yes' | 'no') => (answer === 'yes' ? 'Yes, officer' : 'No, officer');
 
@@ -98,13 +98,14 @@ export default function YesNoPage() {
         onExit={() => setMode({ kind: 'landing' })}
         onRestart={() => startQuizWith(mode.ids.length)}
         title="Yes No Quiz"
+        estimatedMinutes={mode.minutes}
       />
     );
   }
 
-  function startQuizWith(count: number) {
+  function startQuizWith(count: number, minutes?: number | null) {
     const ids = shuffle([...ALL_IDS], `yn-quiz-${Date.now()}`).slice(0, count);
-    setMode({ kind: 'quiz', ids });
+    setMode({ kind: 'quiz', ids, minutes });
   }
 
   const browse = (filter: StudyCardsFilter) => {
@@ -154,7 +155,7 @@ export default function YesNoPage() {
           subtitle="Luyện trả lời Yes/No với hai nút bấm."
           presets={YESNO_PRESETS}
           totalCount={ALL_IDS.length}
-          onStart={(p) => startQuizWith(p.count ?? ALL_IDS.length)}
+          onStart={(p) => startQuizWith(p.count ?? ALL_IDS.length, p.minutes)}
         />
       </div>
     </div>

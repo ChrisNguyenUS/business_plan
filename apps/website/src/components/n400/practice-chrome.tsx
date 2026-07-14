@@ -18,15 +18,13 @@ import Image from 'next/image';
 import { Clock, ChevronLeft } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
 
-/** ~0.85 min per remaining question ≈ the Civics reference (Q7/20 → ~12 min). */
-const MINUTES_PER_QUESTION = 0.85;
-
 export function PracticeProgressRow({
   index,
   total,
   unit = 'Câu hỏi',
   onBack,
   showTime = true,
+  estimatedMinutes,
 }: {
   index: number;
   total: number;
@@ -36,9 +34,12 @@ export function PracticeProgressRow({
   onBack?: () => void;
   /** Hidden in exam mode where a real timer, not an estimate, governs pace. */
   showTime?: boolean;
+  /** Total estimated minutes for the session (from preset). Used to derive remaining time proportionally. */
+  estimatedMinutes?: number | null;
 }) {
   const percent = ((index + 1) / total) * 100;
-  const minutesRemaining = Math.max(1, Math.round((total - index) * MINUTES_PER_QUESTION));
+  const perQ = (estimatedMinutes ?? total * 0.5) / total;
+  const minutesRemaining = Math.max(1, Math.round((total - index) * perQ));
 
   return (
     <div className="shrink-0 flex items-center gap-[clamp(0.5rem,1.5vw,1rem)] rounded-2xl bg-white border border-slate-100 shadow-sm px-[clamp(0.75rem,2vw,1.25rem)] py-[clamp(0.5rem,1.2vh,0.875rem)]">

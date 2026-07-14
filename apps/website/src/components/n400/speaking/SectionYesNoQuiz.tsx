@@ -22,12 +22,15 @@ export function SectionYesNoQuiz({
   onExit,
   onRestart,
   title,
+  estimatedMinutes,
 }: {
   questions: YesNoQuestion[];
   onAnswer: (itemId: string, wasCorrect: boolean) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
+  /** Total estimated minutes for the session (from preset). */
+  estimatedMinutes?: number | null;
 }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Choice | null>(null);
@@ -88,7 +91,7 @@ export function SectionYesNoQuiz({
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       {/* Progress — calm shared row. Subtle Back returns to the section hub. */}
-      <PracticeProgressRow index={index} total={questions.length} onBack={onExit} />
+      <PracticeProgressRow index={index} total={questions.length} onBack={onExit} estimatedMinutes={estimatedMinutes} />
 
       {/* Main area */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">

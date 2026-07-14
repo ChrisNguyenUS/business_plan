@@ -55,6 +55,7 @@ export function SectionMCQuiz({
   examSection,
   mockMode = 'full',
   onComplete,
+  estimatedMinutes,
 }: {
   questions: MCQuestion[];
   onAnswer: (itemId: string, wasCorrect: boolean) => void;
@@ -70,6 +71,8 @@ export function SectionMCQuiz({
   /** Which exam-page thumbnail the exam right rail shows. */
   mockMode?: MockMode;
   onComplete?: (result: { correct: number; wrong: number }) => void;
+  /** Total estimated minutes for the session (from preset). */
+  estimatedMinutes?: number | null;
 }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<MCOption['id'] | null>(null);
@@ -154,7 +157,7 @@ export function SectionMCQuiz({
       {examMode ? (
         <MockExamProgress index={index} total={questions.length} section={examSection} />
       ) : (
-        <PracticeProgressRow index={index} total={questions.length} onBack={onExit} showTime />
+        <PracticeProgressRow index={index} total={questions.length} onBack={onExit} showTime estimatedMinutes={estimatedMinutes} />
       )}
 
       {/* Main area */}

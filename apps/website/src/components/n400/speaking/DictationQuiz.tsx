@@ -70,6 +70,8 @@ interface DictationQuizProps {
   examSection?: MockExamSection;
   /** Which exam-page thumbnail the exam right rail shows. */
   mockMode?: MockMode;
+  /** Total estimated minutes for the session (from preset). */
+  estimatedMinutes?: number | null;
 }
 
 // Strips the **bold** markers the feedback builder uses so guidance reads cleanly
@@ -185,6 +187,7 @@ export function DictationQuiz({
   examMode = false,
   examSection,
   mockMode = 'full',
+  estimatedMinutes,
 }: DictationQuizProps) {
   const [index, setIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
@@ -343,6 +346,7 @@ export function DictationQuiz({
           unit="Câu"
           onBack={() => onSessionEnd(sessionResults())}
           showTime
+          estimatedMinutes={estimatedMinutes}
         />
       )}
 

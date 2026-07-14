@@ -30,7 +30,7 @@ const ALL_IDS = WHATMEAN_QUESTIONS.map((q) => q.id);
 type Mode =
   | { kind: 'landing' }
   | { kind: 'deck'; ids: string[] }
-  | { kind: 'practice'; ids: string[]; seed: string };
+  | { kind: 'practice'; ids: string[]; seed: string; minutes?: number | null };
 
 function toCard(id: string): SectionCard {
   const q = WHATMEAN_QUESTIONS_BY_ID[id];
@@ -123,14 +123,15 @@ export default function WhatMeanPage() {
         onExit={() => setMode({ kind: 'landing' })}
         onRestart={() => startPracticeWith(mode.ids.length)}
         title="Câu hỏi What Mean"
+        estimatedMinutes={mode.minutes}
       />
     );
   }
 
-  function startPracticeWith(count: number) {
+  function startPracticeWith(count: number, minutes?: number | null) {
     const seed = `${Date.now()}`;
     const ids = shuffle([...ALL_IDS], `wm-practice-${seed}`).slice(0, count);
-    setMode({ kind: 'practice', ids, seed });
+    setMode({ kind: 'practice', ids, seed, minutes });
   }
 
   const browse = (filter: StudyCardsFilter) => {
@@ -185,7 +186,7 @@ export default function WhatMeanPage() {
           subtitle="Luyện tập trắc nghiệm nghĩa của từ."
           presets={WHATMEAN_PRESETS}
           totalCount={ALL_IDS.length}
-          onStart={(p) => startPracticeWith(p.count ?? ALL_IDS.length)}
+          onStart={(p) => startPracticeWith(p.count ?? ALL_IDS.length, p.minutes)}
         />
       </div>
     </div>

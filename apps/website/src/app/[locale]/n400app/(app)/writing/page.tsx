@@ -24,7 +24,7 @@ const CONTINUE_COUNT = WRITING_PRESETS.find((p) => p.id === 'standard')?.count ?
 
 type Mode =
   | { kind: 'landing' }
-  | { kind: 'quiz'; questions: WritingSentence[] };
+  | { kind: 'quiz'; questions: WritingSentence[]; minutes?: number | null };
 
 const WRITING_RULES = [
   'Viết hoa tên người và địa danh (ví dụ: George Washington, California).',
@@ -70,7 +70,7 @@ export default function WritingPage() {
   const startQuiz = (preset: PracticePreset) => {
     const count = preset.count ?? ALL.length;
     const questions = shuffle([...ALL], `wr-quiz-${Date.now()}`).slice(0, count);
-    setMode({ kind: 'quiz', questions });
+    setMode({ kind: 'quiz', questions, minutes: preset.minutes });
   };
 
   const startContinue = () => {
@@ -83,6 +83,7 @@ export default function WritingPage() {
     return (
       <DictationQuiz
         questions={questions}
+        estimatedMinutes={mode.minutes}
         onSessionEnd={({ perItem }) => {
           // Record each graded sentence with its REAL verdict — review debt
           // ("câu sai chưa ôn") is derived from these attempts, so the split

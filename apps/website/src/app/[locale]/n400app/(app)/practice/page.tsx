@@ -474,7 +474,7 @@ export default function PracticePage() {
           (change mode / reshuffle) intentionally live off this screen: the app
           header Back button returns to the Civics hub where the mode picker
           lives, keeping the answering surface distraction-free. */}
-      <PracticeProgressRow index={index} total={order.length} />
+      <PracticeProgressRow index={index} total={order.length} estimatedMinutes={preset?.minutes} />
 
       {/* Main area — flex-1, grid on desktop */}
       <div className="flex-1 min-h-0 flex gap-[clamp(0.5rem,1vw,1.5rem)]">
