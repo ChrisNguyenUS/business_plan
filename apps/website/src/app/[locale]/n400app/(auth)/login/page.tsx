@@ -316,18 +316,7 @@ export default function N400LoginPage() {
             </div>
           </div>
 
-          {/* Feature List */}
-          <div className={styles.features}>
-            {FEATURES.map((f) => (
-              <div key={f.title} className={styles.featureRow}>
-                <FeatureIcon>{f.icon}</FeatureIcon>
-                <div>
-                  <div className={styles.featureTitle}>{f.title}</div>
-                  <div className={styles.featureDesc}>{f.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+
         </div>
       </div>
 
