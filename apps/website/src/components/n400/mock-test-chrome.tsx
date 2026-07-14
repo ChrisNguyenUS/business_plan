@@ -35,8 +35,8 @@ const THUMB_BASE = '/images/n400/Mock test thumbanil/mock-test-page';
 const MOCK_THUMBS: Record<MockMode, { src: string; ratio: string }> = {
   full: { src: `${THUMB_BASE}/Mocktest-full interview-thumbnail.png`, ratio: '1071/1469' },
   civics: { src: `${THUMB_BASE}/Mocktest-civic-thumbnail.png`, ratio: '1078/1459' },
-  speaking: { src: `${THUMB_BASE}/Mocktest-full interview-thumbnail.png`, ratio: '1071/1469' },
-  writing: { src: `${THUMB_BASE}/Mocktest-full interview-thumbnail.png`, ratio: '1071/1469' },
+  speaking: { src: `${THUMB_BASE}/mocktest-speaking.png`, ratio: '1071/1469' },
+  writing: { src: `${THUMB_BASE}/mocktest-writing.png`, ratio: '1071/1469' },
 };
 
 /** The four exam rules, in the reference order. English by design (chrome copy). */
