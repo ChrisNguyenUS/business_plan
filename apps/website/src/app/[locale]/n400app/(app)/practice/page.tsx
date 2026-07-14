@@ -528,10 +528,10 @@ export default function PracticePage() {
               </div>
             ) : null}
 
-            {/* Answer Options — before answering: one calm stacked column so the
-                question stays the hero and each choice is easy to scan/tap. After
-                answering: 2-up to free vertical room for the feedback panel. */}
-            <div className={`grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)] ${phase === 'revealed' ? 'sm:grid-cols-2' : ''}`}>
+            {/* Answer Options — always one stacked column so the layout stays
+                identical before and after answering. The question stays the hero
+                and each choice is easy to scan/tap. */}
+            <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {options.map((opt) => {
                 const isPicked = selected === opt.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';

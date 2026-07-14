@@ -3,8 +3,8 @@
 // Multiple-choice quiz screen for the Speaking sections. Uses the shared calm
 // "Luyện tập" chrome (PracticeProgressRow + PracticeSupportPanel) exactly like
 // the Civics practice page: quiet progress row, question card with a stacked
-// A/B/C/D option list that becomes a 2×2 grid once answered, reveal feedback,
-// and a bottom bar that only appears after answering.
+// A/B/C/D option list (single column before and after answering), reveal
+// feedback, and a bottom bar that only appears after answering.
 //
 // examMode (mock tests / full interview): answers are never revealed during
 // the run — picking just selects (re-pickable), there is no feedback panel, the
@@ -143,9 +143,6 @@ export function SectionMCQuiz({
   };
 
   const isLast = index === questions.length - 1;
-  // Exam options stay a calm stacked column (like the pre-answer practice
-  // screen); only the practice reveal switches to a 2-up grid.
-  const twoUp = phase === 'revealed';
 
   return (
     <div
@@ -191,7 +188,7 @@ export function SectionMCQuiz({
             </div>
 
             {/* Options — stacked before answering, 2-up after (or in exam mode) */}
-            <div className={`grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)] ${twoUp ? 'sm:grid-cols-2' : ''}`}>
+            <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {q.options.map((opt) => {
                 const isPicked = selected === opt.id;
                 let style = 'border-gray-200 hover:border-teal-300 bg-white';
