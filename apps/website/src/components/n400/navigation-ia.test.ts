@@ -10,7 +10,7 @@ function source(path: string) {
 
 describe('N400 information architecture contracts', () => {
   test('flashcards page offers cards and list view modes', () => {
-    const page = source('src/app/[locale]/n400app/flashcards/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/flashcards/page.tsx');
 
     expect(page).toContain("'cards' | 'list'");
     expect(page).toContain('QuestionList');
@@ -25,14 +25,14 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('old bookmark route redirects into flashcards list view', () => {
-    const page = source('src/app/[locale]/n400app/bookmark/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/bookmark/page.tsx');
 
     expect(page).toContain('redirect(');
     expect(page).toContain('view=list&filter=bookmarks');
   });
 
   test('study picker links to all four skills', () => {
-    const page = source('src/app/[locale]/n400app/study/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/study/page.tsx');
 
     expect(page).toContain('study/civics');
     expect(page).toContain('speaking/what-mean');
@@ -41,7 +41,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('civics hub uses the hub module and deep-links methods', () => {
-    const page = source('src/app/[locale]/n400app/study/civics/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/study/civics/page.tsx');
 
     expect(page).toContain('HubContinueCard');
     expect(page).toContain('HubStudyCardsCard');
@@ -91,8 +91,8 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('both progress pages render the shared tab bar', () => {
-    expect(source('src/app/[locale]/n400app/statistic/page.tsx')).toContain('ProgressTabs');
-    expect(source('src/app/[locale]/n400app/progress/page.tsx')).toContain('ProgressTabs');
+    expect(source('src/app/[locale]/n400app/(app)/statistic/page.tsx')).toContain('ProgressTabs');
+    expect(source('src/app/[locale]/n400app/(app)/progress/page.tsx')).toContain('ProgressTabs');
   });
 
   test('hub module exists with the cards and the practice selector', () => {
@@ -109,7 +109,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('practice page is quiz-only, driven by ?start=', () => {
-    const page = source('src/app/[locale]/n400app/practice/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/practice/page.tsx');
 
     expect(page).not.toContain('PracticeSessionPicker');
     expect(page).toContain("get('start')");
@@ -118,9 +118,9 @@ describe('N400 information architecture contracts', () => {
 
   test('section landings use the shared hub module', () => {
     for (const path of [
-      'src/app/[locale]/n400app/speaking/what-mean/page.tsx',
-      'src/app/[locale]/n400app/speaking/yes-no/page.tsx',
-      'src/app/[locale]/n400app/writing/page.tsx',
+      'src/app/[locale]/n400app/(app)/speaking/what-mean/page.tsx',
+      'src/app/[locale]/n400app/(app)/speaking/yes-no/page.tsx',
+      'src/app/[locale]/n400app/(app)/writing/page.tsx',
     ]) {
       const page = source(path);
       expect(page).toContain('HubContinueCard');
@@ -128,7 +128,7 @@ describe('N400 information architecture contracts', () => {
       expect(page).not.toContain('PracticeSessionPicker');
     }
     // Writing has no flashcards → no Flashcards card:
-    expect(source('src/app/[locale]/n400app/writing/page.tsx')).not.toContain('HubStudyCardsCard');
+    expect(source('src/app/[locale]/n400app/(app)/writing/page.tsx')).not.toContain('HubStudyCardsCard');
   });
 
   test('PracticeSessionPicker is fully retired', () => {
@@ -143,7 +143,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('full interview chains the three parts and records results', () => {
-    const page = source('src/app/[locale]/n400app/mock-test/full/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/mock-test/full/page.tsx');
 
     expect(page).toContain('buildCivicsPhase');
     expect(page).toContain('buildSpeakingPhase');
@@ -154,7 +154,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('mock test picker offers the full interview', () => {
-    const page = source('src/app/[locale]/n400app/mock-test/page.tsx');
+    const page = source('src/app/[locale]/n400app/(app)/mock-test/page.tsx');
 
     expect(page).toContain("'full'");
     expect(page).toContain('Thi thử đầy đủ (Full Interview)');

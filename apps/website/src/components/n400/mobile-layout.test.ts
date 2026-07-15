@@ -10,7 +10,7 @@ function source(path: string) {
 
 describe('N400 mobile layout contracts', () => {
   test('app shell keeps desktop sidebar offset out of mobile view', () => {
-    const layout = source('src/app/[locale]/n400app/layout.tsx');
+    const layout = source('src/app/[locale]/n400app/(app)/layout.tsx');
     const sidebar = source('src/components/n400/Sidebar.tsx');
 
     expect(layout).toContain('lg:ml-64');
@@ -19,7 +19,7 @@ describe('N400 mobile layout contracts', () => {
   });
 
   test('dashboard collapses desktop columns on mobile', () => {
-    const dashboard = source('src/app/[locale]/n400app/dashboard-client.tsx');
+    const dashboard = source('src/app/[locale]/n400app/(app)/dashboard-client.tsx');
 
     // Hero panorama shows on mobile without the desktop torch overflow.
     expect(dashboard).toContain('w-[45%] lg:w-[44%]');
@@ -32,7 +32,7 @@ describe('N400 mobile layout contracts', () => {
   });
 
   test('statistics screen avoids fixed desktop columns on mobile', () => {
-    const statistic = source('src/app/[locale]/n400app/statistic/page.tsx');
+    const statistic = source('src/app/[locale]/n400app/(app)/statistic/page.tsx');
 
     expect(statistic).toContain('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5');
     expect(statistic).toContain('flex flex-col gap-6 xl:flex-row');
