@@ -64,7 +64,11 @@ export interface ReadinessSignals {
  */
 export const KNOWN_THRESHOLD = FIRST_MOCK_MIN_PERCENT / 100;
 
-/** How many of the most recent civics mocks must have passed. */
+/**
+ * How many of the most recent civics mocks must have passed. Note this makes a
+ * lone passing mock read as half credit, same as two mocks with one failure —
+ * intended: with a single attempt you haven't yet proven two consecutive passes.
+ */
 export const CIVICS_MOCK_PASS_STREAK = 2;
 
 function knownCriterion(
@@ -122,13 +126,22 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
   ];
 
   const metCount = criteria.filter((c) => c.met).length;
+  const ready = metCount === criteria.length;
+
+  const rawPercent = Math.round((criteria.reduce((sum, c) => sum + c.progress, 0) / criteria.length) * 100);
+  // `percent` and `met` read the same progress values by different paths: this
+  // is a rounded average, while `met` demands progress >= 1 exactly. So the
+  // average can round up to 100 while a criterion is still short (e.g. 100/128
+  // civics known with the rest done). `ready` is the truth; never let the ring
+  // claim 100 next to a "việc tiếp theo" CTA — cap at 99 until all five are met.
+  const percent = ready ? 100 : Math.min(rawPercent, 99);
 
   return {
-    percent: Math.round((criteria.reduce((sum, c) => sum + c.progress, 0) / criteria.length) * 100),
+    percent,
     metCount,
     totalCount: criteria.length,
     criteria,
     next: criteria.find((c) => !c.met) ?? null,
-    ready: metCount === criteria.length,
+    ready,
   };
 }

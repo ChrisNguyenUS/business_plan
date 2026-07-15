@@ -93,6 +93,17 @@ describe('deriveReadiness', () => {
     expect(r.percent).toBe(10);
   });
 
+  it('never shows 100% while a criterion is still unmet', () => {
+    // 100/128 = 78.1% known → progress 0.977, just short of the 80% bar. The
+    // other four criteria are fully met, so the rounded average rounds up to
+    // 100 even though the learner is not ready.
+    const r = deriveReadiness({ ...readySignals(), civicsKnown: 100 });
+    expect(r.ready).toBe(false);
+    expect(r.metCount).toBe(4);
+    expect(r.next?.id).toBe('civics_known');
+    expect(r.percent).toBe(99);
+  });
+
   it('never lets a known-criterion exceed full credit', () => {
     const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 });
     expect(r.criteria.find((c) => c.id === 'civics_known')!.progress).toBe(1);
@@ -103,6 +114,13 @@ describe('deriveReadiness', () => {
       ...readySignals(),
       mockResults: [mock(true, '2026-07-01T00:00:00Z'), mock(false, '2026-07-02T00:00:00Z')],
     };
+    const civicsMock = deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!;
+    expect(civicsMock.met).toBe(false);
+    expect(civicsMock.progress).toBe(0.5);
+  });
+
+  it('gives a single passing mock only half credit, since two in a row is the bar', () => {
+    const signals = { ...readySignals(), mockResults: [mock(true, '2026-07-01T00:00:00Z')] };
     const civicsMock = deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!;
     expect(civicsMock.met).toBe(false);
     expect(civicsMock.progress).toBe(0.5);
