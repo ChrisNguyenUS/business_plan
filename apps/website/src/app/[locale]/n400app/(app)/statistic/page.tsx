@@ -149,23 +149,30 @@ export default function StatisticPage() {
         </p>
         <ul className="mt-4 space-y-2.5">
           {readiness.criteria.map((c) => (
-            <li key={c.id} className="flex items-center gap-3">
+            // The label gets a whole row to itself rather than competing with
+            // the detail and the CTA — at 390px a three-way flex row shredded
+            // "Thuộc 80% câu What Mean" across four lines.
+            <li key={c.id} className="flex items-start gap-3">
               <span
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
                   c.met ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'
                 }`}
               >
                 {c.met ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
               </span>
-              <span className={`min-w-0 flex-1 text-sm ${c.met ? 'text-gray-500 line-through' : 'font-medium text-gray-800'}`}>
-                {c.label}
-              </span>
-              <span className="shrink-0 text-xs tabular-nums text-gray-400">{c.detail}</span>
-              {c.met ? null : (
-                <Link href={`${base}${c.cta.href}`} className="shrink-0 text-xs font-semibold text-teal-600 hover:text-teal-700">
-                  {c.cta.label} →
-                </Link>
-              )}
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                <span className={`min-w-0 flex-1 text-sm ${c.met ? 'text-gray-500 line-through' : 'font-medium text-gray-800'}`}>
+                  {c.label}
+                </span>
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="text-xs tabular-nums text-gray-400">{c.detail}</span>
+                  {c.met ? null : (
+                    <Link href={`${base}${c.cta.href}`} className="text-xs font-semibold text-teal-600 hover:text-teal-700">
+                      {c.cta.label} →
+                    </Link>
+                  )}
+                </div>
+              </div>
             </li>
           ))}
         </ul>
