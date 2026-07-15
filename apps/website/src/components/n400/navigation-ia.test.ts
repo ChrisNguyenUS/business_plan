@@ -57,7 +57,7 @@ describe('N400 information architecture contracts', () => {
 
     expect(desktop).toContain("href: 'study'");
     expect(desktop).toContain("href: 'mock-test'");
-    expect(desktop).toContain("href: 'statistic'");
+    expect(desktop).toContain("href: 'progress'");
     expect(desktop).toContain('subtitle:');
     // Individual skills are no longer desktop nav destinations:
     expect(desktop).not.toContain("href: 'study/civics'");
@@ -67,8 +67,8 @@ describe('N400 information architecture contracts', () => {
     // Learning methods are no longer nav destinations:
     expect(sidebar).not.toContain("href: 'practice'");
     expect(sidebar).not.toContain("href: 'flashcards'");
-    // One merged progress entry, pointing at statistic:
-    expect(sidebar).not.toContain("href: 'progress'");
+    // One merged progress entry, pointing at the Tổng quan tab:
+    expect(sidebar).not.toContain("href: 'statistic'");
   });
 
   test('mobile nav is Home / Học tập / Thi thử / Tiến độ', () => {
@@ -77,7 +77,7 @@ describe('N400 information architecture contracts', () => {
 
     expect(mobile).toContain("href: 'study'");
     expect(mobile).toContain("href: 'mock-test'");
-    expect(mobile).toContain("href: 'statistic'");
+    expect(mobile).toContain("href: 'progress'");
   });
 
   test('header knows the new sections and parents', () => {
@@ -93,6 +93,23 @@ describe('N400 information architecture contracts', () => {
   test('both progress pages render the shared tab bar', () => {
     expect(source('src/app/[locale]/n400app/(app)/statistic/page.tsx')).toContain('ProgressTabs');
     expect(source('src/app/[locale]/n400app/(app)/progress/page.tsx')).toContain('ProgressTabs');
+  });
+
+  test('the two progress tabs split by depth and never duplicate badges', () => {
+    const tabs = source('src/components/n400/progress/ProgressTabs.tsx');
+    expect(tabs).toContain("label: 'Tổng quan'");
+    expect(tabs).toContain("label: 'Chi tiết'");
+
+    // Badges live on the Tài khoản page only — the gallery used to render on
+    // both, which is the duplication this redesign removed.
+    const overview = source('src/app/[locale]/n400app/(app)/progress/page.tsx');
+    expect(overview).not.toContain('BadgeGallery');
+    expect(source('src/app/[locale]/n400app/(app)/profile/page.tsx')).toContain('BadgeGallery');
+  });
+
+  test('readiness is derived by the shared engine on both tabs', () => {
+    expect(source('src/app/[locale]/n400app/(app)/progress/page.tsx')).toContain('deriveReadiness');
+    expect(source('src/app/[locale]/n400app/(app)/statistic/page.tsx')).toContain('deriveReadiness');
   });
 
   test('hub module exists with the cards and the practice selector', () => {

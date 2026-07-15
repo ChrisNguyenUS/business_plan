@@ -1,7 +1,9 @@
 'use client';
 
-// Segmented switcher shown on both Tiến độ pages. The two pages keep their
-// URLs (/statistic, /progress); the sidebar has a single "Tiến độ" entry.
+// Segmented switcher shown on both Tiến độ pages. The split is by DEPTH, not
+// by data type: /progress answers the three questions at a glance, /statistic
+// explains them. The sidebar has a single "Tiến độ" entry, pointing at
+// /progress. The two pages keep their existing URLs.
 
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
@@ -13,8 +15,8 @@ export function ProgressTabs() {
   const base = `/${locale}/n400app`;
 
   const tabs = [
-    { href: `${base}/statistic`, label: 'Thống kê' },
-    { href: `${base}/progress`, label: 'Thành tích' },
+    { href: `${base}/progress`, label: 'Tổng quan' },
+    { href: `${base}/statistic`, label: 'Chi tiết' },
   ];
 
   return (
