@@ -1,9 +1,14 @@
 'use client';
 
 // Tiến độ — tab 2 of 2, "Chi tiết". The Tổng quan tab answers the three
-// questions at a glance; this tab explains them. Nothing here is repeated
-// there: the KPI row and the duplicate category block were removed because
-// the readiness checklist and the skills card already carry those numbers.
+// questions at a glance; this tab explains them. The old KPI row and the
+// duplicate category block were removed because the readiness checklist and
+// the skills card already carry those numbers.
+//
+// One thing is deliberately echoed across both tabs: "Đạt X/5 điều kiện", the
+// anchor the whole screen hangs on. Both tabs read it from the same
+// deriveReadiness call shape, so they cannot disagree. Everything else lives
+// on exactly one tab.
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
