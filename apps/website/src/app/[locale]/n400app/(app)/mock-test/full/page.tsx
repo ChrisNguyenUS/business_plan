@@ -25,7 +25,12 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import MockTestResult from './MockTestResult';
-import ReviewWrongAnswers from './ReviewWrongAnswers';
+import ReviewAnswers, {
+  type CivicsAnswer,
+  type SpeakingAnswer,
+  type WritingAnswer,
+} from './ReviewAnswers';
+import { InterludeScreen } from './interview-chrome';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   FULL_CIVICS_COUNT,
@@ -126,7 +131,14 @@ export default function FullInterviewPage() {
   const [civics, setCivics] = useState<PartResult | null>(null);
   const [speaking, setSpeaking] = useState<PartResult | null>(null);
   const [writing, setWriting] = useState<PartResult | null>(null);
-  const civicsAnswers = useRef<{ questionId: number; wasCorrect: boolean }[]>([]);
+  // Per-answer verdicts accumulate in refs during the quizzes (no re-render
+  // per answer); onComplete snapshots them into state, which is what the
+  // summary/review renders read — render never touches the refs.
+  const civicsAnswers = useRef<CivicsAnswer[]>([]);
+  const [civicsAnswerList, setCivicsAnswerList] = useState<CivicsAnswer[]>([]);
+  const speakingAnswers = useRef<SpeakingAnswer[]>([]);
+  const [speakingAnswerList, setSpeakingAnswerList] = useState<SpeakingAnswer[]>([]);
+  const [writingAnswerList, setWritingAnswerList] = useState<WritingAnswer[]>([]);
   const startedAt = useRef<string>('');
 
   const stateCode = state.settings.stateCode;
@@ -157,6 +169,10 @@ export default function FullInterviewPage() {
     // mismatch since the initial render stays deterministic at seed 0.
     setSeed((s) => s + 1 + Math.floor(Math.random() * 1_000_000));
     civicsAnswers.current = [];
+    setCivicsAnswerList([]);
+    speakingAnswers.current = [];
+    setSpeakingAnswerList([]);
+    setWritingAnswerList([]);
     startedAt.current = new Date().toISOString();
     setCivics(null);
     setSpeaking(null);
@@ -179,12 +195,17 @@ export default function FullInterviewPage() {
         examMode
         mockMode="full"
         examSection={{ current: 1, total: 3, label: 'Civics', labelVi: 'Kiến thức công dân' }}
-        onAnswer={(itemId, ok) =>
-          civicsAnswers.current.push({ questionId: Number(itemId.slice(4)), wasCorrect: ok })
+        onAnswer={(itemId, ok, selected) =>
+          civicsAnswers.current.push({
+            questionId: Number(itemId.slice(4)),
+            wasCorrect: ok,
+            selectedEn: selected?.en,
+          })
         }
         onComplete={({ correct }) => {
           const passed = correct >= FULL_CIVICS_PASS;
           setCivics({ correct, total: FULL_CIVICS_COUNT, passed });
+          setCivicsAnswerList([...civicsAnswers.current]);
           // Advance BEFORE recording so a recording throw can't strand the
           // user on the quiz's null (skipSummary) render.
           setPhase({ kind: 'interlude', next: 'speaking' });
@@ -195,7 +216,12 @@ export default function FullInterviewPage() {
             score: correct,
             total: FULL_CIVICS_COUNT,
             passed,
-            questionResults: civicsAnswers.current,
+            // Persisted attempts keep the lean shape — selectedEn only feeds
+            // this session's review screen.
+            questionResults: civicsAnswers.current.map(({ questionId, wasCorrect }) => ({
+              questionId,
+              wasCorrect,
+            })),
           });
         }}
         onExit={() => setPhase({ kind: 'intro' })}
@@ -214,12 +240,15 @@ export default function FullInterviewPage() {
         examMode
         mockMode="full"
         examSection={{ current: 2, total: 3, label: 'Speaking', labelVi: 'Kỹ năng nói' }}
-        onAnswer={() => {}}
+        onAnswer={(itemId, ok, selected) =>
+          speakingAnswers.current.push({ itemId, wasCorrect: ok, selectedEn: selected?.en })
+        }
         onComplete={({ correct }) => {
           const passed = correct >= FULL_SPEAKING_PASS;
           setSpeaking({ correct, total: FULL_SPEAKING_COUNT, passed });
-          void recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT);
+          setSpeakingAnswerList([...speakingAnswers.current]);
           setPhase({ kind: 'interlude', next: 'writing' });
+          void recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT);
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -236,7 +265,7 @@ export default function FullInterviewPage() {
         examMode
         mockMode="full"
         examSection={{ current: 3, total: 3, label: 'Writing', labelVi: 'Kỹ năng viết' }}
-        onSessionEnd={({ correct, total, answered }) => {
+        onSessionEnd={({ correct, total, answered, perItem }) => {
           // Mid-quiz "Đổi chế độ" abandons the part — record nothing, matching
           // civics/speaking onExit semantics. Only a fully answered session
           // (fired exactly once by DictationQuiz's skipSummary effect) counts.
@@ -246,6 +275,7 @@ export default function FullInterviewPage() {
           }
           const passed = correct >= FULL_WRITING_PASS;
           setWriting({ correct, total, passed });
+          setWritingAnswerList(perItem);
           setPhase({ kind: 'summary' });
           void recordSectionMockResult('writing', passed, correct, total);
         }}
@@ -254,39 +284,12 @@ export default function FullInterviewPage() {
   }
 
   if (phase.kind === 'interlude') {
-    const isSpeaking = phase.next === 'speaking';
-    const donePart = isSpeaking ? civics : speaking;
     return (
-      <CenterCard>
-        <div className="text-xs font-bold uppercase tracking-wide text-teal-600">
-          {isSpeaking ? 'Phần 1 hoàn thành' : 'Phần 2 hoàn thành'}
-        </div>
-        {donePart ? (
-          <div className="mt-2 text-3xl font-extrabold text-gray-900">
-            {donePart.correct}
-            <span className="text-lg text-gray-500">/{donePart.total}</span>{' '}
-            <span className={donePart.passed ? 'text-teal-600' : 'text-orange-500'}>
-              {donePart.passed ? 'Đạt' : 'Chưa đạt'}
-            </span>
-          </div>
-        ) : null}
-        <h2 className="mt-4 text-xl font-extrabold text-gray-800">
-          {isSpeaking ? PARTS_COPY[1].label : PARTS_COPY[2].label}
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          {isSpeaking ? PARTS_COPY[1].desc : PARTS_COPY[2].desc} Đạt nếu đúng ≥{' '}
-          {isSpeaking ? PARTS_COPY[1].passMin : PARTS_COPY[2].passMin}/
-          {isSpeaking ? PARTS_COPY[1].total : PARTS_COPY[2].total} câu.
-        </p>
-        <button
-          type="button"
-          onClick={() => setPhase({ kind: phase.next })}
-          className="group mx-auto mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
-        >
-          Bắt đầu phần tiếp theo
-          <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-        </button>
-      </CenterCard>
+      <InterludeScreen
+        next={phase.next}
+        donePart={phase.next === 'speaking' ? civics : speaking}
+        onContinue={() => setPhase({ kind: phase.next })}
+      />
     );
   }
 
@@ -302,18 +305,30 @@ export default function FullInterviewPage() {
         overall={overall}
         totalScore={totalScore}
         totalQuestions={totalQuestions}
-        civicsAnswers={civicsAnswers.current}
+        civicsAnswers={civicsAnswerList}
         onRetake={retake}
-        onReviewWrongAnswers={() => setPhase({ kind: 'review' })}
+        onReviewAnswers={() => setPhase({ kind: 'review' })}
         basePath={base}
       />
     );
   }
 
   if (phase.kind === 'review') {
+    const totalScore = (civics?.correct ?? 0) + (speaking?.correct ?? 0) + (writing?.correct ?? 0);
+    const overall = [civics, speaking, writing].every((p) => p?.passed);
     return (
-      <ReviewWrongAnswers
-        civicsAnswers={civicsAnswers.current}
+      <ReviewAnswers
+        civicsAnswers={civicsAnswerList}
+        speakingQuestions={speakingQuestions}
+        speakingAnswers={speakingAnswerList}
+        writingQuestions={writingQuestions}
+        writingAnswers={writingAnswerList}
+        civics={civics}
+        speaking={speaking}
+        writing={writing}
+        totalScore={totalScore}
+        totalQuestions={FULL_TOTAL_COUNT}
+        overall={overall}
         onBack={() => setPhase({ kind: 'summary' })}
         onRetake={retake}
       />
@@ -438,7 +453,7 @@ function CenterCard({
         ? 'border-orange-200 bg-orange-50'
         : 'border-slate-100 bg-white';
   return (
-    <div className="flex flex-1 min-h-0 overflow-y-auto animate-in fade-in duration-300">
+    <div className="flex min-h-full animate-in fade-in duration-300">
       <div
         className={`m-auto w-full rounded-[24px] border p-6 text-center shadow-sm sm:p-8 ${
           wide ? 'max-w-[740px]' : 'max-w-lg'

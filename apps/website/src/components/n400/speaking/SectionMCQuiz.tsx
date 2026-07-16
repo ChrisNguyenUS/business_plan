@@ -58,7 +58,8 @@ export function SectionMCQuiz({
   estimatedMinutes,
 }: {
   questions: MCQuestion[];
-  onAnswer: (itemId: string, wasCorrect: boolean) => void;
+  /** `selected` = the option the learner picked, for callers that build answer reviews. */
+  onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
@@ -124,7 +125,7 @@ export function SectionMCQuiz({
     setPhase('revealed');
     if (wasCorrect) setCorrectCount((c) => c + 1);
     else setWrongCount((c) => c + 1);
-    onAnswer(q.itemId, wasCorrect);
+    onAnswer(q.itemId, wasCorrect, opt);
   };
 
   const onNext = () => {
@@ -135,7 +136,7 @@ export function SectionMCQuiz({
       const wasCorrect = !!opt?.isCorrect;
       if (wasCorrect) setCorrectCount((c) => c + 1);
       else setWrongCount((c) => c + 1);
-      onAnswer(q.itemId, wasCorrect);
+      onAnswer(q.itemId, wasCorrect, opt);
     }
     setSelected(null);
     setPhase('idle');

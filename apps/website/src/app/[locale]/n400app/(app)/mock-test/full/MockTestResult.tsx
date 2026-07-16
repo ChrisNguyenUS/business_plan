@@ -1,25 +1,26 @@
 'use client';
 
-// MockTestResult — 7-section result experience for the full interview mock test.
-// Replaces the old single CenterCard summary with a rich learning-first result
-// that encourages review before retake. Follows the "Learning > Testing" principle.
+// MockTestResult — final result screen of the Full Interview. One calm centered
+// card: stepper (all parts done) → verdict hero → overall score → one card per
+// section (score + progress + how many more to pass) → personalized
+// recommendation → Review Answers / Retry CTAs. No extra charts or statistics.
 
 import { useMemo } from 'react';
 import Link from 'next/link';
+import { ArrowRight, BookOpen, Clock, FileText, RotateCcw, Trophy } from 'lucide-react';
+import { ProgressBar } from '@/components/n400/ui';
+import { InterviewStepper, EncourageBanner } from './interview-chrome';
 import {
-  BookOpen,
-  ArrowRight,
-  RotateCcw,
-  ArrowLeft,
-  Target,
-  Clock,
-  TrendingUp,
-  Lightbulb,
-  Circle,
-} from 'lucide-react';
-import { Card, ProgressBar } from '@/components/n400/ui';
-import { MockResultHero } from '@/components/n400/MockResultScreen';
-import { N400_QUESTIONS_BY_ID, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
+  N400_QUESTIONS_BY_ID,
+  N400_CATEGORY_LABELS,
+  type N400CategoryKey,
+} from '@/lib/n400/questions-data';
+import {
+  FULL_CIVICS_PASS,
+  FULL_SPEAKING_PASS,
+  FULL_WRITING_PASS,
+} from '@/lib/n400/full-interview';
+import type { CivicsAnswer } from './ReviewAnswers';
 
 interface PartResult {
   correct: number;
@@ -34,23 +35,21 @@ interface MockTestResultProps {
   overall: boolean;
   totalScore: number;
   totalQuestions: number;
-  civicsAnswers: { questionId: number; wasCorrect: boolean }[];
+  civicsAnswers: CivicsAnswer[];
   onRetake: () => void;
-  onReviewWrongAnswers: () => void;
+  onReviewAnswers: () => void;
   basePath: string; // e.g. /en/n400app
 }
 
-/* ─── Helpers ─── */
+type SectionKey = 'civics' | 'speaking' | 'writing';
 
-function sectionStatus(correct: number, total: number, passThreshold: number) {
-  const pct = total > 0 ? (correct / total) * 100 : 0;
-  if (pct >= 90) return { label: 'Xuất sắc', colorClass: 'bg-teal-100 text-teal-700', barColor: 'bg-teal-500' };
-  if (pct >= 70) return { label: 'Tốt', colorClass: 'bg-blue-100 text-blue-700', barColor: 'bg-blue-500' };
-  if (correct >= passThreshold) return { label: 'Cần cải thiện', colorClass: 'bg-amber-100 text-amber-700', barColor: 'bg-amber-500' };
-  return { label: 'Chưa đạt', colorClass: 'bg-orange-100 text-orange-700', barColor: 'bg-orange-400' };
+interface Recommendation {
+  title: string;
+  desc: string;
+  cta: { label: string; href?: string; onClick?: () => void };
 }
 
-function findWeakestCategory(civicsAnswers: { questionId: number; wasCorrect: boolean }[]): N400CategoryKey | null {
+function findWeakestCategory(civicsAnswers: CivicsAnswer[]): N400CategoryKey | null {
   const catWrong: Partial<Record<N400CategoryKey, number>> = {};
   for (const a of civicsAnswers) {
     if (a.wasCorrect) continue;
@@ -69,8 +68,6 @@ function findWeakestCategory(civicsAnswers: { questionId: number; wasCorrect: bo
   return maxCat;
 }
 
-/* ─── Main Component ─── */
-
 export default function MockTestResult({
   civics,
   speaking,
@@ -80,320 +77,230 @@ export default function MockTestResult({
   totalQuestions,
   civicsAnswers,
   onRetake,
-  onReviewWrongAnswers,
+  onReviewAnswers,
   basePath,
 }: MockTestResultProps) {
-  const readinessPercent = useMemo(
-    () => Math.round((totalScore / totalQuestions) * 100),
-    [totalScore, totalQuestions],
-  );
-
-  const weakCategory = useMemo(() => findWeakestCategory(civicsAnswers), [civicsAnswers]);
-  const weakCategoryLabel = weakCategory ? N400_CATEGORY_LABELS[weakCategory] : null;
-
   const civicsWrongCount = civicsAnswers.filter((a) => !a.wasCorrect).length;
 
-  // Estimated review time: ~1 min per wrong answer
-  const estimatedMinutes = Math.max(5, civicsWrongCount + 2);
-
-  const sections = [
-    {
-      icon: '🏛',
-      label: 'Civics',
-      result: civics,
-      passThreshold: 12,
-    },
-    {
-      icon: '💬',
-      label: 'Speaking',
-      result: speaking,
-      passThreshold: 8,
-    },
-    {
-      icon: '✍️',
-      label: 'Writing',
-      result: writing,
-      passThreshold: 1,
-    },
+  const sections: {
+    key: SectionKey;
+    icon: string;
+    label: string;
+    result: PartResult | null;
+    passMin: number;
+  }[] = [
+    { key: 'civics', icon: '🏛', label: 'Civics', result: civics, passMin: FULL_CIVICS_PASS },
+    { key: 'speaking', icon: '💬', label: 'Speaking', result: speaking, passMin: FULL_SPEAKING_PASS },
+    { key: 'writing', icon: '✍️', label: 'Writing', result: writing, passMin: FULL_WRITING_PASS },
   ];
 
+  // Personalized recommendation — always points at the weakest section
+  // (largest relative shortfall against its pass mark) among the failed parts.
+  const recommendation = useMemo<Recommendation | null>(() => {
+    const failed = sections
+      .filter((s) => s.result && !s.result.passed)
+      .map((s) => ({
+        ...s,
+        shortfall: (s.passMin - (s.result?.correct ?? 0)) / s.passMin,
+      }))
+      .sort((a, b) => b.shortfall - a.shortfall);
+    const weakest = failed[0];
+    if (!weakest) return null;
+
+    if (weakest.key === 'civics') {
+      const weakCategory = findWeakestCategory(civicsAnswers);
+      const weakLabel = weakCategory ? N400_CATEGORY_LABELS[weakCategory]?.vi : null;
+      return {
+        title: `Xem lại ${civicsWrongCount} câu Civics sai`,
+        desc: weakLabel
+          ? `Civics là phần yếu nhất của bạn — sai nhiều nhất ở chủ đề ${weakLabel}. Hiểu rõ câu sai trước khi thi lại.`
+          : 'Civics là phần yếu nhất của bạn. Hiểu rõ câu sai trước khi thi lại.',
+        cta: { label: 'Xem câu sai Civics', onClick: onReviewAnswers },
+      };
+    }
+    if (weakest.key === 'speaking') {
+      return {
+        title: 'Luyện tập Speaking',
+        desc: 'Speaking là phần yếu nhất của bạn. Luyện thêm What Mean và Yes/No để nghe câu hỏi tự tin hơn.',
+        cta: { label: 'Luyện tập Speaking', href: `${basePath}/speaking` },
+      };
+    }
+    return {
+      title: 'Luyện tập Viết',
+      desc: 'Writing là phần yếu nhất của bạn. Luyện nghe – viết lại câu để quen quy tắc viết của USCIS.',
+      cta: { label: 'Luyện tập Viết', href: `${basePath}/writing` },
+    };
+    // `sections` is rebuilt every render from props — depend on the underlying values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [civics, speaking, writing, civicsAnswers, civicsWrongCount, basePath, onReviewAnswers]);
+
+  const lowAccuracy = totalQuestions > 0 && totalScore / totalQuestions < 0.5;
+
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 pb-32 animate-in fade-in duration-300 lg:pb-8">
+    <div className="flex min-h-full animate-in fade-in duration-300">
+      <div className="m-auto w-full max-w-[760px] rounded-[24px] border border-slate-100 bg-white p-6 text-center shadow-sm sm:p-8">
+        <InterviewStepper completed={3} />
 
-      {/* ══════════════ SECTION 1 — Hero Result Card ══════════════ */}
-      <MockResultHero
-        passed={overall}
-        score={totalScore}
-        total={totalQuestions}
-        requirement="Cần vượt qua cả 3 phần Civics, Speaking và Viết để đậu."
-        passSubtitle="Bạn đã sẵn sàng cho buổi phỏng vấn quốc tịch."
-        onRetake={onRetake}
-      />
+        {/* Verdict hero */}
+        <div
+          className="mx-auto mt-7 flex h-20 w-20 items-center justify-center rounded-full bg-teal-50 text-teal-600"
+          aria-hidden
+        >
+          <Trophy size={34} />
+        </div>
+        <h1 className="mt-4 text-[1.75rem] font-extrabold leading-tight text-gray-900">
+          Hoàn thành cả 3 phần!
+        </h1>
+        <div className="mt-2">
+          <span
+            className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${
+              overall ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
+            }`}
+          >
+            {overall ? 'Đạt' : 'Chưa đạt'}
+          </span>
+        </div>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-600">
+          {overall
+            ? 'Chúc mừng! Bạn đã vượt qua cả 3 phần của buổi phỏng vấn thử.'
+            : 'Bạn đã hoàn thành buổi phỏng vấn đầy đủ. Cùng xem kết quả nhé!'}
+        </p>
 
-      {/* ══════════════ SECTION 2 — Performance Breakdown ══════════════ */}
-      <div>
-        <h3 className="mb-3 text-lg font-bold text-gray-800">Kết quả chi tiết</h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {sections.map(({ icon, label, result, passThreshold }) => {
+        {/* Overall score */}
+        <div className="mt-6 rounded-2xl border border-teal-100 bg-teal-50/50 p-5">
+          <div className="text-sm font-bold text-gray-700">Điểm Full Interview của bạn</div>
+          <div className="mt-1 text-5xl font-extrabold text-teal-600">
+            {totalScore}
+            <span className="text-2xl font-bold text-gray-400">/{totalQuestions}</span>
+          </div>
+          <p className="mt-1.5 text-sm text-gray-600">
+            Bạn trả lời đúng {totalScore} trên {totalQuestions} câu hỏi.
+          </p>
+        </div>
+
+        {/* One card per section — score, progress, how many more to pass */}
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {sections.map(({ key, icon, label, result, passMin }) => {
             const correct = result?.correct ?? 0;
             const total = result?.total ?? 0;
-            const pct = total > 0 ? (correct / total) * 100 : 0;
-            const status = sectionStatus(correct, total, passThreshold);
+            const passed = !!result?.passed;
+            const remaining = Math.max(0, passMin - correct);
             return (
-              <Card key={label} className="p-4 sm:p-5">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl" aria-hidden>{icon}</span>
-                  <span className="text-sm font-bold text-gray-800">{label}</span>
+              <div key={key} className="rounded-2xl border border-slate-100 p-4 text-left">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl" aria-hidden>
+                      {icon}
+                    </span>
+                    <span className="text-sm font-bold text-gray-800">{label}</span>
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                      passed ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
+                    }`}
+                  >
+                    {passed ? 'Đạt' : 'Chưa đạt'}
+                  </span>
                 </div>
-                <div className="mt-3 text-3xl font-extrabold text-gray-900">
+                <div className="mt-2.5 text-2xl font-extrabold text-gray-900">
                   {correct}
-                  <span className="text-lg text-gray-500">/{total}</span>
+                  <span className="text-base font-bold text-gray-400">/{total}</span>
                 </div>
                 <div className="mt-2">
-                  <ProgressBar progress={pct} colorClass={status.barColor} heightClass="h-2" />
+                  <ProgressBar
+                    progress={total > 0 ? (correct / total) * 100 : 0}
+                    colorClass={passed ? 'bg-teal-500' : 'bg-orange-400'}
+                    heightClass="h-1.5"
+                  />
                 </div>
-                <span className={`mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${status.colorClass}`}>
-                  {status.label}
-                </span>
-              </Card>
+                <p className="mt-2 text-xs text-gray-500">
+                  {passed ? 'Đã vượt qua phần này' : `Cần thêm ${remaining} câu để đạt`}
+                </p>
+              </div>
             );
           })}
         </div>
-      </div>
 
-      {/* ══════════════ SECTION 3 — Next Steps to Pass ══════════════ */}
-      {!overall && civicsWrongCount > 0 && (
-        <Card className="p-5 sm:p-8">
-          <div className="flex items-center gap-2">
-            <Target size={20} className="text-teal-600" />
-            <h3 className="text-lg font-bold text-gray-800">Bước tiếp theo để đạt</h3>
-          </div>
-          <p className="mt-1 text-sm text-gray-500">
-            Hoàn thành các hoạt động sau để cải thiện trước khi thi lại.
-          </p>
-
-          {/* Vertical roadmap */}
-          <div className="relative mt-6 ml-5">
-            {/* Connecting line */}
-            <div className="absolute left-0 top-3 h-[calc(100%-24px)] w-0.5 bg-gray-200" />
-
-            {[
-              {
-                icon: '📖',
-                title: `Xem lại ${civicsWrongCount} câu sai`,
-                desc: 'Hiểu sai ở đâu và học đáp án đúng.',
-                action: (
-                  <button
-                    type="button"
-                    onClick={onReviewWrongAnswers}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 transition-colors hover:bg-teal-100"
-                  >
-                    Xem ngay <ArrowRight size={12} />
-                  </button>
-                ),
-              },
-              {
-                icon: '📝',
-                title: 'Luyện tập câu hỏi yếu',
-                desc: weakCategoryLabel
-                  ? `Tập trung vào phần ${weakCategoryLabel.vi}.`
-                  : 'Luyện tập các chủ đề còn yếu.',
-                action: (
-                  <Link
-                    href={`${basePath}/study`}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
-                  >
-                    Luyện tập <ArrowRight size={12} />
-                  </Link>
-                ),
-              },
-              {
-                icon: '🔄',
-                title: 'Thi lại Mock Test',
-                desc: 'Kiểm tra lại kết quả sau khi ôn bài.',
-                action: (
-                  <button
-                    type="button"
-                    onClick={onRetake}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-200"
-                  >
-                    Thi lại <ArrowRight size={12} />
-                  </button>
-                ),
-              },
-            ].map((step, i) => (
-              <div key={i} className="relative mb-6 pl-8 last:mb-0">
-                {/* Circle marker */}
-                <div className="absolute left-0 top-0.5 -translate-x-1/2 rounded-full border-2 border-white bg-teal-600 p-1">
-                  <Circle size={8} className="text-white" fill="white" />
-                </div>
-                <span className="text-xl" aria-hidden>{step.icon}</span>
-                <h4 className="mt-1 text-sm font-bold text-gray-800">{step.title}</h4>
-                <p className="text-xs text-gray-500">{step.desc}</p>
-                {step.action}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-2.5">
-            <Clock size={14} className="text-gray-400" />
-            <span className="text-xs font-semibold text-gray-600">
-              Ước tính khoảng {estimatedMinutes} phút
-            </span>
-          </div>
-        </Card>
-      )}
-
-      {/* ══════════════ SECTION 4 — Review Wrong Answers CTA ══════════════ */}
-      {civicsWrongCount > 0 && (
-        <Card className="relative overflow-hidden border-l-4 border-l-teal-600 p-5 sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <BookOpen size={22} className="text-teal-600" />
-                <h3 className="text-lg font-bold text-gray-800">Xem lại câu sai</h3>
-                <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-bold text-teal-700">
-                  {civicsWrongCount} Câu
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-gray-600">
-                Bạn trả lời sai {civicsWrongCount} câu hỏi Civics. Xem lại từng câu với đáp án đúng và giải thích.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onReviewWrongAnswers}
-              className="group inline-flex shrink-0 items-center gap-2 rounded-xl bg-teal-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
-            >
-              Xem lại câu sai
-              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-            </button>
-          </div>
-        </Card>
-      )}
-
-      {/* ══════════════ SECTION 5 — Recommended Practice ══════════════ */}
-      {weakCategory && weakCategoryLabel && (
-        <Card className="p-5 sm:p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl">
-              💡
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-gray-800">Đề xuất luyện tập</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Bạn sai nhiều câu về <span className="font-semibold text-gray-800">{weakCategoryLabel.vi}</span>.
-                Luyện tập lại trước khi thi lần nữa.
-              </p>
-              <Link
-                href={`${basePath}/study`}
-                className="group mt-3 inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+        {/* Personalized recommendation — the weakest part decides the next step */}
+        {recommendation ? (
+          <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50/60 p-4 text-left">
+            <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm"
+                aria-hidden
               >
-                <Lightbulb size={14} />
-                Luyện tập phần yếu
-                <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* ══════════════ SECTION 6 — Interview Readiness ══════════════ */}
-      <Card className="p-5 sm:p-6">
-        <div className="flex items-center gap-4">
-          {/* Circular progress */}
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
-            <svg className="h-16 w-16 -rotate-90" viewBox="0 0 64 64">
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="5"
-                className="text-gray-100"
-              />
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="5"
-                strokeDasharray={`${(readinessPercent / 100) * 175.93} 175.93`}
-                strokeLinecap="round"
-                className={readinessPercent >= 70 ? 'text-teal-500' : 'text-amber-500'}
-              />
-            </svg>
-            <span className="absolute text-sm font-extrabold text-gray-800">{readinessPercent}%</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-bold text-gray-800">Mức độ sẵn sàng phỏng vấn</h3>
-            <div className="mt-1 flex items-center gap-1.5">
-              <TrendingUp size={14} className="text-teal-500" />
-              <span className="text-xs text-gray-500">
-                {overall
-                  ? 'Bạn đã sẵn sàng cho buổi phỏng vấn!'
-                  : 'Tiếp tục luyện tập để nâng cao điểm số.'}
+                💡
               </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-bold text-gray-800">{recommendation.title}</div>
+                <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-gray-600">
+                  {recommendation.desc}
+                  {lowAccuracy ? ' Sau khi luyện tập, hãy thi lại Full Interview nhé.' : ''}
+                </p>
+              </div>
+              {recommendation.cta.href ? (
+                <Link
+                  href={recommendation.cta.href}
+                  className="group inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-100 px-4 py-2 text-xs font-bold text-amber-800 transition-colors hover:bg-amber-200"
+                >
+                  {recommendation.cta.label}
+                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={recommendation.cta.onClick}
+                  className="group inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-100 px-4 py-2 text-xs font-bold text-amber-800 transition-colors hover:bg-amber-200"
+                >
+                  {recommendation.cta.label}
+                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                </button>
+              )}
             </div>
           </div>
-        </div>
-      </Card>
+        ) : null}
 
-      {/* ══════════════ SECTION 7 — Bottom Actions ══════════════ */}
-      {/* Desktop: regular section */}
-      <div className="hidden space-y-3 lg:block">
-        {civicsWrongCount > 0 && (
+        {/* Encouragement */}
+        <div className="mt-4">
+          <EncourageBanner title={overall ? 'Làm tốt lắm!' : 'Mỗi lần thi là một lần tiến bộ!'}>
+            {overall
+              ? 'Bạn đã sẵn sàng cho buổi phỏng vấn quốc tịch. Ôn lại đều đặn để giữ vững phong độ nhé!'
+              : 'Xem lại đáp án, luyện phần còn yếu và thử lại nhé.'}
+          </EncourageBanner>
+        </div>
+
+        {/* CTAs — review (secondary) + retry (primary) */}
+        <div className="mx-auto mt-6 flex max-w-lg flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            onClick={onReviewWrongAnswers}
-            className="group flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
+            onClick={onReviewAnswers}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-teal-600 bg-white px-6 py-3.5 text-sm font-bold text-teal-700 transition-colors hover:bg-teal-50"
           >
-            <BookOpen size={16} />
-            Xem lại câu sai
-            <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+            <FileText size={16} />
+            Xem lại đáp án
           </button>
-        )}
-        <button
-          type="button"
-          onClick={onRetake}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          <RotateCcw size={16} />
-          Thi lại
-        </button>
-        <Link
-          href={`${basePath}/mock-test`}
-          className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700"
-        >
-          <ArrowLeft size={16} />
-          Chọn bài thi khác
-        </Link>
-      </div>
-
-      {/* Mobile: fixed bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-100 bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-md gap-3">
-          {civicsWrongCount > 0 && (
-            <button
-              type="button"
-              onClick={onReviewWrongAnswers}
-              className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
-            >
-              <BookOpen size={14} />
-              Xem lại câu sai
-            </button>
-          )}
           <button
             type="button"
             onClick={onRetake}
-            className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
           >
-            <RotateCcw size={14} />
-            Thi lại
+            <RotateCcw size={16} />
+            Thi lại Full Interview
           </button>
         </div>
+
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-gray-500">
+          <Clock size={14} className="shrink-0" />
+          Thời gian dự kiến: 15–18 phút
+        </div>
+
+        <Link
+          href={`${basePath}/mock-test`}
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 transition-colors hover:text-gray-600"
+        >
+          <BookOpen size={14} />
+          Chọn bài thi khác
+        </Link>
       </div>
     </div>
   );

@@ -107,7 +107,7 @@ export default function MockTestPickerPage() {
   const base = `/${locale}/n400app/mock-test`;
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-6xl flex-col justify-center gap-[clamp(1rem,2.5vh,1.5rem)] animate-in fade-in duration-300 pb-2 lg:pb-0">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-[clamp(1rem,2.5vh,1.5rem)] animate-in fade-in duration-300 pb-2 lg:h-full lg:justify-center lg:pb-0">
       {/* Hero banner */}
       <section className="shrink-0 overflow-hidden rounded-[24px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-sky-50 shadow-sm">
         <div className="flex flex-col gap-[clamp(1rem,2vh,1.25rem)] p-[clamp(1rem,2.5vh,1.5rem)] lg:flex-row lg:items-center">
