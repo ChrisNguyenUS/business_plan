@@ -55,7 +55,7 @@ interface DictationQuizProps {
     correct: number;
     total: number;
     answered: number;
-    perItem: { sentenceId: string; correct: boolean }[];
+    perItem: { sentenceId: string; correct: boolean; userInput: string }[];
   }) => void;
   // Mock tests own their single result screen — skip this component's internal
   // PracticeSessionSummary and hand off to the caller as soon as the last
@@ -209,7 +209,11 @@ export function DictationQuiz({
     correct: results.filter((r) => r.correct).length,
     total: questions.length,
     answered: results.length,
-    perItem: results.map((r) => ({ sentenceId: r.sentenceId, correct: r.correct })),
+    perItem: results.map((r) => ({
+      sentenceId: r.sentenceId,
+      correct: r.correct,
+      userInput: r.userInput,
+    })),
   });
 
   useEffect(() => {

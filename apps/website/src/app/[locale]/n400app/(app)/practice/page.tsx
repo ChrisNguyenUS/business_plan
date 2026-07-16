@@ -26,6 +26,7 @@ import {
   correctAnswersFor,
   selectPracticeQuestionIds,
   isPersonalizedAnswerUnavailable,
+  mostMissedCategory,
   recommendWeakCategory,
   gradedOnly,
   lastWrongQuestionIds,
@@ -44,6 +45,25 @@ const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
 const CATEGORY_STORAGE_KEY = 'n400.practice.category';
 const SEED_STORAGE_KEY = 'n400.practice.seed';
+// "Tiến độ hôm nay" on the summary — completed sessions per local day, kept in
+// localStorage so it survives tab closes (unlike the resumable-session keys).
+const DAILY_SESSIONS_KEY = 'n400.practice.dailySessions';
+const DAILY_SESSIONS_GOAL = 5;
+
+function bumpDailySessions(): number {
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  try {
+    const raw = window.localStorage.getItem(DAILY_SESSIONS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as { date?: unknown; count?: unknown }) : null;
+    const count =
+      parsed && parsed.date === today && typeof parsed.count === 'number' ? parsed.count + 1 : 1;
+    window.localStorage.setItem(DAILY_SESSIONS_KEY, JSON.stringify({ date: today, count }));
+    return count;
+  } catch {
+    return 1;
+  }
+}
 
 function readStoredPreset(): PracticePreset | null {
   if (typeof window === 'undefined') return null;
@@ -112,6 +132,12 @@ export default function PracticePage() {
   // Non-null while replaying the wrong answers of the previous run. Review
   // sessions are ephemeral: they are never persisted or offered as resume.
   const [reviewIds, setReviewIds] = useState<number[] | null>(null);
+  // Session timing + today's completed-session count, both surfaced on the
+  // summary. The timer restarts on resume — better a low estimate than one
+  // inflated by hours away from the tab.
+  const startedAtRef = useRef(Date.now());
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const [sessionsToday, setSessionsToday] = useState(0);
 
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<QuizOption['id'] | null>(null);
@@ -222,6 +248,8 @@ export default function PracticePage() {
     if (index + 1 >= order.length) {
       trackPracticeComplete(correctCount, order.length);
       window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
+      setElapsedSec(Math.max(0, Math.round((Date.now() - startedAtRef.current) / 1000)));
+      setSessionsToday(bumpDailySessions());
       setCompleted(true);
       return;
     }
@@ -265,6 +293,7 @@ export default function PracticePage() {
     setPrevIndex(0);
     setCorrectCount(0);
     setCompleted(false);
+    startedAtRef.current = Date.now();
     resetQuestionUI();
   };
 
@@ -285,6 +314,7 @@ export default function PracticePage() {
     setPrevIndex(resume.index);
     setCorrectCount(resume.correct);
     setCompleted(false);
+    startedAtRef.current = Date.now();
     resetQuestionUI();
   };
 
@@ -300,6 +330,7 @@ export default function PracticePage() {
     setPrevIndex(0);
     setCorrectCount(0);
     setCompleted(false);
+    startedAtRef.current = Date.now();
     resetQuestionUI();
   };
 
@@ -374,6 +405,7 @@ export default function PracticePage() {
     setPrevIndex(0);
     setCorrectCount(0);
     setCompleted(false);
+    startedAtRef.current = Date.now();
     resetQuestionUI();
   };
 
@@ -387,6 +419,7 @@ export default function PracticePage() {
     setPrevIndex(0);
     setCorrectCount(0);
     setCompleted(false);
+    startedAtRef.current = Date.now();
     resetQuestionUI();
   };
 
@@ -429,6 +462,8 @@ export default function PracticePage() {
   }
 
   if (completed) {
+    // "Sai nhiều nhất" only makes sense with 2+ wrongs; a single miss is noise.
+    const topCategory = wrongIds.length >= 2 ? mostMissedCategory(wrongIds) : null;
     // A badge/milestone earned on the last answer must survive the swap to the
     // summary screen — replay the celebration here instead of cutting it short.
     return (
@@ -450,6 +485,9 @@ export default function PracticePage() {
           onReviewWrong={onReviewWrong}
           onRetry={onRestart}
           onChangeMode={onChangeMode}
+          elapsedSec={elapsedSec}
+          topCategory={topCategory ? N400_CATEGORY_LABELS[topCategory] : null}
+          sessionsToday={{ done: sessionsToday, goal: DAILY_SESSIONS_GOAL }}
         />
       </div>
     );

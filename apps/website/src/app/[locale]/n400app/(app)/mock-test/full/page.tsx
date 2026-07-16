@@ -239,7 +239,6 @@ export default function FullInterviewPage() {
         overall={overall}
         totalScore={totalScore}
         totalQuestions={totalQuestions}
-        wrongCount={totalQuestions - totalScore}
         civicsAnswers={civicsAnswers.current}
         onRetake={retake}
         onReviewWrongAnswers={() => setPhase({ kind: 'review' })}

@@ -6,7 +6,6 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import {
   BookOpen,
   ArrowRight,
@@ -16,10 +15,10 @@ import {
   Clock,
   TrendingUp,
   Lightbulb,
-  CheckCircle,
   Circle,
 } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { MockResultHero } from '@/components/n400/MockResultScreen';
 import { N400_QUESTIONS_BY_ID, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 
 interface PartResult {
@@ -35,7 +34,6 @@ interface MockTestResultProps {
   overall: boolean;
   totalScore: number;
   totalQuestions: number;
-  wrongCount: number;
   civicsAnswers: { questionId: number; wasCorrect: boolean }[];
   onRetake: () => void;
   onReviewWrongAnswers: () => void;
@@ -80,15 +78,11 @@ export default function MockTestResult({
   overall,
   totalScore,
   totalQuestions,
-  wrongCount,
   civicsAnswers,
   onRetake,
   onReviewWrongAnswers,
   basePath,
 }: MockTestResultProps) {
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
-
   const readinessPercent = useMemo(
     () => Math.round((totalScore / totalQuestions) * 100),
     [totalScore, totalQuestions],
@@ -127,47 +121,14 @@ export default function MockTestResult({
     <div className="mx-auto w-full max-w-3xl space-y-6 pb-32 animate-in fade-in duration-300 lg:pb-8">
 
       {/* ══════════════ SECTION 1 — Hero Result Card ══════════════ */}
-      <Card
-        className={`relative overflow-hidden text-center ${
-          overall
-            ? 'border-teal-200 bg-gradient-to-br from-teal-50 via-white to-sky-50'
-            : 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50'
-        }`}
-      >
-        {/* Decorative circles */}
-        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-teal-100/30" />
-        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-amber-100/20" />
-
-        <div className="relative">
-          <div className="mb-3 text-5xl" aria-hidden>
-            {overall ? '🏆' : '💪'}
-          </div>
-
-          <h2 className="text-2xl font-extrabold text-gray-800 sm:text-3xl">
-            {overall ? '🎉 Chúc mừng!' : 'Chưa đạt — Bạn đã rất gần rồi!'}
-          </h2>
-
-          <div className="mt-4 text-6xl font-extrabold text-gray-900">
-            {totalScore}
-            <span className="text-3xl text-gray-500">/{totalQuestions}</span>
-          </div>
-
-          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-gray-600">
-            {overall ? (
-              'Bạn đã sẵn sàng cho buổi phỏng vấn quốc tịch. Hãy tiếp tục luyện tập để tự tin hơn!'
-            ) : (
-              <>
-                Bạn chỉ còn thiếu <span className="font-bold text-gray-800">{wrongCount} câu đúng</span> để
-                vượt qua bài thi.
-                <br />
-                <span className="mt-1 block text-gray-500">
-                  Đừng lo! Ôn lại các câu sai và bạn sẽ cải thiện rất nhanh.
-                </span>
-              </>
-            )}
-          </p>
-        </div>
-      </Card>
+      <MockResultHero
+        passed={overall}
+        score={totalScore}
+        total={totalQuestions}
+        requirement="Cần vượt qua cả 3 phần Civics, Speaking và Viết để đậu."
+        passSubtitle="Bạn đã sẵn sàng cho buổi phỏng vấn quốc tịch."
+        onRetake={onRetake}
+      />
 
       {/* ══════════════ SECTION 2 — Performance Breakdown ══════════════ */}
       <div>

@@ -11,10 +11,10 @@
 // on the result screen only, like the real interview.
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowRight, Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { MockResultScreen, type MockResultRow } from '@/components/n400/MockResultScreen';
 import { MockExamProgress, MockExamPanel, MockExamRulesCard } from '@/components/n400/mock-test-chrome';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
@@ -104,6 +104,9 @@ export default function ThiThuSpeakingPage() {
   const [pickedMc, setPickedMc] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
   const [pickedYn, setPickedYn] = useState<Choice | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  // Per-question verdicts collected as each answer is graded — feeds the
+  // result screen's answer sheet (the learner never sees them mid-run).
+  const [answers, setAnswers] = useState<MockResultRow[]>([]);
   const [finished, setFinished] = useState(false);
 
   const item = items[index];
@@ -114,49 +117,25 @@ export default function ThiThuSpeakingPage() {
     setPickedMc(null);
     setPickedYn(null);
     setCorrectCount(0);
+    setAnswers([]);
     setFinished(false);
   };
 
   if (finished) {
-    const passed = correctCount >= PASS_THRESHOLD;
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto flex items-center justify-center animate-in fade-in duration-300">
-        <div
-          className={`w-full max-w-md rounded-[24px] border p-6 text-center shadow-sm sm:p-8 ${
-            passed ? 'border-teal-200 bg-teal-50' : 'border-orange-200 bg-orange-50'
-          }`}
-        >
-          <div className="mb-4 flex flex-col items-center justify-center gap-3">
-            <Trophy className={passed ? 'text-teal-600' : 'text-orange-500'} size={40} />
-            <h2 className="text-2xl font-extrabold text-gray-800">
-              {passed ? 'Chúc mừng! Bạn đã đạt!' : 'Cố lên! Lần sau sẽ tốt hơn.'}
-            </h2>
-          </div>
-          <div className="mb-2 text-5xl font-extrabold text-gray-900">
-            {correctCount}
-            <span className="text-2xl text-gray-500">/{TOTAL}</span>
-          </div>
-          <p className="text-sm text-gray-600">
-            Cần trả lời đúng ≥ {PASS_THRESHOLD}/{TOTAL} câu để đạt. Bạn đạt{' '}
-            {Math.round((correctCount / TOTAL) * 100)}% độ chính xác.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              onClick={retake}
-              className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
-            >
-              <RotateCcw size={16} /> Thi lại
-            </button>
-            <Link
-              href={`/${locale}/n400app/mock-test`}
-              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              <ArrowLeft size={16} /> Chọn bài khác
-            </Link>
-          </div>
-        </div>
-      </div>
+      <MockResultScreen
+        passed={correctCount >= PASS_THRESHOLD}
+        score={correctCount}
+        total={TOTAL}
+        requirement={`Cần trả lời đúng ≥ ${PASS_THRESHOLD}/${TOTAL} câu để vượt qua.`}
+        passSubtitle="Bạn đã sẵn sàng cho phần Speaking của buổi phỏng vấn."
+        onRetake={retake}
+        rows={answers}
+        reviewHref={`/${locale}/n400app/study`}
+        reviewLabel="Ôn luyện Speaking"
+        reviewTip="Ôn lại phần Từ vựng và câu hỏi Yes/No để cải thiện điểm số của bạn!"
+        hubHref={`/${locale}/n400app/mock-test`}
+      />
     );
   }
 
@@ -183,6 +162,29 @@ export default function ThiThuSpeakingPage() {
       item.kind === 'mc'
         ? !!item.options.find((o) => o.id === pickedMc)?.isCorrect
         : pickedYn === item.answer;
+    const row: MockResultRow =
+      item.kind === 'mc'
+        ? {
+            key: `${index}-${item.id}`,
+            badge: `Câu ${index + 1} / ${item.badge}`,
+            prompt: item.headerEn,
+            promptVi: item.headerVi,
+            userAnswer: item.options.find((o) => o.id === pickedMc)?.en ?? null,
+            correctAnswer: item.options.find((o) => o.isCorrect)?.en ?? item.accepted.en,
+            ok: wasCorrect,
+            audioSrc: item.questionAudioSrc,
+          }
+        : {
+            key: `${index}-${item.id}`,
+            badge: `Câu ${index + 1} / Yes-No #${item.num}`,
+            prompt: item.questionEn,
+            promptVi: item.questionVi,
+            userAnswer: pickedYn === 'yes' ? 'Yes, officer' : 'No, officer',
+            correctAnswer: item.answer === 'yes' ? 'Yes, officer' : 'No, officer',
+            ok: wasCorrect,
+            audioSrc: item.audioSrc,
+          };
+    setAnswers((prev) => [...prev, row]);
     const newCount = correctCount + (wasCorrect ? 1 : 0);
     setCorrectCount(newCount);
     if (isLast) {

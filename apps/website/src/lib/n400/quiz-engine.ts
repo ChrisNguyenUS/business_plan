@@ -436,6 +436,29 @@ export function lastWrongQuestionIds(attempts: readonly QuestionAttempt[]): numb
 }
 
 /**
+ * Category with the most questions among `questionIds` (ties keep the first
+ * category encountered). Feeds the "sai nhiều nhất ở chủ đề" insight on the
+ * practice summary; null when the list is empty.
+ */
+export function mostMissedCategory(questionIds: readonly number[]): N400CategoryKey | null {
+  const counts = new Map<N400CategoryKey, number>();
+  for (const id of questionIds) {
+    const q = N400_QUESTIONS_BY_ID.get(id);
+    if (!q) continue;
+    counts.set(q.category, (counts.get(q.category) ?? 0) + 1);
+  }
+  let best: N400CategoryKey | null = null;
+  let bestCount = 0;
+  for (const [category, n] of counts) {
+    if (n > bestCount) {
+      best = category;
+      bestCount = n;
+    }
+  }
+  return best;
+}
+
+/**
  * True when a question's correct answer is personal to the user but the app
  * cannot resolve it yet (Q29 needs the resolved congressional district).
  * Q23/Q61/Q62 only need stateCode, which always has a value.

@@ -3,16 +3,16 @@
 // Thi thử Viết — writing (dictation) mock test. Runs DictationQuiz over 3
 // sentences drawn from the writing bank; the pass rule mirrors the real USCIS
 // exam: writing ONE of the three sentences correctly is a pass. When the
-// dictation session ends we swap the quiz for a pass/fail result screen.
+// dictation session ends we swap the quiz for the shared mock result screen
+// (pass/fail hero + per-sentence answer sheet).
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
-import { shuffle } from '@/lib/n400/quiz-engine';
+import { shuffle, writingAudioUrl } from '@/lib/n400/quiz-engine';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
+import { MockResultScreen, type MockResultRow } from '@/components/n400/MockResultScreen';
 
 const SENTENCE_COUNT = 3;
 const PASS_THRESHOLD = 1; // đúng ít nhất 1/3 là đạt
@@ -20,6 +20,7 @@ const PASS_THRESHOLD = 1; // đúng ít nhất 1/3 là đạt
 interface Outcome {
   correct: number;
   total: number;
+  rows: MockResultRow[];
 }
 
 export default function ThiThuVietPage() {
@@ -43,44 +44,21 @@ export default function ThiThuVietPage() {
   };
 
   if (outcome) {
-    const passed = outcome.correct >= PASS_THRESHOLD;
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto flex items-center justify-center animate-in fade-in duration-300">
-        <div
-          className={`w-full max-w-md rounded-[24px] border p-6 text-center shadow-sm sm:p-8 ${
-            passed ? 'border-teal-200 bg-teal-50' : 'border-orange-200 bg-orange-50'
-          }`}
-        >
-          <div className="mb-4 flex flex-col items-center justify-center gap-3">
-            <Trophy className={passed ? 'text-teal-600' : 'text-orange-500'} size={40} />
-            <h2 className="text-2xl font-extrabold text-gray-800">
-              {passed ? 'Chúc mừng! Bạn đã đạt!' : 'Cố lên! Lần sau sẽ tốt hơn.'}
-            </h2>
-          </div>
-          <div className="mb-2 text-5xl font-extrabold text-gray-900">
-            {outcome.correct}
-            <span className="text-2xl text-gray-500">/{outcome.total}</span>
-          </div>
-          <p className="text-sm text-gray-600">
-            Cần viết đúng ≥ {PASS_THRESHOLD}/{outcome.total} câu để đạt.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              onClick={retake}
-              className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
-            >
-              <RotateCcw size={16} /> Thi lại
-            </button>
-            <Link
-              href={`/${locale}/n400app/mock-test`}
-              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              <ArrowLeft size={16} /> Chọn bài khác
-            </Link>
-          </div>
-        </div>
-      </div>
+      <MockResultScreen
+        passed={outcome.correct >= PASS_THRESHOLD}
+        score={outcome.correct}
+        total={outcome.total}
+        requirement={`Cần viết đúng ≥ ${PASS_THRESHOLD}/${outcome.total} câu để vượt qua.`}
+        passSubtitle="Bạn đã sẵn sàng cho phần Viết của buổi phỏng vấn."
+        onRetake={retake}
+        rows={outcome.rows}
+        userAnswerLabel="Bạn viết:"
+        reviewHref={`/${locale}/n400app/writing`}
+        reviewLabel="Ôn luyện Viết"
+        reviewTip="Ôn lại phần viết chính tả để cải thiện điểm số của bạn!"
+        hubHref={`/${locale}/n400app/mock-test`}
+      />
     );
   }
 
@@ -90,14 +68,29 @@ export default function ThiThuVietPage() {
       questions={questions}
       skipSummary
       examMode
-      onSessionEnd={({ correct, total, answered }) => {
+      onSessionEnd={({ correct, total, answered, perItem }) => {
         // "Đổi chế độ" mid-test abandons the attempt — back to the picker
         // without recording, matching the full interview's abandon semantics.
         if (answered < total) {
           router.push(`/${locale}/n400app/mock-test`);
           return;
         }
-        setOutcome({ correct, total });
+        const rows: MockResultRow[] = perItem.flatMap((item, i) => {
+          const q = questions.find((s) => s.id === item.sentenceId);
+          if (!q) return [];
+          return [
+            {
+              key: item.sentenceId,
+              badge: `Câu ${i + 1} / Viết #${q.num}`,
+              prompt: q.sentenceEn,
+              promptVi: q.sentenceVi,
+              userAnswer: item.userInput.trim() || null,
+              ok: item.correct,
+              audioSrc: writingAudioUrl(q.num),
+            },
+          ];
+        });
+        setOutcome({ correct, total, rows });
         void recordSectionMockResult('writing', correct >= PASS_THRESHOLD, correct, total);
       }}
     />
