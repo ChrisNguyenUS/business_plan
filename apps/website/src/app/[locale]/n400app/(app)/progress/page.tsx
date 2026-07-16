@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
-import type { SectionKey } from '@/lib/n400/section-progress';
+import { deriveSectionMastered, type SectionKey } from '@/lib/n400/section-progress';
 import { deriveReadiness } from '@/lib/n400/readiness';
 import {
   moduleAccuracy,
@@ -48,19 +48,26 @@ export default function ProgressPage() {
     return graded;
   }, [state.sectionAttempts]);
 
+  // "Thuộc" = last graded attempt correct (spec D1) — NOT the flashcard deck's
+  // marked-state, which proves nothing about retrieval.
+  const sectionMastered = useMemo(
+    () => deriveSectionMastered(state.sectionAttempts),
+    [state.sectionAttempts],
+  );
+
   const readiness = useMemo(
     () =>
       deriveReadiness({
         civicsKnown: stats.mastered,
         civicsTotal: N400_QUESTIONS.length,
-        whatmeanKnown: state.sectionKnown.whatmean.length,
+        whatmeanKnown: sectionMastered.whatmean.length,
         whatmeanTotal: WHATMEAN_QUESTIONS.length,
-        yesnoKnown: state.sectionKnown.yesno.length,
+        yesnoKnown: sectionMastered.yesno.length,
         yesnoTotal: YESNO_QUESTIONS.length,
         mockResults: state.mockResults,
         sectionMockResults: state.sectionMockResults,
       }),
-    [stats.mastered, state.sectionKnown, state.mockResults, state.sectionMockResults],
+    [stats.mastered, sectionMastered, state.mockResults, state.sectionMockResults],
   );
 
   // The weakest skill: lowest accuracy among those with enough evidence to
@@ -87,11 +94,11 @@ export default function ProgressPage() {
     () =>
       [
         { id: 'civics', icon: '📚', label: 'Civics', known: stats.mastered, total: N400_QUESTIONS.length, href: `${base}/study/civics` },
-        { id: 'whatmean', icon: '📖', label: 'What Mean', known: state.sectionKnown.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean` },
-        { id: 'yesno', icon: '🎤', label: 'Yes/No', known: state.sectionKnown.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no` },
-        { id: 'writing', icon: '✍️', label: 'Viết', known: state.sectionKnown.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing` },
+        { id: 'whatmean', icon: '📖', label: 'What Mean', known: sectionMastered.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean` },
+        { id: 'yesno', icon: '🎤', label: 'Yes/No', known: sectionMastered.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no` },
+        { id: 'writing', icon: '✍️', label: 'Viết', known: sectionMastered.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing` },
       ].map((row) => ({ ...row, weak: row.id === weakestId })),
-    [stats.mastered, state.sectionKnown, base, weakestId],
+    [stats.mastered, sectionMastered, base, weakestId],
   );
 
   const lastMock = state.mockResults.length > 0 ? state.mockResults[state.mockResults.length - 1] : null;

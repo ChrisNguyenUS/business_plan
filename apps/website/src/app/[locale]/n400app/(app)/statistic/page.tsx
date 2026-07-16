@@ -20,7 +20,7 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { deriveReadiness } from '@/lib/n400/readiness';
 import { buildHeatGrid, HEAT_COLORS, HEAT_WEEKDAYS } from '@/lib/n400/activity-heatmap';
 import { lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
-import { lastWrongSectionItemIds } from '@/lib/n400/section-progress';
+import { deriveSectionMastered, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
 import {
   N400_CATEGORY_LABELS,
   N400_QUESTIONS,
@@ -59,19 +59,26 @@ export default function StatisticPage() {
     [state.attempts, state.sectionAttempts],
   );
 
+  // "Thuộc" = last graded attempt correct (spec D1) — NOT the flashcard deck's
+  // marked-state, which proves nothing about retrieval.
+  const sectionMastered = useMemo(
+    () => deriveSectionMastered(state.sectionAttempts),
+    [state.sectionAttempts],
+  );
+
   const readiness = useMemo(
     () =>
       deriveReadiness({
         civicsKnown: stats.mastered,
         civicsTotal: N400_QUESTIONS.length,
-        whatmeanKnown: state.sectionKnown.whatmean.length,
+        whatmeanKnown: sectionMastered.whatmean.length,
         whatmeanTotal: WHATMEAN_QUESTIONS.length,
-        yesnoKnown: state.sectionKnown.yesno.length,
+        yesnoKnown: sectionMastered.yesno.length,
         yesnoTotal: YESNO_QUESTIONS.length,
         mockResults: state.mockResults,
         sectionMockResults: state.sectionMockResults,
       }),
-    [stats.mastered, state.sectionKnown, state.mockResults, state.sectionMockResults],
+    [stats.mastered, sectionMastered, state.mockResults, state.sectionMockResults],
   );
 
   const categoryAccuracy = useMemo(() => {

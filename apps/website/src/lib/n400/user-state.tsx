@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
+import { masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
 import {
@@ -242,10 +243,12 @@ function useN400UserStateInternal() {
     const correct = state.attempts.filter((a) => a.wasCorrect).length;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
     const distinctAnswered = new Set(state.attempts.map((a) => a.questionId));
-    const lastSeen = new Map<number, boolean>();
-    for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
-    let mastered = 0;
-    for (const [, ok] of lastSeen) if (ok) mastered += 1;
+    // "Thuộc" = answered correctly under grading. Flashcard self-grades don't
+    // count (spec D1) — tapping "Đã thuộc" next to the visible answer is
+    // recognition, not retrieval, and the mock test grades objectively, so
+    // readiness has to use that same currency. `flashcardKnown` still tracks
+    // the deck's marked-state separately for the flashcard UI.
+    const mastered = masteredQuestionIds(state.attempts).length;
     return {
       totalAttempts: total,
       correctCount: correct,

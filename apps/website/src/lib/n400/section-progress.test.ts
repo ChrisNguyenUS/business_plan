@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   deriveSectionKnown,
+  deriveSectionMastered,
   deriveSectionSeen,
   lastWrongSectionItemIds,
   type SectionAttempt,
@@ -64,5 +65,46 @@ describe('lastWrongSectionItemIds — graded review debt (spec D1)', () => {
   it('flashcard self-grades neither create nor clear debt', () => {
     expect(lastWrongSectionItemIds([g('wr-1', false, 1, 'flashcard')], 'writing')).toEqual([]);
     expect(lastWrongSectionItemIds([g('wr-1', false, 1), g('wr-1', true, 2, 'flashcard')], 'writing')).toEqual(['wr-1']);
+  });
+});
+
+describe('deriveSectionMastered', () => {
+  const a = (itemId: string, wasCorrect: boolean, mode: 'practice' | 'mock_test' | 'flashcard', at = '2026-07-01T00:00:00Z') =>
+    ({ section: 'whatmean' as const, itemId, wasCorrect, mode, at });
+
+  it('counts an item mastered when its last GRADED attempt was correct', () => {
+    expect(deriveSectionMastered([a('wm-1', true, 'practice')]).whatmean).toEqual(['wm-1']);
+    expect(deriveSectionMastered([a('wm-1', true, 'mock_test')]).whatmean).toEqual(['wm-1']);
+  });
+
+  it('ignores flashcard self-grades entirely — tapping "Đã thuộc" proves nothing', () => {
+    // The whole point: recognition is not retrieval (spec D1).
+    expect(deriveSectionMastered([a('wm-1', true, 'flashcard')]).whatmean).toEqual([]);
+  });
+
+  it('does not let a flashcard tap override a wrong graded answer', () => {
+    const out = deriveSectionMastered([
+      a('wm-1', false, 'practice', '2026-07-01T00:00:00Z'),
+      a('wm-1', true, 'flashcard', '2026-07-02T00:00:00Z'),
+    ]);
+    expect(out.whatmean).toEqual([]);
+  });
+
+  it('lets a later wrong graded answer un-master an item', () => {
+    const out = deriveSectionMastered([
+      a('wm-1', true, 'practice', '2026-07-01T00:00:00Z'),
+      a('wm-1', false, 'practice', '2026-07-02T00:00:00Z'),
+    ]);
+    expect(out.whatmean).toEqual([]);
+  });
+
+  it('keeps each section separate', () => {
+    const out = deriveSectionMastered([
+      { section: 'whatmean', itemId: 'wm-1', wasCorrect: true, mode: 'practice', at: '2026-07-01T00:00:00Z' },
+      { section: 'yesno', itemId: 'yn-1', wasCorrect: true, mode: 'practice', at: '2026-07-01T00:00:00Z' },
+    ]);
+    expect(out.whatmean).toEqual(['wm-1']);
+    expect(out.yesno).toEqual(['yn-1']);
+    expect(out.writing).toEqual([]);
   });
 });

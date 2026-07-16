@@ -20,6 +20,7 @@ import {
   writingAudioUrl,
   gradedOnly,
   lastWrongQuestionIds,
+  masteredQuestionIds,
 } from './quiz-engine';
 import type { QuizMode } from './storage';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
@@ -405,5 +406,37 @@ describe('new section audio urls', () => {
 
   it('writing', () => {
     expect(writingAudioUrl(45)).toBe('/n400-audio/Writing_questions/45.mp3');
+  });
+});
+
+describe('masteredQuestionIds', () => {
+  const a = (questionId: number, wasCorrect: boolean, mode: 'practice' | 'mock_test' | 'flashcard', at = '2026-07-01T00:00:00Z') =>
+    ({ questionId, wasCorrect, mode, at });
+
+  it('counts a question mastered when its last GRADED attempt was correct', () => {
+    expect(masteredQuestionIds([a(1, true, 'practice')])).toEqual([1]);
+    expect(masteredQuestionIds([a(2, true, 'mock_test')])).toEqual([2]);
+  });
+
+  it('ignores flashcard self-grades — recognition is not retrieval (spec D1)', () => {
+    expect(masteredQuestionIds([a(1, true, 'flashcard')])).toEqual([]);
+  });
+
+  it('does not let a flashcard tap override a wrong graded answer', () => {
+    expect(
+      masteredQuestionIds([
+        a(1, false, 'practice', '2026-07-01T00:00:00Z'),
+        a(1, true, 'flashcard', '2026-07-02T00:00:00Z'),
+      ]),
+    ).toEqual([]);
+  });
+
+  it('lets a later wrong graded answer un-master a question', () => {
+    expect(
+      masteredQuestionIds([
+        a(1, true, 'practice', '2026-07-01T00:00:00Z'),
+        a(1, false, 'practice', '2026-07-02T00:00:00Z'),
+      ]),
+    ).toEqual([]);
   });
 });

@@ -403,6 +403,22 @@ export function gradedOnly<T extends { mode: QuizMode }>(attempts: readonly T[])
 }
 
 /**
+ * Question ids whose LAST graded attempt was correct — the app's evidence of
+ * "thuộc", and the same currency the mock test uses to decide pass/fail.
+ *
+ * Flashcard self-grades are excluded on purpose (spec D1, same rule as
+ * gradedOnly above): tapping "Đã thuộc" while looking at the answer is
+ * recognition, not retrieval, and would let a learner mark all 128 known in
+ * two minutes. The flashcard deck's own marked-state is a different concept
+ * and lives in `flashcardKnown`.
+ */
+export function masteredQuestionIds(attempts: readonly QuestionAttempt[]): number[] {
+  const last = new Map<number, boolean>();
+  for (const a of gradedOnly(attempts)) last.set(a.questionId, a.wasCorrect);
+  return [...last.entries()].filter(([, ok]) => ok).map(([id]) => id);
+}
+
+/**
  * Question ids whose LAST graded attempt is wrong, most recently wrong first.
  * The single source of truth for "câu sai chưa ôn" — a later correct graded
  * attempt clears an id, a later wrong one re-opens it.
