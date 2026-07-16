@@ -9,7 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CalendarDays, ChevronRight, Star, Target } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
-import { estimateSessions, type Readiness } from '@/lib/n400/readiness';
+import { estimateSessions, isMockCriterion, type Readiness } from '@/lib/n400/readiness';
 
 // The ring is drawn in a fixed 92-unit viewBox and scaled down by CSS on
 // mobile, so the geometry maths stays in one place.
@@ -36,7 +36,7 @@ export function ReadinessHero({
 }) {
   const { percent, metCount, totalCount, next, ready } = readiness;
   const estimate = next ? estimateSessions(next, pace ?? undefined) : null;
-  const isMockNext = next?.id === 'writing_mock' || next?.id === 'civics_mock';
+  const isMockNext = next ? isMockCriterion(next.id) : false;
 
   return (
     <Card className="relative !overflow-hidden !p-0 border-slate-200/60">

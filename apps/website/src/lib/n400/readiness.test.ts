@@ -59,7 +59,7 @@ function readySignals(): ReadinessSignals {
     writingKnown: 45,
     writingTotal: 45,
     mockResults: [mock(true, '2026-07-01T00:00:00Z'), mock(true, '2026-07-02T00:00:00Z')],
-    sectionMockResults: [sectionMock('writing', true)],
+    sectionMockResults: [sectionMock('writing', true), sectionMock('speaking', true)],
   };
 }
 
@@ -68,7 +68,7 @@ describe('deriveReadiness', () => {
     const r = deriveReadiness(emptySignals());
     expect(r.percent).toBe(0);
     expect(r.metCount).toBe(0);
-    expect(r.totalCount).toBe(6);
+    expect(r.totalCount).toBe(7);
     expect(r.ready).toBe(false);
     expect(r.next?.id).toBe('civics_known');
   });
@@ -76,7 +76,7 @@ describe('deriveReadiness', () => {
   it('reports 100 and no next action once every criterion is met', () => {
     const r = deriveReadiness(readySignals());
     expect(r.percent).toBe(100);
-    expect(r.metCount).toBe(6);
+    expect(r.metCount).toBe(7);
     expect(r.ready).toBe(true);
     expect(r.next).toBeNull();
   });
@@ -88,6 +88,7 @@ describe('deriveReadiness', () => {
       'yesno_known',
       'writing_known',
       'writing_mock',
+      'speaking_mock',
       'civics_mock',
     ]);
   });
@@ -98,8 +99,8 @@ describe('deriveReadiness', () => {
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(true);
     expect(civics.progress).toBe(1);
-    // One of six criteria fully met → 17%.
-    expect(r.percent).toBe(17);
+    // One of seven criteria fully met → 14%.
+    expect(r.percent).toBe(14);
   });
 
   it('gives partial credit below the threshold, so the ring moves while learning', () => {
@@ -108,18 +109,44 @@ describe('deriveReadiness', () => {
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(false);
     expect(civics.progress).toBeCloseTo(0.498, 2);
-    expect(r.percent).toBe(8);
+    expect(r.percent).toBe(7);
   });
 
   it('never shows 100% while a criterion is still unmet', () => {
     // 100/128 = 78.1% known → progress 0.977, just short of the 80% bar. The
-    // other five criteria are fully met, so the rounded average rounds up to
+    // other six criteria are fully met, so the rounded average rounds up to
     // 100 even though the learner is not ready.
     const r = deriveReadiness({ ...readySignals(), civicsKnown: 100 });
     expect(r.ready).toBe(false);
-    expect(r.metCount).toBe(5);
+    expect(r.metCount).toBe(6);
     expect(r.next?.id).toBe('civics_known');
     expect(r.percent).toBe(99);
+  });
+
+  it('requires the latest speaking mock to have passed — every full-interview part has a criterion', () => {
+    // Without it a learner could reach "Sẵn sàng" having never passed Speaking.
+    const never = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', true)] });
+    const speaking = never.criteria.find((c) => c.id === 'speaking_mock')!;
+    expect(speaking.met).toBe(false);
+    expect(speaking.detail).toBe('Chưa thi');
+    expect(speaking.cta.href).toBe('/mock-test/speaking');
+    expect(never.ready).toBe(false);
+
+    // Same recency rule as writing: an old pass dies to a newer failure.
+    const regressed = deriveReadiness({
+      ...readySignals(),
+      sectionMockResults: [
+        sectionMock('writing', true),
+        sectionMock('speaking', true, '2026-07-01T00:00:00Z'),
+        sectionMock('speaking', false, '2026-07-05T00:00:00Z'),
+      ],
+    });
+    const regressedSpeaking = regressed.criteria.find((c) => c.id === 'speaking_mock')!;
+    expect(regressedSpeaking.met).toBe(false);
+    expect(regressedSpeaking.detail).toBe('Chưa đậu');
+
+    // And a writing mock never satisfies the speaking criterion.
+    expect(deriveReadiness(readySignals()).criteria.find((c) => c.id === 'speaking_mock')!.met).toBe(true);
   });
 
   it('covers the writing pool through practice: 80% of 45 sentences must be mastered', () => {
@@ -421,6 +448,7 @@ describe('estimateSessions', () => {
   it('gives mock criteria an exact count, since a mock IS one session', () => {
     const r = deriveReadiness(emptySignals());
     expect(estimateSessions(r.criteria.find((c) => c.id === 'writing_mock')!)).toEqual({ min: 1, max: 1 });
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'speaking_mock')!)).toEqual({ min: 1, max: 1 });
     expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_mock')!)).toEqual({ min: 2, max: 2 });
   });
 

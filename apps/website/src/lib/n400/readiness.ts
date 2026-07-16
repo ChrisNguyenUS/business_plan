@@ -21,7 +21,13 @@ export type ReadinessCriterionId =
   | 'yesno_known'
   | 'writing_known'
   | 'writing_mock'
+  | 'speaking_mock'
   | 'civics_mock';
+
+/** Mock criteria estimate in whole test sittings; known-criteria in items. */
+export function isMockCriterion(id: ReadinessCriterionId): boolean {
+  return id === 'writing_mock' || id === 'speaking_mock' || id === 'civics_mock';
+}
 
 export interface ReadinessCriterion {
   id: ReadinessCriterionId;
@@ -105,7 +111,7 @@ export function estimateSessions(
   pace: number = ITEMS_PER_SESSION,
 ): { min: number; max: number } | null {
   if (c.remaining <= 0) return null;
-  if (c.id === 'writing_mock' || c.id === 'civics_mock') {
+  if (isMockCriterion(c.id)) {
     return { min: c.remaining, max: c.remaining };
   }
   const min = Math.ceil(c.remaining / pace);
@@ -214,15 +220,20 @@ function recentMockPasses(mockResults: readonly MockResult[]): number {
 }
 
 /**
- * The most recent writing mock, chronologically. "Đậu thi thử Viết" means the
- * LATEST attempt passed — same recency rule as the civics criterion. An old
- * pass must not survive a newer failure, or this checklist row contradicts the
- * Kết quả thi thử panel, which always shows the latest attempt.
+ * The most recent mock for one section, chronologically. "Đậu thi thử" for a
+ * section means the LATEST attempt passed — same recency rule as the civics
+ * criterion. An old pass must not survive a newer failure, or the checklist
+ * row contradicts the Kết quả thi thử panel, which always shows the latest
+ * attempt. Both sections record from the standalone mocks AND from the
+ * matching part of the full interview, so a full interview counts here too.
  */
-function latestWritingMock(results: readonly SectionMockResult[]): SectionMockResult | null {
+function latestSectionMock(
+  results: readonly SectionMockResult[],
+  section: SectionMockResult['section'],
+): SectionMockResult | null {
   return (
     [...results]
-      .filter((m) => m.section === 'writing')
+      .filter((m) => m.section === section)
       .sort((a, b) => new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime())
       .at(-1) ?? null
   );
@@ -230,8 +241,10 @@ function latestWritingMock(results: readonly SectionMockResult[]): SectionMockRe
 
 export function deriveReadiness(s: ReadinessSignals): Readiness {
   const passes = recentMockPasses(s.mockResults);
-  const lastWriting = latestWritingMock(s.sectionMockResults);
+  const lastWriting = latestSectionMock(s.sectionMockResults, 'writing');
   const writingPassed = lastWriting?.passed ?? false;
+  const lastSpeaking = latestSectionMock(s.sectionMockResults, 'speaking');
+  const speakingPassed = lastSpeaking?.passed ?? false;
 
   const criteria: ReadinessCriterion[] = [
     knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/flashcards?filter=unknown'),
@@ -250,6 +263,16 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
       progress: writingPassed ? 1 : 0,
       remaining: writingPassed ? 0 : 1,
       cta: { label: 'Thi thử Viết', href: '/mock-test/viet' },
+    },
+    {
+      id: 'speaking_mock',
+      label: 'Đậu bài thi thử Speaking gần nhất',
+      milestone: 'Đậu bài thi thử Speaking gần nhất',
+      detail: speakingPassed ? 'Đã đậu' : lastSpeaking ? 'Chưa đậu' : 'Chưa thi',
+      met: speakingPassed,
+      progress: speakingPassed ? 1 : 0,
+      remaining: speakingPassed ? 0 : 1,
+      cta: { label: 'Thi thử Speaking', href: '/mock-test/speaking' },
     },
     {
       id: 'civics_mock',
@@ -271,7 +294,7 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
   // is a rounded average, while `met` demands progress >= 1 exactly. So the
   // average can round up to 100 while a criterion is still short (e.g. 100/128
   // civics known with the rest done). `ready` is the truth; never let the ring
-  // claim 100 next to a "việc tiếp theo" CTA — cap at 99 until all six are met.
+  // claim 100 next to a "việc tiếp theo" CTA — cap at 99 until all seven are met.
   const percent = ready ? 100 : Math.min(rawPercent, 99);
 
   return {
