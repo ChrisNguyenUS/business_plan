@@ -1,24 +1,33 @@
 'use client';
 
+// What Mean hub — an execution page: Hero (identity + progress) → Practice
+// (primary CTA) → Flashcards → Weak Areas. No "continue learning" card and no
+// recommendation cards (the dashboard owns those). Practice sessions run
+// in-page via SectionMCQuiz; the flashcard deck via SectionFlashcardScreen.
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmean-data';
 import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
-import { deriveSectionSeen, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
+import {
+  deriveSectionSeen,
+  deriveSectionGradedTally,
+  lastWrongSectionItemIds,
+} from '@/lib/n400/section-progress';
 import { buildWhatMeanOptions } from '@/lib/n400/whatmean-options';
 import {
   shuffle,
   whatMeanQuestionAudioUrl,
   whatMeanAnswerAudioUrl,
 } from '@/lib/n400/quiz-engine';
-import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
+import { deriveHubProgress } from '@/lib/n400/hub-progress';
+import { HubHero, HubStudyCardsCard, HubWeakAreasCard, type StudyCardsFilter } from '@/components/n400/hub/HubCards';
 import {
-  HubHero,
-  HubContinueCard,
-  HubStudyCardsCard,
-  type StudyCardsFilter,
-} from '@/components/n400/hub/HubCards';
-import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
+  PracticeSelector,
+  presetModes,
+  PRACTICE_ACCENTS,
+  type PracticeMode,
+} from '@/components/n400/hub/PracticeSelector';
 import {
   SectionFlashcardScreen,
   type SectionCard,
@@ -80,6 +89,32 @@ export default function WhatMeanPage() {
     () => deriveHubProgress(WHATMEAN_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
     [seen],
   );
+  const wrongIds = useMemo(
+    () => lastWrongSectionItemIds(state.sectionAttempts, 'whatmean'),
+    [state.sectionAttempts],
+  );
+  const graded = useMemo(
+    () => deriveSectionGradedTally(state.sectionAttempts).whatmean,
+    [state.sectionAttempts],
+  );
+
+  const wrongsCount = Math.min(wrongIds.length, 10);
+  const recommendedId = wrongsCount > 0 ? 'wrongs' : 'standard';
+
+  const modes = useMemo<PracticeMode[]>(() => {
+    const list: PracticeMode[] = [];
+    if (wrongsCount > 0) {
+      list.push({
+        id: 'wrongs',
+        title: 'Ôn lại từ sai',
+        desc: 'Ôn lại các từ bạn đã trả lời sai để ghi nhớ tốt hơn.',
+        countLabel: `${wrongsCount} từ`,
+        minutes: 5,
+      });
+    }
+    list.push(...presetModes(WHATMEAN_PRESETS, ALL_IDS.length, 'từ'));
+    return list;
+  }, [wrongsCount]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-question
   // chunk of review debt. Param is stripped immediately; with no debt the hub
@@ -134,6 +169,14 @@ export default function WhatMeanPage() {
     setMode({ kind: 'practice', ids, seed, minutes });
   }
 
+  const startMode = (m: PracticeMode) => {
+    if (m.id === 'wrongs') startWrongsReview();
+    else {
+      const preset = WHATMEAN_PRESETS.find((p) => p.id === m.id);
+      startPracticeWith(preset?.count ?? ALL_IDS.length, preset?.minutes);
+    }
+  };
+
   const browse = (filter: StudyCardsFilter) => {
     const ids =
       filter === 'known'
@@ -144,6 +187,11 @@ export default function WhatMeanPage() {
     if (ids.length > 0) setMode({ kind: 'deck', ids });
   };
 
+  // "Need improvement" strip: only with enough graded evidence, never for a
+  // new user (spec §7).
+  const accuracy = graded.total > 0 ? Math.round((graded.correct / graded.total) * 100) : 0;
+  const showWeak = graded.total >= 5 && accuracy < 80;
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-4 animate-in fade-in duration-300 sm:gap-4">
@@ -153,6 +201,8 @@ export default function WhatMeanPage() {
           title="What Mean"
           countLabel={`${ALL_IDS.length} từ vựng`}
           tagline="Hiểu và trả lời các câu hỏi “What mean” trong buổi phỏng vấn."
+          accentTextClass="text-blue-600"
+          accentBarClass="bg-blue-500"
           stats={{
             seenCount: progress.seenCount,
             totalCount: progress.totalCount,
@@ -160,17 +210,13 @@ export default function WhatMeanPage() {
             unitLabel: 'từ',
           }}
         />
-        <HubContinueCard
-          seenCount={progress.seenCount}
-          totalCount={progress.totalCount}
-          percent={progress.percent}
-          nextLabel={
-            progress.nextNumber !== null
-              ? `Bạn đang ở từ #${progress.nextNumber}`
-              : 'Bạn đã học hết — ôn lại nhé!'
-          }
-          started={progress.started}
-          onContinue={() => setMode({ kind: 'deck', ids: continueOrder(ALL_IDS, (id) => seen.has(id)) })}
+        <PracticeSelector
+          skillKey="whatmean"
+          modes={modes}
+          recommendedId={recommendedId}
+          illustrationSrc="/images/n400/practice_individual/whatmean-thumbnail-select-mode.png"
+          accent={PRACTICE_ACCENTS.whatmean}
+          onStart={startMode}
         />
         <HubStudyCardsCard
           totalCount={ALL_IDS.length}
@@ -181,13 +227,19 @@ export default function WhatMeanPage() {
           ]}
           onBrowse={browse}
         />
-        <PracticeSelector
-          skillKey="whatmean"
-          subtitle="Luyện tập trắc nghiệm nghĩa của từ."
-          presets={WHATMEAN_PRESETS}
-          totalCount={ALL_IDS.length}
-          onStart={(p) => startPracticeWith(p.count ?? ALL_IDS.length, p.minutes)}
-        />
+        {showWeak ? (
+          <HubWeakAreasCard
+            title="Từ cần cải thiện"
+            subtitle="Tập trung vào những từ bạn chưa nhớ chắc."
+            metricLabel="Độ chính xác trung bình"
+            percentSuffix=""
+            accuracyPercent={accuracy}
+            onPractice={() => {
+              if (wrongIds.length > 0) startWrongsReview();
+              else startPracticeWith(10, 5);
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

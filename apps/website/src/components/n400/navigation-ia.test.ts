@@ -43,7 +43,9 @@ describe('N400 information architecture contracts', () => {
   test('civics hub uses the hub module and deep-links methods', () => {
     const page = source('src/app/[locale]/n400app/(app)/study/civics/page.tsx');
 
-    expect(page).toContain('HubContinueCard');
+    // Continue-learning card removed (2026-07-16 redesign): users study
+    // randomly, so "you are on question #13" carries no meaning.
+    expect(page).not.toContain('HubContinueCard');
     expect(page).toContain('HubStudyCardsCard');
     expect(page).toContain('HubWeakAreasCard');
     expect(page).toContain('PracticeSelector');
@@ -116,12 +118,15 @@ describe('N400 information architecture contracts', () => {
     const cards = source('src/components/n400/hub/HubCards.tsx');
     const selector = source('src/components/n400/hub/PracticeSelector.tsx');
 
-    expect(cards).toContain('HubContinueCard');
+    // Continue-learning card is retired — the hub is Hero → Practice →
+    // Flashcards → Weak Areas.
+    expect(cards).not.toContain('HubContinueCard');
     expect(cards).toContain('HubStudyCardsCard');
     expect(cards).toContain('HubWeakAreasCard');
     // Practice card + mode picker: current-mode-first, desktop popover + mobile sheet.
+    expect(selector).toContain('Chọn cách luyện tập');
     expect(selector).toContain('Chế độ hiện tại');
-    expect(selector).toContain('Tiếp tục luyện tập');
+    expect(selector).toContain('Bắt đầu luyện tập');
     expect(selector).toContain('role="dialog"');
   });
 
@@ -140,7 +145,7 @@ describe('N400 information architecture contracts', () => {
       'src/app/[locale]/n400app/(app)/writing/page.tsx',
     ]) {
       const page = source(path);
-      expect(page).toContain('HubContinueCard');
+      expect(page).not.toContain('HubContinueCard');
       expect(page).toContain('PracticeSelector');
       expect(page).not.toContain('PracticeSessionPicker');
     }

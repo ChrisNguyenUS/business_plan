@@ -1,35 +1,63 @@
 'use client';
 
 // Shared building blocks for the skill hub pages (Civics / What Mean /
-// Yes-No / Writing). One vertical stack, one decision per card:
-//   HubHero          → skill identity (emoji, name, pool size, tagline)
-//   HubContinueCard  → primary CTA, largest card
+// Yes-No / Writing). The hub is an *execution* page — the dashboard already
+// answers "what should I study today?", so this page only answers "how do I
+// want to study this subject?". One vertical stack, one decision per card:
+//   HubHero          → skill identity + progress (thumbnail, name, pool size,
+//                      Tiến độ / Hoàn thành stat cells)
+//   PracticeSelector → primary CTA (lives in PracticeSelector.tsx)
 //   HubStudyCardsCard→ browse the flashcard deck with a status filter
-//   HubPracticeCard  → opens PracticeModesSheet
-//   HubWeakAreasCard → civics-only weak-topic shortcut
+//   HubWeakAreasCard → targeted review, only when there is enough signal
+// There is deliberately NO "continue learning" card and NO recommendation
+// card here — learners study randomly, and recommendations belong to the
+// dashboard.
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Star, TrendingDown, Layers, PieChart } from 'lucide-react';
+import { ArrowRight, Layers, PieChart, TrendingUp } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
 
-/** Progress numbers for the hero stat pills. */
+/** Progress numbers for the hero stat cells. */
 export interface HubHeroStats {
   seenCount: number;
   totalCount: number;
   percent: number;
-  /** Noun for the count pill, e.g. "câu" / "từ vựng". Defaults to "câu". */
+  /** Noun for the count cell, e.g. "câu" / "từ". Defaults to "câu". */
   unitLabel?: string;
 }
 
-function HeroStat({ icon, tone, label, value }: { icon: React.ReactNode; tone: string; label: string; value: string }) {
+function HeroStatCell({
+  icon,
+  tone,
+  label,
+  value,
+  bar,
+}: {
+  icon: React.ReactNode;
+  tone: string;
+  label: string;
+  value: string;
+  /** Optional progress bar row under the value (the Tiến độ cell). */
+  bar?: { percent: number; colorClass: string };
+}) {
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm">
-      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${tone}`}>{icon}</span>
-      <span className="leading-tight">
-        <span className="block text-[11px] text-gray-400">{label}</span>
-        <span className="block text-sm font-bold text-gray-900">{value}</span>
-      </span>
+    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2.5 shadow-sm">
+      <div className="flex items-center gap-2">
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${tone}`}>{icon}</span>
+        <span className="min-w-0 leading-tight">
+          <span className="block text-[11px] text-gray-400">{label}</span>
+          <span className="block truncate text-sm font-bold text-gray-900">{value}</span>
+        </span>
+      </div>
+      {bar ? (
+        <div className="mt-2 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <ProgressBar progress={bar.percent} colorClass={bar.colorClass} />
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-gray-400">{bar.percent}%</span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -41,30 +69,55 @@ export function HubHero({
   countLabel,
   tagline,
   stats,
+  accentTextClass = 'text-teal-600',
+  accentBarClass = 'bg-teal-500',
 }: {
   emoji: string;
   /** Skill illustration; falls back to the emoji tile when absent. */
   imageSrc?: string;
   title: string;
-  countLabel: string;
+  /** Pool size line under the title, e.g. "62 từ vựng". Omit when the title already carries it. */
+  countLabel?: string;
   tagline: string;
   stats?: HubHeroStats;
+  /** Subject accent for the count line / progress bar (teal / blue / purple / orange). */
+  accentTextClass?: string;
+  accentBarClass?: string;
 }) {
+  const statCells = stats ? (
+    <div className="grid grid-cols-2 gap-2.5">
+      <HeroStatCell
+        icon={<Layers size={16} />}
+        tone="bg-indigo-50 text-indigo-500"
+        label="Tiến độ"
+        value={`${stats.seenCount} / ${stats.totalCount} ${stats.unitLabel ?? 'câu'}`}
+        bar={{ percent: stats.percent, colorClass: accentBarClass }}
+      />
+      <HeroStatCell
+        icon={<PieChart size={16} />}
+        tone="bg-teal-50 text-teal-600"
+        label="Hoàn thành"
+        value={`${stats.percent}%`}
+      />
+    </div>
+  ) : null;
+
   return (
-    // Compact App-Store-style header: thumbnail + text share one centered row
-    // (mobile and desktop alike — "same product"), stats sit full-width below.
-    <section className="flex flex-col gap-3">
+    // App-Store-style identity card: thumbnail + text share one centered row;
+    // the stat cells live in the text column on desktop (mockup) and drop to a
+    // full-width row on mobile where the column is too narrow.
+    <section className="rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex items-center gap-4 sm:gap-5">
         {imageSrc ? (
           // Fixed 5:4 frame — object-cover/center keeps the illustration a
           // resized desktop version (subjects centred, equal L/R padding),
           // never a re-crop. Width tracks the viewport but caps on desktop.
-          <div className="relative aspect-[5/4] w-2/5 max-w-[190px] shrink-0 overflow-hidden rounded-2xl bg-teal-50/50">
+          <div className="relative aspect-[5/4] w-2/5 max-w-[210px] shrink-0 overflow-hidden rounded-2xl bg-teal-50/50">
             <Image
               src={imageSrc}
               alt={title}
               fill
-              sizes="(max-width: 640px) 40vw, 190px"
+              sizes="(max-width: 640px) 40vw, 210px"
               className="object-cover object-center"
             />
           </div>
@@ -75,110 +128,12 @@ export function HubHero({
         )}
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">{title}</h1>
-          <div className="text-sm font-bold text-teal-600">{countLabel}</div>
+          {countLabel ? <div className={`text-sm font-bold ${accentTextClass}`}>{countLabel}</div> : null}
           <p className="mt-1 text-sm leading-snug text-gray-500">{tagline}</p>
+          {statCells ? <div className="mt-3 hidden sm:block">{statCells}</div> : null}
         </div>
       </div>
-      {stats ? (
-        <div className="grid grid-cols-2 gap-2.5">
-          <HeroStat
-            icon={<Layers size={16} />}
-            tone="bg-indigo-50 text-indigo-500"
-            label="Tiến độ"
-            value={`${stats.seenCount}/${stats.totalCount} ${stats.unitLabel ?? 'câu'}`}
-          />
-          <HeroStat
-            icon={<PieChart size={16} />}
-            tone="bg-teal-50 text-teal-600"
-            label="Hoàn thành"
-            value={`${stats.percent}%`}
-          />
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-export function ProgressRing({
-  done,
-  total,
-  percent,
-  size = 'md',
-}: {
-  done: number;
-  total: number;
-  percent: number;
-  /** md — hub continue card. lg — dashboard hero. */
-  size?: 'md' | 'lg';
-}) {
-  const R = 44;
-  const C = 2 * Math.PI * R;
-  const lg = size === 'lg';
-  return (
-    <div className={`relative shrink-0 ${lg ? 'h-32 w-32 xl:tall:h-36 xl:tall:w-36' : 'h-20 w-20'}`}>
-      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-        <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100" />
-        <circle
-          cx="50"
-          cy="50"
-          r={R}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={C * (1 - percent / 100)}
-          className="text-teal-500 transition-all duration-500"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className={`${lg ? 'text-3xl xl:tall:text-4xl' : 'text-base'} font-extrabold leading-none text-gray-900`}>
-          {done}
-          <span className={`${lg ? 'text-base' : 'text-[10px]'} font-bold text-gray-400`}>/{total}</span>
-        </div>
-        <div className={`${lg ? 'mt-1 text-sm' : 'mt-0.5 text-xs'} font-bold text-teal-600`}>{percent}%</div>
-      </div>
-    </div>
-  );
-}
-
-export function HubContinueCard({
-  seenCount,
-  totalCount,
-  percent,
-  nextLabel,
-  started,
-  onContinue,
-}: {
-  seenCount: number;
-  totalCount: number;
-  percent: number;
-  nextLabel: string | null;
-  started: boolean;
-  onContinue: () => void;
-}) {
-  return (
-    // Priority #1 card. The ring is the single progress indicator (the
-    // duplicate horizontal bar was removed); ring + text + CTA sit on one row.
-    <section className="rounded-[24px] border border-teal-100 bg-gradient-to-br from-teal-50/70 to-white p-4 shadow-sm sm:p-5">
-      <div className="flex items-center gap-4 sm:gap-5">
-        <ProgressRing done={seenCount} total={totalCount} percent={percent} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <Star size={16} className="text-amber-400" fill="currentColor" />
-            <h2 className="text-lg font-extrabold text-gray-900">Tiếp tục học</h2>
-          </div>
-          {nextLabel ? <p className="mt-0.5 text-sm text-gray-600">{nextLabel}</p> : null}
-          <button
-            type="button"
-            onClick={onContinue}
-            className="group mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700"
-          >
-            {started ? 'Tiếp tục' : 'Bắt đầu học'}
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-          </button>
-        </div>
-      </div>
+      {statCells ? <div className="mt-3 sm:hidden">{statCells}</div> : null}
     </section>
   );
 }
@@ -235,7 +190,7 @@ export function HubStudyCardsCard({
           onClick={() => onBrowse(selected)}
           className="group ml-auto inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-teal-700 transition-colors hover:bg-teal-50"
         >
-          Xem thẻ
+          Xem tất cả
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
@@ -243,42 +198,53 @@ export function HubStudyCardsCard({
   );
 }
 
-// Practice is no longer a Hub*Card here — the Practice card + mode picker live
-// in components/n400/hub/PracticeSelector.tsx (current-mode-first design).
-
 export function HubWeakAreasCard({
-  topicLabel,
-  questionCount,
+  title = 'Điểm cần cải thiện',
+  subtitle = 'Tập trung vào các chủ đề bạn còn yếu.',
+  metricLabel,
   accuracyPercent,
+  percentSuffix = 'độ chính xác',
   onPractice,
 }: {
-  topicLabel: string;
-  questionCount: number;
+  title?: string;
+  subtitle?: string;
+  /** What the accuracy refers to — a weak topic name or "Độ chính xác trung bình". */
+  metricLabel: string;
   accuracyPercent: number;
+  /** Suffix after the bold percent; pass '' when metricLabel already says "độ chính xác". */
+  percentSuffix?: string;
   onPractice: () => void;
 }) {
   return (
+    // "Need improvement" strip (mockup): identity left, the metric with its
+    // bar in the middle, one outline CTA right. Only rendered with enough
+    // graded data — the page decides; new users never see it.
     <section className="rounded-2xl border border-orange-100 bg-orange-50/60 p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
-          <TrendingDown size={20} />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-500">
+            <TrendingUp size={20} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-extrabold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-500">{subtitle}</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-extrabold text-gray-900">Điểm yếu</h2>
-          <p className="text-sm font-semibold text-orange-600">{topicLabel}</p>
-          <p className="text-xs text-gray-500">
-            {questionCount} câu · độ chính xác {accuracyPercent}%
+        <div className="min-w-0 sm:w-[220px]">
+          <p className="truncate text-sm font-semibold text-gray-700">{metricLabel}</p>
+          <p className="text-xs font-bold text-gray-900">
+            {accuracyPercent}%{percentSuffix ? <span className="font-medium text-gray-500"> {percentSuffix}</span> : null}
           </p>
-          <div className="mt-1.5 max-w-[220px]">
-            <ProgressBar progress={accuracyPercent} />
+          <div className="mt-1">
+            <ProgressBar progress={accuracyPercent} colorClass="bg-orange-500" />
           </div>
         </div>
         <button
           type="button"
           onClick={onPractice}
-          className="group inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-orange-400 bg-white px-4 py-2 text-sm font-semibold text-orange-600 transition-colors hover:bg-orange-50"
+          className="group inline-flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-600 transition-colors hover:bg-orange-50"
         >
-          Ôn luyện ngay
+          Luyện ngay
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>

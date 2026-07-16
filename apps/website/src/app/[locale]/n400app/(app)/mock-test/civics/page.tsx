@@ -34,6 +34,8 @@ import {
   Sparkles,
   Bookmark,
   Play,
+  RefreshCw,
+  Lightbulb,
   TrendingUp,
   TrendingDown,
 } from 'lucide-react';
@@ -808,6 +810,8 @@ function StatTile({
   );
 }
 
+type ResultFilter = 'all' | 'correct' | 'wrong';
+
 function Result({
   result,
   slides,
@@ -819,11 +823,44 @@ function Result({
   picks: PickState[];
   onRetake: () => void;
 }) {
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
   const passed = isPass(result.score);
+  const accuracy = Math.round((result.score / result.total) * 100);
   const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
   const badges = useN400Badges();
   const catalogMap = Object.fromEntries(badges.catalog.map((b) => [b.slug, b]));
   const { state, toggleBookmark } = useN400UserState();
+  const [filter, setFilter] = useState<ResultFilter>('all');
+  const [savedOnly, setSavedOnly] = useState(false);
+
+  const rows = slides
+    .map((slide, i) => {
+      const q: N400Question | undefined = N400_QUESTIONS_BY_ID.get(slide.questionId);
+      if (!q) return null;
+      const correctId = correctById.get(slide.questionId);
+      return {
+        q,
+        index: i,
+        picked: slide.options.find((o) => o.id === picks[i]?.pickedId),
+        correct: slide.options.find((o) => o.id === correctId),
+        ok: picks[i]?.pickedId === correctId,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+
+  const visible = rows.filter((r) => {
+    if (filter === 'correct' && !r.ok) return false;
+    if (filter === 'wrong' && r.ok) return false;
+    if (savedOnly && !state.bookmarks.includes(r.q.id)) return false;
+    return true;
+  });
+
+  const filters: { id: ResultFilter; label: string }[] = [
+    { id: 'all', label: 'Tất cả' },
+    { id: 'correct', label: 'Đúng' },
+    { id: 'wrong', label: 'Sai' },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -833,79 +870,154 @@ function Result({
 
       {result.milestone !== null ? <MilestoneBanner days={result.milestone} /> : null}
 
-      <Card className={`p-5 text-center sm:p-8 ${passed ? 'bg-teal-50 border-teal-200' : 'bg-orange-50 border-orange-200'}`}>
-        <div className="mb-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Trophy className={passed ? 'text-teal-600' : 'text-orange-500'} size={40} />
-          <h3 className="text-2xl font-extrabold text-gray-800 sm:text-3xl">
-            {passed ? 'Chúc mừng! Bạn đã vượt qua!' : 'Cố lên! Lần sau bạn sẽ làm tốt hơn.'}
-          </h3>
-        </div>
-        <div className="text-5xl font-extrabold text-gray-900 mb-2">
-          {result.score}
-          <span className="text-2xl text-gray-500">/{result.total}</span>
-        </div>
-        <p className="text-sm text-gray-600">
-          Cần đạt ≥ {MOCK_TEST_PASS_THRESHOLD} câu đúng để vượt qua. Bạn đạt{' '}
-          {Math.round((result.score / result.total) * 100)}% độ chính xác.
-        </p>
-        <div className="mt-4 inline-flex items-center gap-2 text-sm text-gray-700 bg-white/70 rounded-full px-3 py-1.5 border border-orange-200">
-          <Flame size={16} className="text-orange-500" />
-          <span className="font-semibold">{result.currentStreak} ngày</span>
-          <span className="text-xs text-gray-500">
-            · Cao nhất: {result.longestStreak} ngày
-          </span>
-        </div>
-        <div className="flex justify-center gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onRetake}
-            className="px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 shadow-md"
-          >
-            Thi lại
-          </button>
+      {/* Hero — pass/fail illustration on the left, verdict + score on the right */}
+      <Card className="relative overflow-hidden p-5 sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-teal-50/70 via-white to-white"
+        />
+        <div className="relative grid grid-cols-1 items-center gap-5 sm:grid-cols-[minmax(0,260px)_1fr] sm:gap-8">
+          <div className="relative mx-auto h-44 w-44 sm:h-60 sm:w-60">
+            <Image
+              src={passed ? '/images/n400/after_mocktest/success.png' : '/images/n400/after_mocktest/not_pass.png'}
+              alt=""
+              fill
+              className="object-contain"
+              sizes="(max-width: 640px) 176px, 240px"
+              priority
+            />
+          </div>
+
+          <div className="text-center">
+            <h3 className="text-2xl font-extrabold text-gray-800 sm:text-3xl">
+              {passed ? (
+                <>
+                  Tuyệt vời! Bạn đã <span className="text-teal-600">vượt qua</span> bài thi!
+                </>
+              ) : (
+                'Cố lên! Lần sau bạn sẽ làm tốt hơn.'
+              )}
+            </h3>
+            {passed ? (
+              <p className="mt-1.5 text-sm text-gray-500 sm:text-base">
+                Bạn đã sẵn sàng cho buổi phỏng vấn.
+              </p>
+            ) : null}
+
+            <div className="mt-3 text-5xl font-extrabold text-teal-600 sm:text-6xl">
+              {result.score}
+              <span className="text-2xl font-bold text-gray-400 sm:text-3xl">/{result.total}</span>
+            </div>
+
+            {passed ? (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3.5 py-1.5 text-sm font-semibold text-teal-700">
+                <CheckCircle size={15} />
+                Đạt {accuracy}% độ chính xác
+              </div>
+            ) : null}
+
+            <p className="mt-3 text-sm text-gray-600">
+              Cần đạt ≥ {MOCK_TEST_PASS_THRESHOLD} câu đúng để vượt qua.{' '}
+              {passed ? 'Bạn đã làm rất tốt!' : `Bạn đạt ${accuracy}% độ chính xác.`}
+            </p>
+
+            {!passed ? (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/70 px-3 py-1.5 text-sm text-gray-700">
+                <Flame size={16} className="text-orange-500" />
+                <span className="font-semibold">{result.currentStreak} ngày</span>
+                <span className="text-xs text-gray-500">· Cao nhất: {result.longestStreak} ngày</span>
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={onRetake}
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-7 py-3 font-semibold text-white shadow-md transition-colors duration-200 hover:bg-teal-800"
+              >
+                <RefreshCw size={16} />
+                Thi lại
+              </button>
+            </div>
+          </div>
         </div>
       </Card>
 
+      {/* Answer breakdown — filterable Tất cả / Đúng / Sai + Đã lưu */}
       <Card className="p-5 sm:p-6">
-        <h4 className="font-bold text-gray-800 mb-4">Chi tiết các câu trả lời</h4>
-        <div className="space-y-3">
-          {slides.map((slide, i) => {
-            const q: N400Question | undefined = N400_QUESTIONS_BY_ID.get(slide.questionId);
-            if (!q) return null;
-            const correctId = correctById.get(slide.questionId);
-            const correct = slide.options.find((o) => o.id === correctId);
-            const picked = slide.options.find((o) => o.id === picks[i]?.pickedId);
-            const ok = picked?.id === correctId;
-            return (
-              <div
-                key={q.id}
-                className={`p-4 rounded-xl border ${ok ? 'border-teal-200 bg-teal-50/40' : 'border-orange-200 bg-orange-50/40'}`}
-              >
-                <div className="flex items-start gap-3">
-                  {ok ? (
-                    <CheckCircle className="text-teal-600 shrink-0 mt-0.5" size={20} />
-                  ) : (
-                    <XCircle className="text-orange-500 shrink-0 mt-0.5" size={20} />
-                  )}
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500">
-                      Câu {i + 1} / Question #{q.id}
-                    </div>
-                    <div className="font-semibold text-gray-800 mt-1">{q.questionEn}</div>
-                    <div className="text-sm mt-2">
-                      <span className="text-gray-500">Bạn chọn: </span>
-                      <span className={ok ? 'text-teal-700 font-medium' : 'text-orange-600 font-medium'}>
-                        {picked ? picked.en : '— (bỏ qua)'}
-                      </span>
-                    </div>
-                    {!ok ? (
-                      <div className="text-sm">
-                        <span className="text-gray-500">Đáp án đúng: </span>
-                        <span className="text-teal-700 font-medium">{correct?.en ?? '—'}</span>
-                      </div>
-                    ) : null}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h4 className="font-bold text-gray-800">Chi tiết các câu trả lời</h4>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-full bg-gray-100 p-1">
+              {filters.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setFilter(f.id)}
+                  aria-pressed={filter === f.id}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors duration-200 ${
+                    filter === f.id
+                      ? 'bg-white text-teal-700 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSavedOnly((v) => !v)}
+              aria-pressed={savedOnly}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors duration-200 ${
+                savedOnly
+                  ? 'border-teal-600 bg-teal-50 text-teal-700'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-teal-300 hover:text-teal-600'
+              }`}
+            >
+              <Bookmark size={14} fill={savedOnly ? 'currentColor' : 'none'} />
+              Đã lưu
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {visible.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm text-gray-500">
+              Không có câu nào khớp bộ lọc này.
+            </div>
+          ) : null}
+          {visible.map(({ q, index, picked, correct, ok }) => (
+            <div
+              key={q.id}
+              className={`p-4 rounded-xl border ${ok ? 'border-teal-200 bg-teal-50/40' : 'border-orange-200 bg-orange-50/40'}`}
+            >
+              <div className="flex items-start gap-3">
+                {ok ? (
+                  <CheckCircle className="text-teal-600 shrink-0 mt-0.5" size={20} />
+                ) : (
+                  <XCircle className="text-orange-500 shrink-0 mt-0.5" size={20} />
+                )}
+                <div className="flex-1">
+                  <div className="text-xs text-gray-500">
+                    Câu {index + 1} / Question #{q.id}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="font-semibold text-gray-800 mt-1">{q.questionEn}</div>
+                  <div className="text-sm mt-2">
+                    <span className="text-gray-500">Bạn chọn: </span>
+                    <span className={ok ? 'text-teal-700 font-medium' : 'text-orange-600 font-medium'}>
+                      {picked ? picked.en : '— (bỏ qua)'}
+                    </span>
+                  </div>
+                  {!ok ? (
+                    <div className="text-sm">
+                      <span className="text-gray-500">Đáp án đúng: </span>
+                      <span className="text-teal-700 font-medium">{correct?.en ?? '—'}</span>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex flex-col items-end gap-2 shrink-0 self-stretch justify-between">
+                  <div className="flex items-center gap-1.5">
                     <AudioButton src={questionAudioUrl(q.id)} size="sm" label="Nghe câu hỏi" />
                     <button
                       type="button"
@@ -924,11 +1036,56 @@ function Result({
                       />
                     </button>
                   </div>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                      ok ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
+                    }`}
+                  >
+                    {ok ? 'Đúng' : 'Sai'}
+                  </span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+
+        {/* Footer — fail: nudge to review wrongs; pass: retake or back to the hub */}
+        {!passed ? (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-indigo-50/70 px-4 py-3">
+            <div className="flex items-center gap-2.5 text-sm text-gray-700">
+              <Lightbulb size={16} className="shrink-0 text-indigo-500" />
+              <span>
+                <span className="font-semibold">Mẹo học hiệu quả:</span> Ôn lại những câu sai để cải
+                thiện điểm số của bạn!
+              </span>
+            </div>
+            <Link
+              href={`/${locale}/n400app/practice?start=review`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-sm font-semibold text-indigo-600 transition-colors duration-200 hover:bg-indigo-50"
+            >
+              Ôn câu sai
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onRetake}
+              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:border-teal-300 hover:text-teal-700"
+            >
+              <RefreshCw size={15} />
+              Làm lại bài thi
+            </button>
+            <Link
+              href={`/${locale}/n400app/mock-test`}
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-teal-700"
+            >
+              <ClipboardCheck size={15} />
+              Về trang Thi thử
+            </Link>
+          </div>
+        )}
       </Card>
     </div>
   );

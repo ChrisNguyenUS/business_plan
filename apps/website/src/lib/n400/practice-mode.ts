@@ -8,19 +8,19 @@
 // hook instances (and browser tabs) without a setState-in-effect.
 
 import { useCallback, useSyncExternalStore } from 'react';
-import type { PracticePreset } from './quiz-engine';
 
 export type PracticeSkillKey = 'civics' | 'whatmean' | 'yesno' | 'writing';
-type ModeId = PracticePreset['id'];
 
-// Fixed display order across every hub (spec): Daily → Quick → Challenge → Full.
-export const PRACTICE_MODE_ORDER: ModeId[] = ['standard', 'quick', 'deep', 'full'];
+// The four shared preset tiers plus the review modes ('wrongs' = replay the
+// wrong-answer debt, 'weak' = civics weak-topic session). Which of these a hub
+// actually offers is decided per page; availability can change between visits
+// (debt gets paid down), so the hub validates the stored id against today's
+// mode list and falls back to its recommended mode when the pick is gone.
+export type PracticeModeId = 'quick' | 'standard' | 'deep' | 'full' | 'wrongs' | 'weak';
 
-// Daily Practice is both the default and the "recommended today" mode.
-export const DEFAULT_PRACTICE_MODE_ID: ModeId = 'standard';
-export const RECOMMENDED_PRACTICE_MODE_ID: ModeId = 'standard';
+export const DEFAULT_PRACTICE_MODE_ID: PracticeModeId = 'standard';
 
-const VALID_IDS = new Set<ModeId>(['quick', 'standard', 'deep', 'full']);
+const VALID_IDS = new Set<PracticeModeId>(['quick', 'standard', 'deep', 'full', 'wrongs', 'weak']);
 const storageKey = (skill: PracticeSkillKey) => `n400:practice-mode:${skill}`;
 
 // In-tab listeners so a write in one hook instance re-renders every other one;
@@ -36,10 +36,10 @@ function subscribe(cb: () => void) {
   };
 }
 
-function readModeId(skill: PracticeSkillKey): ModeId {
+function readModeId(skill: PracticeSkillKey): PracticeModeId {
   try {
     const saved = window.localStorage.getItem(storageKey(skill));
-    if (saved && VALID_IDS.has(saved as ModeId)) return saved as ModeId;
+    if (saved && VALID_IDS.has(saved as PracticeModeId)) return saved as PracticeModeId;
   } catch {
     /* private mode / disabled storage */
   }
@@ -50,7 +50,7 @@ function readModeId(skill: PracticeSkillKey): ModeId {
  * Remembered practice-mode id for a skill. Renders the default on the server /
  * first paint, then the persisted choice; `setModeId` writes it back.
  */
-export function usePracticeModeId(skill: PracticeSkillKey): [ModeId, (id: ModeId) => void] {
+export function usePracticeModeId(skill: PracticeSkillKey): [PracticeModeId, (id: PracticeModeId) => void] {
   const modeId = useSyncExternalStore(
     subscribe,
     () => readModeId(skill),
@@ -58,7 +58,7 @@ export function usePracticeModeId(skill: PracticeSkillKey): [ModeId, (id: ModeId
   );
 
   const setModeId = useCallback(
-    (next: ModeId) => {
+    (next: PracticeModeId) => {
       try {
         window.localStorage.setItem(storageKey(skill), next);
       } catch {

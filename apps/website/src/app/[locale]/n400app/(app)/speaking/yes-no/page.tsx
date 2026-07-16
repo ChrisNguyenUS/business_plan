@@ -1,19 +1,28 @@
 'use client';
 
+// Yes/No hub — an execution page: Hero (identity + progress) → Practice
+// (primary CTA) → Flashcards → Weak Areas. No "continue learning" card and no
+// recommendation cards (the dashboard owns those). Quiz sessions run in-page
+// via SectionYesNoQuiz; the flashcard deck via SectionFlashcardScreen.
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from '@/lib/n400/yesno-data';
 import { YESNO_PRESETS } from '@/lib/n400/section-presets';
-import { deriveSectionSeen, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
-import { shuffle, yesNoAudioUrl } from '@/lib/n400/quiz-engine';
-import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
 import {
-  HubHero,
-  HubContinueCard,
-  HubStudyCardsCard,
-  type StudyCardsFilter,
-} from '@/components/n400/hub/HubCards';
-import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
+  deriveSectionSeen,
+  deriveSectionGradedTally,
+  lastWrongSectionItemIds,
+} from '@/lib/n400/section-progress';
+import { shuffle, yesNoAudioUrl } from '@/lib/n400/quiz-engine';
+import { deriveHubProgress } from '@/lib/n400/hub-progress';
+import { HubHero, HubStudyCardsCard, HubWeakAreasCard, type StudyCardsFilter } from '@/components/n400/hub/HubCards';
+import {
+  PracticeSelector,
+  presetModes,
+  PRACTICE_ACCENTS,
+  type PracticeMode,
+} from '@/components/n400/hub/PracticeSelector';
 import {
   SectionFlashcardScreen,
   type SectionCard,
@@ -55,6 +64,32 @@ export default function YesNoPage() {
     () => deriveHubProgress(YESNO_QUESTIONS, (q) => seen.has(q.id), (q) => q.num),
     [seen],
   );
+  const wrongIds = useMemo(
+    () => lastWrongSectionItemIds(state.sectionAttempts, 'yesno'),
+    [state.sectionAttempts],
+  );
+  const graded = useMemo(
+    () => deriveSectionGradedTally(state.sectionAttempts).yesno,
+    [state.sectionAttempts],
+  );
+
+  const wrongsCount = Math.min(wrongIds.length, 10);
+  const recommendedId = wrongsCount > 0 ? 'wrongs' : 'standard';
+
+  const modes = useMemo<PracticeMode[]>(() => {
+    const list: PracticeMode[] = [];
+    if (wrongsCount > 0) {
+      list.push({
+        id: 'wrongs',
+        title: 'Ôn lại câu sai',
+        desc: 'Ôn lại các câu bạn đã trả lời sai để ghi nhớ tốt hơn.',
+        countLabel: `${wrongsCount} câu`,
+        minutes: 5,
+      });
+    }
+    list.push(...presetModes(YESNO_PRESETS, ALL_IDS.length));
+    return list;
+  }, [wrongsCount]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-question
   // chunk of review debt. Param is stripped immediately; with no debt the hub
@@ -108,6 +143,14 @@ export default function YesNoPage() {
     setMode({ kind: 'quiz', ids, minutes });
   }
 
+  const startMode = (m: PracticeMode) => {
+    if (m.id === 'wrongs') startWrongsReview();
+    else {
+      const preset = YESNO_PRESETS.find((p) => p.id === m.id);
+      startQuizWith(preset?.count ?? ALL_IDS.length, preset?.minutes);
+    }
+  };
+
   const browse = (filter: StudyCardsFilter) => {
     const ids =
       filter === 'known'
@@ -118,28 +161,31 @@ export default function YesNoPage() {
     if (ids.length > 0) setMode({ kind: 'deck', ids });
   };
 
+  // "Need improvement" strip: only with enough graded evidence, never for a
+  // new user (spec §7).
+  const accuracy = graded.total > 0 ? Math.round((graded.correct / graded.total) * 100) : 0;
+  const showWeak = graded.total >= 5 && accuracy < 80;
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-4 animate-in fade-in duration-300 sm:gap-4">
         <HubHero
           emoji="📋"
           imageSrc="/images/n400/yesno-thumbnail-study.png"
-          title="Yes / No"
+          title="Yes / No Questions"
           countLabel={`${ALL_IDS.length} câu hỏi`}
-          tagline="Trả lời Yes/No về bản thân, tiền án, thuế,… như trong phỏng vấn."
+          tagline="Luyện các câu hỏi dạng Yes/No trong đơn N-400 và các câu hỏi phỏng vấn cá nhân."
+          accentTextClass="text-purple-600"
+          accentBarClass="bg-purple-500"
           stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
         />
-        <HubContinueCard
-          seenCount={progress.seenCount}
-          totalCount={progress.totalCount}
-          percent={progress.percent}
-          nextLabel={
-            progress.nextNumber !== null
-              ? `Bạn đang ở câu #${progress.nextNumber}`
-              : 'Bạn đã học hết — ôn lại nhé!'
-          }
-          started={progress.started}
-          onContinue={() => setMode({ kind: 'deck', ids: continueOrder(ALL_IDS, (id) => seen.has(id)) })}
+        <PracticeSelector
+          skillKey="yesno"
+          modes={modes}
+          recommendedId={recommendedId}
+          illustrationSrc="/images/n400/practice_individual/yesno-thumbnail-select-mode.png"
+          accent={PRACTICE_ACCENTS.yesno}
+          onStart={startMode}
         />
         <HubStudyCardsCard
           totalCount={ALL_IDS.length}
@@ -150,13 +196,18 @@ export default function YesNoPage() {
           ]}
           onBrowse={browse}
         />
-        <PracticeSelector
-          skillKey="yesno"
-          subtitle="Luyện trả lời Yes/No với hai nút bấm."
-          presets={YESNO_PRESETS}
-          totalCount={ALL_IDS.length}
-          onStart={(p) => startQuizWith(p.count ?? ALL_IDS.length, p.minutes)}
-        />
+        {showWeak ? (
+          <HubWeakAreasCard
+            subtitle="Tập trung vào các nhóm câu hỏi bạn còn yếu."
+            metricLabel="Độ chính xác trung bình"
+            percentSuffix=""
+            accuracyPercent={accuracy}
+            onPractice={() => {
+              if (wrongIds.length > 0) startWrongsReview();
+              else startQuizWith(10, 5);
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

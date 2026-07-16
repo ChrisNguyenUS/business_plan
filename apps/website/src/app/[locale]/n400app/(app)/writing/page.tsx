@@ -1,26 +1,32 @@
 'use client';
 
-// Writing (dictation) section. Landing is a hub (Continue + Practice + the
-// always-on USCIS writing-rules guidance box); picking a mode drops into
-// DictationQuiz for that many sentences. Mirrors the what-mean / yes-no hub
-// shell, minus the Flashcards card (writing is practice-only, no flashcards).
+// Writing (dictation) hub — an execution page: Hero (identity + progress) →
+// Practice (primary CTA) → Writing Rules (reference, informational only) →
+// Weak Areas. Writing is practice-only (no flashcard deck) and has no
+// "continue learning" card. Picking a mode drops into DictationQuiz.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
 import { WRITING_PRESETS } from '@/lib/n400/section-presets';
-import { shuffle, type PracticePreset } from '@/lib/n400/quiz-engine';
-import { deriveSectionSeen, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
-import { deriveHubProgress, continueOrder } from '@/lib/n400/hub-progress';
-import { HubHero, HubContinueCard } from '@/components/n400/hub/HubCards';
-import { PracticeSelector } from '@/components/n400/hub/PracticeSelector';
+import { shuffle } from '@/lib/n400/quiz-engine';
+import {
+  deriveSectionSeen,
+  deriveSectionGradedTally,
+  lastWrongSectionItemIds,
+} from '@/lib/n400/section-progress';
+import { deriveHubProgress } from '@/lib/n400/hub-progress';
+import { HubHero, HubWeakAreasCard } from '@/components/n400/hub/HubCards';
+import {
+  PracticeSelector,
+  presetModes,
+  PRACTICE_ACCENTS,
+  type PracticeMode,
+} from '@/components/n400/hub/PracticeSelector';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 
 const ALL = WRITING_SENTENCES;
-
-// "Tiếp tục học" session length — same size as the standard practice mode.
-const CONTINUE_COUNT = WRITING_PRESETS.find((p) => p.id === 'standard')?.count ?? 10;
 
 type Mode =
   | { kind: 'landing' }
@@ -41,13 +47,39 @@ export default function WritingPage() {
     () => deriveHubProgress(ALL, (q) => seen.has(q.id), (q) => q.num),
     [seen],
   );
+  const wrongIds = useMemo(
+    () => lastWrongSectionItemIds(state.sectionAttempts, 'writing'),
+    [state.sectionAttempts],
+  );
+  const graded = useMemo(
+    () => deriveSectionGradedTally(state.sectionAttempts).writing,
+    [state.sectionAttempts],
+  );
+
+  const wrongsCount = Math.min(wrongIds.length, 10);
+  const recommendedId = wrongsCount > 0 ? 'wrongs' : 'standard';
+
+  const modes = useMemo<PracticeMode[]>(() => {
+    const list: PracticeMode[] = [];
+    if (wrongsCount > 0) {
+      list.push({
+        id: 'wrongs',
+        title: 'Ôn lại câu sai',
+        desc: 'Viết lại các câu bạn đã viết sai để ghi nhớ tốt hơn.',
+        countLabel: `${wrongsCount} câu`,
+        minutes: 5,
+      });
+    }
+    list.push(...presetModes(WRITING_PRESETS, ALL.length));
+    return list;
+  }, [wrongsCount]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-sentence
   // chunk of review debt. Param is stripped immediately so back-nav or reload
   // lands on the plain hub; with no debt the hub itself is the fallback.
   const startWrongsReview = () => {
-    const wrongIds = lastWrongSectionItemIds(state.sectionAttempts, 'writing').slice(0, 10);
-    const questions = wrongIds
+    const ids = lastWrongSectionItemIds(state.sectionAttempts, 'writing').slice(0, 10);
+    const questions = ids
       .map((id) => ALL.find((s) => s.id === id))
       .filter((s): s is WritingSentence => s !== undefined);
     if (questions.length > 0) setMode({ kind: 'quiz', questions });
@@ -67,15 +99,17 @@ export default function WritingPage() {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
 
-  const startQuiz = (preset: PracticePreset) => {
-    const count = preset.count ?? ALL.length;
+  const startQuizWith = (count: number, minutes?: number | null) => {
     const questions = shuffle([...ALL], `wr-quiz-${Date.now()}`).slice(0, count);
-    setMode({ kind: 'quiz', questions, minutes: preset.minutes });
+    setMode({ kind: 'quiz', questions, minutes });
   };
 
-  const startContinue = () => {
-    const ordered = continueOrder(ALL, (q) => seen.has(q.id));
-    setMode({ kind: 'quiz', questions: ordered.slice(0, CONTINUE_COUNT) });
+  const startMode = (m: PracticeMode) => {
+    if (m.id === 'wrongs') startWrongsReview();
+    else {
+      const preset = WRITING_PRESETS.find((p) => p.id === m.id);
+      startQuizWith(preset?.count ?? ALL.length, preset?.minutes);
+    }
   };
 
   if (mode.kind === 'quiz') {
@@ -97,6 +131,11 @@ export default function WritingPage() {
     );
   }
 
+  // "Need improvement" strip: only with enough graded evidence, never for a
+  // new user (spec §7).
+  const accuracy = graded.total > 0 ? Math.round((graded.correct / graded.total) * 100) : 0;
+  const showWeak = graded.total >= 5 && accuracy < 80;
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-4 animate-in fade-in duration-300 sm:gap-4">
@@ -106,22 +145,21 @@ export default function WritingPage() {
           title="Writing"
           countLabel={`${ALL.length} câu viết`}
           tagline="Nghe và gõ lại câu — luyện phần thi viết N-400."
+          accentTextClass="text-orange-600"
+          accentBarClass="bg-orange-500"
           stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
         />
-        <HubContinueCard
-          seenCount={progress.seenCount}
-          totalCount={progress.totalCount}
-          percent={progress.percent}
-          nextLabel={
-            progress.nextNumber !== null
-              ? `Bạn đang ở câu #${progress.nextNumber}`
-              : 'Bạn đã luyện hết — ôn lại nhé!'
-          }
-          started={progress.started}
-          onContinue={startContinue}
+
+        <PracticeSelector
+          skillKey="writing"
+          modes={modes}
+          recommendedId={recommendedId}
+          illustrationSrc="/images/n400/practice_individual/writing-thumbnail-select-mode.png"
+          accent={PRACTICE_ACCENTS.writing}
+          onStart={startMode}
         />
 
-        {/* Guidance box (always visible) — unchanged */}
+        {/* Writing Rules — reference card, informational only (spec §8) */}
         <section className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
           <div className="mb-2 flex items-center gap-2">
             <Lightbulb size={18} className="shrink-0 text-yellow-500" />
@@ -134,13 +172,19 @@ export default function WritingPage() {
           </ul>
         </section>
 
-        <PracticeSelector
-          skillKey="writing"
-          subtitle="Nghe câu và gõ lại đúng chính tả."
-          presets={WRITING_PRESETS}
-          totalCount={ALL.length}
-          onStart={(p) => startQuiz(p)}
-        />
+        {showWeak ? (
+          <HubWeakAreasCard
+            title="Câu cần cải thiện"
+            subtitle="Tập trung vào các câu bạn hay viết sai."
+            metricLabel="Độ chính xác trung bình"
+            percentSuffix=""
+            accuracyPercent={accuracy}
+            onPractice={() => {
+              if (wrongIds.length > 0) startWrongsReview();
+              else startQuizWith(10, 5);
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );
