@@ -41,7 +41,7 @@ describe('N400 mobile layout contracts', () => {
     expect(detail).not.toContain('className="w-2/5');
 
     // The overview must fit one mobile screen: compact stack, no desktop grid.
-    expect(overview).toContain('gap-3');
+    expect(overview).toContain('flex-col gap-2');
     expect(overview).not.toContain('xl:grid-cols-5');
   });
 });

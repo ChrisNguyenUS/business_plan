@@ -26,11 +26,22 @@ export interface ReadinessCriterion {
   id: ReadinessCriterionId;
   /** Checklist row label, e.g. "Thuộc 80% câu Civics". */
   label: string;
+  /**
+   * The same goal phrased as the work left, e.g. "Học thêm 47 câu Civics" — what
+   * the hero shows. Mock criteria have no count to phrase, so they reuse `label`.
+   */
+  milestone: string;
   /** Short progress detail, e.g. "102/128 câu". */
   detail: string;
   met: boolean;
   /** 0–1 progress toward this criterion. Partial credit keeps the ring moving. */
   progress: number;
+  /**
+   * Items still needed to MEET the criterion — not items left in the pool. A
+   * learner who knows 56/128 civics needs 47 more to clear the 80% bar, not 72.
+   * Mock criteria count in mocks (each mock is its own item). Never negative.
+   */
+  remaining: number;
   cta: { label: string; href: string };
 }
 
@@ -71,6 +82,27 @@ export const KNOWN_THRESHOLD = FIRST_MOCK_MIN_PERCENT / 100;
  */
 export const CIVICS_MOCK_PASS_STREAK = 2;
 
+/**
+ * Items a learner gets through in one sitting. Used only to turn "47 câu nữa"
+ * into "2 – 3 buổi học nữa" on the hero — a motivating unit, not a promise, so
+ * the estimate is always shown as a range.
+ */
+export const ITEMS_PER_SESSION = 25;
+
+/**
+ * How many more study sessions the criterion needs, as an inclusive range.
+ * Null once it's met. A mock criterion IS one session, so it reports an exact
+ * count rather than a range.
+ */
+export function estimateSessions(c: ReadinessCriterion): { min: number; max: number } | null {
+  if (c.remaining <= 0) return null;
+  if (c.id === 'writing_mock' || c.id === 'civics_mock') {
+    return { min: c.remaining, max: c.remaining };
+  }
+  const min = Math.ceil(c.remaining / ITEMS_PER_SESSION);
+  return { min, max: min + 1 };
+}
+
 function knownCriterion(
   id: ReadinessCriterionId,
   skillLabel: string,
@@ -81,12 +113,17 @@ function knownCriterion(
 ): ReadinessCriterion {
   const target = total * KNOWN_THRESHOLD;
   const progress = target <= 0 ? 0 : Math.min(known / target, 1);
+  // The bar is `known >= target` with target fractional (80% of 128 = 102.4),
+  // so the first integer that clears it is ceil(target).
+  const remaining = Math.max(0, Math.ceil(target) - known);
   return {
     id,
     label: `Thuộc ${FIRST_MOCK_MIN_PERCENT}% câu ${skillLabel}`,
+    milestone: `Học thêm ${remaining} câu ${skillLabel}`,
     detail: `${known}/${total} câu`,
     met: progress >= 1,
     progress,
+    remaining,
     cta: { label: ctaLabel, href },
   };
 }
@@ -110,17 +147,21 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
     {
       id: 'writing_mock',
       label: 'Đậu bài thi thử Viết',
+      milestone: 'Đậu bài thi thử Viết',
       detail: writingPassed ? 'Đã đậu' : 'Chưa đậu',
       met: writingPassed,
       progress: writingPassed ? 1 : 0,
+      remaining: writingPassed ? 0 : 1,
       cta: { label: 'Thi thử Viết', href: '/mock-test/viet' },
     },
     {
       id: 'civics_mock',
       label: `Đậu ${CIVICS_MOCK_PASS_STREAK} bài thi thử Civics gần nhất`,
+      milestone: `Đậu ${CIVICS_MOCK_PASS_STREAK} bài thi thử Civics gần nhất`,
       detail: `${passes}/${CIVICS_MOCK_PASS_STREAK} lần đậu`,
       met: passes >= CIVICS_MOCK_PASS_STREAK,
       progress: passes / CIVICS_MOCK_PASS_STREAK,
+      remaining: Math.max(0, CIVICS_MOCK_PASS_STREAK - passes),
       cta: { label: 'Thi thử Civics', href: '/mock-test' },
     },
   ];

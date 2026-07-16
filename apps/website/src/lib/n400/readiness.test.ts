@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { deriveReadiness, type ReadinessSignals } from './readiness';
+import {
+  deriveReadiness,
+  estimateSessions,
+  ITEMS_PER_SESSION,
+  type ReadinessSignals,
+} from './readiness';
 import type { MockResult, SectionMockResult } from './storage';
 
 function mock(passed: boolean, completedAt: string): MockResult {
@@ -178,5 +183,76 @@ describe('deriveReadiness', () => {
     const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0, whatmeanTotal: 0, yesnoTotal: 0 });
     expect(Number.isNaN(r.percent)).toBe(false);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.progress).toBe(0);
+  });
+});
+
+describe('criterion.remaining', () => {
+  it('counts items still needed to clear the 80% bar, not items left in the pool', () => {
+    // 80% of 128 = 102.4 → 103 known clears it; 56 known leaves 47 to go.
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(47);
+  });
+
+  it('is zero once a criterion is met, even when the learner overshot the bar', () => {
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 });
+    expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(0);
+  });
+
+  it('counts a missing writing mock as one item and missing civics mocks individually', () => {
+    const empty = deriveReadiness(emptySignals());
+    expect(empty.criteria.find((c) => c.id === 'writing_mock')!.remaining).toBe(1);
+    expect(empty.criteria.find((c) => c.id === 'civics_mock')!.remaining).toBe(2);
+
+    const onePass = deriveReadiness({ ...emptySignals(), mockResults: [mock(true, '2026-07-01T00:00:00Z')] });
+    expect(onePass.criteria.find((c) => c.id === 'civics_mock')!.remaining).toBe(1);
+  });
+
+  it('never goes negative when the pool is empty', () => {
+    const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0 });
+    expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(0);
+  });
+});
+
+describe('criterion.milestone', () => {
+  it('phrases a known-criterion as the work left, not the bar to clear', () => {
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    expect(r.criteria.find((c) => c.id === 'civics_known')!.milestone).toBe('Học thêm 47 câu Civics');
+  });
+
+  it('reuses the checklist label for mock criteria, which have no count to phrase', () => {
+    const r = deriveReadiness(emptySignals());
+    const writing = r.criteria.find((c) => c.id === 'writing_mock')!;
+    expect(writing.milestone).toBe(writing.label);
+  });
+});
+
+describe('estimateSessions', () => {
+  it('turns items left to learn into a session range', () => {
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    // 47 items to go at 25 per session → 2 sessions, shown as a 2–3 range.
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_known')!)).toEqual({ min: 2, max: 3 });
+  });
+
+  it('rounds a partial session up rather than promising less work than there is', () => {
+    // 102 known → 1 item left, still a whole session.
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 102 });
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_known')!)).toEqual({ min: 1, max: 2 });
+  });
+
+  it('gives mock criteria an exact count, since a mock IS one session', () => {
+    const r = deriveReadiness(emptySignals());
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'writing_mock')!)).toEqual({ min: 1, max: 1 });
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_mock')!)).toEqual({ min: 2, max: 2 });
+  });
+
+  it('returns null for a met criterion — there is nothing left to estimate', () => {
+    const r = deriveReadiness(readySignals());
+    for (const c of r.criteria) {
+      expect(estimateSessions(c)).toBeNull();
+    }
+  });
+
+  it('keeps ITEMS_PER_SESSION a positive number so the estimate can never divide by zero', () => {
+    expect(ITEMS_PER_SESSION).toBeGreaterThan(0);
   });
 });

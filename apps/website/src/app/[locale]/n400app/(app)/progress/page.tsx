@@ -4,11 +4,10 @@
 // exists for, at a glance and in one mobile screen with no scrolling:
 //   "Khi nào sẵn sàng?" → the readiness hero
 //   "Mình yếu ở đâu?"   → the skills card, weakest skill flagged
-//   "Tiến bộ không?"    → the chip row (streak, badges, last mock)
+//   "Tiến bộ không?"    → the stat row (streak, badges, accuracy, mock)
 // Everything that needs explaining rather than glancing lives on /statistic.
 
 import { useMemo } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
@@ -27,6 +26,14 @@ import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
 import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { ReadinessHero } from '@/components/n400/progress/ReadinessHero';
 import { SkillsCard, type SkillRow } from '@/components/n400/progress/SkillsCard';
+import { StatsRow, type StatCell } from '@/components/n400/progress/StatsRow';
+
+/** Plain-language read of the accuracy number, so the cell says something. */
+function accuracyHint(accuracy: number): string {
+  if (accuracy >= 80) return 'Rất tốt!';
+  if (accuracy >= 60) return 'Đang tiến bộ';
+  return 'Cần cải thiện';
+}
 
 export default function ProgressPage() {
   const { state, hydrated, stats } = useN400UserState();
@@ -89,46 +96,80 @@ export default function ProgressPage() {
 
   const skillRows: SkillRow[] = useMemo(
     () =>
-      [
-        { id: 'civics', icon: '📚', label: 'Civics', known: stats.mastered, total: N400_QUESTIONS.length, href: `${base}/study/civics` },
-        { id: 'whatmean', icon: '📖', label: 'What Mean', known: sectionMastered.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean` },
-        { id: 'yesno', icon: '🎤', label: 'Yes/No', known: sectionMastered.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no` },
-        { id: 'writing', icon: '✍️', label: 'Viết', known: sectionMastered.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing` },
-      ].map((row) => ({ ...row, weak: row.id === weakestId })),
+      (
+        [
+          { id: 'civics', thumbnail: 'civics-thumbnail.png', label: 'Civics', subtitle: `${N400_QUESTIONS.length} câu hỏi`, known: stats.mastered, total: N400_QUESTIONS.length, href: `${base}/study/civics`, accent: 'teal' },
+          { id: 'whatmean', thumbnail: 'whatmean-thumbnail.png', label: 'What Mean', subtitle: `${WHATMEAN_QUESTIONS.length} từ & cụm từ`, known: sectionMastered.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean`, accent: 'blue' },
+          { id: 'yesno', thumbnail: 'yesno-thumbnail.png', label: 'Yes / No', subtitle: `${YESNO_QUESTIONS.length} câu hỏi`, known: sectionMastered.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no`, accent: 'purple' },
+          { id: 'writing', thumbnail: 'writing-thumbnail.png', label: 'Viết', subtitle: `${WRITING_SENTENCES.length} chủ đề`, known: sectionMastered.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing`, accent: 'orange' },
+        ] as const
+      ).map((row) => ({
+        ...row,
+        weak: row.id === weakestId,
+        // "Tiếp tục học" only once there's something to continue from.
+        ctaLabel: row.known > 0 ? 'Tiếp tục học' : 'Học ngay',
+      })),
     [stats.mastered, sectionMastered, base, weakestId],
   );
 
-  const lastMock = state.mockResults.length > 0 ? state.mockResults[state.mockResults.length - 1] : null;
+  // Mock standing reuses the readiness criterion rather than recounting passes,
+  // so this cell and the hero can never disagree about where the learner stands.
+  const civicsMock = readiness.criteria.find((c) => c.id === 'civics_mock')!;
+
+  const statCells: StatCell[] = useMemo(
+    () => [
+      {
+        id: 'streak',
+        icon: 'flame',
+        label: 'Chuỗi học tập',
+        value: `${state.streak.current} ngày`,
+        hint: state.streak.current > 0 ? 'Giữ vững phong độ!' : 'Học hôm nay để bắt đầu',
+        tint: 'orange',
+      },
+      {
+        id: 'badges',
+        icon: 'trophy',
+        label: 'Huy hiệu',
+        value: badges.hydrated ? `${badges.earned.length}` : '—',
+        hint: 'Danh hiệu',
+        tint: 'yellow',
+        href: `${base}/profile`,
+      },
+      {
+        id: 'accuracy',
+        icon: 'target',
+        label: 'Độ chính xác',
+        value: `${stats.accuracy}%`,
+        hint: accuracyHint(stats.accuracy),
+        tint: 'teal',
+        href: `${base}/statistic`,
+      },
+      {
+        id: 'mock',
+        icon: 'clipboard',
+        label: 'Thi thử',
+        value: civicsMock.detail.replace(' lần đậu', ''),
+        hint: 'Bài thi đạt chuẩn',
+        tint: 'purple',
+        href: `${base}/statistic`,
+      },
+    ],
+    [state.streak, badges.hydrated, badges.earned.length, stats.accuracy, civicsMock.detail, base],
+  );
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">Đang tải…</div>;
   }
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-3 animate-in fade-in duration-300 sm:gap-4">
+    <div className="mx-auto flex max-w-[900px] flex-col gap-2 animate-in fade-in duration-300 sm:gap-4">
       <ProgressTabs />
 
       <ReadinessHero readiness={readiness} base={base} />
 
       <SkillsCard rows={skillRows} />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-600">
-          🔥 {state.streak.current} ngày
-        </span>
-        <Link
-          href={`${base}/profile`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-700 hover:bg-yellow-100"
-        >
-          🏅 {badges.hydrated ? `${badges.earned.length}/${badges.catalog.length}` : '—'} huy hiệu
-        </Link>
-        <Link
-          href={`${base}/statistic`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-slate-200"
-        >
-          📝 {lastMock ? (lastMock.passed ? 'Thi thử: Đạt' : 'Thi thử: Chưa đạt') : 'Chưa thi thử'}
-        </Link>
-      </div>
+      <StatsRow cells={statCells} />
     </div>
   );
 }

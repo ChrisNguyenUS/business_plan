@@ -20,7 +20,9 @@ export function ProgressTabs() {
   ];
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-xl bg-gray-100 p-1">
+    // self-start so the pill hugs its tabs instead of being stretched to the
+    // full width by the page's flex column.
+    <div className="inline-flex shrink-0 self-start items-center gap-1 rounded-xl bg-gray-100 p-1">
       {tabs.map((t) => {
         const active = pathname?.startsWith(t.href);
         return (

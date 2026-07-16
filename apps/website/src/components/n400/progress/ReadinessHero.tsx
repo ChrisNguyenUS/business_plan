@@ -3,78 +3,175 @@
 // The Tiến độ hero: one number for "am I ready?", one action for "what's next?".
 // It deliberately shows only the single most important unmet condition — the
 // full checklist lives on the Chi tiết tab. Keep it compact: this card shares
-// one mobile screen with the skills card and the chip row.
+// one mobile screen with the skills card and the stat row.
 
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { Card } from '@/components/n400/ui';
-import type { Readiness } from '@/lib/n400/readiness';
+import Image from 'next/image';
+import { ArrowRight, CalendarDays, ChevronRight, Star, Target } from 'lucide-react';
+import { Card, ProgressBar } from '@/components/n400/ui';
+import { estimateSessions, type Readiness } from '@/lib/n400/readiness';
 
-const SIZE = 72;
-const STROKE = 7;
+// The ring is drawn in a fixed 92-unit viewBox and scaled down by CSS on
+// mobile, so the geometry maths stays in one place.
+const SIZE = 92;
+const STROKE = 8;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+/** "2 – 3 buổi học nữa". A mock is one sitting, so it gets an exact count. */
+function sessionsLabel(estimate: { min: number; max: number }, isMock: boolean): string {
+  if (isMock) return `${estimate.min} bài thi thử`;
+  return `${estimate.min} – ${estimate.max} buổi học nữa`;
+}
+
 export function ReadinessHero({ readiness, base }: { readiness: Readiness; base: string }) {
   const { percent, metCount, totalCount, next, ready } = readiness;
+  const estimate = next ? estimateSessions(next) : null;
+  const isMockNext = next?.id === 'writing_mock' || next?.id === 'civics_mock';
 
   return (
-    <Card className="!p-4 sm:!p-6">
-      <div className="flex items-center gap-4">
-        <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
-          <svg width={SIZE} height={SIZE} className="-rotate-90" aria-hidden="true">
-            <circle
-              cx={SIZE / 2}
-              cy={SIZE / 2}
-              r={RADIUS}
-              fill="none"
-              strokeWidth={STROKE}
-              stroke="currentColor"
-              className="text-slate-100"
-            />
-            <circle
-              cx={SIZE / 2}
-              cy={SIZE / 2}
-              r={RADIUS}
-              fill="none"
-              strokeWidth={STROKE}
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeDasharray={CIRCUMFERENCE}
-              strokeDashoffset={CIRCUMFERENCE * (1 - percent / 100)}
-              className={ready ? 'text-emerald-500' : 'text-teal-600'}
-              style={{ transition: 'stroke-dashoffset 1s ease-out' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center text-lg font-extrabold tabular-nums text-teal-900">
-            {percent}%
+    <Card className="relative !overflow-hidden !p-0 border-slate-200/60">
+      {/* ── Right-side scene. Hidden below sm: the milestone cells need the full
+          width on mobile, and the card must not grow to make room for both. ── */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] sm:block">
+        <Image
+          src="/images/n400/Progress/hero-thumbnail.png"
+          alt=""
+          fill
+          className="object-cover object-[62%_45%]"
+          sizes="(min-width: 640px) 44vw, 0px"
+          priority
+        />
+        {/* Left-edge gradient: blends the scene into the white card, same
+            recipe as the dashboard hero. */}
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/80 to-transparent" />
+      </div>
+
+      <div className="relative z-[1] p-3 sm:w-[62%] sm:p-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="relative size-[60px] shrink-0 sm:size-[92px]">
+            <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="size-full -rotate-90" aria-hidden="true">
+              <circle
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                fill="none"
+                strokeWidth={STROKE}
+                stroke="currentColor"
+                className="text-slate-100"
+              />
+              <circle
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                fill="none"
+                strokeWidth={STROKE}
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeDasharray={CIRCUMFERENCE}
+                strokeDashoffset={CIRCUMFERENCE * (1 - percent / 100)}
+                className={ready ? 'text-emerald-500' : 'text-teal-600'}
+                style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center text-base font-extrabold tabular-nums text-teal-900 sm:text-xl">
+              {percent}%
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            {/* The chip states the metric, not the verdict — at 37% a bare
+                "SẴN SÀNG" would read as a claim the learner is ready. */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                  ready
+                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                    : 'border-slate-100 bg-white text-teal-700'
+                }`}
+              >
+                <Star size={11} className="text-amber-400" fill="currentColor" />
+                {ready ? 'Sẵn sàng' : 'Mức sẵn sàng'}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                {metCount}/{totalCount} điều kiện
+              </span>
+            </div>
+            <h1 className="mt-1.5 text-base font-extrabold text-slate-900 sm:text-xl">Sẵn sàng phỏng vấn</h1>
+            {/* Encouragement is the first thing to go on mobile — the milestone
+                below it is the part that drives the next action. */}
+            <p className="mt-1 hidden text-sm text-slate-600 sm:block">
+              {ready
+                ? 'Bạn đã đạt đủ điều kiện — hãy tự tin bước vào buổi phỏng vấn USCIS!'
+                : 'Bạn đang trên đúng lộ trình! Hãy tiếp tục học để tự tin chinh phục buổi phỏng vấn USCIS.'}
+            </p>
           </div>
         </div>
 
-        <div className="min-w-0">
-          <h1 className="text-base font-bold text-teal-900 sm:text-lg">Sẵn sàng phỏng vấn</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
-            Đạt {metCount}/{totalCount} điều kiện
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-3 border-t border-gray-100 pt-3">
         {next ? (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Việc tiếp theo</p>
-            <p className="mt-1 text-sm font-semibold text-gray-800">{next.label}</p>
+            <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-slate-100 bg-white/80 p-2.5 sm:p-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 sm:size-9">
+                    <Target size={17} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Mốc tiếp theo
+                      {/* The estimate has no room for its own cell on mobile, so
+                          it rides along here instead of being dropped. */}
+                      {estimate ? (
+                        <span className="sm:hidden"> · {sessionsLabel(estimate, isMockNext)}</span>
+                      ) : null}
+                    </p>
+                    <p className="truncate text-sm font-semibold text-slate-800">{next.milestone}</p>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center gap-2 sm:mt-2.5">
+                  <ProgressBar progress={Math.round(next.progress * 100)} heightClass="h-2" />
+                  <span className="shrink-0 text-[11px] font-semibold tabular-nums text-slate-500">
+                    {next.detail}
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                href={`${base}/statistic`}
+                className="group hidden items-center gap-2.5 rounded-2xl border border-slate-100 bg-white/80 p-3 transition-colors hover:border-teal-200 hover:bg-white sm:flex"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500">
+                  <CalendarDays size={17} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ước tính hoàn thành</p>
+                  <p className="truncate text-sm font-semibold text-slate-800">
+                    {estimate ? sessionsLabel(estimate, isMockNext) : '—'}
+                  </p>
+                </div>
+                <ChevronRight
+                  size={16}
+                  className="ml-auto shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            </div>
+
             <Link
               href={`${base}${next.cta.href}`}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+              className="group mt-3 inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:-translate-y-0.5 hover:bg-teal-700 active:translate-y-0 sm:mt-4 sm:py-2.5"
             >
-              {next.cta.label} <ArrowRight size={14} />
+              {next.cta.label}
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </>
         ) : (
-          <p className="text-sm font-semibold text-emerald-700">
-            🎉 Bạn đã đạt đủ {totalCount} điều kiện — sẵn sàng cho buổi phỏng vấn!
-          </p>
+          <Link
+            href={`${base}/mock-test`}
+            className="group mt-4 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0"
+          >
+            🎉 Giữ phong độ với một bài thi thử
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
         )}
       </div>
     </Card>
