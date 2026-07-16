@@ -1775,7 +1775,7 @@ git rm src/components/n400/progress/StatsCard.tsx
 
 - [ ] **Step 3: Full verification**
 
-Run each and confirm all three pass:
+Run each and confirm:
 
 ```bash
 pnpm type-check
@@ -1783,7 +1783,15 @@ pnpm lint
 pnpm test 2>&1 | tail -4
 ```
 
-Expected: type-check clean, lint clean, `0 failed` tests.
+Expected: type-check clean; `0 failed` tests.
+
+**On lint — do not chase ghosts.** `pnpm lint` is NOT clean on this repo and never was: the baseline is **16 pre-existing problems (2 errors, 14 warnings)** in files unrelated to this work (`mock-test/full/page.tsx`, the login/signup pages, admin pages, `not-found.tsx`). Do not fix them; they are out of scope. The bar for this task is that **our files contribute zero findings**. Verify with:
+
+```bash
+npx eslint . 2>&1 | grep -iE "progress/|readiness|activity-heatmap" || echo "clean: no findings from redesign files"
+```
+
+Expected: `clean: no findings from redesign files`, and the total still `16 problems (2 errors, 14 warnings)` — unchanged from baseline.
 
 - [ ] **Step 4: Confirm no migration crept in**
 
