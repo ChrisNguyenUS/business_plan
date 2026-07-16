@@ -13,7 +13,7 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { deriveSectionGradedTally, deriveSectionMastered } from '@/lib/n400/section-progress';
 import { gradedOnly } from '@/lib/n400/quiz-engine';
-import { deriveReadiness } from '@/lib/n400/readiness';
+import { deriveLearningPace, deriveReadiness } from '@/lib/n400/readiness';
 import {
   moduleAccuracy,
   NEEDS_PRACTICE_MIN_ATTEMPTS,
@@ -66,6 +66,8 @@ export default function ProgressPage() {
         whatmeanTotal: WHATMEAN_QUESTIONS.length,
         yesnoKnown: sectionMastered.yesno.length,
         yesnoTotal: YESNO_QUESTIONS.length,
+        writingKnown: sectionMastered.writing.length,
+        writingTotal: WRITING_SENTENCES.length,
         mockResults: state.mockResults,
         sectionMockResults: state.sectionMockResults,
       }),
@@ -76,6 +78,17 @@ export default function ProgressPage() {
   // judge. Same bar the study page uses for its "needs practice" badge, so the
   // two screens never disagree about which skill is weak.
   const gradedCivics = useMemo(() => gradedOnly(state.attempts), [state.attempts]);
+
+  // Measured câu-per-buổi across every skill, for the hero's "Ước tính hoàn
+  // thành". Null (no recent history) lets estimateSessions use its default.
+  const pace = useMemo(
+    () =>
+      deriveLearningPace([
+        ...gradedCivics.map((a) => ({ itemKey: `civics:${a.questionId}`, wasCorrect: a.wasCorrect, at: a.at })),
+        ...gradedOnly(state.sectionAttempts).map((a) => ({ itemKey: `${a.section}:${a.itemId}`, wasCorrect: a.wasCorrect, at: a.at })),
+      ]),
+    [gradedCivics, state.sectionAttempts],
+  );
 
   const weakestId = useMemo(() => {
     // No type annotation here on purpose: the shape changes through the
@@ -165,7 +178,7 @@ export default function ProgressPage() {
     <div className="mx-auto flex max-w-[900px] flex-col gap-2 animate-in fade-in duration-300 sm:gap-4">
       <ProgressTabs />
 
-      <ReadinessHero readiness={readiness} base={base} />
+      <ReadinessHero readiness={readiness} base={base} pace={pace} />
 
       <SkillsCard rows={skillRows} />
 

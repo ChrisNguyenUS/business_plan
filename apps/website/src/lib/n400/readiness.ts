@@ -19,6 +19,7 @@ export type ReadinessCriterionId =
   | 'civics_known'
   | 'whatmean_known'
   | 'yesno_known'
+  | 'writing_known'
   | 'writing_mock'
   | 'civics_mock';
 
@@ -64,6 +65,8 @@ export interface ReadinessSignals {
   whatmeanTotal: number;
   yesnoKnown: number;
   yesnoTotal: number;
+  writingKnown: number;
+  writingTotal: number;
   mockResults: readonly MockResult[];
   sectionMockResults: readonly SectionMockResult[];
 }
@@ -83,24 +86,98 @@ export const KNOWN_THRESHOLD = FIRST_MOCK_MIN_PERCENT / 100;
 export const CIVICS_MOCK_PASS_STREAK = 2;
 
 /**
- * Items a learner gets through in one sitting. Used only to turn "47 câu nữa"
- * into "2 – 3 buổi học nữa" on the hero — a motivating unit, not a promise, so
- * the estimate is always shown as a range.
+ * Fallback pace: items a learner gets through in one sitting, used only until
+ * `deriveLearningPace` has enough recent history to measure the real number.
+ * Turns "47 câu nữa" into "2 – 3 buổi học nữa" on the hero — a motivating
+ * unit, not a promise, so the estimate is always shown as a range.
  */
 export const ITEMS_PER_SESSION = 25;
 
 /**
  * How many more study sessions the criterion needs, as an inclusive range.
  * Null once it's met. A mock criterion IS one session, so it reports an exact
- * count rather than a range.
+ * count rather than a range. `pace` is the learner's measured items-per-buổi
+ * from `deriveLearningPace`; omitted (no recent history) it falls back to the
+ * ITEMS_PER_SESSION default.
  */
-export function estimateSessions(c: ReadinessCriterion): { min: number; max: number } | null {
+export function estimateSessions(
+  c: ReadinessCriterion,
+  pace: number = ITEMS_PER_SESSION,
+): { min: number; max: number } | null {
   if (c.remaining <= 0) return null;
   if (c.id === 'writing_mock' || c.id === 'civics_mock') {
     return { min: c.remaining, max: c.remaining };
   }
-  const min = Math.ceil(c.remaining / ITEMS_PER_SESSION);
+  const min = Math.ceil(c.remaining / pace);
   return { min, max: min + 1 };
+}
+
+// ── Learning pace ────────────────────────────────────────────────────────────
+// "Buổi" is an ACTIVE day — a day with at least one graded answer — so an
+// irregular schedule cannot corrupt the estimate: skipped days simply don't
+// count, and the hero keeps promising buổi, never calendar dates.
+
+/** A graded answer to one item, any skill. Flashcard self-grades never qualify. */
+export interface VelocityEvent {
+  /** Unique across skills, e.g. "civics:12" or "writing:wr-3". */
+  itemKey: string;
+  wasCorrect: boolean;
+  at: string; // ISO datetime
+}
+
+/** Preferred window: current form, this week. */
+export const PACE_RECENT_DAYS = 7;
+/** Widened window for irregular learners with < 2 buổi this week. */
+export const PACE_WINDOW_DAYS = 14;
+/** One cram day is not a trend — a pace needs at least this many buổi. */
+export const PACE_MIN_ACTIVE_DAYS = 2;
+/**
+ * Clamp bounds. The floor keeps a rough week from exploding the estimate into
+ * a demotivating wall (and guards the divide when nothing new was mastered);
+ * the ceiling keeps one heroic stretch from promising miracles.
+ */
+export const PACE_MIN = 5;
+export const PACE_MAX = 40;
+
+/** Pace over one window, or null when it has fewer than the minimum buổi. */
+function windowPace(events: readonly VelocityEvent[], now: Date, days: number): number | null {
+  const start = now.getTime() - days * 86_400_000;
+  // Chronological replay: what was each item's standing before the window, and
+  // where did it end up? Mastery here is the app-wide rule — last graded
+  // answer correct.
+  const sorted = [...events].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  const masteredAtStart = new Map<string, boolean>();
+  const lastOverall = new Map<string, VelocityEvent>();
+  const activeDays = new Set<string>();
+  for (const e of sorted) {
+    if (new Date(e.at).getTime() < start) {
+      masteredAtStart.set(e.itemKey, e.wasCorrect);
+    } else {
+      activeDays.add(e.at.slice(0, 10));
+    }
+    lastOverall.set(e.itemKey, e);
+  }
+  if (activeDays.size < PACE_MIN_ACTIVE_DAYS) return null;
+
+  // Newly mastered = ends the window mastered without starting it mastered.
+  // Re-answering an item known before the window is review, not progress.
+  let newlyMastered = 0;
+  for (const [key, e] of lastOverall) {
+    if (new Date(e.at).getTime() < start) continue;
+    if (e.wasCorrect && masteredAtStart.get(key) !== true) newlyMastered += 1;
+  }
+  return Math.min(Math.max(newlyMastered / activeDays.size, PACE_MIN), PACE_MAX);
+}
+
+/**
+ * The learner's measured pace in items per buổi, for `estimateSessions`. Reads
+ * the last 7 days when they hold at least 2 buổi, otherwise widens to 14 —
+ * an irregular learner is judged over the longer stretch instead of being
+ * treated as slow. Null when even 14 days lack 2 buổi (new learner, or back
+ * from a break): the caller falls back to the ITEMS_PER_SESSION default.
+ */
+export function deriveLearningPace(events: readonly VelocityEvent[], now: Date = new Date()): number | null {
+  return windowPace(events, now, PACE_RECENT_DAYS) ?? windowPace(events, now, PACE_WINDOW_DAYS);
 }
 
 function knownCriterion(
@@ -160,6 +237,10 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
     knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/flashcards?filter=unknown'),
     knownCriterion('whatmean_known', 'What Mean', s.whatmeanKnown, s.whatmeanTotal, 'Luyện What Mean', '/speaking/what-mean'),
     knownCriterion('yesno_known', 'Yes/No', s.yesnoKnown, s.yesnoTotal, 'Luyện Yes/No', '/speaking/yes-no'),
+    // The writing mock samples only 3 random sentences per attempt (pass = 1
+    // correct), so it can never prove pool coverage — this criterion is what
+    // guarantees the learner has written every topic correctly in practice.
+    knownCriterion('writing_known', 'Viết', s.writingKnown, s.writingTotal, 'Luyện Viết', '/writing'),
     {
       id: 'writing_mock',
       label: 'Đậu bài thi thử Viết gần nhất',
@@ -190,7 +271,7 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
   // is a rounded average, while `met` demands progress >= 1 exactly. So the
   // average can round up to 100 while a criterion is still short (e.g. 100/128
   // civics known with the rest done). `ready` is the truth; never let the ring
-  // claim 100 next to a "việc tiếp theo" CTA — cap at 99 until all five are met.
+  // claim 100 next to a "việc tiếp theo" CTA — cap at 99 until all six are met.
   const percent = ready ? 100 : Math.min(rawPercent, 99);
 
   return {

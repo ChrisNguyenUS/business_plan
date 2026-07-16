@@ -28,6 +28,7 @@ import {
 } from '@/lib/n400/questions-data';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
+import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
 
 const CATEGORY_COLORS: Record<N400CategoryKey, string> = {
   principles: 'bg-teal-600',
@@ -75,6 +76,8 @@ export default function StatisticPage() {
         whatmeanTotal: WHATMEAN_QUESTIONS.length,
         yesnoKnown: sectionMastered.yesno.length,
         yesnoTotal: YESNO_QUESTIONS.length,
+        writingKnown: sectionMastered.writing.length,
+        writingTotal: WRITING_SENTENCES.length,
         mockResults: state.mockResults,
         sectionMockResults: state.sectionMockResults,
       }),

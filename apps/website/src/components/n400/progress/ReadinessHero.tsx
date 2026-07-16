@@ -24,9 +24,18 @@ function sessionsLabel(estimate: { min: number; max: number }, isMock: boolean):
   return `${estimate.min} – ${estimate.max} buổi học nữa`;
 }
 
-export function ReadinessHero({ readiness, base }: { readiness: Readiness; base: string }) {
+export function ReadinessHero({
+  readiness,
+  base,
+  pace,
+}: {
+  readiness: Readiness;
+  base: string;
+  /** Measured câu-per-buổi from deriveLearningPace; null falls back to the default. */
+  pace?: number | null;
+}) {
   const { percent, metCount, totalCount, next, ready } = readiness;
-  const estimate = next ? estimateSessions(next) : null;
+  const estimate = next ? estimateSessions(next, pace ?? undefined) : null;
   const isMockNext = next?.id === 'writing_mock' || next?.id === 'civics_mock';
 
   return (

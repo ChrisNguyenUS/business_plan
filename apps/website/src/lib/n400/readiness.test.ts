@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  deriveLearningPace,
   deriveReadiness,
   estimateSessions,
   ITEMS_PER_SESSION,
+  PACE_MAX,
+  PACE_MIN,
   type ReadinessSignals,
+  type VelocityEvent,
 } from './readiness';
 import type { MockResult, SectionMockResult } from './storage';
 
@@ -36,6 +40,8 @@ function emptySignals(): ReadinessSignals {
     whatmeanTotal: 62,
     yesnoKnown: 0,
     yesnoTotal: 37,
+    writingKnown: 0,
+    writingTotal: 45,
     mockResults: [],
     sectionMockResults: [],
   };
@@ -50,6 +56,8 @@ function readySignals(): ReadinessSignals {
     whatmeanTotal: 62,
     yesnoKnown: 37,
     yesnoTotal: 37,
+    writingKnown: 45,
+    writingTotal: 45,
     mockResults: [mock(true, '2026-07-01T00:00:00Z'), mock(true, '2026-07-02T00:00:00Z')],
     sectionMockResults: [sectionMock('writing', true)],
   };
@@ -60,7 +68,7 @@ describe('deriveReadiness', () => {
     const r = deriveReadiness(emptySignals());
     expect(r.percent).toBe(0);
     expect(r.metCount).toBe(0);
-    expect(r.totalCount).toBe(5);
+    expect(r.totalCount).toBe(6);
     expect(r.ready).toBe(false);
     expect(r.next?.id).toBe('civics_known');
   });
@@ -68,7 +76,7 @@ describe('deriveReadiness', () => {
   it('reports 100 and no next action once every criterion is met', () => {
     const r = deriveReadiness(readySignals());
     expect(r.percent).toBe(100);
-    expect(r.metCount).toBe(5);
+    expect(r.metCount).toBe(6);
     expect(r.ready).toBe(true);
     expect(r.next).toBeNull();
   });
@@ -78,6 +86,7 @@ describe('deriveReadiness', () => {
       'civics_known',
       'whatmean_known',
       'yesno_known',
+      'writing_known',
       'writing_mock',
       'civics_mock',
     ]);
@@ -89,8 +98,8 @@ describe('deriveReadiness', () => {
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(true);
     expect(civics.progress).toBe(1);
-    // One of five criteria fully met → 20%.
-    expect(r.percent).toBe(20);
+    // One of six criteria fully met → 17%.
+    expect(r.percent).toBe(17);
   });
 
   it('gives partial credit below the threshold, so the ring moves while learning', () => {
@@ -99,18 +108,36 @@ describe('deriveReadiness', () => {
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(false);
     expect(civics.progress).toBeCloseTo(0.498, 2);
-    expect(r.percent).toBe(10);
+    expect(r.percent).toBe(8);
   });
 
   it('never shows 100% while a criterion is still unmet', () => {
     // 100/128 = 78.1% known → progress 0.977, just short of the 80% bar. The
-    // other four criteria are fully met, so the rounded average rounds up to
+    // other five criteria are fully met, so the rounded average rounds up to
     // 100 even though the learner is not ready.
     const r = deriveReadiness({ ...readySignals(), civicsKnown: 100 });
     expect(r.ready).toBe(false);
-    expect(r.metCount).toBe(4);
+    expect(r.metCount).toBe(5);
     expect(r.next?.id).toBe('civics_known');
     expect(r.percent).toBe(99);
+  });
+
+  it('covers the writing pool through practice: 80% of 45 sentences must be mastered', () => {
+    // The writing mock samples only 3 random sentences per attempt, so passing
+    // it proves almost nothing about pool coverage — this criterion is what
+    // guarantees the learner has actually written all topics correctly.
+    const short = deriveReadiness({ ...readySignals(), writingKnown: 35 });
+    const writing = short.criteria.find((c) => c.id === 'writing_known')!;
+    // 80% of 45 = 36 exactly.
+    expect(writing.met).toBe(false);
+    expect(writing.remaining).toBe(1);
+    expect(writing.milestone).toBe('Học thêm 1 câu Viết');
+    expect(writing.cta.href).toBe('/writing');
+    expect(short.ready).toBe(false);
+
+    const enough = deriveReadiness({ ...readySignals(), writingKnown: 36 });
+    expect(enough.criteria.find((c) => c.id === 'writing_known')!.met).toBe(true);
+    expect(enough.ready).toBe(true);
   });
 
   it('never lets a known-criterion exceed full credit', () => {
@@ -279,7 +306,106 @@ describe('criterion.milestone', () => {
   });
 });
 
+describe('deriveLearningPace', () => {
+  const NOW = new Date('2026-07-15T12:00:00Z');
+
+  /** A graded answer to `itemKey`, `daysAgo` days before NOW. */
+  function ev(itemKey: string, wasCorrect: boolean, daysAgo: number): VelocityEvent {
+    return {
+      itemKey,
+      wasCorrect,
+      at: new Date(NOW.getTime() - daysAgo * 86_400_000).toISOString(),
+    };
+  }
+
+  /** `count` distinct items all answered correctly `daysAgo` days before NOW. */
+  function masteredBatch(prefix: string, count: number, daysAgo: number): VelocityEvent[] {
+    return Array.from({ length: count }, (_, i) => ev(`${prefix}-${i}`, true, daysAgo));
+  }
+
+  it('returns null for a learner with no graded activity at all', () => {
+    expect(deriveLearningPace([], NOW)).toBeNull();
+  });
+
+  it('returns null when all activity is older than the 14-day window (learner on a break)', () => {
+    const events = [...masteredBatch('a', 20, 20), ...masteredBatch('b', 20, 25)];
+    expect(deriveLearningPace(events, NOW)).toBeNull();
+  });
+
+  it('measures newly mastered items per active day over the last 7 days', () => {
+    // 12 new items on each of two study days → 24/2 = 12 câu per buổi.
+    const events = [...masteredBatch('a', 12, 1), ...masteredBatch('b', 12, 2)];
+    expect(deriveLearningPace(events, NOW)).toBe(12);
+  });
+
+  it('does not count reviewing an already-mastered item as new progress', () => {
+    // Both items were mastered before the window; re-answering one correctly
+    // inside the window must not inflate the pace. Only the 10 genuinely new
+    // items on each day count → 20/2 = 10.
+    const events = [
+      ...masteredBatch('old', 30, 20),
+      ev('old-0', true, 1), // review of an item known since before the window
+      ...masteredBatch('a', 10, 1),
+      ...masteredBatch('b', 10, 2),
+    ];
+    expect(deriveLearningPace(events, NOW)).toBe(10);
+  });
+
+  it('counts an item that flipped from wrong to correct inside the window', () => {
+    const events = [
+      ev('x', false, 20), // failed long ago…
+      ev('x', true, 1), // …finally mastered this week
+      ...masteredBatch('a', 19, 1),
+      ...masteredBatch('b', 20, 2),
+    ];
+    expect(deriveLearningPace(events, NOW)).toBe(20);
+  });
+
+  it('does not count an item whose latest answer in the window is wrong', () => {
+    const events = [
+      ...masteredBatch('a', 10, 1),
+      ...masteredBatch('b', 10, 2),
+      ev('slip', true, 2), // looked mastered…
+      ev('slip', false, 1), // …but the latest answer is wrong
+    ];
+    expect(deriveLearningPace(events, NOW)).toBe(10);
+  });
+
+  it('widens to 14 days when the last 7 have fewer than 2 study days', () => {
+    // One study day this week, one the week before: the 7-day window alone has
+    // too little evidence, so the pace is measured over 14 days instead.
+    const events = [...masteredBatch('a', 12, 3), ...masteredBatch('b', 12, 10)];
+    expect(deriveLearningPace(events, NOW)).toBe(12);
+  });
+
+  it('returns null for a single cram day — one buổi is not a trend', () => {
+    expect(deriveLearningPace(masteredBatch('a', 40, 3), NOW)).toBeNull();
+  });
+
+  it('clamps the pace so one extreme stretch cannot distort the estimate', () => {
+    const cramming = [...masteredBatch('a', 100, 1), ...masteredBatch('b', 100, 2)];
+    expect(deriveLearningPace(cramming, NOW)).toBe(PACE_MAX);
+
+    // Two active days but only one new item: floor keeps the estimate motivating
+    // (and guards the divide when nothing new was mastered at all).
+    const crawling = [...masteredBatch('a', 1, 1), ev('a-0', true, 2)];
+    expect(deriveLearningPace(crawling, NOW)).toBe(PACE_MIN);
+  });
+});
+
 describe('estimateSessions', () => {
+  it("divides remaining work by the learner's own measured pace when given", () => {
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    const civics = r.criteria.find((c) => c.id === 'civics_known')!;
+    // 47 left at 12 câu per buổi → 4 buổi, shown as a 4–5 range.
+    expect(estimateSessions(civics, 12)).toEqual({ min: 4, max: 5 });
+  });
+
+  it('keeps mock criteria as exact one-session items regardless of pace', () => {
+    const r = deriveReadiness(emptySignals());
+    expect(estimateSessions(r.criteria.find((c) => c.id === 'writing_mock')!, 12)).toEqual({ min: 1, max: 1 });
+  });
+
   it('turns items left to learn into a session range', () => {
     const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
     // 47 items to go at 25 per session → 2 sessions, shown as a 2–3 range.
