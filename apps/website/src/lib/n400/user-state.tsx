@@ -5,15 +5,16 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
+import { masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
-import type { QuizMode, MockResult, UserSettings, UserAddress, N400State } from './storage';
+import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
 import {
   deriveSectionKnown,
   type SectionAttempt,
   type SectionKey,
 } from './section-progress';
 
-export type { QuizMode, MockResult, UserSettings, UserAddress, N400State };
+export type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State };
 
 const TODAY_LOCAL = (): string => {
   const d = new Date();
@@ -27,6 +28,7 @@ const DEFAULT_STATE: N400State = {
   sectionAttempts: [],
   sectionKnown: { whatmean: [], yesno: [], writing: [] },
   mockResults: [],
+  sectionMockResults: [],
   streak: { current: 0, longest: 0, lastActivityDate: null },
   settings: { stateCode: 'TX', audioEnabled: true },
   address: { city: null, stateCode: null, zipcode: null, districtNumber: null },
@@ -59,8 +61,17 @@ interface DbQuiz {
   completed_at: string | null;
 }
 
+interface DbSectionMock {
+  id: string;
+  section: string;
+  passed: boolean;
+  score: number;
+  total: number;
+  completed_at: string;
+}
+
 async function loadAll(userId: string): Promise<N400State> {
-  const [profileRes, bookmarksRes, quizzesRes, sectionRes] = await Promise.all([
+  const [profileRes, bookmarksRes, quizzesRes, sectionRes, sectionMockRes] = await Promise.all([
     supabase
       .from('n400_user_profile')
       .select('city,state_code,zipcode,district_number,current_streak,longest_streak,last_activity_date')
@@ -82,6 +93,12 @@ async function loadAll(userId: string): Promise<N400State> {
       .select('section, item_id, mode, was_correct, answered_at')
       .eq('user_id', userId)
       .order('answered_at', { ascending: true }),
+    supabase
+      .from('n400_section_mock_results')
+      .select('id, section, passed, score, total, completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
+      .limit(50),
   ]);
 
   const profile = (profileRes.data ?? null) as DbProfile | null;
@@ -151,6 +168,19 @@ async function loadAll(userId: string): Promise<N400State> {
     at: r.answered_at as string,
   }));
 
+  // Fetched newest-first so the limit keeps recent rows; the app wants them
+  // chronological, like mockResults.
+  const sectionMockResults: SectionMockResult[] = ((sectionMockRes.data ?? []) as DbSectionMock[])
+    .map((r) => ({
+      id: r.id,
+      section: r.section as 'writing' | 'speaking',
+      passed: r.passed,
+      score: r.score,
+      total: r.total,
+      completedAt: r.completed_at,
+    }))
+    .reverse();
+
   return {
     attempts,
     bookmarks,
@@ -158,6 +188,7 @@ async function loadAll(userId: string): Promise<N400State> {
     sectionAttempts,
     sectionKnown: deriveSectionKnown(sectionAttempts),
     mockResults,
+    sectionMockResults,
     streak: {
       current: profile?.current_streak ?? 0,
       longest: profile?.longest_streak ?? 0,
@@ -212,10 +243,12 @@ function useN400UserStateInternal() {
     const correct = state.attempts.filter((a) => a.wasCorrect).length;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
     const distinctAnswered = new Set(state.attempts.map((a) => a.questionId));
-    const lastSeen = new Map<number, boolean>();
-    for (const a of state.attempts) lastSeen.set(a.questionId, a.wasCorrect);
-    let mastered = 0;
-    for (const [, ok] of lastSeen) if (ok) mastered += 1;
+    // "Thuộc" = answered correctly under grading. Flashcard self-grades don't
+    // count (spec D1) — tapping "Đã thuộc" next to the visible answer is
+    // recognition, not retrieval, and the mock test grades objectively, so
+    // readiness has to use that same currency. `flashcardKnown` still tracks
+    // the deck's marked-state separately for the flashcard UI.
+    const mastered = masteredQuestionIds(state.attempts).length;
     return {
       totalAttempts: total,
       correctCount: correct,
@@ -532,6 +565,21 @@ function useN400UserStateInternal() {
         .select('id')
         .single();
       if (error) console.error('n400: recordSectionMockResult failed', error);
+
+      if (!error && inserted) {
+        const local: SectionMockResult = {
+          id: inserted.id as string,
+          section,
+          passed,
+          score,
+          total,
+          completedAt: new Date().toISOString(),
+        };
+        setState((s) => ({
+          ...s,
+          sectionMockResults: [...s.sectionMockResults, local].slice(-50),
+        }));
+      }
 
       const unlockedBadges: string[] = [];
       try {

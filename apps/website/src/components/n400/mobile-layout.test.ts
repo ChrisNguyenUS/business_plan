@@ -10,7 +10,7 @@ function source(path: string) {
 
 describe('N400 mobile layout contracts', () => {
   test('app shell keeps desktop sidebar offset out of mobile view', () => {
-    const layout = source('src/app/[locale]/n400app/layout.tsx');
+    const layout = source('src/app/[locale]/n400app/(app)/layout.tsx');
     const sidebar = source('src/components/n400/Sidebar.tsx');
 
     expect(layout).toContain('lg:ml-64');
@@ -19,7 +19,7 @@ describe('N400 mobile layout contracts', () => {
   });
 
   test('dashboard collapses desktop columns on mobile', () => {
-    const dashboard = source('src/app/[locale]/n400app/dashboard-client.tsx');
+    const dashboard = source('src/app/[locale]/n400app/(app)/dashboard-client.tsx');
 
     // Hero panorama shows on mobile without the desktop torch overflow.
     expect(dashboard).toContain('w-[45%] lg:w-[44%]');
@@ -31,14 +31,17 @@ describe('N400 mobile layout contracts', () => {
     expect(dashboard).toContain('overflow-x-auto xl:grid xl:grid-cols-4');
   });
 
-  test('statistics screen avoids fixed desktop columns on mobile', () => {
-    const statistic = source('src/app/[locale]/n400app/statistic/page.tsx');
+  test('progress tabs avoid fixed desktop columns on mobile', () => {
+    const detail = source('src/app/[locale]/n400app/(app)/statistic/page.tsx');
+    const overview = source('src/app/[locale]/n400app/(app)/progress/page.tsx');
 
-    expect(statistic).toContain('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5');
-    expect(statistic).toContain('flex flex-col gap-6 xl:flex-row');
-    expect(statistic).toContain('grid grid-cols-1 gap-6 xl:grid-cols-2');
-    expect(statistic).not.toContain('grid grid-cols-5 gap-4');
-    expect(statistic).not.toContain('className="w-3/5');
-    expect(statistic).not.toContain('className="w-2/5');
+    expect(detail).toContain('grid grid-cols-1 gap-4 xl:grid-cols-2');
+    expect(detail).not.toContain('grid grid-cols-5 gap-4');
+    expect(detail).not.toContain('className="w-3/5');
+    expect(detail).not.toContain('className="w-2/5');
+
+    // The overview must fit one mobile screen: compact stack, no desktop grid.
+    expect(overview).toContain('gap-3');
+    expect(overview).not.toContain('xl:grid-cols-5');
   });
 });

@@ -25,6 +25,20 @@ export interface MockResult {
   questionResults: { questionId: number; wasCorrect: boolean }[];
 }
 
+/**
+ * A Writing or Speaking mock-test result. Civics mocks live in
+ * n400_quiz_attempts (mode='mock_test') and surface as MockResult; these two
+ * mocks are client-only and n400_section_mock_results is their only record.
+ */
+export interface SectionMockResult {
+  id: string;
+  section: 'writing' | 'speaking';
+  passed: boolean;
+  score: number;
+  total: number;
+  completedAt: string; // ISO datetime
+}
+
 export interface UserSettings {
   stateCode: StateCode;
   audioEnabled: boolean;
@@ -47,6 +61,7 @@ export interface N400State {
   sectionAttempts: SectionAttempt[];
   sectionKnown: SectionKnown;
   mockResults: MockResult[];
+  sectionMockResults: SectionMockResult[];
   streak: {
     current: number;
     longest: number;

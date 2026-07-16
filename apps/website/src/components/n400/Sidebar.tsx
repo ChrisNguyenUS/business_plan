@@ -68,10 +68,10 @@ const DESKTOP_MENU: MenuItem[] = [
   {
     id: 'tiendo',
     label: 'Tiến độ',
-    subtitle: 'Theo dõi tiến độ và thành tích của bạn.',
-    href: 'statistic',
+    subtitle: 'Theo dõi tiến độ và mức sẵn sàng phỏng vấn.',
+    href: 'progress',
     icon: BarChart2,
-    alsoMatch: ['progress'],
+    alsoMatch: ['statistic'],
   },
 ];
 
@@ -80,7 +80,7 @@ const MOBILE_MENU: MenuItem[] = [
   { id: 'dashboard', label: 'Tổng quan', href: '', icon: Home },
   { id: 'study', label: 'Học tập', href: 'study', icon: GraduationCap, alsoMatch: ['speaking', 'writing', 'practice', 'flashcards'] },
   { id: 'mock-test', label: 'Thi thử', href: 'mock-test', icon: ClipboardCheck },
-  { id: 'tiendo', label: 'Tiến độ', href: 'statistic', icon: BarChart2, alsoMatch: ['progress'] },
+  { id: 'tiendo', label: 'Tiến độ', href: 'progress', icon: BarChart2, alsoMatch: ['statistic'] },
 ];
 
 function useN400Navigation() {

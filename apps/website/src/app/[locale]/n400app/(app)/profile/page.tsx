@@ -96,7 +96,7 @@ export default function ProfilePage() {
 
         {/* Summary stat line → Learning Progress */}
         <Link
-          href={`/${locale}/n400app/statistic`}
+          href={`/${locale}/n400app/progress`}
           className="mt-6 group flex items-center gap-3 px-4 py-3 bg-gray-50/80 rounded-xl text-sm text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-[var(--motion-fast)] border border-gray-100/80"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 group-hover:bg-teal-100 transition-colors">

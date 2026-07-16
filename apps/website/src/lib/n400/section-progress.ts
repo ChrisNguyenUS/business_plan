@@ -35,6 +35,33 @@ export function deriveSectionKnown(attempts: SectionAttempt[]): SectionKnown {
   return out;
 }
 
+/**
+ * Item ids whose LAST graded attempt was correct — the section twin of
+ * quiz-engine's masteredQuestionIds, and the app's evidence of "thuộc".
+ *
+ * Note the deliberate contrast with deriveSectionKnown above: that one is
+ * DECK STATE for the flashcard UI ("which cards have I marked?"), so it reads
+ * flashcard mode only. This one is MASTERY ("have I actually answered it
+ * right?"), so it reads graded modes only, per spec D1 — the same rule
+ * lastWrongSectionItemIds below uses. The two answer different questions and
+ * must not be swapped for one another.
+ */
+export function deriveSectionMastered(attempts: readonly SectionAttempt[]): SectionKnown {
+  const last: Record<SectionKey, Map<string, boolean>> = {
+    whatmean: new Map(),
+    yesno: new Map(),
+    writing: new Map(),
+  };
+  for (const a of attempts) {
+    if (a.mode !== 'flashcard') last[a.section].set(a.itemId, a.wasCorrect);
+  }
+  const out = {} as SectionKnown;
+  for (const key of SECTION_KEYS) {
+    out[key] = [...last[key].entries()].filter(([, ok]) => ok).map(([id]) => id);
+  }
+  return out;
+}
+
 export function deriveSectionSeen(attempts: SectionAttempt[]): Record<SectionKey, Set<string>> {
   const out: Record<SectionKey, Set<string>> = {
     whatmean: new Set(),

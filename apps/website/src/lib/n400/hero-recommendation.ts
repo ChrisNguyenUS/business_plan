@@ -201,7 +201,7 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
       title: 'Bạn đã hoàn thành mục tiêu hôm nay!',
       subtitle: 'Tuyệt vời! Thi thử ngay để kiểm tra năng lực của bạn.',
       cta: { label: 'Thi thử ngay', href: '/mock-test' },
-      secondary: { label: 'Xem tiến độ', href: '/statistic' },
+      secondary: { label: 'Xem tiến độ', href: '/progress' },
     };
   }
 
