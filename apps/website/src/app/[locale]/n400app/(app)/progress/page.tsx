@@ -128,6 +128,7 @@ export default function ProgressPage() {
   // Mock standing reuses the readiness criterion rather than recounting passes,
   // so this cell and the hero can never disagree about where the learner stands.
   const civicsMock = readiness.criteria.find((c) => c.id === 'civics_mock')!;
+  const hasCivicsMocks = state.mockResults.length > 0;
 
   const statCells: StatCell[] = useMemo(
     () => [
@@ -160,14 +161,22 @@ export default function ProgressPage() {
       {
         id: 'mock',
         icon: 'clipboard',
-        label: 'Thi thử',
-        value: civicsMock.detail.replace(' lần đậu', ''),
-        hint: 'Bài thi đạt chuẩn',
+        // "0/2 · Bài thi đạt chuẩn" read as "took 0 of 2 tests"; say what the
+        // number actually is — passes among the 2 most recent Civics mocks,
+        // the readiness condition's own bar. Never attempted is its own state:
+        // "0/2" would look like two failures, so invite the first mock instead.
+        label: 'Thi thử Civics',
+        value: hasCivicsMocks ? civicsMock.detail.replace(' lần đậu', '') : 'Chưa thi',
+        hint: hasCivicsMocks
+          ? civicsMock.met
+            ? 'Đạt chuẩn phỏng vấn!'
+            : 'Đậu 2 bài gần nhất để đạt'
+          : 'Làm bài thi thử đầu tiên',
         tint: 'purple',
-        href: `${base}/statistic`,
+        href: hasCivicsMocks ? `${base}/statistic` : `${base}/mock-test`,
       },
     ],
-    [state.streak, badges.hydrated, badges.earned.length, stats.accuracy, civicsMock.detail, base],
+    [state.streak, badges.hydrated, badges.earned.length, stats.accuracy, civicsMock.detail, civicsMock.met, hasCivicsMocks, base],
   );
 
   if (!hydrated) {
