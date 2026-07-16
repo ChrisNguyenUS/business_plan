@@ -19,8 +19,12 @@ function mock(passed: boolean, completedAt: string): MockResult {
   };
 }
 
-function sectionMock(section: 'writing' | 'speaking', passed: boolean): SectionMockResult {
-  return { id: `${section}-${passed}`, section, passed, score: 3, total: 3, completedAt: '2026-07-01T00:00:00Z' };
+function sectionMock(
+  section: 'writing' | 'speaking',
+  passed: boolean,
+  completedAt = '2026-07-01T00:00:00Z',
+): SectionMockResult {
+  return { id: `${section}-${passed}-${completedAt}`, section, passed, score: passed ? 1 : 0, total: 3, completedAt };
 }
 
 /** Nothing done at all. */
@@ -162,8 +166,57 @@ describe('deriveReadiness', () => {
     const speakingOnly = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('speaking', true)] });
     expect(speakingOnly.criteria.find((c) => c.id === 'writing_mock')!.met).toBe(false);
 
-    const passed = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', false), sectionMock('writing', true)] });
+    const passed = deriveReadiness({
+      ...readySignals(),
+      sectionMockResults: [
+        sectionMock('writing', false, '2026-07-01T00:00:00Z'),
+        sectionMock('writing', true, '2026-07-02T00:00:00Z'),
+      ],
+    });
     expect(passed.criteria.find((c) => c.id === 'writing_mock')!.met).toBe(true);
+  });
+
+  it('judges the writing mock by the LATEST attempt — an old pass does not survive a newer failure', () => {
+    // Same shape as the civics criterion ("gần nhất"): passing once in the past
+    // proves nothing if the most recent attempt failed. This is the bug where
+    // the checklist said "Đã đậu" while Kết quả thi thử showed "Chưa đạt · 0/3".
+    const signals = {
+      ...readySignals(),
+      sectionMockResults: [
+        sectionMock('writing', true, '2026-07-01T00:00:00Z'),
+        sectionMock('writing', false, '2026-07-05T00:00:00Z'),
+      ],
+    };
+    const writing = deriveReadiness(signals).criteria.find((c) => c.id === 'writing_mock')!;
+    expect(writing.met).toBe(false);
+    expect(writing.progress).toBe(0);
+    expect(writing.remaining).toBe(1);
+  });
+
+  it('sorts writing mocks by completion date rather than trusting array order', () => {
+    // Newest failure listed first: chronological order must still win.
+    const signals = {
+      ...readySignals(),
+      sectionMockResults: [
+        sectionMock('writing', false, '2026-07-09T00:00:00Z'),
+        sectionMock('writing', true, '2026-07-01T00:00:00Z'),
+      ],
+    };
+    expect(deriveReadiness(signals).criteria.find((c) => c.id === 'writing_mock')!.met).toBe(false);
+  });
+
+  it('distinguishes "never attempted" from "latest attempt failed" in the writing detail', () => {
+    const never = deriveReadiness(emptySignals()).criteria.find((c) => c.id === 'writing_mock')!;
+    expect(never.detail).toBe('Chưa thi');
+
+    const failedLatest = deriveReadiness({
+      ...readySignals(),
+      sectionMockResults: [sectionMock('writing', false)],
+    }).criteria.find((c) => c.id === 'writing_mock')!;
+    expect(failedLatest.detail).toBe('Chưa đậu');
+
+    const passedLatest = deriveReadiness(readySignals()).criteria.find((c) => c.id === 'writing_mock')!;
+    expect(passedLatest.detail).toBe('Đã đậu');
   });
 
   it('picks the first unmet criterion in order as the next action', () => {

@@ -136,9 +136,25 @@ function recentMockPasses(mockResults: readonly MockResult[]): number {
     .filter((m) => m.passed).length;
 }
 
+/**
+ * The most recent writing mock, chronologically. "Đậu thi thử Viết" means the
+ * LATEST attempt passed — same recency rule as the civics criterion. An old
+ * pass must not survive a newer failure, or this checklist row contradicts the
+ * Kết quả thi thử panel, which always shows the latest attempt.
+ */
+function latestWritingMock(results: readonly SectionMockResult[]): SectionMockResult | null {
+  return (
+    [...results]
+      .filter((m) => m.section === 'writing')
+      .sort((a, b) => new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime())
+      .at(-1) ?? null
+  );
+}
+
 export function deriveReadiness(s: ReadinessSignals): Readiness {
   const passes = recentMockPasses(s.mockResults);
-  const writingPassed = s.sectionMockResults.some((m) => m.section === 'writing' && m.passed);
+  const lastWriting = latestWritingMock(s.sectionMockResults);
+  const writingPassed = lastWriting?.passed ?? false;
 
   const criteria: ReadinessCriterion[] = [
     knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/flashcards?filter=unknown'),
@@ -146,9 +162,9 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
     knownCriterion('yesno_known', 'Yes/No', s.yesnoKnown, s.yesnoTotal, 'Luyện Yes/No', '/speaking/yes-no'),
     {
       id: 'writing_mock',
-      label: 'Đậu bài thi thử Viết',
-      milestone: 'Đậu bài thi thử Viết',
-      detail: writingPassed ? 'Đã đậu' : 'Chưa đậu',
+      label: 'Đậu bài thi thử Viết gần nhất',
+      milestone: 'Đậu bài thi thử Viết gần nhất',
+      detail: writingPassed ? 'Đã đậu' : lastWriting ? 'Chưa đậu' : 'Chưa thi',
       met: writingPassed,
       progress: writingPassed ? 1 : 0,
       remaining: writingPassed ? 0 : 1,
