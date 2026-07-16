@@ -25,7 +25,12 @@ export interface StudyModuleSignal {
   done: number;
   /** Total items in the module. */
   total: number;
-  /** Graded attempts (correct + wrong) — flashcard toggles included. */
+  /**
+   * Graded attempts (correct + wrong): practice and mock only. Flashcard
+   * self-grades are NOT attempts (spec D1) — counting a "Đã thuộc" tap as a
+   * correct answer would make a learner who never practises look flawless and
+   * never get flagged weak.
+   */
   gradedAttempts: number;
   /** Of those graded attempts, how many were correct. */
   correctAttempts: number;

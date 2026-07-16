@@ -62,6 +62,38 @@ export function deriveSectionMastered(attempts: readonly SectionAttempt[]): Sect
   return out;
 }
 
+export interface GradedTally {
+  /** Graded attempts (correct + wrong). Flashcard taps are not attempts. */
+  total: number;
+  correct: number;
+}
+
+/**
+ * Per-section accuracy tally over GRADED attempts only — the evidence behind
+ * "yếu" (weak). Flashcard self-grades are excluded (spec D1): a learner who
+ * taps "Đã thuộc" on everything would otherwise read as 100% accurate and
+ * never be flagged weak, which is precisely backwards.
+ *
+ * Shared by the Study page and the Progress page on purpose. Both decide which
+ * skill is weakest, and they must never disagree — sharing the derivation
+ * enforces that structurally rather than by convention.
+ */
+export function deriveSectionGradedTally(
+  attempts: readonly SectionAttempt[],
+): Record<SectionKey, GradedTally> {
+  const out: Record<SectionKey, GradedTally> = {
+    whatmean: { total: 0, correct: 0 },
+    yesno: { total: 0, correct: 0 },
+    writing: { total: 0, correct: 0 },
+  };
+  for (const a of attempts) {
+    if (a.mode === 'flashcard') continue;
+    out[a.section].total += 1;
+    if (a.wasCorrect) out[a.section].correct += 1;
+  }
+  return out;
+}
+
 export function deriveSectionSeen(attempts: SectionAttempt[]): Record<SectionKey, Set<string>> {
   const out: Record<SectionKey, Set<string>> = {
     whatmean: new Set(),

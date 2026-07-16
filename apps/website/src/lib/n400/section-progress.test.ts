@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   deriveSectionKnown,
+  deriveSectionGradedTally,
   deriveSectionMastered,
   deriveSectionSeen,
   lastWrongSectionItemIds,
@@ -106,5 +107,41 @@ describe('deriveSectionMastered', () => {
     expect(out.whatmean).toEqual(['wm-1']);
     expect(out.yesno).toEqual(['yn-1']);
     expect(out.writing).toEqual([]);
+  });
+});
+
+describe('deriveSectionGradedTally', () => {
+  const a = (section: SectionAttempt['section'], wasCorrect: boolean, mode: 'practice' | 'mock_test' | 'flashcard') =>
+    ({ section, itemId: 'x-1', wasCorrect, mode, at: '2026-07-01T00:00:00Z' });
+
+  it('counts graded attempts and how many were correct', () => {
+    const t = deriveSectionGradedTally([
+      a('whatmean', true, 'practice'),
+      a('whatmean', false, 'practice'),
+      a('whatmean', true, 'mock_test'),
+    ]);
+    expect(t.whatmean).toEqual({ total: 3, correct: 2 });
+  });
+
+  it('excludes flashcard taps entirely — "yếu" is judged on graded answers', () => {
+    // A learner who taps 👍 on everything must not look 100% accurate.
+    const t = deriveSectionGradedTally([
+      a('whatmean', true, 'flashcard'),
+      a('whatmean', true, 'flashcard'),
+      a('whatmean', false, 'practice'),
+    ]);
+    expect(t.whatmean).toEqual({ total: 1, correct: 0 });
+  });
+
+  it('reports an all-flashcard section as having no graded evidence', () => {
+    const t = deriveSectionGradedTally([a('yesno', true, 'flashcard')]);
+    expect(t.yesno).toEqual({ total: 0, correct: 0 });
+  });
+
+  it('keeps sections separate and zero-fills untouched ones', () => {
+    const t = deriveSectionGradedTally([a('writing', true, 'practice')]);
+    expect(t.writing).toEqual({ total: 1, correct: 1 });
+    expect(t.whatmean).toEqual({ total: 0, correct: 0 });
+    expect(t.yesno).toEqual({ total: 0, correct: 0 });
   });
 });

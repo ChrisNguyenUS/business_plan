@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
-import { masteredQuestionIds } from './quiz-engine';
+import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
 import {
@@ -239,8 +239,13 @@ function useN400UserStateInternal() {
   }, [user, authLoading]);
 
   const stats = useMemo(() => {
-    const total = state.attempts.length;
-    const correct = state.attempts.filter((a) => a.wasCorrect).length;
+    // Accuracy answers "how often am I right?" — only graded answers can tell
+    // us that (spec D1). Counting flashcard taps would let a learner who marks
+    // every card "Đã thuộc" read as 100% accurate. Coverage below is different
+    // on purpose: it measures exposure, so any mode counts there.
+    const graded = gradedOnly(state.attempts);
+    const total = graded.length;
+    const correct = graded.filter((a) => a.wasCorrect).length;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
     const distinctAnswered = new Set(state.attempts.map((a) => a.questionId));
     // "Thuộc" = answered correctly under grading. Flashcard self-grades don't

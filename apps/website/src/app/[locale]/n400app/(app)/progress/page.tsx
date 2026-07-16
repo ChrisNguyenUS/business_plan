@@ -12,7 +12,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
-import { deriveSectionMastered, type SectionKey } from '@/lib/n400/section-progress';
+import { deriveSectionGradedTally, deriveSectionMastered } from '@/lib/n400/section-progress';
+import { gradedOnly } from '@/lib/n400/quiz-engine';
 import { deriveReadiness } from '@/lib/n400/readiness';
 import {
   moduleAccuracy,
@@ -34,19 +35,13 @@ export default function ProgressPage() {
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
 
-  // Graded tallies per section, mirroring the study page's derivation.
-  const sectionGraded = useMemo(() => {
-    const graded: Record<SectionKey, { total: number; correct: number }> = {
-      whatmean: { total: 0, correct: 0 },
-      yesno: { total: 0, correct: 0 },
-      writing: { total: 0, correct: 0 },
-    };
-    for (const a of state.sectionAttempts) {
-      graded[a.section].total += 1;
-      if (a.wasCorrect) graded[a.section].correct += 1;
-    }
-    return graded;
-  }, [state.sectionAttempts]);
+  // "Yếu" is judged on graded answers only (spec D1) — a flashcard 👍 is not
+  // an answer. Shared with the Study page so the two can never disagree about
+  // which skill is weakest.
+  const sectionGraded = useMemo(
+    () => deriveSectionGradedTally(state.sectionAttempts),
+    [state.sectionAttempts],
+  );
 
   // "Thuộc" = last graded attempt correct (spec D1) — NOT the flashcard deck's
   // marked-state, which proves nothing about retrieval.
@@ -73,11 +68,13 @@ export default function ProgressPage() {
   // The weakest skill: lowest accuracy among those with enough evidence to
   // judge. Same bar the study page uses for its "needs practice" badge, so the
   // two screens never disagree about which skill is weak.
+  const gradedCivics = useMemo(() => gradedOnly(state.attempts), [state.attempts]);
+
   const weakestId = useMemo(() => {
     // No type annotation here on purpose: the shape changes through the
     // filter→map chain, and inference carries the id literals to the end.
     const candidates = [
-      { id: 'civics', gradedAttempts: state.attempts.length, correctAttempts: state.attempts.filter((a) => a.wasCorrect).length },
+      { id: 'civics', gradedAttempts: gradedCivics.length, correctAttempts: gradedCivics.filter((a) => a.wasCorrect).length },
       { id: 'whatmean', gradedAttempts: sectionGraded.whatmean.total, correctAttempts: sectionGraded.whatmean.correct },
       { id: 'yesno', gradedAttempts: sectionGraded.yesno.total, correctAttempts: sectionGraded.yesno.correct },
       { id: 'writing', gradedAttempts: sectionGraded.writing.total, correctAttempts: sectionGraded.writing.correct },
@@ -88,7 +85,7 @@ export default function ProgressPage() {
 
     if (candidates.length === 0) return null;
     return candidates.reduce((worst, c) => (c.accuracy < worst.accuracy ? c : worst)).id;
-  }, [state.attempts, sectionGraded]);
+  }, [gradedCivics, sectionGraded]);
 
   const skillRows: SkillRow[] = useMemo(
     () =>

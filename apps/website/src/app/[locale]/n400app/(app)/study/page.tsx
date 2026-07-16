@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
 import { useN400UserState } from '@/lib/n400/user-state';
-import { deriveSectionSeen, type SectionKey } from '@/lib/n400/section-progress';
+import { deriveSectionGradedTally, deriveSectionSeen, type SectionKey } from '@/lib/n400/section-progress';
 import { N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
 import { recommendWeakCategory, gradedOnly, lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
@@ -183,16 +183,12 @@ export default function StudyPage() {
       yesno: new Map(),
       writing: new Map(),
     };
-    const graded: Record<SectionKey, { total: number; correct: number }> = {
-      whatmean: { total: 0, correct: 0 },
-      yesno: { total: 0, correct: 0 },
-      writing: { total: 0, correct: 0 },
-    };
     for (const a of state.sectionAttempts) {
       if (a.mode !== 'flashcard') last[a.section].set(a.itemId, a.wasCorrect);
-      graded[a.section].total += 1;
-      if (a.wasCorrect) graded[a.section].correct += 1;
     }
+    // Shared with the Progress page so the two screens can never disagree
+    // about which skill is weak. Graded modes only — see spec D1.
+    const graded = deriveSectionGradedTally(state.sectionAttempts);
     const wrong = (k: SectionKey) => [...last[k].values()].filter((v) => !v).length;
     return {
       wrong: { whatmean: wrong('whatmean'), yesno: wrong('yesno'), writing: wrong('writing') },
@@ -213,8 +209,8 @@ export default function StudyPage() {
         id: 'civics',
         done: civics.done,
         total: totals.civics,
-        gradedAttempts: state.attempts.length,
-        correctAttempts: state.attempts.filter((a) => a.wasCorrect).length,
+        gradedAttempts: gradedOnly(state.attempts).length,
+        correctAttempts: gradedOnly(state.attempts).filter((a) => a.wasCorrect).length,
       },
       {
         id: 'whatmean',
