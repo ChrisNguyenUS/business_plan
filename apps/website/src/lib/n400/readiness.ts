@@ -247,7 +247,10 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
   const speakingPassed = lastSpeaking?.passed ?? false;
 
   const criteria: ReadinessCriterion[] = [
-    knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/flashcards?filter=unknown'),
+    // The civics CTA lands on the skill hub, not /flashcards: "thuộc" only
+    // moves through graded answers, and the hub offers both the deck to learn
+    // and the practice mode to prove — same target as the SkillsCard row.
+    knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/study/civics'),
     knownCriterion('whatmean_known', 'What Mean', s.whatmeanKnown, s.whatmeanTotal, 'Luyện What Mean', '/speaking/what-mean'),
     knownCriterion('yesno_known', 'Yes/No', s.yesnoKnown, s.yesnoTotal, 'Luyện Yes/No', '/speaking/yes-no'),
     // The writing mock samples only 3 random sentences per attempt (pass = 1

@@ -286,6 +286,17 @@ describe('deriveReadiness', () => {
     }
   });
 
+  it('sends every known-criterion CTA to that skill hub, where graded practice lives', () => {
+    // "Thuộc" only moves through graded answers, so a known-criterion CTA must
+    // not strand the learner in flashcards (self-grades never count). The hub
+    // offers both learn (deck) and prove (practice); same target as SkillsCard.
+    const r = deriveReadiness(emptySignals());
+    expect(r.criteria.find((c) => c.id === 'civics_known')!.cta.href).toBe('/study/civics');
+    expect(r.criteria.find((c) => c.id === 'whatmean_known')!.cta.href).toBe('/speaking/what-mean');
+    expect(r.criteria.find((c) => c.id === 'yesno_known')!.cta.href).toBe('/speaking/yes-no');
+    expect(r.criteria.find((c) => c.id === 'writing_known')!.cta.href).toBe('/writing');
+  });
+
   it('guards against an empty question pool instead of dividing by zero', () => {
     const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0, whatmeanTotal: 0, yesnoTotal: 0 });
     expect(Number.isNaN(r.percent)).toBe(false);
