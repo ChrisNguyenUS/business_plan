@@ -551,6 +551,21 @@ function useN400UserStateInternal() {
     [user, state.streak]
   );
 
+  // Civics mock test finalizes server-side (finalize_mock_attempt_batch RPC
+  // stamps the streak in n400_user_profile), so this client context never
+  // sees the new value until the next full reload — the header kept showing
+  // the stale count. The mock page calls this with the RPC's returned streak
+  // to bring local state back in sync. lastActivityDate is stamped with the
+  // client-local today, matching what nextStreak would have produced.
+  const applyStreak = useCallback((current: number, longest: number) => {
+    if (current <= 0) return;
+    const today = TODAY_LOCAL();
+    setState((s) => ({
+      ...s,
+      streak: { current, longest: Math.max(longest, current), lastActivityDate: today },
+    }));
+  }, []);
+
   // Writing/Speaking mock test results — these two mock tests are
   // client-only (no per-question attempt table like civics mock_test), so
   // this is their only durable record. Feeds combo/practice badges that
