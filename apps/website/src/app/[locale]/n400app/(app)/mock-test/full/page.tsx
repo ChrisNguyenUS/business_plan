@@ -7,7 +7,23 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  Info,
+  Lock,
+  MessageCircle,
+  Mic,
+  PenLine,
+  Play,
+  ShieldCheck,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
 import MockTestResult from './MockTestResult';
 import ReviewWrongAnswers from './ReviewWrongAnswers';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -50,10 +66,53 @@ function generateAttemptId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const PARTS_COPY = [
-  { label: 'Phần 1 · Civics', desc: `${FULL_CIVICS_COUNT} câu trắc nghiệm — đúng ≥ ${FULL_CIVICS_PASS} là đạt` },
-  { label: 'Phần 2 · Speaking', desc: `${FULL_SPEAKING_COUNT} câu trắc nghiệm (What Mean + Yes/No) — đúng ≥ ${FULL_SPEAKING_PASS} là đạt` },
-  { label: 'Phần 3 · Viết', desc: `${FULL_WRITING_COUNT} câu nghe-gõ lại — đúng ≥ ${FULL_WRITING_PASS} là đạt` },
+const FULL_TOTAL_COUNT = FULL_CIVICS_COUNT + FULL_SPEAKING_COUNT + FULL_WRITING_COUNT;
+
+const PARTS_COPY: {
+  icon: LucideIcon;
+  tone: string;
+  label: string;
+  desc: string;
+  passMin: number;
+  total: number;
+}[] = [
+  {
+    icon: BookOpen,
+    tone: 'bg-teal-50 text-teal-600',
+    label: 'Phần 1 · Civics',
+    desc: `${FULL_CIVICS_COUNT} câu hỏi trắc nghiệm về kiến thức công dân (128 câu hỏi).`,
+    passMin: FULL_CIVICS_PASS,
+    total: FULL_CIVICS_COUNT,
+  },
+  {
+    icon: MessageCircle,
+    tone: 'bg-blue-50 text-blue-600',
+    label: 'Phần 2 · Speaking',
+    desc: `${FULL_SPEAKING_COUNT} câu hỏi phỏng vấn (What Mean + Yes/No).`,
+    passMin: FULL_SPEAKING_PASS,
+    total: FULL_SPEAKING_COUNT,
+  },
+  {
+    icon: PenLine,
+    tone: 'bg-orange-50 text-orange-500',
+    label: 'Phần 3 · Writing',
+    desc: `${FULL_WRITING_COUNT} câu viết theo yêu cầu của viên chức USCIS.`,
+    passMin: FULL_WRITING_PASS,
+    total: FULL_WRITING_COUNT,
+  },
+];
+
+const INTRO_CHIPS: { icon: LucideIcon; label: string }[] = [
+  { icon: ClipboardList, label: `${FULL_TOTAL_COUNT} Câu hỏi` },
+  { icon: Clock, label: '15 – 18 Phút' },
+  { icon: ShieldCheck, label: 'Chuẩn USCIS' },
+  { icon: Lock, label: 'Không thể quay lại' },
+];
+
+const INTRO_RULES: { icon: LucideIcon; text: string }[] = [
+  { icon: Play, text: 'Bài thi sẽ diễn ra liên tục qua 3 phần.' },
+  { icon: XCircle, text: 'Bạn không thể quay lại các câu đã trả lời.' },
+  { icon: BarChart3, text: 'Kết quả sẽ được hiển thị sau khi hoàn thành bài thi.' },
 ];
 
 export default function FullInterviewPage() {
@@ -214,7 +273,11 @@ export default function FullInterviewPage() {
         <h2 className="mt-4 text-xl font-extrabold text-gray-800">
           {isSpeaking ? PARTS_COPY[1].label : PARTS_COPY[2].label}
         </h2>
-        <p className="mt-1 text-sm text-gray-600">{isSpeaking ? PARTS_COPY[1].desc : PARTS_COPY[2].desc}</p>
+        <p className="mt-1 text-sm text-gray-600">
+          {isSpeaking ? PARTS_COPY[1].desc : PARTS_COPY[2].desc} Đạt nếu đúng ≥{' '}
+          {isSpeaking ? PARTS_COPY[1].passMin : PARTS_COPY[2].passMin}/
+          {isSpeaking ? PARTS_COPY[1].total : PARTS_COPY[2].total} câu.
+        </p>
         <button
           type="button"
           onClick={() => setPhase({ kind: phase.next })}
@@ -259,35 +322,115 @@ export default function FullInterviewPage() {
 
   // intro
   return (
-    <CenterCard>
-      <div className="text-4xl" aria-hidden>
-        🎤
+    <CenterCard wide>
+      <div
+        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 text-teal-600"
+        aria-hidden
+      >
+        <Mic size={28} />
       </div>
-      <h1 className="mt-3 text-2xl font-extrabold text-gray-900">Phỏng vấn đầy đủ</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Mô phỏng buổi phỏng vấn N-400: ba phần thi liên tục, không dừng giữa chừng. Đạt cả 3 phần là đậu.
+      <h1 className="mt-4 text-[1.75rem] font-extrabold leading-tight text-gray-900">
+        Bắt đầu Full Interview
+      </h1>
+      <p className="mx-auto mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-gray-600">
+        Thực hành buổi phỏng vấn nhập tịch N-400 đầy đủ như thật.
+        <br className="hidden sm:block" /> Bài thi sẽ diễn ra liên tục qua 3 phần, theo đúng tiêu
+        chuẩn của USCIS.
       </p>
-      <div className="mt-5 space-y-2 text-left">
-        {PARTS_COPY.map((p) => (
-          <div key={p.label} className="rounded-xl border border-gray-100 bg-white px-4 py-3">
-            <div className="text-sm font-bold text-gray-800">{p.label}</div>
-            <div className="text-sm text-gray-500">{p.desc}</div>
-          </div>
-        ))}
+
+      {/* Quick info chips */}
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {INTRO_CHIPS.map((c) => {
+          const Icon = c.icon;
+          return (
+            <div
+              key={c.label}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-3 text-sm font-semibold text-gray-700"
+            >
+              <Icon size={16} className="shrink-0 text-gray-500" />
+              {c.label}
+            </div>
+          );
+        })}
       </div>
+
+      <div className="mt-6 border-t border-slate-100" />
+
+      {/* Interview sections */}
+      <div className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-100 text-left">
+        {PARTS_COPY.map((p) => {
+          const Icon = p.icon;
+          return (
+            <div
+              key={p.label}
+              className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-4 sm:flex-nowrap sm:px-5"
+            >
+              <span
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${p.tone}`}
+                aria-hidden
+              >
+                <Icon size={22} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.9375rem] font-bold text-gray-900">{p.label}</div>
+                <div className="mt-0.5 text-sm leading-relaxed text-gray-500">{p.desc}</div>
+              </div>
+              <div className="w-full shrink-0 pl-16 text-left sm:w-auto sm:pl-0 sm:text-right">
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600">
+                  <CheckCircle2 size={15} className="shrink-0" />
+                  Đạt nếu đúng ≥ {p.passMin}
+                </span>{' '}
+                <span className="whitespace-nowrap text-xs font-medium text-teal-600/80 sm:block">
+                  (trên {p.total} câu)
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Interview rules */}
+      <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-left sm:p-5">
+        <div className="flex items-center gap-2 text-sm font-bold text-blue-700">
+          <Info size={16} className="shrink-0" />
+          Lưu ý quan trọng
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {INTRO_RULES.map((r) => {
+            const Icon = r.icon;
+            return (
+              <div key={r.text} className="flex items-start gap-2.5">
+                <Icon size={18} className="mt-0.5 shrink-0 text-blue-600" />
+                <span className="text-[0.8125rem] leading-relaxed text-gray-700">{r.text}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CTA */}
       <button
         type="button"
         onClick={begin}
-        className="group mx-auto mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-teal-600 px-8 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
+        className="group mx-auto mt-7 inline-flex w-full max-w-[300px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-base font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
       >
-        Bắt đầu thi
-        <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+        Bắt đầu Full Interview
+        <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
       </button>
+      <p className="mt-3 text-sm text-gray-600">Chúc bạn bình tĩnh và làm bài thật tốt! 🍀</p>
     </CenterCard>
   );
 }
 
-function CenterCard({ children, tone }: { children: React.ReactNode; tone?: 'pass' | 'fail' }) {
+function CenterCard({
+  children,
+  tone,
+  wide,
+}: {
+  children: React.ReactNode;
+  tone?: 'pass' | 'fail';
+  wide?: boolean;
+}) {
   const toneClass =
     tone === 'pass'
       ? 'border-teal-200 bg-teal-50'
@@ -295,8 +438,12 @@ function CenterCard({ children, tone }: { children: React.ReactNode; tone?: 'pas
         ? 'border-orange-200 bg-orange-50'
         : 'border-slate-100 bg-white';
   return (
-    <div className="flex flex-1 min-h-0 items-center justify-center overflow-y-auto animate-in fade-in duration-300">
-      <div className={`w-full max-w-lg rounded-[24px] border p-6 text-center shadow-sm sm:p-8 ${toneClass}`}>
+    <div className="flex flex-1 min-h-0 overflow-y-auto animate-in fade-in duration-300">
+      <div
+        className={`m-auto w-full rounded-[24px] border p-6 text-center shadow-sm sm:p-8 ${
+          wide ? 'max-w-[740px]' : 'max-w-lg'
+        } ${toneClass}`}
+      >
         {children}
       </div>
     </div>
