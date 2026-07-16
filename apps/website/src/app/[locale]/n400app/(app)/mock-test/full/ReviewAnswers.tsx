@@ -176,13 +176,16 @@ export default function ReviewAnswers({
     return [...civicsItems, ...speakingItems, ...writingItems];
   }, [civicsAnswers, speakingQuestions, speakingAnswers, writingQuestions, writingAnswers]);
 
-  const wrongCount = items.filter((it) => !it.ok).length;
-  const correctCount = items.length - wrongCount;
+  // Pill counts follow the active section filter so they always describe
+  // what the pill would show, not the whole test.
+  const sectionItems =
+    sectionFilter === 'all' ? items : items.filter((it) => it.section === sectionFilter);
+  const wrongCount = sectionItems.filter((it) => !it.ok).length;
+  const correctCount = sectionItems.length - wrongCount;
 
-  const visible = items.filter((it) => {
+  const visible = sectionItems.filter((it) => {
     if (statusFilter === 'wrong' && it.ok) return false;
     if (statusFilter === 'correct' && !it.ok) return false;
-    if (sectionFilter !== 'all' && it.section !== sectionFilter) return false;
     return true;
   });
 
@@ -198,7 +201,7 @@ export default function ReviewAnswers({
   ];
 
   const statusPills: { id: StatusFilter; label: string; icon?: React.ReactNode }[] = [
-    { id: 'all', label: `Tất cả (${items.length})` },
+    { id: 'all', label: `Tất cả (${sectionItems.length})` },
     {
       id: 'wrong',
       label: `Câu sai (${wrongCount})`,

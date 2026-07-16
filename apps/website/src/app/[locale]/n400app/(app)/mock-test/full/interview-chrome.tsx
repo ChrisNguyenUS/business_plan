@@ -197,7 +197,7 @@ export function InterludeScreen({
 export function EncourageBanner({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-teal-50/80 text-left">
-      <div className="flex items-center gap-3 p-4 pr-24 sm:pr-32">
+      <div className="relative z-10 flex items-center gap-3 p-4 pr-24 sm:pr-32">
         <span
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-teal-600 shadow-sm"
           aria-hidden
@@ -209,13 +209,16 @@ export function EncourageBanner({ title, children }: { title: string; children: 
           <div className="mt-0.5 text-[0.8125rem] leading-relaxed text-gray-600">{children}</div>
         </div>
       </div>
-      <div className="pointer-events-none absolute -right-1 bottom-0 h-20 w-24 sm:w-28" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 w-44 sm:w-56 [mask-image:linear-gradient(to_right,transparent,black_35%)]"
+        aria-hidden
+      >
         <Image
-          src="/images/n400/illu-statue-city.png"
+          src="/images/n400/Mock test thumbanil/notification-test-transition-screen.png"
           alt=""
           fill
-          className="object-contain object-bottom"
-          sizes="112px"
+          className="object-cover object-[center_22%]"
+          sizes="224px"
         />
       </div>
     </div>
