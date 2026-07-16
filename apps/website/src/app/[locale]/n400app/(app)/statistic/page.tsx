@@ -11,9 +11,10 @@
 // on exactly one tab.
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
-import { ArrowRight, Check, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, X } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -107,10 +108,10 @@ export default function StatisticPage() {
   const debts = useMemo(
     () =>
       [
-        { label: 'Civics', count: lastWrongQuestionIds(state.attempts).length, href: `${base}/practice?start=wrongs` },
-        { label: 'What Mean', count: lastWrongSectionItemIds(state.sectionAttempts, 'whatmean').length, href: `${base}/speaking/what-mean?start=wrongs` },
-        { label: 'Yes/No', count: lastWrongSectionItemIds(state.sectionAttempts, 'yesno').length, href: `${base}/speaking/yes-no?start=wrongs` },
-        { label: 'Viết', count: lastWrongSectionItemIds(state.sectionAttempts, 'writing').length, href: `${base}/writing?start=wrongs` },
+        { label: 'Civics', thumbnail: 'civics-thumbnail.png', count: lastWrongQuestionIds(state.attempts).length, href: `${base}/practice?start=wrongs` },
+        { label: 'What Mean', thumbnail: 'whatmean-thumbnail.png', count: lastWrongSectionItemIds(state.sectionAttempts, 'whatmean').length, href: `${base}/speaking/what-mean?start=wrongs` },
+        { label: 'Yes/No', thumbnail: 'yesno-thumbnail.png', count: lastWrongSectionItemIds(state.sectionAttempts, 'yesno').length, href: `${base}/speaking/yes-no?start=wrongs` },
+        { label: 'Viết', thumbnail: 'writing-thumbnail.png', count: lastWrongSectionItemIds(state.sectionAttempts, 'writing').length, href: `${base}/writing?start=wrongs` },
       ].filter((d) => d.count > 0),
     [state.attempts, state.sectionAttempts, base],
   );
@@ -319,13 +320,23 @@ export default function StatisticPage() {
           ) : (
             <div className="mt-4 space-y-2">
               {debts.map((d) => (
+                // The whole row is the tap target — no separate "Luyện ngay"
+                // button; the count + chevron already read as "go review".
                 <Link
                   key={d.label}
                   href={d.href}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-orange-50 px-4 py-3 hover:bg-orange-100"
+                  className="flex items-center gap-3 rounded-xl bg-orange-50 px-3 py-2 hover:bg-orange-100"
                 >
-                  <span className="text-sm font-medium text-gray-700">{d.label}</span>
-                  <span className="shrink-0 text-xs font-bold text-orange-600">{d.count} câu →</span>
+                  <Image
+                    src={`/images/n400/Progress/${d.thumbnail}`}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="size-8 shrink-0 rounded-lg object-cover"
+                  />
+                  <span className="min-w-0 truncate text-sm font-medium text-gray-700">{d.label}</span>
+                  <span className="ml-auto shrink-0 text-xs font-bold text-orange-600">{d.count} câu</span>
+                  <ChevronRight size={14} className="shrink-0 text-orange-400" />
                 </Link>
               ))}
             </div>
