@@ -46,6 +46,14 @@ interface FlashcardProps {
  *   leaves the mirrored front face visible for a fraction of a second.
  *   If you change FLIP_MS or the easing, keep the easing symmetric and
  *   keep the swap delay at FLIP_MS / 2.
+ * - CRITICAL: the rotating container is keyed by `questionId`. Parents
+ *   reset `flipped` to false in the same render that swaps the question
+ *   (goNext/goPrev/markKnown). Without the key, that reset runs the
+ *   500ms flip transition on the SAME element, and the delayed
+ *   visibility swap keeps the BACK face visible for the first
+ *   FLIP_MS / 2 — flashing the answer face while navigating between
+ *   cards. Remounting per question renders the new card statically at
+ *   0° (initial styles never transition); only real flips animate.
  */
 const FLIP_MS = 500;
 const FLIP_EASING = 'cubic-bezier(0.4, 0, 0.6, 1)'; // symmetric ease-in-out
@@ -88,6 +96,7 @@ export function Flashcard({
         className="block w-full h-full outline-none text-left cursor-pointer group"
       >
         <div
+          key={questionId}
           className="relative w-full h-full transition-transform motion-reduce:transition-none motion-reduce:duration-0 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d]"
           style={{
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
