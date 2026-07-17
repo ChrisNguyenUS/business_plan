@@ -532,10 +532,9 @@ export default function PracticePage() {
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                    Câu hỏi / Question #{question.id}
-                  </div>
-                  <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
+                  {/* Item badge intentionally omitted — the progress row above
+                      already tracks position. */}
+                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {question.questionEn}
                   </div>
                   <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>

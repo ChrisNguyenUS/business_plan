@@ -170,12 +170,9 @@ export function SectionMCQuiz({
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                    {/* Exam uses the running position ("Civics – Question 7") to
-                        mirror the progress card; practice keeps the item badge. */}
-                    {examMode && examSection ? `${examSection.label} – Question ${index + 1}` : q.badge}
-                  </div>
-                  <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
+                  {/* Item badge / exam position intentionally omitted — the
+                      progress row above already tracks position. */}
+                  <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.headerEn}
                   </div>
                   {/* Exam (mock/full interview): English only while taking — the

@@ -369,12 +369,9 @@ export function DictationQuiz({
           >
             {/* Header — instruction is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
-              <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                {/* Sequential test order — exam drops the topic hint, practice
-                    keeps it after the number ("Câu viết 1: Ngày lễ & Sự kiện"). */}
-                {examMode ? `Câu viết ${index + 1}` : `Câu viết ${index + 1}: ${q.topicVi}`}
-              </div>
-              <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
+              {/* Item badge / topic hint intentionally omitted — the progress
+                  row above already tracks position. */}
+              <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                 Nghe và gõ lại câu bạn nghe
               </div>
               <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
