@@ -8,7 +8,7 @@
 //
 // The recommendation engine highlights ONE module but NEVER reorders the
 // cards (fixed civics → what-mean → yes/no → writing order preserves muscle
-// memory). All hrefs are relative to the n400app base (`/${locale}/n400app`).
+// memory). All hrefs are relative to the n400ready base (`/n400ready`).
 
 export type StudyModuleId = 'civics' | 'whatmean' | 'yesno' | 'writing';
 
@@ -131,7 +131,7 @@ export function decideModuleBadge(
 export interface StudyTip {
   line1: string;
   line2: string;
-  /** Relative to the n400app base. */
+  /** Relative to the n400ready base. */
   href: string;
 }
 

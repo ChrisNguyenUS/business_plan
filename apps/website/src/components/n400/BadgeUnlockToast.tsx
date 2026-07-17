@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { BadgeIcon } from './BadgeIcon';
@@ -31,8 +30,6 @@ interface BadgeUnlockToastProps {
 const AUTO_DISMISS_MS = 5000;
 
 export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastProps) {
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
   const [visibleSlugs, setVisibleSlugs] = useState<string[]>(slugs);
 
   useEffect(() => {
@@ -75,7 +72,7 @@ export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastPr
                 Huy hiệu mới! / New badge
               </div>
               <Link
-                href={`/${locale}/n400app/profile#badges`}
+                href={`/n400ready/profile#badges`}
                 className="block font-bold text-gray-800 truncate hover:text-teal-700"
               >
                 {meta.title_vi}

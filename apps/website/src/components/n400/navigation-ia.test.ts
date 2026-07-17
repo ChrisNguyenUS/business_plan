@@ -10,7 +10,7 @@ function source(path: string) {
 
 describe('N400 information architecture contracts', () => {
   test('flashcards page offers cards and list view modes', () => {
-    const page = source('src/app/[locale]/n400app/(app)/flashcards/page.tsx');
+    const page = source('src/app/n400ready/(app)/flashcards/page.tsx');
 
     expect(page).toContain("'cards' | 'list'");
     expect(page).toContain('QuestionList');
@@ -25,14 +25,14 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('old bookmark route redirects into flashcards list view', () => {
-    const page = source('src/app/[locale]/n400app/(app)/bookmark/page.tsx');
+    const page = source('src/app/n400ready/(app)/bookmark/page.tsx');
 
     expect(page).toContain('redirect(');
     expect(page).toContain('view=list&filter=bookmarks');
   });
 
   test('study picker links to all four skills', () => {
-    const page = source('src/app/[locale]/n400app/(app)/study/page.tsx');
+    const page = source('src/app/n400ready/(app)/study/page.tsx');
 
     expect(page).toContain('study/civics');
     expect(page).toContain('speaking/what-mean');
@@ -41,7 +41,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('civics hub uses the hub module and deep-links methods', () => {
-    const page = source('src/app/[locale]/n400app/(app)/study/civics/page.tsx');
+    const page = source('src/app/n400ready/(app)/study/civics/page.tsx');
 
     // Continue-learning card removed (2026-07-16 redesign): users study
     // randomly, so "you are on question #13" carries no meaning.
@@ -93,8 +93,8 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('both progress pages render the shared tab bar', () => {
-    expect(source('src/app/[locale]/n400app/(app)/statistic/page.tsx')).toContain('ProgressTabs');
-    expect(source('src/app/[locale]/n400app/(app)/progress/page.tsx')).toContain('ProgressTabs');
+    expect(source('src/app/n400ready/(app)/statistic/page.tsx')).toContain('ProgressTabs');
+    expect(source('src/app/n400ready/(app)/progress/page.tsx')).toContain('ProgressTabs');
   });
 
   test('the two progress tabs split by depth and never duplicate badges', () => {
@@ -104,14 +104,14 @@ describe('N400 information architecture contracts', () => {
 
     // Badges live on the Tài khoản page only — the gallery used to render on
     // both, which is the duplication this redesign removed.
-    const overview = source('src/app/[locale]/n400app/(app)/progress/page.tsx');
+    const overview = source('src/app/n400ready/(app)/progress/page.tsx');
     expect(overview).not.toContain('BadgeGallery');
-    expect(source('src/app/[locale]/n400app/(app)/profile/page.tsx')).toContain('BadgeGallery');
+    expect(source('src/app/n400ready/(app)/profile/page.tsx')).toContain('BadgeGallery');
   });
 
   test('readiness is derived by the shared engine on both tabs', () => {
-    expect(source('src/app/[locale]/n400app/(app)/progress/page.tsx')).toContain('deriveReadiness');
-    expect(source('src/app/[locale]/n400app/(app)/statistic/page.tsx')).toContain('deriveReadiness');
+    expect(source('src/app/n400ready/(app)/progress/page.tsx')).toContain('deriveReadiness');
+    expect(source('src/app/n400ready/(app)/statistic/page.tsx')).toContain('deriveReadiness');
   });
 
   test('hub module exists with the cards and the practice selector', () => {
@@ -131,7 +131,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('practice page is quiz-only, driven by ?start=', () => {
-    const page = source('src/app/[locale]/n400app/(app)/practice/page.tsx');
+    const page = source('src/app/n400ready/(app)/practice/page.tsx');
 
     expect(page).not.toContain('PracticeSessionPicker');
     expect(page).toContain("get('start')");
@@ -140,9 +140,9 @@ describe('N400 information architecture contracts', () => {
 
   test('section landings use the shared hub module', () => {
     for (const path of [
-      'src/app/[locale]/n400app/(app)/speaking/what-mean/page.tsx',
-      'src/app/[locale]/n400app/(app)/speaking/yes-no/page.tsx',
-      'src/app/[locale]/n400app/(app)/writing/page.tsx',
+      'src/app/n400ready/(app)/speaking/what-mean/page.tsx',
+      'src/app/n400ready/(app)/speaking/yes-no/page.tsx',
+      'src/app/n400ready/(app)/writing/page.tsx',
     ]) {
       const page = source(path);
       expect(page).not.toContain('HubContinueCard');
@@ -150,7 +150,7 @@ describe('N400 information architecture contracts', () => {
       expect(page).not.toContain('PracticeSessionPicker');
     }
     // Writing has no flashcards → no Flashcards card:
-    expect(source('src/app/[locale]/n400app/(app)/writing/page.tsx')).not.toContain('HubStudyCardsCard');
+    expect(source('src/app/n400ready/(app)/writing/page.tsx')).not.toContain('HubStudyCardsCard');
   });
 
   test('PracticeSessionPicker is fully retired', () => {
@@ -165,7 +165,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('full interview chains the three parts and records results', () => {
-    const page = source('src/app/[locale]/n400app/(app)/mock-test/full/page.tsx');
+    const page = source('src/app/n400ready/(app)/mock-test/full/page.tsx');
 
     expect(page).toContain('buildCivicsPhase');
     expect(page).toContain('buildSpeakingPhase');
@@ -176,7 +176,7 @@ describe('N400 information architecture contracts', () => {
   });
 
   test('mock test picker offers the full interview', () => {
-    const page = source('src/app/[locale]/n400app/(app)/mock-test/page.tsx');
+    const page = source('src/app/n400ready/(app)/mock-test/page.tsx');
 
     expect(page).toContain("'full'");
     expect(page).toContain('Full Interview');

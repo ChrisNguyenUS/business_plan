@@ -56,11 +56,11 @@ async function bootstrapAvatar(supabase: SupabaseClient, user: User) {
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
-  // Post-login destination; middleware adds the locale prefix and runs
-  // the n400_user_profile setup gate on top of this.
-  const next = searchParams.get('next') ?? '/n400app';
+  // Post-login destination; middleware runs the n400_user_profile setup
+  // gate on top of this.
+  const next = searchParams.get('next') ?? '/n400ready';
   // Only allow same-origin relative redirects.
-  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/n400app';
+  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/n400ready';
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`);

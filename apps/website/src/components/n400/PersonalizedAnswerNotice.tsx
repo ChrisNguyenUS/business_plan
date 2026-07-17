@@ -1,12 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { TriangleAlert } from 'lucide-react';
 
 export function PersonalizedAnswerNotice({ from }: { from: 'practice' | 'flashcards' }) {
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
   return (
     <div
       role="note"
@@ -21,7 +18,7 @@ export function PersonalizedAnswerNotice({ from }: { from: 'practice' | 'flashca
           Bạn chưa thêm địa chỉ — mọi Dân biểu đương nhiệm của tiểu bang đều được chấp nhận khi luyện tập.
         </span>{' '}
         <Link
-          href={{ pathname: `/${locale}/n400app/setup`, query: { from } }}
+          href={{ pathname: `/n400ready/setup`, query: { from } }}
           className="font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900 whitespace-nowrap"
         >
           Thêm địa chỉ →

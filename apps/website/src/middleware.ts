@@ -6,13 +6,16 @@ const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
-const N400_RE = /^\/[a-z]{2}\/n400app(\/|$)/;
-// Auth pages inside /n400app that must be accessible without a session.
-const N400_PUBLIC_RE = /^\/[a-z]{2}\/n400app\/login(\/|$)/;
+// N400 app lives at /n400ready — no locale segment (language is cookie-based).
+const N400_RE = /^\/n400ready(\/|$)/;
+// Auth pages inside /n400ready that must be accessible without a session.
+const N400_PUBLIC_RE = /^\/n400ready\/login(\/|$)/;
 // Routes that signed-in users can hit before completing /setup. /setup itself
 // would loop without this exemption; /help is informational and can render
 // without a profile row.
-const N400_NO_PROFILE_GATE_RE = /^\/[a-z]{2}\/n400app\/(setup|help|login)(\/|$)/;
+const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(setup|help|login)(\/|$)/;
+// Old bookmarked URLs from the /{locale}/n400app era.
+const N400_LEGACY_RE = /^\/(?:en|vi)\/n400app(\/.*)?$/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,12 +27,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── N400 URL canonicalization ──
+  // Legacy /{en|vi}/n400app/* bookmarks → /n400ready/* (permanent).
+  const legacyMatch = pathname.match(N400_LEGACY_RE);
+  if (legacyMatch) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/n400ready${legacyMatch[1] ?? ''}`;
+    return NextResponse.redirect(url, 308);
+  }
+  // /N400Ready (any casing) → /n400ready, preserving the rest of the path.
+  const firstSegment = pathname.split('/')[1];
+  if (firstSegment && firstSegment !== 'n400ready' && firstSegment.toLowerCase() === 'n400ready') {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace(firstSegment, 'n400ready');
+    return NextResponse.redirect(url, 308);
+  }
+
   // ── Step 1: i18n — redirect to locale-prefixed path if missing ──
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
-  if (!pathnameHasLocale) {
+  if (!pathnameHasLocale && !N400_RE.test(pathname)) {
     const acceptLanguage = request.headers.get('accept-language') || '';
     const preferredLocale = acceptLanguage.toLowerCase().includes('vi') ? 'vi' : defaultLocale;
     const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
@@ -90,7 +109,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     if (isN400Path) {
-      return NextResponse.redirect(new URL(`/${locale}/n400app/login`, request.url));
+      return NextResponse.redirect(new URL('/n400ready/login', request.url));
     }
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
@@ -115,7 +134,7 @@ export async function middleware(request: NextRequest) {
 
   // N400 paths: any signed-in user (client or admin). Anonymous already redirected above.
   if (isN400Path && role !== 'client' && role !== 'admin') {
-    return NextResponse.redirect(new URL(`/${locale}/n400app/login`, request.url));
+    return NextResponse.redirect(new URL('/n400ready/login', request.url));
   }
 
   // N400 profile gate: redirect to /setup when no n400_user_profile row exists,
@@ -127,7 +146,7 @@ export async function middleware(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle();
     if (!n400Profile) {
-      return NextResponse.redirect(new URL(`/${locale}/n400app/setup`, request.url));
+      return NextResponse.redirect(new URL('/n400ready/setup', request.url));
     }
   }
 

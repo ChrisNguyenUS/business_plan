@@ -12,7 +12,7 @@
 //   7. continue_civics  default
 //
 // Pure module: the dashboard derives the signals and renders the result.
-// All hrefs are relative to the n400app base (`/${locale}/n400app`).
+// All hrefs are relative to the n400ready base (`/n400ready`).
 
 import type { QuestionAttempt, MockResult } from './storage';
 import type { SectionAttempt, SectionKey } from './section-progress';
@@ -28,7 +28,7 @@ export type HeroIntent =
 
 export interface HeroCta {
   label: string;
-  href: string; // relative to the n400app base
+  href: string; // relative to the n400ready base
 }
 
 export interface HeroRecommendation {

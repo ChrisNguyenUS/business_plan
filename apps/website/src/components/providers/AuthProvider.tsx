@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=/n400app`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=/n400ready`,
       },
     });
     return { error: error?.message ?? null };

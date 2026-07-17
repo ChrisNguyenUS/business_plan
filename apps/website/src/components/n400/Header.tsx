@@ -11,7 +11,7 @@
  * The AvatarMenu handles secondary navigation.
  */
 
-import { usePathname, useParams, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Flame, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -97,9 +97,9 @@ const PARENT_MAP: Record<string, string> = {
   writing: 'study',
 };
 
-function detectSection(pathname: string | null, locale: string): string {
+function detectSection(pathname: string | null): string {
   if (!pathname) return '';
-  const base = `/${locale}/n400app`;
+  const base = '/n400ready';
   if (pathname === base || pathname === `${base}/`) return '';
   const rest = pathname.slice(base.length + 1);
   const segments = rest.split('/');
@@ -119,11 +119,9 @@ function detectSection(pathname: string | null, locale: string): string {
 
 export function Header() {
   const pathname = usePathname();
-  const params = useParams();
   const searchParams = useSearchParams();
-  const locale = (params?.locale as string) || 'en';
-  const base = `/${locale}/n400app`;
-  const section = detectSection(pathname, locale);
+  const base = '/n400ready';
+  const section = detectSection(pathname);
   // Second path segment under /mock-test/<sub> selects the exam-specific header.
   const mockSub =
     section === 'mock-test' && pathname

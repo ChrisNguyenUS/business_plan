@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-const N400_RE = /^\/[a-z]{2}\/n400app(\/|$)/;
+const N400_RE = /^\/n400ready(\/|$)/;
 
 export function ConditionalChrome({
   navbar,

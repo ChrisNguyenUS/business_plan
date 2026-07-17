@@ -59,7 +59,7 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href={`/${locale}/n400app`}>
+            <Link href="/n400ready">
               <Button
                 size="lg"
                 className="w-full bg-white/95 hover:bg-white text-purple-700 rounded-full px-6 gap-2 sm:w-auto cursor-pointer shadow-lg group"

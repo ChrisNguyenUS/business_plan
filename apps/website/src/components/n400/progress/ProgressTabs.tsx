@@ -6,13 +6,11 @@
 // /progress. The two pages keep their existing URLs.
 
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export function ProgressTabs() {
   const pathname = usePathname();
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
-  const base = `/${locale}/n400app`;
+  const base = '/n400ready';
 
   const tabs = [
     { href: `${base}/progress`, label: 'Tổng quan' },
