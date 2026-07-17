@@ -146,7 +146,7 @@ export default function StatisticPage() {
             href={`${base}/study`}
             className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-teal-700"
           >
-            Bắt đầu học ngay <ArrowRight size={16} />
+            Học ngay <ArrowRight size={16} />
           </Link>
         </Card>
       </div>
