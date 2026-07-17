@@ -312,9 +312,8 @@ function MockTestPageInner() {
                   <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {question.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
-                    {question.questionVi}
-                  </div>
+                  {/* English only while taking the exam — the Vietnamese gloss
+                      surfaces on the result screen after the test is submitted. */}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
@@ -348,9 +347,6 @@ function MockTestPageInner() {
                     </div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {opt.vi && opt.vi !== opt.en ? (
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
-                      ) : null}
                     </div>
                     {mark}
                   </button>
@@ -833,8 +829,10 @@ function Result({
         key: String(q.id),
         badge: `Câu ${i + 1} / Question #${q.id}`,
         prompt: q.questionEn,
+        promptVi: q.questionVi,
         userAnswer: picked?.en ?? null,
         correctAnswer: correct?.en ?? '—',
+        correctAnswerVi: correct?.vi,
         ok: picks[i]?.pickedId === correctId,
         audioSrc: questionAudioUrl(q.id),
         bookmarkId: q.id,

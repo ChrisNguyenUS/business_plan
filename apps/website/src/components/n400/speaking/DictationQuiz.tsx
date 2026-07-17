@@ -150,7 +150,19 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
   };
 
   const ListenIcon = playing ? Pause : hasPlayed ? RotateCcw : Volume2;
-  const listenLabel = playing ? 'Đang phát… / Playing' : hasPlayed ? 'Nghe lại / Replay' : 'Nghe / Listen';
+  // Practice/study keep the buttons Vietnamese-only ("Nghe", "Nghe lại"); the
+  // exam keeps the bilingual USCIS-style labels.
+  const listenLabel = examMode
+    ? playing
+      ? 'Đang phát… / Playing'
+      : hasPlayed
+        ? 'Nghe lại / Replay'
+        : 'Nghe / Listen'
+    : playing
+      ? 'Đang phát…'
+      : hasPlayed
+        ? 'Nghe lại'
+        : 'Nghe';
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -172,9 +184,9 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
         style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}
       >
         <Turtle size={17} className="shrink-0" />
-        {/* Exam renames this "Speak Slower" — a real USCIS interview request,
-            not a media control. Practice keeps the plainer "Slow". */}
-        <span>Đọc chậm / {examMode ? 'Speak Slower' : 'Slow'}</span>
+        {/* Exam keeps the bilingual USCIS-style "Speak Slower"; practice/study
+            use the Vietnamese-only "Đọc chậm". */}
+        <span>{examMode ? 'Đọc chậm / Speak Slower' : 'Đọc chậm'}</span>
       </button>
     </div>
   );
@@ -365,7 +377,9 @@ export function DictationQuiz({
             {/* Header — instruction is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-                Câu viết / Writing #{q.num} · {q.topicVi}
+                {/* Sequential test order — exam drops the topic hint, practice
+                    keeps it after the number ("Câu viết 1: Ngày lễ & Sự kiện"). */}
+                {examMode ? `Câu viết ${index + 1}` : `Câu viết ${index + 1}: ${q.topicVi}`}
               </div>
               <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                 Nghe và gõ lại câu bạn nghe

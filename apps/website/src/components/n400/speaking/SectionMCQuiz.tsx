@@ -178,9 +178,13 @@ export function SectionMCQuiz({
                   <div className="font-bold leading-snug text-gray-800 mt-0.5" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.headerEn}
                   </div>
-                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
-                    {q.headerVi}
-                  </div>
+                  {/* Exam (mock/full interview): English only while taking — the
+                      Vietnamese gloss surfaces on the review screen after the run. */}
+                  {!examMode ? (
+                    <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
+                      {q.headerVi}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <AudioButton src={q.questionAudioSrc} label="Nghe câu hỏi" size="sm" />
@@ -228,7 +232,7 @@ export function SectionMCQuiz({
                     </div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {opt.vi && opt.vi !== opt.en ? (
+                      {!examMode && opt.vi && opt.vi !== opt.en ? (
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>
                           {opt.vi}
                         </div>

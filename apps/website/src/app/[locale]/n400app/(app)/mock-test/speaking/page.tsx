@@ -171,6 +171,7 @@ export default function ThiThuSpeakingPage() {
             promptVi: item.headerVi,
             userAnswer: item.options.find((o) => o.id === pickedMc)?.en ?? null,
             correctAnswer: item.options.find((o) => o.isCorrect)?.en ?? item.accepted.en,
+            correctAnswerVi: item.accepted.vi,
             ok: wasCorrect,
             audioSrc: item.questionAudioSrc,
           }
@@ -214,9 +215,9 @@ export default function ThiThuSpeakingPage() {
             style={{ scrollbarGutter: 'stable' }}
           >
             {item.kind === 'mc' ? (
-              <McBody item={item} picked={pickedMc} onPick={onPickMc} />
+              <McBody item={item} picked={pickedMc} onPick={onPickMc} position={index + 1} />
             ) : (
-              <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} />
+              <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} position={index + 1} />
             )}
 
             {/* Mobile Exam Rules (desktop shows it in the right rail) */}
@@ -272,10 +273,13 @@ function McBody({
   item,
   picked,
   onPick,
+  position,
 }: {
   item: McItem;
   picked: 'A' | 'B' | 'C' | 'D' | null;
   onPick: (id: 'A' | 'B' | 'C' | 'D') => void;
+  /** 1-based order within the 10-question mock (not the DB question number). */
+  position: number;
 }) {
   return (
     <>
@@ -284,14 +288,12 @@ function McBody({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-              {item.badge}
+              Câu {position} · Từ vựng
             </div>
             <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
               {item.headerEn}
             </div>
-            <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-              {item.headerVi}
-            </div>
+            {/* English only while taking — Vietnamese gloss appears in the result. */}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <AudioButton src={item.questionAudioSrc} label="Nghe câu hỏi" size="sm" />
@@ -341,10 +343,13 @@ function YesNoBody({
   item,
   picked,
   onPick,
+  position,
 }: {
   item: YesNoItem;
   picked: Choice | null;
   onPick: (choice: Choice) => void;
+  /** 1-based order within the 10-question mock (not the DB question number). */
+  position: number;
 }) {
   const choices: { id: Choice; label: string }[] = [
     { id: 'yes', label: 'Yes, officer' },
@@ -357,14 +362,12 @@ function YesNoBody({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-              Câu hỏi Yes/No #{item.num}
+              Câu {position} · Yes/No
             </div>
             <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
               {item.questionEn}
             </div>
-            <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-              {item.questionVi}
-            </div>
+            {/* English only while taking — Vietnamese gloss appears in the result. */}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <AudioButton src={item.audioSrc} label="Nghe câu hỏi" size="sm" />

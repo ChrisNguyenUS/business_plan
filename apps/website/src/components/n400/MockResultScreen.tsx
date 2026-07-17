@@ -32,6 +32,8 @@ export interface MockResultRow {
   userAnswer: string | null;
   /** Shown on wrong rows only; omit when `prompt` already is the answer. */
   correctAnswer?: string;
+  /** Vietnamese gloss for the correct answer — shown after the test, next to `correctAnswer`. */
+  correctAnswerVi?: string;
   ok: boolean;
   audioSrc?: string | null;
   /** Civics question id — presence enables the bookmark button + Đã lưu filter. */
@@ -268,6 +270,9 @@ export function MockResultScreen({
                     <div className="text-sm">
                       <span className="text-gray-500">Đáp án đúng: </span>
                       <span className="text-teal-700 font-medium">{row.correctAnswer}</span>
+                      {row.correctAnswerVi && row.correctAnswerVi !== row.correctAnswer ? (
+                        <span className="text-gray-500"> ({row.correctAnswerVi})</span>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
