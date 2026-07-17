@@ -120,10 +120,10 @@ export function Header() {
   let meta = mockMeta ?? TITLES[section] ?? TITLES[''];
   if (section === '' && profile) {
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
     meta = {
       title: `${greeting}, ${getShortName(profile)}! 👋`,
-      subtitle: 'Ready to continue your citizenship journey?',
+      subtitle: 'Sẵn sàng tiếp tục hành trình chinh phục quốc tịch Mỹ chưa?',
     };
   }
 
