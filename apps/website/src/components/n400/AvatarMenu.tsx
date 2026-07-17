@@ -39,7 +39,7 @@ export function AvatarMenu() {
   const handleSignOut = async () => {
     await signOut();
     // Full reload so middleware sees the cleared cookie.
-    window.location.href = `/${locale}/login`;
+    window.location.href = `https://mannaos.com`;
   };
 
   const close = useCallback(() => {

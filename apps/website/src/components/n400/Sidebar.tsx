@@ -28,6 +28,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 type MenuItem = {
   id: string;
@@ -134,6 +135,12 @@ function NavItem({ item, base, pathname }: { item: MenuItem; base: string; pathn
 export function Sidebar() {
   const { base, pathname } = useN400Navigation();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = 'https://mannaos.com';
+  };
 
   return (
     <div className="hidden lg:flex fixed z-20 h-full w-64 flex-col border-r border-gray-100 bg-white">
@@ -185,7 +192,7 @@ export function Sidebar() {
           >
             <Settings size={16} /> Cài đặt
           </Link>
-          <button type="button" className="flex items-center gap-2 hover:text-red-500">
+          <button type="button" onClick={handleSignOut} className="flex items-center gap-2 hover:text-red-500">
             <LogOut size={16} /> Đăng xuất
           </button>
         </div>
