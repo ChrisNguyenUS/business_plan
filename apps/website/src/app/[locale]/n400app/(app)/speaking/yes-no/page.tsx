@@ -6,6 +6,7 @@
 // via SectionYesNoQuiz; the flashcard deck via SectionFlashcardScreen.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from '@/lib/n400/yesno-data';
 import { YESNO_PRESETS } from '@/lib/n400/section-presets';
@@ -57,6 +58,8 @@ function toCard(id: string): SectionCard {
 export default function YesNoPage() {
   const { state, hydrated, recordSectionAnswer, setSectionKnown } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
+  const router = useRouter();
+  const pathname = usePathname();
 
   const known = useMemo(() => new Set(state.sectionKnown.yesno), [state.sectionKnown.yesno]);
   const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts).yesno, [state.sectionAttempts]);
@@ -96,7 +99,10 @@ export default function YesNoPage() {
   // itself is the fallback.
   const startWrongsReview = () => {
     const ids = lastWrongSectionItemIds(state.sectionAttempts, 'yesno').slice(0, 10);
-    if (ids.length > 0) setMode({ kind: 'quiz', ids });
+    if (ids.length > 0) {
+      setMode({ kind: 'quiz', ids });
+      router.push(`${pathname}?mode=practice`, { scroll: false });
+    }
   };
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -119,7 +125,10 @@ export default function YesNoPage() {
         cards={mode.ids.map(toCard)}
         known={known}
         onSetKnown={(id, v) => void setSectionKnown('yesno', id, v)}
-        onExit={() => setMode({ kind: 'landing' })}
+        onExit={() => {
+          setMode({ kind: 'landing' });
+          router.replace(pathname, { scroll: false });
+        }}
         title="Câu hỏi Yes/No"
       />
     );
@@ -130,7 +139,10 @@ export default function YesNoPage() {
       <SectionYesNoQuiz
         questions={mode.ids.map((id) => YESNO_QUESTIONS_BY_ID[id])}
         onAnswer={(id, ok) => void recordSectionAnswer('yesno', id, ok, 'practice')}
-        onExit={() => setMode({ kind: 'landing' })}
+        onExit={() => {
+          setMode({ kind: 'landing' });
+          router.replace(pathname, { scroll: false });
+        }}
         onRestart={() => startQuizWith(mode.ids.length)}
         title="Yes No Quiz"
         estimatedMinutes={mode.minutes}
@@ -141,6 +153,7 @@ export default function YesNoPage() {
   function startQuizWith(count: number, minutes?: number | null) {
     const ids = shuffle([...ALL_IDS], `yn-quiz-${Date.now()}`).slice(0, count);
     setMode({ kind: 'quiz', ids, minutes });
+    router.push(`${pathname}?mode=practice`, { scroll: false });
   }
 
   const startMode = (m: PracticeMode) => {

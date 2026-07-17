@@ -11,7 +11,7 @@
  * The AvatarMenu handles secondary navigation.
  */
 
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname, useParams, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Flame, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -112,6 +112,7 @@ function detectSection(pathname: string | null, locale: string): string {
 export function Header() {
   const pathname = usePathname();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as string) || 'en';
   const base = `/${locale}/n400app`;
   const section = detectSection(pathname, locale);
@@ -128,6 +129,12 @@ export function Header() {
   // entry while the profile is still loading.
   const { profile } = useAuth();
   let meta = mockMeta ?? TITLES[section] ?? TITLES[''];
+
+  const isPracticeMode = searchParams?.get('mode') === 'practice';
+  if (['speaking/what-mean', 'speaking/yes-no', 'writing'].includes(section) && !isPracticeMode) {
+    meta = { title: 'Học tập' };
+  }
+
   if (section === '' && profile) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';

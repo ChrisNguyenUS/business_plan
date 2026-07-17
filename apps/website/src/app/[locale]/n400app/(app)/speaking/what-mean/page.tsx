@@ -6,6 +6,7 @@
 // in-page via SectionMCQuiz; the flashcard deck via SectionFlashcardScreen.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmean-data';
 import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
@@ -79,6 +80,8 @@ function toQuestion(id: string, seed: string, i: number): MCQuestion {
 export default function WhatMeanPage() {
   const { state, hydrated, recordSectionAnswer, setSectionKnown } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
+  const router = useRouter();
+  const pathname = usePathname();
 
   const known = useMemo(() => new Set(state.sectionKnown.whatmean), [state.sectionKnown.whatmean]);
   const seen = useMemo(
@@ -121,7 +124,10 @@ export default function WhatMeanPage() {
   // itself is the fallback.
   const startWrongsReview = () => {
     const ids = lastWrongSectionItemIds(state.sectionAttempts, 'whatmean').slice(0, 10);
-    if (ids.length > 0) setMode({ kind: 'practice', ids, seed: `${Date.now()}` });
+    if (ids.length > 0) {
+      setMode({ kind: 'practice', ids, seed: `${Date.now()}` });
+      router.push(`${pathname}?mode=practice`, { scroll: false });
+    }
   };
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -144,7 +150,10 @@ export default function WhatMeanPage() {
         cards={mode.ids.map(toCard)}
         known={known}
         onSetKnown={(id, v) => void setSectionKnown('whatmean', id, v)}
-        onExit={() => setMode({ kind: 'landing' })}
+        onExit={() => {
+          setMode({ kind: 'landing' });
+          router.replace(pathname, { scroll: false });
+        }}
         title="Câu hỏi What Mean"
       />
     );
@@ -155,7 +164,10 @@ export default function WhatMeanPage() {
       <SectionMCQuiz
         questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i))}
         onAnswer={(id, ok) => void recordSectionAnswer('whatmean', id, ok, 'practice')}
-        onExit={() => setMode({ kind: 'landing' })}
+        onExit={() => {
+          setMode({ kind: 'landing' });
+          router.replace(pathname, { scroll: false });
+        }}
         onRestart={() => startPracticeWith(mode.ids.length)}
         title="Câu hỏi What Mean"
         estimatedMinutes={mode.minutes}
@@ -167,6 +179,7 @@ export default function WhatMeanPage() {
     const seed = `${Date.now()}`;
     const ids = shuffle([...ALL_IDS], `wm-practice-${seed}`).slice(0, count);
     setMode({ kind: 'practice', ids, seed, minutes });
+    router.push(`${pathname}?mode=practice`, { scroll: false });
   }
 
   const startMode = (m: PracticeMode) => {

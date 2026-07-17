@@ -6,6 +6,7 @@
 // "continue learning" card. Picking a mode drops into DictationQuiz.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Lightbulb } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
@@ -41,6 +42,8 @@ const WRITING_RULES = [
 export default function WritingPage() {
   const { state, hydrated, recordSectionAnswer } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
+  const router = useRouter();
+  const pathname = usePathname();
 
   const seen = useMemo(() => deriveSectionSeen(state.sectionAttempts).writing, [state.sectionAttempts]);
   const progress = useMemo(
@@ -82,7 +85,10 @@ export default function WritingPage() {
     const questions = ids
       .map((id) => ALL.find((s) => s.id === id))
       .filter((s): s is WritingSentence => s !== undefined);
-    if (questions.length > 0) setMode({ kind: 'quiz', questions });
+    if (questions.length > 0) {
+      setMode({ kind: 'quiz', questions });
+      router.push(`${pathname}?mode=practice`, { scroll: false });
+    }
   };
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -102,6 +108,7 @@ export default function WritingPage() {
   const startQuizWith = (count: number, minutes?: number | null) => {
     const questions = shuffle([...ALL], `wr-quiz-${Date.now()}`).slice(0, count);
     setMode({ kind: 'quiz', questions, minutes });
+    router.push(`${pathname}?mode=practice`, { scroll: false });
   };
 
   const startMode = (m: PracticeMode) => {
@@ -126,6 +133,7 @@ export default function WritingPage() {
             void recordSectionAnswer('writing', sentenceId, correct, 'practice');
           });
           setMode({ kind: 'landing' });
+          router.replace(pathname, { scroll: false });
         }}
       />
     );
