@@ -63,10 +63,10 @@ describe('decideModuleBadge — exactly one badge per card', () => {
     expect(byId('civics')).toEqual({ badge: 'recommended', ctaLabel: 'Tiếp tục học' });
   });
   it('started, healthy accuracy → continue', () => {
-    expect(byId('whatmean')).toEqual({ badge: 'continue', ctaLabel: 'Học ngay' });
+    expect(byId('whatmean')).toEqual({ badge: 'continue', ctaLabel: 'Tiếp tục học' });
   });
   it('started, low accuracy → needs-practice', () => {
-    expect(byId('yesno')).toEqual({ badge: 'needs-practice', ctaLabel: 'Học ngay' });
+    expect(byId('yesno')).toEqual({ badge: 'needs-practice', ctaLabel: 'Luyện ngay' });
   });
   it('finished module → completed + Ôn luyện lại', () => {
     expect(byId('writing')).toEqual({ badge: 'completed', ctaLabel: 'Ôn luyện lại' });
@@ -77,8 +77,8 @@ describe('decideModuleBadge — exactly one badge per card', () => {
       ctaLabel: 'Học ngay',
     });
   });
-  it('recommended brand-new module uses Luyện ngay', () => {
-    expect(decideModuleBadge(sig('civics', 0, 128), true).ctaLabel).toBe('Luyện ngay');
+  it('recommended brand-new module keeps the state verb Học ngay', () => {
+    expect(decideModuleBadge(sig('civics', 0, 128), true).ctaLabel).toBe('Học ngay');
   });
   it('low accuracy below the attempt threshold stays continue, not needs-practice', () => {
     expect(decideModuleBadge(sig('whatmean', 2, 62, 2, 0), false).badge).toBe('continue');
