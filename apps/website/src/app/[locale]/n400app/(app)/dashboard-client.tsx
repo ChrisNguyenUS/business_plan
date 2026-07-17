@@ -229,14 +229,14 @@ export default function DashboardPage() {
   const greetingVi = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
+    <div className="animate-in fade-in duration-500 max-w-6xl mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 0. MOBILE GREETING */}
       <div className="lg:hidden">
         <h1 className="text-2xl font-extrabold text-slate-900">
           {greetingVi}
           {profile ? `, ${getShortName(profile)}` : ''}! 👋
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Sẵn sàng cho hành trình trở thành công dân Mỹ?</p>
+        <p className="mt-1 text-sm text-slate-500">Sẵn sàng tiếp tục hành trình chinh phục quốc tịch Mỹ chưa?</p>
       </div>
 
       {/* 1. HERO — Continue studying the 128 Civics questions */}

@@ -19,6 +19,7 @@ import {
   Star,
   type LucideIcon,
 } from 'lucide-react';
+import { Card } from '@/components/n400/ui';
 
 const THUMB_DIR = '/images/n400/Mock test thumbanil';
 
@@ -103,64 +104,68 @@ export default function MockTestPickerPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-[clamp(1rem,2.5vh,1.5rem)] animate-in fade-in duration-300 pb-2 lg:h-full lg:justify-center lg:pb-0">
-      {/* Hero banner */}
-      <section className="shrink-0 overflow-hidden rounded-[24px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-sky-50 shadow-sm">
-        <div className="flex flex-col gap-[clamp(1rem,2vh,1.25rem)] p-[clamp(1rem,2.5vh,1.5rem)] lg:flex-row lg:items-center">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[clamp(1.25rem,3vh,1.5rem)] font-extrabold leading-tight text-gray-900">
-              Thi thử như phỏng vấn thật!
-            </h2>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-gray-600">
-              Mô phỏng đầy đủ kỳ thi quốc tịch Mỹ với câu hỏi ngẫu nhiên, thời gian thực và tiêu
-              chuẩn chấm điểm như USCIS.
-            </p>
+      {/* Hero banner — khung theo hero recipe chuẩn (docs/superpowers/specs/2026-07-16-n400-pagehero-design.md) */}
+      <Card className="relative shrink-0 !overflow-hidden !p-0 border-slate-200/60">
+        {/* Ảnh phủ mép phải + gradient blend trái — same recipe as ReadinessHero */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] lg:block">
+          <Image
+            src={`${THUMB_DIR}/Hero bar thumbnail.png`}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 44vw, 0px"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/80 to-transparent" />
+        </div>
 
-            <div className="mt-[clamp(0.5rem,1.5vh,1rem)] grid grid-cols-2 gap-x-3 gap-y-2 xl:grid-cols-4">
-              {HERO_FEATURES.map((f) => {
-                const Icon = f.icon;
-                return (
-                  <div key={f.label} className="flex items-center gap-2">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-600 shadow-sm">
-                      <Icon size={16} />
-                    </span>
-                    <span className="text-xs font-semibold leading-snug text-gray-700">
-                      {f.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+        <div className="relative z-[1] p-[clamp(1rem,2.5vh,1.5rem)] lg:w-[56%]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700 shadow-sm">
+            <Star size={12} className="text-amber-400" fill="currentColor" />
+            Thi như thật
+          </span>
+          <h2 className="mt-[clamp(0.5rem,1.5vh,0.75rem)] text-[clamp(1.25rem,3vh,1.5rem)] font-extrabold leading-tight text-gray-900">
+            Thi thử như phỏng vấn thật!
+          </h2>
+          <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-gray-600">
+            Mô phỏng đầy đủ kỳ thi quốc tịch Mỹ với câu hỏi ngẫu nhiên, thời gian thực và tiêu
+            chuẩn chấm điểm như USCIS.
+          </p>
 
-            <div className="mt-[clamp(0.75rem,2vh,1rem)] flex flex-wrap items-center gap-3">
-              <Link
-                href={`${base}/full`}
-                className="group inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
-              >
-                Bắt đầu thi thử đầy đủ
-                <ArrowRight
-                  size={16}
-                  className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-                />
-              </Link>
-              <span className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-600 shadow-sm">
-                <Clock size={14} className="text-teal-600" />
-                Khoảng 15–18 phút
-              </span>
-            </div>
+          <div className="mt-[clamp(0.5rem,1.5vh,1rem)] grid grid-cols-2 gap-x-3 gap-y-2 xl:grid-cols-4">
+            {HERO_FEATURES.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div key={f.label} className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-white text-teal-600 shadow-sm">
+                    <Icon size={16} />
+                  </span>
+                  <span className="text-xs font-semibold leading-snug text-gray-700">
+                    {f.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="relative hidden w-full shrink-0 self-stretch overflow-hidden rounded-2xl lg:block lg:min-h-[140px] lg:w-[42%]">
-            <Image
-              src={`${THUMB_DIR}/Hero bar thumbnail.png`}
-              alt="Buổi phỏng vấn quốc tịch tại văn phòng USCIS"
-              fill
-              sizes="(max-width: 1024px) 0px, 45vw"
-              className="object-cover"
-              preload
-            />
+          <div className="mt-[clamp(0.75rem,2vh,1rem)] flex flex-wrap items-center gap-3">
+            <Link
+              href={`${base}/full`}
+              className="group inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
+            >
+              Bắt đầu thi thử đầy đủ
+              <ArrowRight
+                size={16}
+                className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+              />
+            </Link>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+              <Clock size={14} className="text-teal-600" />
+              Khoảng 15–18 phút
+            </span>
           </div>
         </div>
-      </section>
+      </Card>
 
       {/* Test picker */}
       <section className="flex flex-col min-h-0 flex-1">

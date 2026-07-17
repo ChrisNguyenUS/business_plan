@@ -184,7 +184,7 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-2 animate-in fade-in duration-300 sm:gap-4">
+    <div className="mx-auto flex max-w-6xl flex-col gap-2 animate-in fade-in duration-300 sm:gap-4">
       <ProgressTabs />
 
       <ReadinessHero readiness={readiness} base={base} pace={pace} />

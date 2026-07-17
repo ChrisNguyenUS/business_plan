@@ -6,7 +6,7 @@
 
 **Architecture:** Recipe-only (spec đã duyệt: `docs/superpowers/specs/2026-07-16-n400-pagehero-design.md`) — không tạo component mới, sửa tại chỗ 3 file. Mỗi concern một commit atomic.
 
-**Tech Stack:** Next.js (apps/website), Tailwind, Vitest. Test: `pnpm --filter website test` (baseline hiện tại trên main: **349 test / 38 file**). Typecheck: `pnpm --filter website exec tsc --noEmit`.
+**Tech Stack:** Next.js (apps/website), Tailwind, Vitest. Test: `pnpm --filter website test` (baseline hiện tại trên main: **351 test / 38 file**). Typecheck: `pnpm --filter website exec tsc --noEmit`.
 
 **Lưu ý chung cho mọi task:** Không có unit test mới (thay đổi style/copy thuần, không logic). Gate = full suite không regression + tsc sạch. KHÔNG sửa gì ngoài phạm vi từng task.
 
@@ -37,7 +37,7 @@ Dòng 187, thay `max-w-[900px]` bằng `max-w-6xl`:
 - [ ] **Step 3: Verify**
 
 Run: `cd apps/website && grep -rn "max-w-\[900px\]\|max-w-\[1400px\]" src/app` → expected: không còn kết quả.
-Run: `pnpm --filter website test` → expected 349 pass. `pnpm --filter website exec tsc --noEmit` → sạch.
+Run: `pnpm --filter website test` → expected 351 pass. `pnpm --filter website exec tsc --noEmit` → sạch.
 
 - [ ] **Step 4: Commit**
 
@@ -135,7 +135,7 @@ Những gì thay đổi so với bản cũ (để reviewer đối chiếu): khun
 - [ ] **Step 3: Verify**
 
 Run: `pnpm --filter website exec tsc --noEmit` → sạch (không còn dùng biến nào thừa; `Star` đã được import sẵn).
-Run: `pnpm --filter website test` → 349 pass.
+Run: `pnpm --filter website test` → 351 pass.
 Run: `grep -n "from-teal-50 via-white to-sky-50\|lg:w-\[42%\]\|preload" "apps/website/src/app/[locale]/n400app/(app)/mock-test/page.tsx"` → expected: không còn kết quả.
 
 - [ ] **Step 4: Commit**
@@ -178,7 +178,7 @@ Không đổi logic giờ, không đổi gì khác trong file.
 
 - [ ] **Step 2: Verify**
 
-Run: `pnpm --filter website test` → 349 pass. `grep -rn "Good morning\|Good evening\|citizenship journey" apps/website/src` → không còn kết quả.
+Run: `pnpm --filter website test` → 351 pass. `grep -rn "Good morning\|Good evening\|citizenship journey" apps/website/src` → không còn kết quả.
 
 - [ ] **Step 3: Commit**
 
@@ -196,5 +196,5 @@ git commit -m "fix(n400): localize dashboard greeting to Vietnamese"
 - [ ] Nếu trang Thi thử bị tràn scroll do badge thêm chiều cao: giảm `p-[clamp(...)]` của content xuống mức cũ hoặc giảm `gap` — sửa nhỏ, commit fixup vào Task 2.
 
 ## Verification cuối
-- [ ] `pnpm --filter website test` → 349 pass; `tsc --noEmit` sạch.
+- [ ] `pnpm --filter website test` → 351 pass; `tsc --noEmit` sạch.
 - [ ] Grep tổng: `grep -rn "max-w-\[900px\]\|max-w-\[1400px\]\|Good evening\|citizenship journey\|from-teal-50 via-white to-sky-50" apps/website/src` → 0 kết quả.
