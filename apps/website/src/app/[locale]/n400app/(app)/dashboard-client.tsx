@@ -236,7 +236,7 @@ export default function DashboardPage() {
           {greetingVi}
           {profile ? `, ${getShortName(profile)}` : ''}! 👋
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Sẵn sàng cho hành trình trở thành công dân Mỹ?</p>
+        <p className="mt-1 text-sm text-slate-500">Sẵn sàng tiếp tục hành trình chinh phục quốc tịch Mỹ chưa?</p>
       </div>
 
       {/* 1. HERO — Continue studying the 128 Civics questions */}
