@@ -23,7 +23,7 @@ import { AvatarMenu } from './AvatarMenu';
 const TITLES: Record<string, { title: string; subtitle?: string }> = {
   '': { title: 'Tổng quan', subtitle: 'Chào mừng trở lại! 👋' },
   practice: {
-    title: 'Luyện tập',
+    title: 'Luyện Tập - Civic',
     subtitle: 'Trả lời và xem ngay đáp án đúng / sai',
   },
   'mock-test': {
@@ -45,7 +45,9 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
   },
   study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học và luyện tập.' },
   speaking: { title: 'Speaking' },
-  writing: { title: 'Writing' },
+  'speaking/what-mean': { title: 'Luyện Tập - What Mean' },
+  'speaking/yes-no': { title: 'Luyện Tập - Yes / No' },
+  writing: { title: 'Luyện Tập - Writing' },
   progress: { title: 'Tiến độ', subtitle: 'Huy hiệu và thành tích của bạn.' },
 };
 
@@ -88,6 +90,8 @@ const PARENT_MAP: Record<string, string> = {
   practice: 'study/civics',
   flashcards: 'study/civics',
   speaking: 'study',
+  'speaking/what-mean': 'study',
+  'speaking/yes-no': 'study',
   writing: 'study',
 };
 
@@ -96,7 +100,13 @@ function detectSection(pathname: string | null, locale: string): string {
   const base = `/${locale}/n400app`;
   if (pathname === base || pathname === `${base}/`) return '';
   const rest = pathname.slice(base.length + 1);
-  return rest.split('/')[0] ?? '';
+  const segments = rest.split('/');
+  if (segments[0] === 'speaking' && segments.length > 1) {
+    if (segments[1] === 'what-mean' || segments[1] === 'yes-no') {
+      return `speaking/${segments[1]}`;
+    }
+  }
+  return segments[0] ?? '';
 }
 
 export function Header() {
