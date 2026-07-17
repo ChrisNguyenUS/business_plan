@@ -38,7 +38,7 @@ export interface StudyModuleSignal {
 
 export interface StudyModuleDecision {
   badge: StudyBadgeKind;
-  /** Học ngay | Tiếp tục học | Ôn luyện lại | Luyện ngay */
+  /** Verb chuẩn theo state: Học ngay | Tiếp tục học | Luyện ngay | Ôn luyện lại. */
   ctaLabel: string;
 }
 
@@ -88,25 +88,20 @@ export function pickRecommendedModule(signals: readonly StudyModuleSignal[]): St
   return signals[0].id;
 }
 
-/** The single badge + CTA for one card. Order encodes badge priority. */
-export function decideModuleBadge(
-  sig: StudyModuleSignal,
-  isRecommended: boolean,
-): StudyModuleDecision {
-  const complete = isComplete(sig);
+type StudyStateBadge = Exclude<StudyBadgeKind, 'recommended'>;
 
-  if (isRecommended) {
-    return {
-      badge: 'recommended',
-      ctaLabel: complete ? 'Ôn luyện lại' : sig.done > 0 ? 'Tiếp tục học' : 'Luyện ngay',
-    };
-  }
-  if (complete) {
-    return { badge: 'completed', ctaLabel: 'Ôn luyện lại' };
-  }
-  if (sig.done === 0) {
-    return { badge: 'new', ctaLabel: 'Học ngay' };
-  }
+// CTA verb theo state của module — badge "recommended" không đổi verb,
+// chỉ đổi khung/⭐ trên card.
+const CTA_BY_STATE: Record<StudyStateBadge, string> = {
+  completed: 'Ôn luyện lại',
+  new: 'Học ngay',
+  'needs-practice': 'Luyện ngay',
+  continue: 'Tiếp tục học',
+};
+
+function decideStateBadge(sig: StudyModuleSignal): StudyStateBadge {
+  if (isComplete(sig)) return 'completed';
+  if (sig.done === 0) return 'new';
 
   const acc = moduleAccuracy(sig);
   if (
@@ -114,9 +109,21 @@ export function decideModuleBadge(
     sig.gradedAttempts >= NEEDS_PRACTICE_MIN_ATTEMPTS &&
     acc < NEEDS_PRACTICE_MAX_ACCURACY
   ) {
-    return { badge: 'needs-practice', ctaLabel: 'Học ngay' };
+    return 'needs-practice';
   }
-  return { badge: 'continue', ctaLabel: 'Học ngay' };
+  return 'continue';
+}
+
+/** The single badge + CTA for one card. Order encodes badge priority. */
+export function decideModuleBadge(
+  sig: StudyModuleSignal,
+  isRecommended: boolean,
+): StudyModuleDecision {
+  const state = decideStateBadge(sig);
+  return {
+    badge: isRecommended ? 'recommended' : state,
+    ctaLabel: CTA_BY_STATE[state],
+  };
 }
 
 // ─── Personalized tip strip ──────────────────────────────────────────────

@@ -174,7 +174,7 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
       emoji: '🇺🇸',
       title: 'Bắt đầu học Civics',
       subtitle: `Chinh phục ${civicsTotal} câu hỏi công dân — bắt đầu từ hôm nay!`,
-      cta: { label: 'Bắt đầu học ngay', href: '/flashcards?filter=unknown' },
+      cta: { label: 'Học ngay', href: '/flashcards?filter=unknown' },
       secondary: PICK_CATEGORY_CTA,
     };
   }
@@ -241,7 +241,7 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
       emoji: '🇺🇸',
       title: `Chỉ còn ${remaining} câu nữa để hoàn thành Civics`,
       subtitle: `Cố lên — bạn sắp học hết ${civicsTotal} câu hỏi công dân rồi!`,
-      cta: { label: 'Tiếp tục học ngay', href: '/flashcards?filter=unknown' },
+      cta: { label: 'Tiếp tục học', href: '/flashcards?filter=unknown' },
       secondary: PICK_CATEGORY_CTA,
     };
   }
@@ -262,7 +262,7 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     emoji: '📚',
     title: 'Tiếp tục học Civics',
     subtitle: `Còn ${remaining} câu nữa để hoàn thành ${civicsTotal} câu hỏi công dân.`,
-    cta: { label: 'Tiếp tục học ngay', href: '/flashcards?filter=unknown' },
+    cta: { label: 'Tiếp tục học', href: '/flashcards?filter=unknown' },
     secondary: PICK_CATEGORY_CTA,
   };
 }
