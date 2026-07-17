@@ -152,17 +152,11 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
   const ListenIcon = playing ? Pause : hasPlayed ? RotateCcw : Volume2;
   // Practice/study keep the buttons Vietnamese-only ("Nghe", "Nghe lại"); the
   // exam keeps the bilingual USCIS-style labels.
-  const listenLabel = examMode
-    ? playing
-      ? 'Đang phát… / Playing'
-      : hasPlayed
-        ? 'Nghe lại / Replay'
-        : 'Nghe / Listen'
-    : playing
-      ? 'Đang phát…'
-      : hasPlayed
-        ? 'Nghe lại'
-        : 'Nghe';
+  const listenLabel = playing
+    ? 'Đang phát…'
+    : hasPlayed
+      ? 'Nghe lại'
+      : 'Nghe';
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -184,9 +178,8 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
         style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}
       >
         <Turtle size={17} className="shrink-0" />
-        {/* Exam keeps the bilingual USCIS-style "Speak Slower"; practice/study
-            use the Vietnamese-only "Đọc chậm". */}
-        <span>{examMode ? 'Đọc chậm / Speak Slower' : 'Đọc chậm'}</span>
+        {/* Both exam and practice/study use the Vietnamese-only "Đọc chậm". */}
+        <span>Đọc chậm</span>
       </button>
     </div>
   );
@@ -415,10 +408,9 @@ export function DictationQuiz({
                 style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1.05rem)' }}
                 autoFocus
               />
-              {/* Word count while empty → truthful "Auto saving…" once typing
-                  starts (practice only; exam never persists drafts). */}
+              {/* Word count while empty → truthful "Auto saving…" once typing starts. */}
               <div className="mt-1.5 flex items-center justify-end text-xs">
-                {userInput.length > 0 && !examMode ? (
+                {userInput.length > 0 ? (
                   <span className="flex items-center gap-1 font-medium text-teal-600">
                     <Check size={13} className="shrink-0" /> Auto saving…
                   </span>
