@@ -215,9 +215,9 @@ export default function ThiThuSpeakingPage() {
             style={{ scrollbarGutter: 'stable' }}
           >
             {item.kind === 'mc' ? (
-              <McBody item={item} picked={pickedMc} onPick={onPickMc} position={index + 1} />
+              <McBody item={item} picked={pickedMc} onPick={onPickMc} />
             ) : (
-              <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} position={index + 1} />
+              <YesNoBody item={item} picked={pickedYn} onPick={onPickYn} />
             )}
 
             {/* Mobile Exam Rules (desktop shows it in the right rail) */}
@@ -273,13 +273,10 @@ function McBody({
   item,
   picked,
   onPick,
-  position,
 }: {
   item: McItem;
   picked: 'A' | 'B' | 'C' | 'D' | null;
   onPick: (id: 'A' | 'B' | 'C' | 'D') => void;
-  /** 1-based order within the 10-question mock (not the DB question number). */
-  position: number;
 }) {
   return (
     <>
@@ -287,9 +284,8 @@ function McBody({
       <div className="mb-[clamp(0.5rem,1vw,1rem)]">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-              Câu {position} · Từ vựng
-            </div>
+            {/* Question position intentionally omitted — the progress row above
+                already tracks it. */}
             <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
               {item.headerEn}
             </div>
@@ -343,13 +339,10 @@ function YesNoBody({
   item,
   picked,
   onPick,
-  position,
 }: {
   item: YesNoItem;
   picked: Choice | null;
   onPick: (choice: Choice) => void;
-  /** 1-based order within the 10-question mock (not the DB question number). */
-  position: number;
 }) {
   const choices: { id: Choice; label: string }[] = [
     { id: 'yes', label: 'Yes, officer' },
@@ -361,9 +354,8 @@ function YesNoBody({
       <div className="mb-[clamp(0.5rem,1vw,1rem)]">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="text-gray-500" style={{ fontSize: 'clamp(0.65rem, 1vw, 0.875rem)' }}>
-              Câu {position} · Yes/No
-            </div>
+            {/* Question position intentionally omitted — the progress row above
+                already tracks it. */}
             <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
               {item.questionEn}
             </div>
