@@ -11,7 +11,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import {
   ChevronDown,
   User,
@@ -28,9 +27,7 @@ export function AvatarMenu() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
-  const base = `/${locale}/n400app`;
+  const base = '/n400ready';
   const { profile, signOut } = useAuth();
 
   const avatarUrl = profile ? getAvatarUrl(profile.avatar_path, profile.updated_at) : null;

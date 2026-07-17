@@ -17,22 +17,22 @@ const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
 
 test.describe('N400 smoke (unauthenticated)', () => {
   test('dashboard redirects to login when not signed in', async ({ page }) => {
-    await page.goto(`${BASE}/vi/n400app`);
+    await page.goto(`${BASE}/n400ready`);
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('setup redirects to login when not signed in', async ({ page }) => {
-    await page.goto(`${BASE}/vi/n400app/setup`);
+    await page.goto(`${BASE}/n400ready/setup`);
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('practice redirects to login when not signed in', async ({ page }) => {
-    await page.goto(`${BASE}/vi/n400app/practice`);
+    await page.goto(`${BASE}/n400ready/practice`);
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('mock-test redirects to login when not signed in', async ({ page }) => {
-    await page.goto(`${BASE}/vi/n400app/mock-test`);
+    await page.goto(`${BASE}/n400ready/mock-test`);
     await expect(page).toHaveURL(/\/login/);
   });
 

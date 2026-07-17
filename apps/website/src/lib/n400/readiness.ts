@@ -10,7 +10,7 @@
 //
 // Harmony is structural, not a convention: the pass mark is imported from the
 // hero engine rather than re-declared, and every CTA reuses a deep link that
-// already exists. All hrefs are relative to the n400app base (`/${locale}/n400app`).
+// already exists. All hrefs are relative to the n400ready base (`/n400ready`).
 
 import type { MockResult, SectionMockResult } from './storage';
 import { FIRST_MOCK_MIN_PERCENT } from './hero-recommendation';

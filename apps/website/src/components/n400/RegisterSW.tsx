@@ -2,7 +2,7 @@
 
 // Phase 8 Task 4 — Service Worker registrar.
 //
-// Mounts inside the n400app layout so the SW registers as soon as a
+// Mounts inside the n400ready layout so the SW registers as soon as a
 // learner enters the app and stays inactive on every other route.
 // Default scope is /, which is what we want — the SW filters internally
 // to /n400-audio/* so non-N400 pages are unaffected even though the SW

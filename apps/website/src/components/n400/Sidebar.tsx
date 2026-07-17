@@ -16,7 +16,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   Home,
   BarChart2,
@@ -37,7 +37,7 @@ type MenuItem = {
   icon: typeof Home;
   /** Second line shown on the desktop sidebar card. */
   subtitle?: string;
-  /** Extra n400app-relative path prefixes that also count as active. */
+  /** Extra n400ready-relative path prefixes that also count as active. */
   alsoMatch?: string[];
 };
 
@@ -86,9 +86,7 @@ const MOBILE_MENU: MenuItem[] = [
 
 function useN400Navigation() {
   const pathname = usePathname();
-  const params = useParams();
-  const locale = (params?.locale as string) || 'en';
-  const base = `/${locale}/n400app`;
+  const base = '/n400ready';
 
   return { base, pathname };
 }

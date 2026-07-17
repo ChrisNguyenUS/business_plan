@@ -31,7 +31,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
     { label: dictionary.nav_about, href: `/${locale}/about` },
     { label: "Blog", href: `/${locale}/blog` },
     { label: dictionary.nav_contact, href: `/${locale}/contact` },
-    { label: "N400 Ready", href: `/${locale}/n400app` },
+    { label: "N400 Ready", href: "/n400ready" },
   ];
 
   const serviceLinks = [

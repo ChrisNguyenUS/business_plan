@@ -13,14 +13,14 @@ describe('N400 Ready public entry points and branding', () => {
     const navbar = source('src/components/layout/Navbar.tsx');
 
     expect(navbar).toContain('N400 Ready');
-    expect(navbar).toContain('href: `/${locale}/n400app`');
+    expect(navbar).toContain('href: "/n400ready"');
   });
 
   test('homepage hero has a N400 Ready App CTA', () => {
     const hero = source('src/components/home/HeroSection.tsx');
 
     expect(hero).toContain('N400 Ready App');
-    expect(hero).toContain('href={`/${locale}/n400app`}');
+    expect(hero).toContain('href="/n400ready"');
   });
 
   test('N400 app shell uses N400 Ready branding', () => {
