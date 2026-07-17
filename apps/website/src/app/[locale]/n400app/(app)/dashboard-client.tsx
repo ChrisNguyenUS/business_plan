@@ -229,7 +229,7 @@ export default function DashboardPage() {
   const greetingVi = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
+    <div className="animate-in fade-in duration-500 max-w-6xl mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 0. MOBILE GREETING */}
       <div className="lg:hidden">
         <h1 className="text-2xl font-extrabold text-slate-900">
