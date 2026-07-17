@@ -24,7 +24,7 @@ export function FlashcardFront({
   badge,
 }: FlashcardFrontProps) {
   return (
-    <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.22)] group-hover:-translate-y-0.5 transition-all duration-300 ease-out">
+    <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.22)] group-hover:-translate-y-0.5 transition-[box-shadow,translate] duration-300 ease-out">
       {/* Pinned: Audio & Bookmark */}
       <div className="absolute top-[clamp(0.75rem,2vw,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] flex items-center gap-2 sm:gap-3 z-20">
         <AudioButton src={audioSrc} label="Nghe câu hỏi" size="sm" />
@@ -44,7 +44,7 @@ export function FlashcardFront({
               }
             }}
             aria-label="Đánh dấu"
-            className={`w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+            className={`w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-[background-color,color,scale,box-shadow] hover:scale-105 active:scale-95 ${
               bookmarked
                 ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
                 : 'bg-slate-50 text-slate-400 hover:bg-slate-100'

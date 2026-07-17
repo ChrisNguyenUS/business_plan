@@ -40,6 +40,32 @@ describe('Flashcard flip vs navigation', () => {
     expect(rotor(container)).not.toBe(before);
   });
 
+  // The mid-flip face swap hides a face by flipping the WRAPPER's
+  // (inherited) `visibility`. Any descendant with `transition-all`
+  // re-animates that inherited change and stays painted ~300ms past the
+  // swap — the "opposite face" flash (verified in real Chrome). Two
+  // guards: the wrapper must ALSO gate with `opacity` (not inherited —
+  // descendants cannot counteract an ancestor's opacity), and the face
+  // components must never use `transition-all`.
+  it('gates the hidden face with opacity + pointer-events, not just visibility', () => {
+    const { container } = render(
+      <Flashcard {...baseProps} questionId={1} flipped />,
+    );
+    const front = rotor(container).children[0] as HTMLElement;
+    const back = rotor(container).children[1] as HTMLElement;
+    expect(front.className).toContain('opacity-0');
+    expect(front.className).toContain('pointer-events-none');
+    expect(back.className).toContain('opacity-100');
+    expect(back.className).not.toContain('pointer-events-none');
+  });
+
+  it('face content never uses transition-all (it re-animates inherited visibility)', () => {
+    const { container } = render(
+      <Flashcard {...baseProps} questionId={1} flipped={false} />,
+    );
+    expect(container.innerHTML).not.toContain('transition-all');
+  });
+
   it('renders the new card front-side up after navigating away from a flipped card', () => {
     const { container, rerender } = render(
       <Flashcard {...baseProps} questionId={1} flipped />,

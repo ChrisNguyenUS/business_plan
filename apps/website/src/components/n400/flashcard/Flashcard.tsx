@@ -37,6 +37,18 @@ interface FlashcardProps {
  *   culled), so the hidden face's content bleeds through mirrored.
  *   Each face is therefore also gated with `visibility`, swapped at
  *   the exact moment the card crosses 90°.
+ * - CRITICAL: faces are gated with `opacity` IN ADDITION to
+ *   `visibility`, and face content must NEVER use `transition-all`.
+ *   `visibility` is inherited, so a descendant with `transition-all`
+ *   (e.g. a hover-shadow card body) re-animates the inherited change
+ *   and — per the CSS spec, a visibility transition keeps the element
+ *   visible until it completes — stays painted ~300ms PAST the 90°
+ *   swap: the outgoing face shows mirrored for the whole second half
+ *   of the flip (verified in Chrome). `opacity` is NOT inherited;
+ *   descendants cannot counteract an ancestor's opacity, so the
+ *   opacity gate hides the subtree at exactly FLIP_MS / 2 no matter
+ *   what transitions the face content declares. `pointer-events-none`
+ *   keeps lagging descendants from being clickable while hidden.
  * - CRITICAL: the flip easing MUST be symmetric so that the geometric
  *   midpoint (90°) coincides with the temporal midpoint of the
  *   transition. `cubic-bezier(0.4,0,0.6,1)` is symmetric, so 90° is
@@ -59,8 +71,12 @@ const FLIP_MS = 500;
 const FLIP_EASING = 'cubic-bezier(0.4, 0, 0.6, 1)'; // symmetric ease-in-out
 const faceClass =
   'absolute inset-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] motion-reduce:transition-none';
-// visibility flips instantly, but only once the card has crossed 90°.
-const faceTransition = { transition: `visibility 0s ${FLIP_MS / 2}ms` };
+// visibility + opacity flip instantly, but only once the card has crossed 90°.
+const faceTransition = {
+  transition: `visibility 0s ${FLIP_MS / 2}ms, opacity 0s ${FLIP_MS / 2}ms`,
+};
+const faceHidden = 'invisible opacity-0 pointer-events-none';
+const faceShown = 'visible opacity-100';
 export function Flashcard({
   flipped,
   onFlip,
@@ -107,7 +123,7 @@ export function Flashcard({
         >
           {/* Front face */}
           <div
-            className={`${faceClass} ${flipped ? 'invisible' : 'visible'}`}
+            className={`${faceClass} ${flipped ? faceHidden : faceShown}`}
             style={faceTransition}
             aria-hidden={flipped}
           >
@@ -124,7 +140,7 @@ export function Flashcard({
 
           {/* Back face */}
           <div
-            className={`${faceClass} ${flipped ? 'visible' : 'invisible'}`}
+            className={`${faceClass} ${flipped ? faceShown : faceHidden}`}
             style={{
               transform: 'rotateY(180deg)',
               ...faceTransition,
