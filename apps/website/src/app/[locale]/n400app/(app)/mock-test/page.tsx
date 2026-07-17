@@ -37,7 +37,6 @@ interface TestCard {
   questions: string;
   duration: string;
   passRule: string;
-  buttonLabel: string;
   buttonClass: string;
   featured?: boolean;
 }
@@ -51,7 +50,6 @@ const TESTS: TestCard[] = [
     questions: '33 câu tổng cộng',
     duration: '15–18 phút',
     passRule: 'Đạt cả 3 phần để đậu',
-    buttonLabel: 'Bắt đầu ngay',
     buttonClass: 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20',
     featured: true,
   },
@@ -63,7 +61,6 @@ const TESTS: TestCard[] = [
     questions: '20 câu hỏi',
     duration: '7–10 phút',
     passRule: 'Cần 60% (12/20)',
-    buttonLabel: 'Bắt đầu',
     buttonClass: 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20',
   },
   {
@@ -74,7 +71,6 @@ const TESTS: TestCard[] = [
     questions: '10 câu hỏi',
     duration: '5–7 phút',
     passRule: 'Cần 80% (8/10)',
-    buttonLabel: 'Bắt đầu',
     buttonClass: 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20',
   },
   {
@@ -85,7 +81,6 @@ const TESTS: TestCard[] = [
     questions: '3 câu hỏi',
     duration: '3–5 phút',
     passRule: 'Đúng 1/3 câu là đậu',
-    buttonLabel: 'Bắt đầu',
     buttonClass: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
   },
 ];
@@ -209,7 +204,7 @@ export default function MockTestPickerPage() {
                 href={`${base}/${t.slug}${t.slug === 'civics' ? '?start=1' : ''}`}
                 className={`mt-[clamp(0.5rem,1.5vh,0.75rem)] inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-[clamp(0.8125rem,1.5vh,0.875rem)] font-semibold text-white shadow-md transition-colors ${t.buttonClass}`}
               >
-                {t.buttonLabel}
+                Bắt đầu
                 <ArrowRight
                   size={16}
                   className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
