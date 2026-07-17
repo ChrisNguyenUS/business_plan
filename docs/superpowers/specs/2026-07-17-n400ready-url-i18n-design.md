@@ -34,7 +34,7 @@
 - Sweep **47 file** tham chiếu `n400app` path: mọi `href`/`router.push` dạng `/${locale}/n400app/...` → `/n400ready/...`; các component app bỏ dependency vào `params.locale`.
 - `src/app/api/auth/callback/route.ts:61-63`: default `next` `/n400app` → `/n400ready`.
 - Navbar (`src/components/layout/Navbar.tsx:34`): href → `/n400ready`.
-- App vẫn nằm dưới root layout hiện có; thuộc tính `<html lang>` do root layout quản — giữ nguyên, out of scope.
+- **Root layout riêng cho segment** (phát hiện khi thi công Đợt 1): app không có root layout dùng chung — `src/app/[locale]/layout.tsx` chính là root layout (`<html>/<body>` + `AuthProvider` + GA/MetaPixel/Vercel Analytics). Move ra ngoài `[locale]` nghĩa là `src/app/n400ready/layout.tsx` phải tự làm root layout: shell + `AuthProvider` + `N400UserStateProvider` + analytics như cũ; KHÔNG mang theo Navbar/Footer/ConditionalChrome và JSON-LD marketing. `<html lang="vi">` cứng ở Đợt 1; Đợt 2 đổi theo cookie `n400_lang`.
 - Tests: bộ test đọc source theo path (navigation-ia, mobile-layout, entrypoint-branding…) và e2e `e2e/n400` cập nhật path mới. Repo dùng **vitest**.
 - SEO: app sau login nên không cần hreflang; trang `/n400ready/login` là trang public duy nhất — meta/OG song ngữ đặt ngay trong page. Redirect 308 bảo toàn link cũ. Sitemap không liệt kê route app (giữ nguyên hiện trạng).
 - Service worker `public/sw-n400.js` chỉ cache `/n400-audio/*` — không dính path app, không cần sửa.

@@ -84,6 +84,8 @@ Expected: CÓ lỗi nhưng chỉ liên quan `params.locale` / biến `locale` (s
 
 ---
 
+> **Addendum (phát hiện khi thi công):** `src/app/[locale]/layout.tsx` là root layout duy nhất (`<html>/<body>` + `AuthProvider` + analytics). Sau khi move, `src/app/n400ready/layout.tsx` PHẢI trở thành root layout riêng của segment (shell + `AuthProvider` bọc `N400UserStateProvider` + GA/MetaPixel/Analytics/SpeedInsights, `<html lang="vi">`), nếu không mọi trang `/n400ready/*` sẽ 500 (`useAuth must be used within AuthProvider`). Đã xử lý trong lúc thực thi Task 6+7.
+
 ### Task 3: Middleware — skip locale, legacy redirect, case-insensitive, guard mới
 
 **Files:**
