@@ -46,7 +46,7 @@ const TESTS: TestCard[] = [
   {
     slug: 'full',
     image: `${THUMB_DIR}/fullinterview-mocktest.png`,
-    title: 'Thi thử đầy đủ (Full Interview)',
+    title: 'Full Interview',
     desc: 'Mô phỏng đầy đủ 3 phần: Civics, Speaking và Writing như kỳ thi thật.',
     questions: '33 câu tổng cộng',
     duration: '15–18 phút',
