@@ -44,6 +44,7 @@ const TITLES: Record<string, { title: string; subtitle?: string }> = {
     subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
   },
   study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học và luyện tập.' },
+  'study/civics': { title: 'Học tập' },
   speaking: { title: 'Speaking' },
   'speaking/what-mean': { title: 'Luyện Tập - What Mean' },
   'speaking/yes-no': { title: 'Luyện Tập - Yes / No' },
@@ -89,6 +90,7 @@ const PARENT_MAP: Record<string, string> = {
   setup: '',
   practice: 'study/civics',
   flashcards: 'study/civics',
+  'study/civics': 'study',
   speaking: 'study',
   'speaking/what-mean': 'study',
   'speaking/yes-no': 'study',
@@ -105,6 +107,12 @@ function detectSection(pathname: string | null, locale: string): string {
     if (segments[1] === 'what-mean' || segments[1] === 'yes-no') {
       return `speaking/${segments[1]}`;
     }
+  }
+  // The Civic detail page (/study/civics) is a secondary hub — it gets its own
+  // section so it shows a Back button to the /study launcher, while the bare
+  // /study launcher itself stays a primary (no-Back) section.
+  if (segments[0] === 'study' && segments[1] === 'civics') {
+    return 'study/civics';
   }
   return segments[0] ?? '';
 }
@@ -128,7 +136,7 @@ export function Header() {
   // mock); every other page keeps its static title. Falls back to the static
   // entry while the profile is still loading.
   const { profile } = useAuth();
-  let meta = mockMeta ?? TITLES[section] ?? TITLES[''];
+  let meta: { title: string; subtitle?: string } = mockMeta ?? TITLES[section] ?? TITLES[''];
 
   const isPracticeMode = searchParams?.get('mode') === 'practice';
   if (['speaking/what-mean', 'speaking/yes-no', 'writing'].includes(section) && !isPracticeMode) {
