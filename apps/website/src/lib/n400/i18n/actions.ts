@@ -21,6 +21,7 @@ export async function setN400Language(lang: string): Promise<{ ok: boolean }> {
     path: '/',
     maxAge: N400_LANG_COOKIE_MAX_AGE,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   });
 
   const supabase = createServerClient(
@@ -43,10 +44,11 @@ export async function setN400Language(lang: string): Promise<{ ok: boolean }> {
   } = await supabase.auth.getUser();
 
   if (user) {
-    await supabase
+    const { error } = await supabase
       .from('n400_user_profile')
       .update({ ui_language: lang })
       .eq('user_id', user.id);
+    if (error) return { ok: false };
   }
 
   return { ok: true };

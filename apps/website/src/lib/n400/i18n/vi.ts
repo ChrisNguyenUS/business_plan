@@ -28,14 +28,6 @@ export const vi = {
     securityNote1: 'Dữ liệu của bạn được bảo mật tuyệt đối.',
     securityNote2: 'Chúng tôi không chia sẻ thông tin của bạn.',
   },
-  langModal: {
-    title: 'Chọn ngôn ngữ hiển thị',
-    subtitle: 'Choose your display language',
-    vietnamese: 'Tiếng Việt',
-    english: 'English',
-    confirm: 'Xác nhận / Confirm',
-    hint: 'Bạn có thể đổi lại bất cứ lúc nào trong phần Tài khoản.',
-  },
 };
 
 export type N400Dict = typeof vi;

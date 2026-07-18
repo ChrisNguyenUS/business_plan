@@ -18,8 +18,12 @@ export function LangToggle() {
   function choose(next: N400Lang) {
     if (next === lang || pending) return;
     startTransition(async () => {
-      await setN400Language(next);
-      router.refresh();
+      try {
+        await setN400Language(next);
+        router.refresh();
+      } catch {
+        /* network hiccup — stay on the current language */
+      }
     });
   }
 

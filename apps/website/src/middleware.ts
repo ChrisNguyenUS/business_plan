@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { locales, defaultLocale } from '@/lib/i18n/config';
+import { N400_LANG_COOKIE, N400_LANG_COOKIE_MAX_AGE, isN400Lang } from '@/lib/n400/i18n/config';
 
 const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
@@ -147,14 +148,12 @@ export async function middleware(request: NextRequest) {
     // cleared cookies). Takes effect from the next request; the action that
     // changes language sets the cookie directly so in-app switches are instant.
     const dbLang = n400Profile.ui_language;
-    if (
-      (dbLang === 'vi' || dbLang === 'en') &&
-      request.cookies.get('n400_lang')?.value !== dbLang
-    ) {
-      supabaseResponse.cookies.set('n400_lang', dbLang, {
+    if (isN400Lang(dbLang) && request.cookies.get(N400_LANG_COOKIE)?.value !== dbLang) {
+      supabaseResponse.cookies.set(N400_LANG_COOKIE, dbLang, {
         path: '/',
-        maxAge: 60 * 60 * 24 * 365,
+        maxAge: N400_LANG_COOKIE_MAX_AGE,
         sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
       });
     }
   }

@@ -28,12 +28,4 @@ export const en: N400Dict = {
     securityNote1: 'Your data is fully protected.',
     securityNote2: 'We never share your information.',
   },
-  langModal: {
-    title: 'Chọn ngôn ngữ hiển thị',
-    subtitle: 'Choose your display language',
-    vietnamese: 'Tiếng Việt',
-    english: 'English',
-    confirm: 'Xác nhận / Confirm',
-    hint: 'You can change this anytime in Account settings.',
-  },
 };

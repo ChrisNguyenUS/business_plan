@@ -9,7 +9,8 @@ import { useAuth, type Profile } from '@/components/providers/AuthProvider';
 import { getAvatarUrl, getInitials } from '@/lib/profile-utils';
 import { getLinkedProviders, updateProfile, uploadAvatar } from '@/lib/profile';
 import type { User as AuthUser } from '@supabase/supabase-js';
-import { DEFAULT_N400_LANG, N400_LANG_COOKIE, isN400Lang, type N400Lang } from '@/lib/n400/i18n/config';
+import type { N400Lang } from '@/lib/n400/i18n/config';
+import { readN400LangCookie } from '@/lib/n400/i18n/client';
 import { setN400Language } from '@/lib/n400/i18n/actions';
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -18,15 +19,6 @@ const PROVIDER_LABELS: Record<string, string> = {
   facebook: 'Facebook',
   apple: 'Apple',
 };
-
-function readLangCookie(): N400Lang {
-  if (typeof document === 'undefined') return DEFAULT_N400_LANG;
-  const raw = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith(`${N400_LANG_COOKIE}=`))
-    ?.split('=')[1];
-  return isN400Lang(raw) ? raw : DEFAULT_N400_LANG;
-}
 
 export default function ProfileEditPage() {
   const { user, profile } = useAuth();
@@ -50,7 +42,7 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
   const [lastName, setLastName] = useState(profile.last_name ?? '');
   const [preferredName, setPreferredName] = useState(profile.preferred_name ?? '');
   const [nameSuffix, setNameSuffix] = useState(profile.name_suffix ?? '');
-  const [language, setLanguage] = useState<N400Lang>(readLangCookie);
+  const [language, setLanguage] = useState<N400Lang>(readN400LangCookie);
   const [providers, setProviders] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);

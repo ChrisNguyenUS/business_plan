@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { N400Lang } from '@/lib/n400/i18n/config';
+import { readN400LangCookie } from '@/lib/n400/i18n/client';
 import { setN400Language } from '@/lib/n400/i18n/actions';
 
 /**
@@ -12,14 +13,24 @@ import { setN400Language } from '@/lib/n400/i18n/actions';
  */
 export function LanguageSelectModal() {
   const router = useRouter();
-  const [choice, setChoice] = useState<N400Lang>('vi');
+  const [choice, setChoice] = useState<N400Lang>(readN400LangCookie);
   const [pending, startTransition] = useTransition();
+  const [failed, setFailed] = useState(false);
 
   function confirm() {
     if (pending) return;
+    setFailed(false);
     startTransition(async () => {
-      await setN400Language(choice);
-      router.refresh();
+      try {
+        const { ok } = await setN400Language(choice);
+        if (!ok) {
+          setFailed(true);
+          return;
+        }
+        router.refresh();
+      } catch {
+        setFailed(true);
+      }
     });
   }
 
@@ -65,6 +76,11 @@ export function LanguageSelectModal() {
         >
           {pending ? '…' : 'Xác nhận / Confirm'}
         </button>
+        {failed && (
+          <p className="mt-3 text-center text-xs font-semibold text-red-600">
+            Không lưu được — thử lại · Could not save — try again
+          </p>
+        )}
         <p className="mt-3 text-center text-xs text-gray-400">
           Bạn có thể đổi lại trong phần Tài khoản · You can change this later in Account
         </p>
