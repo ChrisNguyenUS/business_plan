@@ -137,11 +137,25 @@ export async function middleware(request: NextRequest) {
   if (isN400Path && !N400_NO_PROFILE_GATE_RE.test(pathname)) {
     const { data: n400Profile } = await supabase
       .from('n400_user_profile')
-      .select('user_id')
+      .select('user_id, ui_language')
       .eq('user_id', user.id)
       .maybeSingle();
     if (!n400Profile) {
       return NextResponse.redirect(new URL('/n400ready/setup', request.url));
+    }
+    // DB is the source of truth once chosen — heal the cookie (new device,
+    // cleared cookies). Takes effect from the next request; the action that
+    // changes language sets the cookie directly so in-app switches are instant.
+    const dbLang = n400Profile.ui_language;
+    if (
+      (dbLang === 'vi' || dbLang === 'en') &&
+      request.cookies.get('n400_lang')?.value !== dbLang
+    ) {
+      supabaseResponse.cookies.set('n400_lang', dbLang, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: 'lax',
+      });
     }
   }
 
