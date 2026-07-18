@@ -9,6 +9,9 @@ import { useAuth, type Profile } from '@/components/providers/AuthProvider';
 import { getAvatarUrl, getInitials } from '@/lib/profile-utils';
 import { getLinkedProviders, updateProfile, uploadAvatar } from '@/lib/profile';
 import type { User as AuthUser } from '@supabase/supabase-js';
+import type { N400Lang } from '@/lib/n400/i18n/config';
+import { readN400LangCookie } from '@/lib/n400/i18n/client';
+import { setN400Language } from '@/lib/n400/i18n/actions';
 
 const PROVIDER_LABELS: Record<string, string> = {
   email: 'Email',
@@ -39,7 +42,7 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
   const [lastName, setLastName] = useState(profile.last_name ?? '');
   const [preferredName, setPreferredName] = useState(profile.preferred_name ?? '');
   const [nameSuffix, setNameSuffix] = useState(profile.name_suffix ?? '');
-  const [language, setLanguage] = useState<'en' | 'vi'>(profile.preferred_language ?? 'en');
+  const [language, setLanguage] = useState<N400Lang>(readN400LangCookie);
   const [providers, setProviders] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -65,7 +68,6 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
         last_name: lastName.trim() || null,
         preferred_name: preferredName.trim() || null,
         name_suffix: nameSuffix.trim() || null,
-        preferred_language: language,
       });
 
       if (err) {
@@ -74,6 +76,11 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
       }
 
       await refreshProfile();
+      const { ok } = await setN400Language(language);
+      if (!ok) {
+        setError('Hồ sơ đã lưu nhưng không lưu được ngôn ngữ. Vui lòng thử lại.');
+        return;
+      }
       setSaved(true);
       router.push(`/n400ready/profile`);
     } catch (err) {
@@ -199,7 +206,7 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
             </label>
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value as 'en' | 'vi')}
+              onChange={(e) => setLanguage(e.target.value as N400Lang)}
               className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
             >
               <option value="en">English</option>

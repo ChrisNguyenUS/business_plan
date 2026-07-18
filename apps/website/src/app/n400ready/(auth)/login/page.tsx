@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { LangToggle } from './LangToggle';
 import styles from './login.module.css';
 
 /* ─── SVG Icons ─── */
@@ -160,10 +162,10 @@ const FEATURES = [
 
 /* ─── Provider button data ─── */
 type OAuthId = 'google' | 'apple' | 'facebook';
-const PROVIDERS: { id: OAuthId; label: string; Icon: () => React.ReactElement }[] = [
-  { id: 'google', label: 'Tiếp tục với Google', Icon: GoogleIcon },
-  { id: 'apple', label: 'Tiếp tục với Apple', Icon: AppleIcon },
-  { id: 'facebook', label: 'Tiếp tục với Facebook', Icon: FacebookIcon },
+const PROVIDERS: { id: OAuthId; name: string; Icon: () => React.ReactElement }[] = [
+  { id: 'google', name: 'Google', Icon: GoogleIcon },
+  { id: 'apple', name: 'Apple', Icon: AppleIcon },
+  { id: 'facebook', name: 'Facebook', Icon: FacebookIcon },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -172,6 +174,8 @@ const PROVIDERS: { id: OAuthId; label: string; Icon: () => React.ReactElement }[
 export default function N400LoginPage() {
   const router = useRouter();
   const { signIn, signInWithOAuth } = useAuth();
+  const { lang, dict } = useN400Lang();
+  const t = dict.login;
 
   const [loadingProvider, setLoadingProvider] = useState<OAuthId | 'email' | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(false);
@@ -206,7 +210,7 @@ export default function N400LoginPage() {
     const userId = sessionData.session?.user?.id;
 
     if (!userId) {
-      setError('Đăng nhập thất bại. Vui lòng thử lại.');
+      setError(t.loginFailed);
       setLoadingProvider(null);
       return;
     }
@@ -243,21 +247,19 @@ export default function N400LoginPage() {
               <span className={styles.brandName}>
                 N400 <span className={styles.brandAccent}>Ready</span>
               </span>
-              <span className={styles.brandTagline}>TỰ TIN CHINH PHỤC{'\n'}GIẤC MƠ MỸ!</span>
+              <span className={styles.brandTagline}>{t.tagline}</span>
             </div>
           </div>
 
           <div className={styles.mobileHeadline}>
             <h1>
-              Học thông minh.<br />
-              <strong>Đậu phỏng vấn.</strong><br />
-              <strong>Trở thành công dân Mỹ.</strong>
+              {t.headline1}<br />
+              <strong>{t.headline2}</strong><br />
+              <strong>{t.headline3}</strong>
             </h1>
           </div>
           <p className={styles.mobileHeroSub}>
-            Ứng dụng giúp bạn học và luyện thi<br />
-            quốc tịch Mỹ (N-400) hiệu quả,<br />
-            dễ dàng và thú vị.
+            {t.mobileHeroSub}
           </p>
         </div>
       </div>
@@ -280,7 +282,7 @@ export default function N400LoginPage() {
               <span className={styles.brandName}>
                 N400 <span className={styles.brandAccent}>Ready</span>
               </span>
-              <span className={styles.brandTagline}>TỰ TIN CHINH PHỤC{'\n'}GIẤC MƠ MỸ!</span>
+              <span className={styles.brandTagline}>{t.tagline}</span>
             </div>
           </div>
 
@@ -288,15 +290,14 @@ export default function N400LoginPage() {
             {/* Hero Headline */}
             <div className={styles.heroHeadline}>
               <h1>
-                Học thông minh.<br />
-                <strong>Đậu phỏng vấn.</strong><br />
-                <strong>Trở thành công dân Mỹ.</strong>
+                {t.headline1}<br />
+                <strong>{t.headline2}</strong><br />
+                <strong>{t.headline3}</strong>
               </h1>
             </div>
 
             <p className={styles.heroSub}>
-              N400 Ready là ứng dụng giúp bạn học và luyện thi quốc tịch Mỹ (N-400)<br />
-              một cách hiệu quả, dễ dàng và thú vị.
+              {t.heroSub}
             </p>
 
             <div className={styles.socialProof}>
@@ -308,7 +309,7 @@ export default function N400LoginPage() {
                   <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
                 </div>
                 <p className={styles.socialProofText}>
-                  Được xây dựng từ trải nghiệm phỏng vấn quốc tịch Mỹ thực tế và hướng dẫn chính thức mới nhất của USCIS.
+                  {t.socialProof}
                 </p>
               </div>
             </div>
@@ -321,6 +322,8 @@ export default function N400LoginPage() {
       {/* ─── RIGHT PANEL / LOGIN CARD ─── */}
       <div className={styles.rightPanel}>
         <div className={styles.loginCard}>
+          <LangToggle />
+
           {/* Card header */}
           <div className={styles.cardHeader}>
             <Image
@@ -333,10 +336,10 @@ export default function N400LoginPage() {
           </div>
 
           <h2 className={styles.cardTitle}>
-            Welcome to <span className={styles.brandAccent}>N400 Ready</span>
+            {t.welcomePrefix} <span className={styles.brandAccent}>N400 Ready</span>
           </h2>
           <p className={styles.cardSubtitle}>
-            Tiếp tục hành trình chinh phục quốc tịch Mỹ 👋
+            {t.cardSubtitle}
           </p>
 
           {/* Error */}
@@ -346,7 +349,7 @@ export default function N400LoginPage() {
 
           {/* OAuth Buttons */}
           <div className={styles.oauthButtons}>
-            {PROVIDERS.map(({ id, label, Icon }) => (
+            {PROVIDERS.map(({ id, name, Icon }) => (
               <button
                 key={id}
                 type="button"
@@ -359,7 +362,7 @@ export default function N400LoginPage() {
                 ) : (
                   <Icon />
                 )}
-                <span>{label}</span>
+                <span>{t.continueWith} {name}</span>
               </button>
             ))}
           </div>
@@ -367,7 +370,7 @@ export default function N400LoginPage() {
           {/* Divider */}
           <div className={styles.divider}>
             <div className={styles.dividerLine} />
-            <span className={styles.dividerText}>HOẶC</span>
+            <span className={styles.dividerText}>{t.or}</span>
             <div className={styles.dividerLine} />
           </div>
 
@@ -379,7 +382,7 @@ export default function N400LoginPage() {
               className={styles.emailBtn}
             >
               <EmailIcon />
-              <span>Tiếp tục với Email</span>
+              <span>{t.continueWithEmail}</span>
               <svg className={styles.arrowIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
@@ -391,7 +394,7 @@ export default function N400LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="Email"
+                placeholder={t.emailPlaceholder}
                 className={styles.input}
                 autoFocus
               />
@@ -400,7 +403,7 @@ export default function N400LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Mật khẩu"
+                placeholder={t.passwordPlaceholder}
                 className={styles.input}
               />
               <button
@@ -411,19 +414,19 @@ export default function N400LoginPage() {
                 {loadingProvider === 'email' ? (
                   <span className={styles.btnLoading}>
                     <span className={styles.spinner} />
-                    Đang đăng nhập...
+                    {t.signingIn}
                   </span>
                 ) : (
-                  'Đăng nhập'
+                  t.signIn
                 )}
               </button>
 
               <div className={styles.formLinks}>
-                <Link href="/vi/forgot-password" className={styles.link}>
-                  Quên mật khẩu?
+                <Link href={`/${lang}/forgot-password`} className={styles.link}>
+                  {t.forgotPassword}
                 </Link>
-                <Link href="/vi/signup" className={styles.linkBold}>
-                  Tạo tài khoản
+                <Link href={`/${lang}/signup`} className={styles.linkBold}>
+                  {t.createAccount}
                 </Link>
               </div>
             </form>
@@ -435,8 +438,8 @@ export default function N400LoginPage() {
           <div className={styles.securityNote}>
             <ShieldCheckIcon />
             <span>
-              Dữ liệu của bạn được bảo mật tuyệt đối.<br />
-              Chúng tôi không chia sẻ thông tin của bạn.
+              {t.securityNote1}<br />
+              {t.securityNote2}
             </span>
           </div>
         </div>

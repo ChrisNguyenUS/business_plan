@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import MetaPixel from '@/components/analytics/MetaPixel';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import { getN400Lang } from '@/lib/n400/i18n/server';
 import { N400UserStateProvider } from '@/lib/n400/user-state';
 
 const inter = Inter({
@@ -28,13 +29,14 @@ export const metadata: Metadata = {
 /**
  * Root layout for the /n400ready segment. The app lives OUTSIDE the
  * [locale] tree, so it carries its own <html>/<body> shell, auth provider,
- * and analytics (mirroring [locale]/layout.tsx). lang is "vi" for now —
- * Đợt 2 makes it follow the n400_lang cookie.
+ * and analytics (mirroring [locale]/layout.tsx). lang follows the
+ * n400_lang cookie.
  */
-export default function N400ReadyRootLayout({ children }: { children: ReactNode }) {
+export default async function N400ReadyRootLayout({ children }: { children: ReactNode }) {
+  const lang = await getN400Lang();
   return (
     <html
-      lang="vi"
+      lang={lang}
       suppressHydrationWarning
       className={`${inter.variable} h-full antialiased`}
     >
