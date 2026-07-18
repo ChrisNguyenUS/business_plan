@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { usePracticeModeId, type PracticeModeId, type PracticeSkillKey } from '@/lib/n400/practice-mode';
 import type { PracticePreset } from '@/lib/n400/quiz-engine';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 /** One launchable practice mode, fully resolved by the page (counts included). */
 export interface PracticeMode {
@@ -56,7 +57,7 @@ export interface PracticeAccent {
 }
 
 /** Preset tiers → display modes, in the shared fixed order (Daily → Quick → Challenge → Full). */
-export function presetModes(presets: PracticePreset[], totalCount: number, unit = 'câu'): PracticeMode[] {
+export function presetModes(presets: PracticePreset[], totalCount: number, unit: string): PracticeMode[] {
   const order: PracticeModeId[] = ['standard', 'quick', 'deep', 'full'];
   const byId = new Map(presets.map((p) => [p.id, p]));
   return order.flatMap((id) => {
@@ -64,8 +65,8 @@ export function presetModes(presets: PracticePreset[], totalCount: number, unit 
     if (!p) return [];
     return [{
       id,
-      title: p.titleVi,
-      desc: p.descVi,
+      title: p.title,
+      desc: p.desc,
       countLabel: `${p.count ?? totalCount} ${unit}`,
       minutes: p.minutes,
     }];
@@ -121,10 +122,10 @@ const DESKTOP_MQ = '(min-width: 768px)';
 const isDesktopViewport = () =>
   typeof window !== 'undefined' && window.matchMedia(DESKTOP_MQ).matches;
 
-function RecommendedBadge() {
+function RecommendedBadge({ label }: { label: string }) {
   return (
     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-      Đề xuất
+      {label}
     </span>
   );
 }
@@ -135,11 +136,15 @@ function ModeList({
   currentId,
   recommendedId,
   onPick,
+  recommendedLabel,
+  minutesUnit,
 }: {
   modes: PracticeMode[];
   currentId: PracticeModeId;
   recommendedId: PracticeModeId;
   onPick: (mode: PracticeMode) => void;
+  recommendedLabel: string;
+  minutesUnit: string;
 }) {
   return (
     <ul className="flex flex-col gap-2">
@@ -164,11 +169,11 @@ function ModeList({
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
                   <span className="font-bold text-gray-800">{mode.title}</span>
-                  {mode.id === recommendedId ? <RecommendedBadge /> : null}
+                  {mode.id === recommendedId ? <RecommendedBadge label={recommendedLabel} /> : null}
                 </span>
                 <span className="mt-0.5 block text-sm text-gray-500">
                   {mode.countLabel}
-                  {mode.minutes !== null ? ` · ≈ ${mode.minutes} phút` : ''}
+                  {mode.minutes !== null ? ` · ≈ ${mode.minutes} ${minutesUnit}` : ''}
                 </span>
               </span>
               {selected ? <Check size={18} className="shrink-0 text-teal-600" /> : null}
@@ -186,7 +191,7 @@ export function PracticeSelector({
   recommendedId,
   illustrationSrc,
   accent,
-  subtitle = 'Chọn chế độ phù hợp để bắt đầu học ngay.',
+  subtitle,
   onStart,
 }: {
   skillKey: PracticeSkillKey;
@@ -201,6 +206,7 @@ export function PracticeSelector({
   /** Launch practice in the given mode. Only fired by "Bắt đầu luyện tập". */
   onStart: (mode: PracticeMode) => void;
 }) {
+  const { dict } = useN400Lang();
   const [storedId, setStoredId] = usePracticeModeId(skillKey);
   const [open, setOpen] = useState(false);
 
@@ -255,8 +261,8 @@ export function PracticeSelector({
           <Target size={20} />
         </div>
         <div className="min-w-0">
-          <h2 className="font-extrabold text-gray-900">Chọn cách luyện tập</h2>
-          <p className="text-sm text-gray-500">{subtitle}</p>
+          <h2 className="font-extrabold text-gray-900">{dict.practice.heading}</h2>
+          <p className="text-sm text-gray-500">{subtitle ?? dict.practice.subtitle}</p>
         </div>
       </div>
 
@@ -266,12 +272,12 @@ export function PracticeSelector({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${accent.chip}`}>
-                Chế độ hiện tại
+                {dict.practice.currentMode}
               </span>
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <span className="text-lg font-extrabold leading-tight text-gray-900">{current.title}</span>
-              {current.id === recommendedId ? <RecommendedBadge /> : null}
+              {current.id === recommendedId ? <RecommendedBadge label={dict.practice.recommended} /> : null}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-gray-500">
               <span className="inline-flex items-center gap-1">
@@ -280,7 +286,7 @@ export function PracticeSelector({
               </span>
               {current.minutes !== null ? (
                 <span className="inline-flex items-center gap-1">
-                  <Clock size={14} className="text-gray-400" />≈ {current.minutes} phút
+                  <Clock size={14} className="text-gray-400" />≈ {current.minutes} {dict.practice.minutesUnit}
                 </span>
               ) : null}
             </div>
@@ -304,7 +310,7 @@ export function PracticeSelector({
             onClick={() => onStart(current)}
             className={`group inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all ${accent.button}`}
           >
-            Bắt đầu luyện tập
+            {dict.practice.startButton}
             <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
           </button>
           <button
@@ -315,7 +321,7 @@ export function PracticeSelector({
             onClick={() => setOpen((v) => !v)}
             className="inline-flex min-h-[48px] cursor-pointer items-center justify-center gap-1 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
           >
-            Đổi chế độ
+            {dict.practice.changeMode}
             <ChevronDown size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
           </button>
 
@@ -326,22 +332,29 @@ export function PracticeSelector({
             <div
               ref={popoverRef}
               role="dialog"
-              aria-label="Đổi chế độ luyện tập"
+              aria-label={dict.practice.changeModeLabel}
               className="absolute right-0 top-full z-50 mt-2 hidden max-h-[420px] w-[460px] max-w-[calc(100vw-2rem)] origin-top-right flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 motion-reduce:animate-none md:flex"
             >
               <div className="mb-3 flex shrink-0 items-center justify-between">
-                <h3 className="text-base font-extrabold text-gray-900">Đổi chế độ luyện tập</h3>
+                <h3 className="text-base font-extrabold text-gray-900">{dict.practice.changeModeLabel}</h3>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Đóng"
+                  aria-label={dict.common.closeButton}
                   className="cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
                 >
                   <X size={18} />
                 </button>
               </div>
               <div className="-mr-1 flex-1 overflow-y-auto pr-1">
-                <ModeList modes={modes} currentId={current.id} recommendedId={recommendedId} onPick={pick} />
+                <ModeList
+                  modes={modes}
+                  currentId={current.id}
+                  recommendedId={recommendedId}
+                  onPick={pick}
+                  recommendedLabel={dict.practice.recommended}
+                  minutesUnit={dict.practice.minutesUnit}
+                />
               </div>
             </div>
           ) : null}
@@ -350,27 +363,34 @@ export function PracticeSelector({
 
       {/* Mobile only (below md): native bottom sheet. */}
       {open ? (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Đổi chế độ luyện tập">
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label={dict.practice.changeModeLabel}>
           <button
             type="button"
-            aria-label="Đóng"
+            aria-label={dict.common.closeButton}
             onClick={() => setOpen(false)}
             className="absolute inset-0 cursor-pointer bg-slate-900/40 backdrop-blur-[2px]"
           />
           <div className="absolute inset-x-0 bottom-0 max-h-[70vh] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-[max(env(safe-area-inset-bottom),1rem)] shadow-2xl animate-in slide-in-from-bottom duration-300 motion-reduce:animate-none">
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200" />
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-extrabold text-gray-900">Đổi chế độ luyện tập</h3>
+              <h3 className="text-lg font-extrabold text-gray-900">{dict.practice.changeModeLabel}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Đóng"
+                aria-label={dict.common.closeButton}
                 className="cursor-pointer rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
               >
                 <X size={20} />
               </button>
             </div>
-            <ModeList modes={modes} currentId={current.id} recommendedId={recommendedId} onPick={pick} />
+            <ModeList
+              modes={modes}
+              currentId={current.id}
+              recommendedId={recommendedId}
+              onPick={pick}
+              recommendedLabel={dict.practice.recommended}
+              minutesUnit={dict.practice.minutesUnit}
+            />
           </div>
         </div>
       ) : null}

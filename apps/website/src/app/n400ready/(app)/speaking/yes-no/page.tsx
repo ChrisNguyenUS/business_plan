@@ -9,7 +9,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from '@/lib/n400/yesno-data';
-import { YESNO_PRESETS } from '@/lib/n400/section-presets';
+import { yesnoPresets } from '@/lib/n400/section-presets';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 import {
   deriveSectionSeen,
   deriveSectionGradedTally,
@@ -56,6 +57,7 @@ function toCard(id: string): SectionCard {
 }
 
 export default function YesNoPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, recordSectionAnswer, setSectionKnown } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
   const router = useRouter();
@@ -90,9 +92,9 @@ export default function YesNoPage() {
         minutes: 5,
       });
     }
-    list.push(...presetModes(YESNO_PRESETS, ALL_IDS.length));
+    list.push(...presetModes(yesnoPresets(dict), ALL_IDS.length, dict.study.hub.unitQuestion));
     return list;
-  }, [wrongsCount]);
+  }, [wrongsCount, dict]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-question
   // chunk of review debt. Param is stripped immediately; with no debt the hub
@@ -159,7 +161,7 @@ export default function YesNoPage() {
   const startMode = (m: PracticeMode) => {
     if (m.id === 'wrongs') startWrongsReview();
     else {
-      const preset = YESNO_PRESETS.find((p) => p.id === m.id);
+      const preset = yesnoPresets(dict).find((p) => p.id === m.id);
       startQuizWith(preset?.count ?? ALL_IDS.length, preset?.minutes);
     }
   };

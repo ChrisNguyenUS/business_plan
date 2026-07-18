@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Volume2, VolumeX, Turtle } from 'lucide-react';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 type Props = {
   src: string | null;
@@ -20,12 +21,14 @@ type Props = {
  */
 export function AudioButton({
   src,
-  label = 'Nghe',
+  label,
   size = 'md',
   className = '',
   rate = 1,
   variant = 'default',
 }: Props) {
+  const { dict } = useN400Lang();
+  const effectiveLabel = label ?? dict.flashcards.listen;
   const [playing, setPlaying] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [prevSrc, setPrevSrc] = useState<string | null>(src);
@@ -49,7 +52,7 @@ export function AudioButton({
   return (
     <button
       type="button"
-      aria-label={label}
+      aria-label={effectiveLabel}
       disabled={unavailable}
       onClick={(e) => {
         e.stopPropagation();

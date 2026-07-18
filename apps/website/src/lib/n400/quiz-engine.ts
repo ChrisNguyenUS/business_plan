@@ -3,6 +3,7 @@ import { N400_DISTRACTORS } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
 import type { QuestionAttempt, QuizMode } from './storage';
+import type { N400Dict } from './i18n/vi';
 
 // ── Audio paths (served from public/n400-audio/*) ──
 
@@ -317,19 +318,22 @@ export function isPass(score: number): boolean {
 
 export interface PracticePreset {
   id: 'quick' | 'standard' | 'deep' | 'full';
-  titleVi: string;
-  titleEn: string;
-  descVi: string;
+  title: string;
+  desc: string;
   count: number | null;   // null = all available questions
   minutes: number | null; // null = no time estimate shown
 }
 
-export const PRACTICE_PRESETS: PracticePreset[] = [
-  { id: 'quick', titleVi: 'Ôn nhanh', titleEn: 'Quick Review', descVi: 'Ôn nhanh để làm mới trí nhớ.', count: 5, minutes: 3 },
-  { id: 'standard', titleVi: 'Luyện hằng ngày', titleEn: 'Daily Practice', descVi: 'Bài luyện đề xuất cho hôm nay.', count: 10, minutes: 5 },
-  { id: 'deep', titleVi: 'Thử thách', titleEn: 'Challenge', descVi: 'Thử thách bản thân và lên trình.', count: 20, minutes: 10 },
-  { id: 'full', titleVi: 'Ôn toàn bộ', titleEn: 'Master Review', descVi: 'Ôn toàn bộ câu hỏi như thi thật.', count: null, minutes: 35 },
-];
+/** Civics practice tiers, sourced from the active dict (spec: i18n batch B4). */
+export function practicePresets(dict: N400Dict): PracticePreset[] {
+  const t = dict.practice.presets;
+  return [
+    { id: 'quick', title: t.quick.title, desc: t.quick.desc, count: 5, minutes: 3 },
+    { id: 'standard', title: t.standard.title, desc: t.standard.desc, count: 10, minutes: 5 },
+    { id: 'deep', title: t.deep.title, desc: t.deep.desc, count: 20, minutes: 10 },
+    { id: 'full', title: t.full.title, desc: t.full.desc, count: null, minutes: 35 },
+  ];
+}
 
 export function selectPracticeQuestionIds(
   seed: string | number,

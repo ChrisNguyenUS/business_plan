@@ -9,7 +9,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmean-data';
-import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
+import { whatmeanPresets } from '@/lib/n400/section-presets';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 import {
   deriveSectionSeen,
   deriveSectionGradedTally,
@@ -78,6 +79,7 @@ function toQuestion(id: string, seed: string, i: number): MCQuestion {
 }
 
 export default function WhatMeanPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, recordSectionAnswer, setSectionKnown } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
   const router = useRouter();
@@ -115,9 +117,9 @@ export default function WhatMeanPage() {
         minutes: 5,
       });
     }
-    list.push(...presetModes(WHATMEAN_PRESETS, ALL_IDS.length, 'từ'));
+    list.push(...presetModes(whatmeanPresets(dict), ALL_IDS.length, 'từ'));
     return list;
-  }, [wrongsCount]);
+  }, [wrongsCount, dict]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-question
   // chunk of review debt. Param is stripped immediately; with no debt the hub
@@ -185,7 +187,7 @@ export default function WhatMeanPage() {
   const startMode = (m: PracticeMode) => {
     if (m.id === 'wrongs') startWrongsReview();
     else {
-      const preset = WHATMEAN_PRESETS.find((p) => p.id === m.id);
+      const preset = whatmeanPresets(dict).find((p) => p.id === m.id);
       startPracticeWith(preset?.count ?? ALL_IDS.length, preset?.minutes);
     }
   };

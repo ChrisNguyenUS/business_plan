@@ -30,7 +30,7 @@ import {
   recommendWeakCategory,
   gradedOnly,
   lastWrongQuestionIds,
-  PRACTICE_PRESETS,
+  practicePresets,
   type PracticePreset,
   type PracticeRecommendation,
   type QuizOption,
@@ -40,6 +40,8 @@ import { pendingMockReviewIds } from '@/lib/n400/hero-recommendation';
 import { useRouter } from 'next/navigation';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
@@ -65,10 +67,10 @@ function bumpDailySessions(): number {
   }
 }
 
-function readStoredPreset(): PracticePreset | null {
+function readStoredPreset(presets: PracticePreset[]): PracticePreset | null {
   if (typeof window === 'undefined') return null;
   const raw = window.sessionStorage.getItem(PRESET_STORAGE_KEY);
-  return PRACTICE_PRESETS.find((p) => p.id === raw) ?? null;
+  return presets.find((p) => p.id === raw) ?? null;
 }
 
 function readStoredProgress(): { index: number; correct: number; wrong: number[] } | null {
@@ -98,6 +100,7 @@ function readStoredCategory(): N400CategoryKey | null {
 type StudyPhase = 'idle' | 'revealed';
 
 export default function PracticePage() {
+  const { dict } = useN400Lang();
   const {
     state,
     hydrated,
@@ -107,6 +110,7 @@ export default function PracticePage() {
 
   const router = useRouter();
   const civicsHubHref = '/n400ready/study/civics';
+  const presets = useMemo(() => practicePresets(dict), [dict]);
 
   const [seed, setSeed] = useState(() => {
     if (typeof window === 'undefined') return 'init';
@@ -184,14 +188,14 @@ export default function PracticePage() {
   // by the auto-start effect on bare /practice. Progress is written on each advance.
   const resume = useMemo(() => {
     if (preset !== null) return null;
-    const stored = readStoredPreset();
+    const stored = readStoredPreset(presets);
     if (!stored) return null;
     const progress = readStoredProgress();
     if (!progress) return null;
     const total = stored.count ?? N400_QUESTIONS.length;
     if (progress.index < 1 || progress.index >= total) return null;
     return { preset: stored, index: progress.index, total, correct: progress.correct, wrong: progress.wrong };
-  }, [preset]);
+  }, [preset, presets]);
 
   // Weakness signals come from graded attempts only — flashcard self-grades
   // are recognition, not retrieval (spec D1).
@@ -296,7 +300,7 @@ export default function PracticePage() {
   };
 
   const onPracticeRecommendation = (rec: PracticeRecommendation) => {
-    const quick = PRACTICE_PRESETS.find((p) => p.id === 'quick')!;
+    const quick = presets.find((p) => p.id === 'quick')!;
     // Fresh shuffle so the review set changes between recommendations.
     reseed();
     startSession(quick, rec.category);
@@ -321,7 +325,7 @@ export default function PracticePage() {
   // link from the dashboard hero.
   const startReviewSession = (ids: number[]) => {
     window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
-    setPreset(PRACTICE_PRESETS.find((p) => p.id === 'quick')!);
+    setPreset(presets.find((p) => p.id === 'quick')!);
     setReviewIds(ids);
     setWrongIds([]);
     setIndex(0);
@@ -346,14 +350,14 @@ export default function PracticePage() {
     // Strip ?start= immediately so a mid-session reload or back-nav lands on
     // bare /practice and hits the resume branch instead of restarting a mode.
     if (start) window.history.replaceState(null, '', window.location.pathname);
-    const chosen = PRACTICE_PRESETS.find((p) => p.id === start);
+    const chosen = presets.find((p) => p.id === start);
     if (chosen) {
       startSession(chosen, null);
       return;
     }
     if (start === 'weak') {
       if (recommendation) onPracticeRecommendation(recommendation);
-      else startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+      else startSession(presets.find((p) => p.id === 'standard')!, null);
       return;
     }
     if (start === 'review') {
@@ -365,7 +369,7 @@ export default function PracticePage() {
         // to the closest useful session instead of dead-ending.
         onPracticeRecommendation(recommendation);
       } else {
-        startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+        startSession(presets.find((p) => p.id === 'standard')!, null);
       }
       return;
     }
@@ -380,7 +384,7 @@ export default function PracticePage() {
       } else if (recommendation) {
         onPracticeRecommendation(recommendation);
       } else {
-        startSession(PRACTICE_PRESETS.find((p) => p.id === 'standard')!, null);
+        startSession(presets.find((p) => p.id === 'standard')!, null);
       }
       return;
     }
@@ -439,7 +443,7 @@ export default function PracticePage() {
       <div
         className="max-w-[1100px] mx-auto w-full animate-pulse motion-reduce:animate-none"
         role="status"
-        aria-label="Đang tải"
+        aria-label={dict.common.loading}
       >
         <div className="h-6 w-48 rounded-lg bg-gray-100 mb-3" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -453,8 +457,8 @@ export default function PracticePage() {
 
   if (preset === null) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500" role="status" aria-label="Đang tải">
-        Đang tải…
+      <div className="flex h-full items-center justify-center text-sm text-gray-500" role="status" aria-label={dict.common.loading}>
+        {dict.common.loading}
       </div>
     );
   }
@@ -540,11 +544,11 @@ export default function PracticePage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
+                  <AudioButton src={questionAudioUrl(question.id)} label={dict.flashcards.listenQuestion} size="sm" />
                   <button
                     type="button"
                     onClick={() => toggleBookmark(question.id)}
-                    aria-label="Đánh dấu"
+                    aria-label={dict.flashcards.bookmark}
                     className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${
                       isBookmarked
                         ? 'bg-amber-50 text-amber-500'
@@ -630,17 +634,17 @@ export default function PracticePage() {
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {pickedOption.isCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
+                    {pickedOption.isCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   <AudioButton
                     src={answerAudioUrlFor(question, stateCode, districtNumber)}
-                    label="Nghe đáp án"
+                    label={dict.flashcards.listenAnswer}
                     size="sm"
                     className="ml-auto"
                   />
                 </div>
                 <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                  <span className="font-semibold">Đáp án USCIS chấp nhận:</span>
+                  <span className="font-semibold">{dict.practice.acceptedAnswers}</span>
                 </div>
                 <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   {allAnswers.slice(0, 2).map((a, i) => (
@@ -661,9 +665,9 @@ export default function PracticePage() {
                       style={{ fontSize: 'clamp(0.65rem, 1.2vw, 0.875rem)' }}
                     >
                       {showAllAnswers ? (
-                        <><ChevronUp size={14} /> Thu gọn</>
+                        <><ChevronUp size={14} /> {dict.practice.collapse}</>
                       ) : (
-                        <><ChevronDown size={14} /> Xem tất cả {allAnswers.length} đáp án</>
+                        <><ChevronDown size={14} /> {tFormat(dict.practice.viewAllAnswers, { count: allAnswers.length })}</>
                       )}
                     </button>
                     {showAllAnswers && (
@@ -701,7 +705,7 @@ export default function PracticePage() {
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                 >
                   <Bookmark size={16} fill={isBookmarked ? 'currentColor' : 'none'} />
-                  <span className="leading-tight">Lưu lại<span className="hidden sm:inline"> / Review Later</span></span>
+                  <span className="leading-tight">{dict.practice.saveForReview}<span className="hidden sm:inline">{dict.practice.saveForReviewSuffix}</span></span>
                 </button>
                 <button
                   type="button"
@@ -709,7 +713,7 @@ export default function PracticePage() {
                   className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                 >
-                  <span>Tiếp theo / Next</span>
+                  <span>{dict.practice.next}</span>
                   <ArrowRight size={16} />
                 </button>
               </div>

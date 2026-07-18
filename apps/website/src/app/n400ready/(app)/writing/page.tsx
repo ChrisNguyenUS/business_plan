@@ -10,7 +10,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Lightbulb } from 'lucide-react';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
-import { WRITING_PRESETS } from '@/lib/n400/section-presets';
+import { writingPresets } from '@/lib/n400/section-presets';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { shuffle } from '@/lib/n400/quiz-engine';
 import {
   deriveSectionSeen,
@@ -40,6 +41,7 @@ const WRITING_RULES = [
 ];
 
 export default function WritingPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, recordSectionAnswer } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
   const router = useRouter();
@@ -73,9 +75,9 @@ export default function WritingPage() {
         minutes: 5,
       });
     }
-    list.push(...presetModes(WRITING_PRESETS, ALL.length));
+    list.push(...presetModes(writingPresets(dict), ALL.length, dict.study.hub.unitQuestion));
     return list;
-  }, [wrongsCount]);
+  }, [wrongsCount, dict]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-sentence
   // chunk of review debt. Param is stripped immediately so back-nav or reload
@@ -114,7 +116,7 @@ export default function WritingPage() {
   const startMode = (m: PracticeMode) => {
     if (m.id === 'wrongs') startWrongsReview();
     else {
-      const preset = WRITING_PRESETS.find((p) => p.id === m.id);
+      const preset = writingPresets(dict).find((p) => p.id === m.id);
       startQuizWith(preset?.count ?? ALL.length, preset?.minutes);
     }
   };

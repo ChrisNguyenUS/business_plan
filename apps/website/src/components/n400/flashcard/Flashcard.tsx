@@ -1,5 +1,8 @@
+'use client';
+
 import { FlashcardFront } from './FlashcardFront';
 import { FlashcardBack } from './FlashcardBack';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 interface Answer {
   en: string;
@@ -90,6 +93,7 @@ export function Flashcard({
   onToggleBookmark,
   badge,
 }: FlashcardProps) {
+  const { dict } = useN400Lang();
   return (
     <div
       className="relative flex-1 min-h-0 w-full max-w-[900px] mx-auto"
@@ -108,7 +112,7 @@ export function Flashcard({
             onFlip();
           }
         }}
-        aria-label="Lật thẻ"
+        aria-label={dict.flashcards.flipCard}
         className="block w-full h-full outline-none text-left cursor-pointer group"
       >
         <div

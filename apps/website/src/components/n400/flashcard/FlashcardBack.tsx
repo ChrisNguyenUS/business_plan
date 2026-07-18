@@ -1,5 +1,8 @@
+'use client';
+
 import { AudioButton } from '@/components/n400/AudioButton';
 import { Pointer } from 'lucide-react';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 interface Answer {
   en: string;
@@ -12,17 +15,18 @@ interface FlashcardBackProps {
 }
 
 export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
+  const { dict } = useN400Lang();
   return (
     <div className="h-full rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.25)] group-hover:-translate-y-0.5 transition-[box-shadow,translate] duration-300 ease-out">
       {/* Pinned: Audio */}
       <div className="absolute top-[clamp(0.75rem,2vw,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] flex items-center z-20">
-        <AudioButton src={audioSrc} label="Nghe đáp án" size="sm" />
+        <AudioButton src={audioSrc} label={dict.flashcards.listenAnswer} size="sm" />
       </div>
 
       {/* Badge */}
       <div className="shrink-0 flex justify-center mb-[clamp(0.75rem,1.5vw,2rem)]">
         <span className="text-[clamp(0.55rem,1vw,0.75rem)] font-bold uppercase tracking-widest text-teal-700 bg-teal-100/50 px-3 py-1.5 rounded-full inline-flex">
-          Đáp án / Answer
+          {dict.flashcards.answerBadge}
         </span>
       </div>
 
@@ -57,7 +61,7 @@ export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
       <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)] flex items-center justify-center">
         <div className="uppercase tracking-widest text-teal-500 font-bold text-center flex items-center gap-1.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.9rem)' }}>
           <Pointer size={16} className="text-teal-500 animate-bounce" />
-          Nhấn lại để quay về câu hỏi
+          {dict.flashcards.tapToFlip}
         </div>
       </div>
     </div>

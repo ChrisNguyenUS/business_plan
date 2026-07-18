@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
-import { PRACTICE_PRESETS, recommendWeakCategory, lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
+import { practicePresets, recommendWeakCategory, lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
 import { pendingMockReviewIds } from '@/lib/n400/hero-recommendation';
 import { deriveHubProgress } from '@/lib/n400/hub-progress';
 import { HubHero, HubStudyCardsCard, HubWeakAreasCard, type StudyCardsFilter } from '@/components/n400/hub/HubCards';
@@ -76,7 +76,7 @@ export default function CivicsHubPage() {
         minutes: 3,
       });
     }
-    list.push(...presetModes(PRACTICE_PRESETS, N400_QUESTIONS.length));
+    list.push(...presetModes(practicePresets(dict), N400_QUESTIONS.length, dict.study.hub.unitQuestion));
     return list;
   }, [wrongsCount, recommendation, dict]);
 

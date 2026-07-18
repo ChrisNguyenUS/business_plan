@@ -1,6 +1,10 @@
+'use client';
+
 import Image from 'next/image';
 import { Bookmark, Pointer } from 'lucide-react';
 import { AudioButton } from '@/components/n400/AudioButton';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 interface FlashcardFrontProps {
   questionId: number;
@@ -23,11 +27,12 @@ export function FlashcardFront({
   onToggleBookmark,
   badge,
 }: FlashcardFrontProps) {
+  const { dict } = useN400Lang();
   return (
     <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.22)] group-hover:-translate-y-0.5 transition-[box-shadow,translate] duration-300 ease-out">
       {/* Pinned: Audio & Bookmark */}
       <div className="absolute top-[clamp(0.75rem,2vw,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] flex items-center gap-2 sm:gap-3 z-20">
-        <AudioButton src={audioSrc} label="Nghe câu hỏi" size="sm" />
+        <AudioButton src={audioSrc} label={dict.flashcards.listenQuestion} size="sm" />
         {onToggleBookmark ? (
           <span
             role="button"
@@ -43,7 +48,7 @@ export function FlashcardFront({
                 onToggleBookmark();
               }
             }}
-            aria-label="Đánh dấu"
+            aria-label={dict.flashcards.bookmark}
             className={`w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-[background-color,color,scale,box-shadow] hover:scale-105 active:scale-95 ${
               bookmarked
                 ? 'bg-amber-100 text-amber-500 shadow-sm shadow-amber-500/20'
@@ -58,7 +63,7 @@ export function FlashcardFront({
       {/* Badge */}
       <div className="shrink-0 flex justify-center mb-[clamp(0.5rem,1vw,1.5rem)]">
         <span className="text-[clamp(0.55rem,1vw,0.75rem)] font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full inline-flex">
-          {badge ?? `Câu hỏi / Question #${questionId}`}
+          {badge ?? tFormat(dict.flashcards.questionBadge, { id: questionId })}
         </span>
       </div>
 
@@ -101,7 +106,7 @@ export function FlashcardFront({
       <div className="shrink-0 mt-auto pt-[clamp(0.5rem,1vw,1rem)] flex items-center justify-center">
         <div className="uppercase tracking-widest text-slate-400 font-bold text-center flex items-center gap-1.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.9rem)' }}>
           <Pointer size={16} className="text-slate-400 animate-bounce" />
-          Nhấn vào thẻ để xem đáp án
+          {dict.flashcards.tapToReview}
         </div>
       </div>
     </div>
