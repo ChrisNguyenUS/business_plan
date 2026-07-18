@@ -24,12 +24,19 @@ interface GeoapifyResultRaw {
   housenumber?: unknown
   street?: unknown
   city?: unknown
+  county?: unknown
+  district?: unknown
+  suburb?: unknown
   state_code?: unknown
   postcode?: unknown
   country_code?: unknown
   lat?: unknown
   lon?: unknown
   place_id?: unknown
+}
+
+function asTrimmedString(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : ''
 }
 
 let fallbackIdSeq = 0
@@ -45,17 +52,26 @@ export function parseGeoapifyResponse(data: unknown): GeoapifySuggestion[] {
     if (typeof raw.housenumber !== 'string' || !raw.housenumber.trim()) continue
     if (typeof raw.postcode !== 'string' || !raw.postcode.trim()) continue
     if (typeof raw.street !== 'string' || !raw.street.trim()) continue
-    if (typeof raw.city !== 'string' || !raw.city.trim()) continue
     if (typeof raw.state_code !== 'string' || !raw.state_code.trim()) continue
     if (typeof raw.formatted !== 'string') continue
     if (typeof raw.lat !== 'number' || !Number.isFinite(raw.lat)) continue
     if (typeof raw.lon !== 'number' || !Number.isFinite(raw.lon)) continue
 
+    // `city` is absent for unincorporated areas (common in Texas suburbs); per
+    // the Geoapify docs the locality can instead live in county/district/suburb.
+    // Don't drop these — the district now comes from lat/lon — so fall back
+    // through those fields for the (editable) city label.
+    const city =
+      asTrimmedString(raw.city) ||
+      asTrimmedString(raw.county) ||
+      asTrimmedString(raw.district) ||
+      asTrimmedString(raw.suburb)
+
     out.push({
       id: typeof raw.place_id === 'string' && raw.place_id ? raw.place_id : `geoapify-${++fallbackIdSeq}`,
       formatted: raw.formatted,
       street: `${raw.housenumber} ${raw.street}`,
-      city: raw.city,
+      city,
       stateCode: raw.state_code.toUpperCase(),
       zip: raw.postcode,
       lat: raw.lat,

@@ -25,6 +25,14 @@
 export interface GeocodeResult {
   districtNumber: number
   stateCode: string
+  // Authoritative locality for the matched point, lifted from
+  // results[0].address_components. On the reverse (coordinate) path these are
+  // the USPS-normalized city/zip — e.g. an unincorporated point Geoapify only
+  // knew as "Harris County" comes back as city "Houston", zip "77083" — so the
+  // caller can store them without asking the user to type anything. `null` when
+  // Geocodio omits them.
+  city: string | null
+  zip: string | null
 }
 
 interface GeocodioDistrict {
@@ -33,6 +41,13 @@ interface GeocodioDistrict {
 }
 
 const OCD_STATE_RE = /\/state:([a-z]{2})(?:\/|$)/
+
+function readComponent(result: unknown, key: 'city' | 'zip'): string | null {
+  const ac = (result as { address_components?: unknown })?.address_components
+  if (!ac || typeof ac !== 'object') return null
+  const v = (ac as Record<string, unknown>)[key]
+  return typeof v === 'string' && v.trim() ? v : null
+}
 
 export function parseGeocodioResponse(data: unknown): GeocodeResult | null {
   if (!data || typeof data !== 'object') return null
@@ -50,7 +65,12 @@ export function parseGeocodioResponse(data: unknown): GeocodeResult | null {
   const m = OCD_STATE_RE.exec(d.ocd_id)
   if (!m) return null
 
-  return { districtNumber: d.district_number, stateCode: m[1].toUpperCase() }
+  return {
+    districtNumber: d.district_number,
+    stateCode: m[1].toUpperCase(),
+    city: readComponent(results[0], 'city'),
+    zip: readComponent(results[0], 'zip'),
+  }
 }
 
 export class GeocodioError extends Error {

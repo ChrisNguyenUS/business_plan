@@ -131,6 +131,35 @@ describe('parseGeoapifyResponse', () => {
     expect(out[0]?.id).toBeTruthy()
   })
 
+  it('keeps unincorporated addresses (no city), falling back to county', () => {
+    // Real Geoapify shape for an unincorporated area: `county` present, no `city`.
+    const out = parseGeoapifyResponse({
+      results: [
+        {
+          formatted: '8127 Golden Trace Court, Harris County, TX 77083, United States of America',
+          housenumber: '8127',
+          street: 'Golden Trace Court',
+          county: 'Harris County',
+          state_code: 'TX',
+          postcode: '77083',
+          country_code: 'us',
+          lat: 29.6903159,
+          lon: -95.6209418,
+          place_id: 'unincorp-1',
+        },
+      ],
+    })
+    expect(out).toHaveLength(1)
+    expect(out[0]).toMatchObject({
+      street: '8127 Golden Trace Court',
+      city: 'Harris County',
+      stateCode: 'TX',
+      zip: '77083',
+      lat: 29.6903159,
+      lon: -95.6209418,
+    })
+  })
+
   it('drops results missing coordinates', () => {
     const out = parseGeoapifyResponse({
       results: [

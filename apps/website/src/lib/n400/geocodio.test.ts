@@ -5,6 +5,7 @@ import { parseGeocodioResponse } from './geocodio'
 const MOCK_SUCCESS = {
   results: [
     {
+      address_components: { city: 'Houston', zip: '77083' },
       fields: {
         congressional_districts: [
           {
@@ -78,7 +79,21 @@ const MOCK_OCD_NO_STATE = {
 
 describe('parseGeocodioResponse', () => {
   it('returns district + uppercased state from ocd_id on unambiguous success', () => {
-    expect(parseGeocodioResponse(MOCK_SUCCESS)).toEqual({ districtNumber: 7, stateCode: 'TX' })
+    expect(parseGeocodioResponse(MOCK_SUCCESS)).toEqual({
+      districtNumber: 7,
+      stateCode: 'TX',
+      city: 'Houston',
+      zip: '77083',
+    })
+  })
+
+  it('returns null city/zip when address_components is absent', () => {
+    expect(parseGeocodioResponse(MOCK_AT_LARGE)).toEqual({
+      districtNumber: 0,
+      stateCode: 'WY',
+      city: null,
+      zip: null,
+    })
   })
 
   it('returns null when ambiguous (>1 district returned)', () => {
@@ -90,7 +105,7 @@ describe('parseGeocodioResponse', () => {
   })
 
   it('handles at-large districts (district_number = 0)', () => {
-    expect(parseGeocodioResponse(MOCK_AT_LARGE)).toEqual({ districtNumber: 0, stateCode: 'WY' })
+    expect(parseGeocodioResponse(MOCK_AT_LARGE)).toMatchObject({ districtNumber: 0, stateCode: 'WY' })
   })
 
   it('returns null for malformed payload (district_number not a number)', () => {

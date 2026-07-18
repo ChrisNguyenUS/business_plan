@@ -112,6 +112,8 @@ export async function saveSetupProfile(
 
   let districtNumber: number | null = null
   let stateFromGeo: string | null = null
+  let cityFromGeo: string | null = null
+  let zipFromGeo: string | null = null
   try {
     const apiKey = process.env.GEOCODIO_API_KEY!
     const result = hasCoords
@@ -119,6 +121,14 @@ export async function saveSetupProfile(
       : await geocodeAddress({ street, city, state, zip, apiKey })
     districtNumber = result?.districtNumber ?? null
     stateFromGeo = result?.stateCode ?? null
+    // Only trust Geocodio's normalized city/zip on the coordinate path: reverse
+    // geocoding a precise point yields the real USPS locality (e.g. "Houston"
+    // for an address Geoapify only labeled "Harris County"). On the text path
+    // we keep exactly what the user typed.
+    if (hasCoords) {
+      cityFromGeo = result?.city ?? null
+      zipFromGeo = result?.zip ?? null
+    }
   } catch (err) {
     if (err instanceof GeocodioError) {
       // err.message intentionally generic — no PII. Phase 8 wraps with Sentry.
@@ -133,9 +143,9 @@ export async function saveSetupProfile(
   const { error: dbError } = await supabase.from('n400_user_profile').upsert(
     {
       user_id: user.id,
-      city,
+      city: cityFromGeo ?? city,
       state_code: stateFromGeo ?? state,
-      zipcode: zip,
+      zipcode: zipFromGeo ?? zip,
       district_number: districtNumber,
       district_resolved_at: districtNumber !== null ? new Date().toISOString() : null,
       updated_at: new Date().toISOString(),
