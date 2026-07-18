@@ -24,6 +24,7 @@ import { createHash } from 'node:crypto'
 import { geocodeAddress, GeocodioError } from '@/lib/n400/geocodio'
 import { geocodioIpLimiter, geocodioUserLimiter } from '@/lib/n400/rate-limit'
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
+import { getN400Lang, getN400Dict } from '@/lib/n400/i18n/server'
 
 export type SetupFormState =
   | { ok: false; error: string }
@@ -41,6 +42,8 @@ export async function saveSetupProfile(
 ): Promise<SetupFormState> {
   const cookieStore = await cookies()
   const headerStore = await headers()
+  const lang = await getN400Lang()
+  const dict = getN400Dict(lang)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -64,8 +67,7 @@ export async function saveSetupProfile(
   if (!ipOk) {
     return {
       ok: false,
-      error:
-        'Quá nhiều yêu cầu. Vui lòng thử lại sau 1 giờ. / Too many requests. Please try again in 1 hour.',
+      error: dict.setup.errorRateLimitIp,
     }
   }
 
@@ -73,8 +75,7 @@ export async function saveSetupProfile(
   if (!userOk) {
     return {
       ok: false,
-      error:
-        'Đã vượt quá giới hạn hôm nay. Vui lòng thử lại ngày mai. / Daily limit reached. Please try again tomorrow.',
+      error: dict.setup.errorRateLimitUser,
     }
   }
 
@@ -86,13 +87,13 @@ export async function saveSetupProfile(
   if (!street || !city || !state || !zip) {
     return {
       ok: false,
-      error: 'Vui lòng điền đầy đủ thông tin. / Please fill in all fields.',
+      error: dict.setup.errorMissingFields,
     }
   }
   if (!/^\d{5}$/.test(zip)) {
     return {
       ok: false,
-      error: 'Zipcode phải có 5 chữ số. / Zipcode must be 5 digits.',
+      error: dict.setup.errorInvalidZipcode,
     }
   }
 
@@ -114,8 +115,7 @@ export async function saveSetupProfile(
     }
     return {
       ok: false,
-      error:
-        'Không thể xác định khu vực. Vui lòng kiểm tra lại địa chỉ. / Could not determine your district. Please check your address.',
+      error: dict.setup.errorGeocoding,
     }
   }
 
@@ -135,7 +135,7 @@ export async function saveSetupProfile(
   if (dbError) {
     return {
       ok: false,
-      error: 'Lỗi lưu dữ liệu. Vui lòng thử lại. / Error saving data. Please try again.',
+      error: dict.setup.errorDatabase,
     }
   }
 
