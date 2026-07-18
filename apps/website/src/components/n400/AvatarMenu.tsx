@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getAvatarUrl, getInitials, getShortName } from '@/lib/profile-utils';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export function AvatarMenu() {
   const [open, setOpen] = useState(false);
@@ -29,6 +30,7 @@ export function AvatarMenu() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const base = '/n400ready';
   const { profile, signOut } = useAuth();
+  const { dict } = useN400Lang();
 
   const avatarUrl = profile ? getAvatarUrl(profile.avatar_path, profile.updated_at) : null;
   const shortName = profile ? getShortName(profile) : '…';
@@ -126,7 +128,7 @@ export function AvatarMenu() {
           )}
         </div>
         <div className="hidden lg:flex flex-col">
-          <span className="text-[10px] text-gray-400 font-medium leading-none">Xin chào,</span>
+          <span className="text-[10px] text-gray-400 font-medium leading-none">{dict.header.avatarGreeting}</span>
           <span className="text-sm font-bold text-gray-800 leading-tight">{shortName}!</span>
         </div>
         <ChevronDown
@@ -150,7 +152,7 @@ export function AvatarMenu() {
             className={menuItemClass}
           >
             <User size={16} className="text-gray-400" />
-            Tài khoản
+            {dict.header.accountLink}
           </Link>
 
           {/* Secondary destinations — mobile only */}
@@ -163,7 +165,7 @@ export function AvatarMenu() {
               className={menuItemClass}
             >
               <BarChart2 size={16} className="text-gray-400" />
-              Tiến độ học tập
+              {dict.header.learningProgressLink}
             </Link>
           </div>
 
@@ -178,7 +180,7 @@ export function AvatarMenu() {
             className={menuItemClass}
           >
             <Settings size={16} className="text-gray-400" />
-            Cài đặt
+            {dict.header.settings}
           </Link>
 
           <div
@@ -195,7 +197,7 @@ export function AvatarMenu() {
           >
             <span className="flex items-center gap-3">
               <Moon size={16} className="text-gray-400" />
-              Chế độ tối
+              {dict.header.darkMode}
             </span>
             <div
               className={`w-9 h-5 rounded-full p-0.5 flex items-center transition-colors ${
@@ -216,7 +218,7 @@ export function AvatarMenu() {
             className={`${menuItemClass} text-red-600 hover:bg-red-50 focus:bg-red-50`}
           >
             <LogOut size={16} />
-            Đăng xuất
+            {dict.header.logout}
           </button>
         </div>
       )}

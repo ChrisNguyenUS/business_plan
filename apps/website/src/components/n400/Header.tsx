@@ -19,65 +19,72 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getShortName } from '@/lib/profile-utils';
 import { AvatarMenu } from './AvatarMenu';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
-const TITLES: Record<string, { title: string; subtitle?: string }> = {
-  '': { title: 'Tổng quan', subtitle: 'Chào mừng trở lại! 👋' },
-  practice: {
-    title: 'Luyện Tập - Civic',
-    subtitle: 'Trả lời và xem ngay đáp án đúng / sai',
-  },
-  'mock-test': {
-    title: 'Thi thử',
-    subtitle: 'Mô phỏng kỳ thi quốc tịch Mỹ (N-400) giống như kỳ thi thật.',
-  },
-  flashcards: {
-    title: 'Flashcards',
-    subtitle: 'Lật thẻ — học theo từng câu',
-  },
-  statistic: {
-    title: 'Tiến độ học tập',
-    subtitle: 'Theo dõi tiến độ và hiệu suất học tập của bạn',
-  },
-  profile: { title: 'Tài khoản' },
-  categories: {
-    title: 'Danh mục',
-    subtitle: 'Khám phá và học tập theo các chủ đề đa dạng, bám sát kỳ thi N400.',
-  },
-  study: { title: 'Học tập', subtitle: 'Chọn kỹ năng bạn muốn học và luyện tập.' },
-  'study/civics': { title: 'Học tập' },
-  speaking: { title: 'Speaking' },
-  'speaking/what-mean': { title: 'Luyện Tập - What Mean' },
-  'speaking/yes-no': { title: 'Luyện Tập - Yes / No' },
-  writing: { title: 'Luyện Tập - Writing' },
-  progress: { title: 'Tiến độ', subtitle: 'Huy hiệu và thành tích của bạn.' },
-};
+function buildTitles(dict: N400Dict): Record<string, { title: string; subtitle?: string }> {
+  return {
+    '': { title: dict.header.dashboardTitle, subtitle: dict.header.dashboardGreeting },
+    practice: {
+      title: dict.header.practiceCivicsTitle,
+      subtitle: dict.header.practiceSubtitle,
+    },
+    'mock-test': {
+      title: dict.header.mockTestTitle,
+      subtitle: dict.header.mockTestSubtitle,
+    },
+    flashcards: {
+      title: 'Flashcards',
+      subtitle: dict.header.flashcardsSubtitle,
+    },
+    statistic: {
+      title: dict.header.statisticTitle,
+      subtitle: dict.header.statisticSubtitle,
+    },
+    profile: { title: dict.header.profileTitle },
+    categories: {
+      title: dict.header.categoriesTitle,
+      subtitle: dict.header.categoriesSubtitle,
+    },
+    study: { title: dict.header.studyTitle, subtitle: dict.header.studySubtitle },
+    'study/civics': { title: dict.header.studyTitle },
+    speaking: { title: 'Speaking' },
+    'speaking/what-mean': { title: dict.header.speakingWhatMeanTitle },
+    'speaking/yes-no': { title: dict.header.speakingYesNoTitle },
+    writing: { title: dict.header.writingTitle },
+    progress: { title: dict.header.progressTitle, subtitle: dict.header.progressSubtitle },
+  };
+}
 
 /** Primary sections use lateral navigation (no Back button). */
 const PRIMARY_SECTIONS = ['', 'study', 'mock-test', 'statistic', 'progress'];
 
 /**
  * Mock-test sub-routes get their own exam-serious header: "Mock Test – <mode>"
- * with a group icon + subtitle, and a Back chevron to the Thi thử hub. The hub
- * itself (bare /mock-test) keeps the primary "Thi thử" title from TITLES.
+ * with a group icon + subtitle, and a Back chevron to the Mock Test hub. The
+ * hub itself (bare /mock-test) keeps the primary title from buildTitles.
  */
-const MOCK_SUBROUTES: Record<string, { title: string; subtitle: string }> = {
-  full: {
-    title: 'Mock Test – Full Interview',
-    subtitle: 'Mô phỏng buổi phỏng vấn nhập tịch đầy đủ như thật.',
-  },
-  civics: {
-    title: 'Mock Test – Civics',
-    subtitle: 'Mô phỏng phần thi kiến thức công dân (Civics) như thật.',
-  },
-  speaking: {
-    title: 'Mock Test – Speaking',
-    subtitle: 'Mô phỏng phần phỏng vấn nói với viên chức USCIS.',
-  },
-  viet: {
-    title: 'Mock Test – Writing',
-    subtitle: 'Mô phỏng phần thi viết theo yêu cầu của viên chức USCIS.',
-  },
-};
+function buildMockSubroutes(dict: N400Dict): Record<string, { title: string; subtitle: string }> {
+  return {
+    full: {
+      title: 'Mock Test – Full Interview',
+      subtitle: dict.header.mockFullSubtitle,
+    },
+    civics: {
+      title: 'Mock Test – Civics',
+      subtitle: dict.header.mockCivicsSubtitle,
+    },
+    speaking: {
+      title: 'Mock Test – Speaking',
+      subtitle: dict.header.mockSpeakingSubtitle,
+    },
+    viet: {
+      title: 'Mock Test – Writing',
+      subtitle: dict.header.mockWritingSubtitle,
+    },
+  };
+}
 
 /**
  * Deterministic back navigation — navigate to logical parent, not browser history.
@@ -122,36 +129,39 @@ export function Header() {
   const searchParams = useSearchParams();
   const base = '/n400ready';
   const section = detectSection(pathname);
+  const { dict } = useN400Lang();
+  const titles = buildTitles(dict);
+  const mockSubroutes = buildMockSubroutes(dict);
   // Second path segment under /mock-test/<sub> selects the exam-specific header.
   const mockSub =
     section === 'mock-test' && pathname
       ? pathname.slice(base.length + 1).split('/')[1] ?? ''
       : '';
-  const mockMeta = MOCK_SUBROUTES[mockSub];
+  const mockMeta = mockSubroutes[mockSub];
   const isSecondary = mockMeta ? true : !PRIMARY_SECTIONS.includes(section);
 
   // Dashboard greets by name and time of day (per the dashboard redesign
   // mock); every other page keeps its static title. Falls back to the static
   // entry while the profile is still loading.
   const { profile } = useAuth();
-  let meta: { title: string; subtitle?: string } = mockMeta ?? TITLES[section] ?? TITLES[''];
+  let meta: { title: string; subtitle?: string } = mockMeta ?? titles[section] ?? titles[''];
 
   const isPracticeMode = searchParams?.get('mode') === 'practice';
   if (['speaking/what-mean', 'speaking/yes-no', 'writing'].includes(section) && !isPracticeMode) {
-    meta = { title: 'Học tập' };
+    meta = { title: dict.header.studyTitle };
   }
 
   if (section === '' && profile) {
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+    const greeting =
+      hour < 12 ? dict.header.greetingMorning : hour < 18 ? dict.header.greetingAfternoon : dict.header.greetingEvening;
     meta = {
-      title: `${greeting}, ${getShortName(profile)}! 👋`,
-      subtitle: 'Sẵn sàng tiếp tục hành trình chinh phục quốc tịch Mỹ chưa?',
+      title: tFormat(dict.header.dashboardGreetingName, { greeting, name: getShortName(profile) }),
+      subtitle: dict.header.dashboardReadySubtitle,
     };
   }
 
-  // Deterministic back navigation. Mock sub-routes always return to the Thi thử
-  // hub; everything else follows PARENT_MAP.
+  // Deterministic back navigation. Mock sub-routes always return to the Mock Test
   const parentHref = PARENT_MAP[section];
   const backHref = mockMeta
     ? `${base}/mock-test`
@@ -180,7 +190,7 @@ export function Header() {
         {isSecondary && (
           <Link
             href={backHref}
-            aria-label="Quay lại"
+            aria-label={dict.header.backButton}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
           >
             <ChevronLeft size={24} />
@@ -195,7 +205,7 @@ export function Header() {
             </div>
             <div className="min-w-0">
               <h2 className="text-base font-extrabold leading-tight text-gray-800">N400 Ready</h2>
-              <p className="text-[11px] leading-tight text-gray-500">Giấc mơ Mỹ!</p>
+              <p className="text-[11px] leading-tight text-gray-500">{dict.header.mobileBrandTagline}</p>
             </div>
           </div>
         )}
@@ -221,10 +231,10 @@ export function Header() {
           }`}
           title={
             activeToday
-              ? 'Bạn đã học hôm nay — chuỗi đang giữ vững.'
+              ? dict.header.streakTooltipActive
               : streak > 0
-                ? 'Bạn chưa học hôm nay — học một câu để giữ chuỗi.'
-                : 'Học hôm nay để bắt đầu chuỗi mới.'
+                ? dict.header.streakTooltipInactive
+                : dict.header.streakTooltipNoStreak
           }
         >
           <Flame
@@ -233,14 +243,14 @@ export function Header() {
           />
           <div className="flex min-w-0 flex-col">
             <span className="hidden text-[10px] font-medium leading-none text-gray-400 sm:block">
-              Chuỗi học tập
+              {dict.header.streakLabel}
             </span>
             <span
               className={`text-sm font-bold leading-tight whitespace-nowrap ${
                 hasStreak ? 'text-orange-700' : 'text-gray-800'
               }`}
             >
-              {streak} ngày
+              {tFormat(dict.header.streakDays, { streak })}
             </span>
           </div>
         </div>

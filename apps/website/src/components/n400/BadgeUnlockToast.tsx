@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { X } from 'lucide-react';
 import { BadgeIcon } from './BadgeIcon';
 import { trackBadgeUnlocked } from '@/lib/analytics/events';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 interface BadgeMeta {
   slug: string;
@@ -31,6 +32,7 @@ const AUTO_DISMISS_MS = 5000;
 
 export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastProps) {
   const [visibleSlugs, setVisibleSlugs] = useState<string[]>(slugs);
+  const { dict } = useN400Lang();
 
   useEffect(() => {
     setVisibleSlugs(slugs);
@@ -69,7 +71,7 @@ export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastPr
             <BadgeIcon slug={slug} alt={meta.title_vi} size={56} earned />
             <div className="flex-1 min-w-0">
               <div className="text-xs font-bold text-orange-600 uppercase tracking-wide">
-                Huy hiệu mới! / New badge
+                {dict.common.badgeUnlockLabel}
               </div>
               <Link
                 href={`/n400ready/profile#badges`}
@@ -82,7 +84,7 @@ export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastPr
             <button
               type="button"
               onClick={() => setVisibleSlugs((prev) => prev.filter((s) => s !== slug))}
-              aria-label="Đóng"
+              aria-label={dict.common.closeButton}
               className="text-gray-300 hover:text-gray-500 shrink-0"
             >
               <X size={16} />
