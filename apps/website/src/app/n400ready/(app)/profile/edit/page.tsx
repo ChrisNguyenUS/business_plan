@@ -76,8 +76,12 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
       }
 
       await refreshProfile();
+      const { ok } = await setN400Language(language);
+      if (!ok) {
+        setError('Hồ sơ đã lưu nhưng không lưu được ngôn ngữ. Vui lòng thử lại.');
+        return;
+      }
       setSaved(true);
-      await setN400Language(language);
       router.push(`/n400ready/profile`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không lưu được. Vui lòng thử lại.');

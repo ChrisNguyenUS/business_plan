@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useSyncExternalStore, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { N400Lang } from '@/lib/n400/i18n/config';
+import { DEFAULT_N400_LANG, type N400Lang } from '@/lib/n400/i18n/config';
 import { readN400LangCookie } from '@/lib/n400/i18n/client';
 import { setN400Language } from '@/lib/n400/i18n/actions';
+
+// The cookie never changes while the modal is open — subscribe is a no-op;
+// useSyncExternalStore is here for its server/client snapshot split, which
+// lets the preselection follow the cookie without a hydration mismatch.
+const subscribeNoop = () => () => {};
+const getServerLang = () => DEFAULT_N400_LANG;
 
 /**
  * First-login language chooser. Rendered only while
@@ -13,7 +19,11 @@ import { setN400Language } from '@/lib/n400/i18n/actions';
  */
 export function LanguageSelectModal() {
   const router = useRouter();
-  const [choice, setChoice] = useState<N400Lang>(readN400LangCookie);
+  const cookieLang = useSyncExternalStore(subscribeNoop, readN400LangCookie, getServerLang);
+  // null = user hasn't tapped an option yet -> preselect from the cookie
+  // (respects a language chosen on the login toggle before signup).
+  const [tapped, setTapped] = useState<N400Lang | null>(null);
+  const choice = tapped ?? cookieLang;
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
 
@@ -50,7 +60,7 @@ export function LanguageSelectModal() {
             <button
               key={opt.code}
               type="button"
-              onClick={() => setChoice(opt.code)}
+              onClick={() => setTapped(opt.code)}
               aria-pressed={choice === opt.code}
               className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition ${
                 choice === opt.code
