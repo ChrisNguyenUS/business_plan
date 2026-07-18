@@ -1,11 +1,17 @@
-// Geocodio v1.7 client. Two responsibilities:
+// Geocodio v1.7 client. Responsibilities:
 //   1. parseGeocodioResponse — pure parser. Lifts the congressional district from the
 //      `fields.congressional_districts` array. Returns null on ambiguous (>1 district),
 //      empty results, or malformed payloads. Spec §5.1: ambiguous addresses must NOT
 //      silently save the first match.
-//   2. geocodeAddress — fetches the API. Auth via Authorization header so the API key
-//      never lands in URL/query logs. GeocodioError carries only the HTTP status, not
-//      the input address — caller is free to log it without leaking PII.
+//   2. geocodeAddress — forward geocode from a text address. Used as a fallback when
+//      the user typed a free-form address without picking an autocomplete suggestion.
+//   3. reverseGeocodeCoords — reverse geocode from a precise lat/lng (from the picked
+//      autocomplete suggestion). Preferred path: a point falls inside exactly one
+//      district polygon, so split-zip addresses resolve unambiguously instead of
+//      relying on fuzzy street matching.
+// Auth via Authorization header so the API key never lands in URL/query logs.
+// GeocodioError carries only the HTTP status, not the input — callers can log it
+// without leaking PII.
 //
 // Live response shape (verified 2026-05-26):
 //   results[0].fields.congressional_districts[0] = {
@@ -53,6 +59,35 @@ export class GeocodioError extends Error {
   }
 }
 
+// Shared transport for both the forward and reverse endpoints. Any unexpected
+// error is re-packaged as GeocodioError so the input (address or coordinates)
+// never leaks into a stack trace, then reported. Tag-only context — explicit
+// empty `extra` so a future code path can't accidentally attach PII as a
+// breadcrumb.
+async function fetchDistrict(url: URL, apiKey: string): Promise<GeocodeResult | null> {
+  try {
+    const res = await fetch(url.toString(), {
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+    if (!res.ok) throw new GeocodioError(res.status)
+    const data = await res.json()
+    return parseGeocodioResponse(data)
+  } catch (err) {
+    const safe = err instanceof GeocodioError ? err : new GeocodioError(0)
+    try {
+      const Sentry = await import('@sentry/nextjs')
+      Sentry.captureException(safe, {
+        tags: { feature: 'n400-geocodio' },
+        extra: {},
+      })
+    } catch {
+      // Sentry import failure must not block the user-facing setup form. Silent.
+    }
+    throw safe
+  }
+}
+
 export async function geocodeAddress(params: {
   street: string
   city: string
@@ -64,31 +99,16 @@ export async function geocodeAddress(params: {
   const url = new URL('https://api.geocod.io/v1.7/geocode')
   url.searchParams.set('q', query)
   url.searchParams.set('fields', 'cd')
+  return fetchDistrict(url, params.apiKey)
+}
 
-  try {
-    const res = await fetch(url.toString(), {
-      cache: 'no-store',
-      headers: { Authorization: `Bearer ${params.apiKey}` },
-    })
-    if (!res.ok) throw new GeocodioError(res.status)
-    const data = await res.json()
-    return parseGeocodioResponse(data)
-  } catch (err) {
-    // Re-package any unexpected error as GeocodioError so the address
-    // never leaks into a stack trace, then report. Tag-only context —
-    // explicit empty `extra` so a future code path can't accidentally
-    // attach the input address as breadcrumb metadata.
-    const safe = err instanceof GeocodioError ? err : new GeocodioError(0)
-    try {
-      const Sentry = await import('@sentry/nextjs')
-      Sentry.captureException(safe, {
-        tags: { feature: 'n400-geocodio' },
-        extra: {},
-      })
-    } catch {
-      // Sentry import failure must not block the user-facing setup
-      // form. Silent.
-    }
-    throw safe
-  }
+export async function reverseGeocodeCoords(params: {
+  lat: number
+  lng: number
+  apiKey: string
+}): Promise<GeocodeResult | null> {
+  const url = new URL('https://api.geocod.io/v1.7/reverse')
+  url.searchParams.set('q', `${params.lat},${params.lng}`)
+  url.searchParams.set('fields', 'cd')
+  return fetchDistrict(url, params.apiKey)
 }

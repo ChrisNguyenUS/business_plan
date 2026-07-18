@@ -69,6 +69,8 @@ const MOCK_LOWERCASE_STATE = {
       state_code: 'tx',
       postcode: '73301',
       country_code: 'us',
+      lat: 30.3,
+      lon: -97.7,
       place_id: 'lc-1',
     },
   ],
@@ -85,6 +87,8 @@ describe('parseGeoapifyResponse', () => {
       city: 'Houston',
       stateCode: 'TX',
       zip: '77036',
+      lat: 29.7,
+      lon: -95.5,
     })
   })
 
@@ -119,9 +123,29 @@ describe('parseGeoapifyResponse', () => {
           state_code: 'TX',
           postcode: '75201',
           country_code: 'us',
+          lat: 32.78,
+          lon: -96.8,
         },
       ],
     })
     expect(out[0]?.id).toBeTruthy()
+  })
+
+  it('drops results missing coordinates', () => {
+    const out = parseGeoapifyResponse({
+      results: [
+        {
+          formatted: '700 Oak St, Austin, TX 78701',
+          housenumber: '700',
+          street: 'Oak St',
+          city: 'Austin',
+          state_code: 'TX',
+          postcode: '78701',
+          country_code: 'us',
+          // no lat/lon → cannot drive the reverse-geocode district lookup
+        },
+      ],
+    })
+    expect(out).toEqual([])
   })
 })

@@ -1,7 +1,9 @@
 // Geoapify autocomplete client. Two responsibilities:
 //   1. parseGeoapifyResponse — pure parser. Filters to US-only results, drops
-//      anything missing housenumber or postcode (because Geocodio's district
-//      lookup needs the full street to disambiguate split-zip addresses).
+//      anything missing housenumber, postcode, or coordinates. The lat/lon are
+//      the important part: the parent form hands them to Geocodio's *reverse*
+//      geocoder so the district comes from a precise point, not a fuzzy street
+//      match — critical for split-zip areas where one zip spans two districts.
 //   2. autocompleteAddress — fetches /v1/geocode/autocomplete. The Geoapify
 //      API key is a public client-side key (NEXT_PUBLIC_GEOAPIFY_API_KEY) so
 //      this module is safe to import from a Client Component.
@@ -13,6 +15,8 @@ export interface GeoapifySuggestion {
   city: string
   stateCode: string
   zip: string
+  lat: number
+  lon: number
 }
 
 interface GeoapifyResultRaw {
@@ -23,6 +27,8 @@ interface GeoapifyResultRaw {
   state_code?: unknown
   postcode?: unknown
   country_code?: unknown
+  lat?: unknown
+  lon?: unknown
   place_id?: unknown
 }
 
@@ -42,6 +48,8 @@ export function parseGeoapifyResponse(data: unknown): GeoapifySuggestion[] {
     if (typeof raw.city !== 'string' || !raw.city.trim()) continue
     if (typeof raw.state_code !== 'string' || !raw.state_code.trim()) continue
     if (typeof raw.formatted !== 'string') continue
+    if (typeof raw.lat !== 'number' || !Number.isFinite(raw.lat)) continue
+    if (typeof raw.lon !== 'number' || !Number.isFinite(raw.lon)) continue
 
     out.push({
       id: typeof raw.place_id === 'string' && raw.place_id ? raw.place_id : `geoapify-${++fallbackIdSeq}`,
@@ -50,6 +58,8 @@ export function parseGeoapifyResponse(data: unknown): GeoapifySuggestion[] {
       city: raw.city,
       stateCode: raw.state_code.toUpperCase(),
       zip: raw.postcode,
+      lat: raw.lat,
+      lon: raw.lon,
     })
   }
   return out

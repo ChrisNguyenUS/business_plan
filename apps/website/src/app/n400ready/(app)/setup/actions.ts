@@ -4,14 +4,17 @@
 //   1. Verify auth (defense-in-depth — middleware already gates /n400ready/setup)
 //   2. Rate-limit by `<ip>:<userId>` (sliding 5/h) and by `<userId>` (10/24h)
 //   3. Validate form input
-//   4. Geocode in-memory (street address NOT persisted)
+//   4. Resolve the district in-memory (address/coordinates NOT persisted):
+//       - if the form carries lat/lon from a picked autocomplete suggestion,
+//         reverse-geocode that exact point (unambiguous in split-zip areas)
+//       - otherwise forward-geocode the typed text address (fallback)
 //   5. Upsert n400_user_profile — district_number stays null on ambiguous matches
 //   6. Redirect to /n400ready
 //
 // Notes
-//  - PII guarantee: the street address from the form never reaches the database.
-//    Geocodio sees it for one HTTP call, then it's GC'd. This matches the
-//    bilingual disclaimer rendered by the setup form.
+//  - PII guarantee: neither the street address nor the coordinates from the form
+//    reach the database. Geocodio sees them for one HTTP call, then they're GC'd.
+//    This matches the bilingual disclaimer rendered by the setup form.
 //  - Ambiguous addresses (>1 congressional district) get saved with
 //    district_number = null. The dashboard surfaces a "couldn't resolve your
 //    representative" prompt and offers a re-run with a more specific address.
@@ -21,7 +24,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createHash } from 'node:crypto'
 
-import { geocodeAddress, GeocodioError } from '@/lib/n400/geocodio'
+import { geocodeAddress, reverseGeocodeCoords, GeocodioError } from '@/lib/n400/geocodio'
 import { geocodioIpLimiter, geocodioUserLimiter } from '@/lib/n400/rate-limit'
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
 
@@ -96,16 +99,24 @@ export async function saveSetupProfile(
     }
   }
 
+  // Coordinates from a picked autocomplete suggestion, if any. Reverse-geocoding
+  // a precise point resolves the district unambiguously; falling back to the
+  // typed text address only when the user didn't pick a suggestion.
+  const lat = Number(formData.get('lat'))
+  const lon = Number(formData.get('lon'))
+  const hasCoords =
+    formData.get('lat') != null &&
+    formData.get('lon') != null &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lon)
+
   let districtNumber: number | null = null
   let stateFromGeo: string | null = null
   try {
-    const result = await geocodeAddress({
-      street,
-      city,
-      state,
-      zip,
-      apiKey: process.env.GEOCODIO_API_KEY!,
-    })
+    const apiKey = process.env.GEOCODIO_API_KEY!
+    const result = hasCoords
+      ? await reverseGeocodeCoords({ lat, lng: lon, apiKey })
+      : await geocodeAddress({ street, city, state, zip, apiKey })
     districtNumber = result?.districtNumber ?? null
     stateFromGeo = result?.stateCode ?? null
   } catch (err) {

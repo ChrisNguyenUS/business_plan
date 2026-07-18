@@ -79,7 +79,21 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 3 http://localhost:3000)",
       "Bash(lsof -iTCP -sTCP:LISTEN -P)",
       "Bash(awk '{print $9}')",
-      "Bash(pnpm --filter website test -- src/lib/n400/study-modules.test.ts)"
+      "Bash(pnpm --filter website test -- src/lib/n400/study-modules.test.ts)",
+      "Bash(git branch *)",
+      "Bash(cp \"/Users/anhnguyen/Obsidian/Business planning/apps/website/.env.local\" apps/website/.env.local)",
+      "Bash(nohup npx next dev -p 3103)",
+      "Bash(echo \"PID $!\")",
+      "Bash(curl -sI --max-time 2 http://localhost:3103/n400ready/login)",
+      "Bash(break)",
+      "Bash(lsof -ti:3104)",
+      "Bash(xargs -r kill -9)",
+      "Bash(nohup npx next dev -p 3104)",
+      "Bash(curl -s http://localhost:3104/n400ready/login)",
+      "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3104/n400ready/login)",
+      "Bash(curl -s -H \"Cookie: n400_lang=xx\" http://localhost:3104/n400ready/login)",
+      "Bash(curl -s http://localhost:3105/n400ready/login)",
+      "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3105/n400ready/login)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -56,6 +56,11 @@ export default function SetupPage({
   const [city, setCity] = useState(prefill.city ?? '')
   const [stateCode, setStateCode] = useState(prefill.state ?? 'TX')
   const [zip, setZip] = useState(prefill.zip ?? '')
+  // Coordinates from a picked autocomplete suggestion. When present, the server
+  // action resolves the district by reverse-geocoding this exact point (correct
+  // even where a zip spans two districts). Cleared the moment the user edits the
+  // street by hand, falling back to text-based geocoding.
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const fromProfile = prefill.from === 'profile'
 
   const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? ''
@@ -64,6 +69,7 @@ export default function SetupPage({
     setCity(s.city)
     setStateCode(s.stateCode)
     setZip(s.zip)
+    setCoords({ lat: s.lat, lon: s.lon })
   }
 
   return (
@@ -109,8 +115,15 @@ export default function SetupPage({
               <AddressAutocomplete
                 apiKey={apiKey}
                 onSelect={handleAutocompleteSelect}
+                onInputChange={() => setCoords(null)}
                 placeholder="123 Main St, Houston, TX"
               />
+              {coords && (
+                <>
+                  <input type="hidden" name="lat" value={coords.lat} />
+                  <input type="hidden" name="lon" value={coords.lon} />
+                </>
+              )}
               <p className="text-xs text-gray-400 mt-1">
                 Bắt đầu gõ địa chỉ và chọn từ gợi ý. /
                 Start typing your address and pick from the suggestions.

@@ -23,17 +23,24 @@ export interface AddressSelection {
   stateCode: string
   zip: string
   formatted: string
+  lat: number
+  lon: number
 }
 
 export function AddressAutocomplete({
   apiKey,
   onSelect,
+  onInputChange,
   placeholder = '123 Main St, Houston, TX',
   defaultValue = '',
   required = true,
 }: {
   apiKey: string
   onSelect: (selection: AddressSelection) => void
+  // Fired on manual keystrokes (not on programmatic commit). Lets the parent
+  // discard coordinates from a previous selection once the user edits the
+  // street by hand, so a stale point never drives the district lookup.
+  onInputChange?: () => void
   placeholder?: string
   defaultValue?: string
   required?: boolean
@@ -114,6 +121,8 @@ export function AddressAutocomplete({
         stateCode: s.stateCode,
         zip: s.zip,
         formatted: s.formatted,
+        lat: s.lat,
+        lon: s.lon,
       })
     },
     [onSelect],
@@ -156,7 +165,10 @@ export function AddressAutocomplete({
         required={required}
         placeholder={placeholder}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          onInputChange?.()
+        }}
         onFocus={() => suggestions.length > 0 && setIsOpen(true)}
         onBlur={() => {
           // Defer so a click on a listbox option fires before the dropdown closes.
