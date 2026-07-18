@@ -5,7 +5,7 @@
 // answers "what should I study today?", so this page only answers "how do I
 // want to study this subject?". One vertical stack, one decision per card:
 //   HubHero          → skill identity + progress (thumbnail, name, pool size,
-//                      Tiến độ / Hoàn thành stat cells)
+//                      Progress / Completion stat cells)
 //   PracticeSelector → primary CTA (lives in PracticeSelector.tsx)
 //   HubStudyCardsCard→ browse the flashcard deck with a status filter
 //   HubWeakAreasCard → targeted review, only when there is enough signal
@@ -17,13 +17,15 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight, Layers, PieChart, TrendingUp } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 /** Progress numbers for the hero stat cells. */
 export interface HubHeroStats {
   seenCount: number;
   totalCount: number;
   percent: number;
-  /** Noun for the count cell, e.g. "câu" / "từ". Defaults to "câu". */
+  /** Noun for the count cell, e.g. "questions" / "words". Defaults to the localized "questions". */
   unitLabel?: string;
 }
 
@@ -38,7 +40,7 @@ function HeroStatCell({
   tone: string;
   label: string;
   value: string;
-  /** Optional progress bar row under the value (the Tiến độ cell). */
+  /** Optional progress bar row under the value (the Progress cell). */
   bar?: { percent: number; colorClass: string };
 }) {
   return (
@@ -76,7 +78,7 @@ export function HubHero({
   /** Skill illustration; falls back to the emoji tile when absent. */
   imageSrc?: string;
   title: string;
-  /** Pool size line under the title, e.g. "62 từ vựng". Omit when the title already carries it. */
+  /** Pool size line under the title, e.g. "62 words". Omit when the title already carries it. */
   countLabel?: string;
   tagline: string;
   stats?: HubHeroStats;
@@ -84,19 +86,24 @@ export function HubHero({
   accentTextClass?: string;
   accentBarClass?: string;
 }) {
+  const { dict } = useN400Lang();
   const statCells = stats ? (
     <div className="grid grid-cols-2 gap-2.5">
       <HeroStatCell
         icon={<Layers size={16} />}
         tone="bg-indigo-50 text-indigo-500"
-        label="Tiến độ"
-        value={`${stats.seenCount} / ${stats.totalCount} ${stats.unitLabel ?? 'câu'}`}
+        label={dict.study.hub.progressLabel}
+        value={tFormat(dict.study.hub.progressValue, {
+          seen: stats.seenCount,
+          total: stats.totalCount,
+          unit: stats.unitLabel ?? dict.study.hub.unitQuestion,
+        })}
         bar={{ percent: stats.percent, colorClass: accentBarClass }}
       />
       <HeroStatCell
         icon={<PieChart size={16} />}
         tone="bg-teal-50 text-teal-600"
-        label="Hoàn thành"
+        label={dict.study.hub.completionLabel}
         value={`${stats.percent}%`}
       />
     </div>
@@ -142,16 +149,17 @@ export type StudyCardsFilter = 'all' | 'unknown' | 'known' | 'bookmarks';
 
 export function HubStudyCardsCard({
   totalCount,
-  unitLabel = 'thẻ',
+  unitLabel,
   chips,
   onBrowse,
 }: {
   totalCount: number;
   unitLabel?: string;
-  /** Civics passes 4 chips (incl. Đã lưu); sections pass 3 (no bookmark data). */
+  /** Civics passes 4 chips (incl. Saved); sections pass 3 (no bookmark data). */
   chips: { id: StudyCardsFilter; label: string }[];
   onBrowse: (filter: StudyCardsFilter) => void;
 }) {
+  const { dict } = useN400Lang();
   const [selected, setSelected] = useState<StudyCardsFilter>('all');
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -161,12 +169,12 @@ export function HubStudyCardsCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-extrabold text-gray-900">Flashcards</h2>
+            <h2 className="font-extrabold text-gray-900">{dict.study.hub.flashcardsTitle}</h2>
             <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">
-              {totalCount} {unitLabel}
+              {totalCount} {unitLabel ?? dict.study.hub.unitCard}
             </span>
           </div>
-          <p className="text-sm text-gray-500">Xem và ôn lại toàn bộ câu hỏi.</p>
+          <p className="text-sm text-gray-500">{dict.study.hub.flashcardsSubtitle}</p>
         </div>
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -190,7 +198,7 @@ export function HubStudyCardsCard({
           onClick={() => onBrowse(selected)}
           className="group ml-auto inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-teal-700 transition-colors hover:bg-teal-50"
         >
-          Xem tất cả
+          {dict.study.hub.viewAllCta}
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
@@ -199,22 +207,23 @@ export function HubStudyCardsCard({
 }
 
 export function HubWeakAreasCard({
-  title = 'Điểm cần cải thiện',
-  subtitle = 'Tập trung vào các chủ đề bạn còn yếu.',
+  title,
+  subtitle,
   metricLabel,
   accuracyPercent,
-  percentSuffix = 'độ chính xác',
+  percentSuffix,
   onPractice,
 }: {
   title?: string;
   subtitle?: string;
-  /** What the accuracy refers to — a weak topic name or "Độ chính xác trung bình". */
+  /** What the accuracy refers to — a weak topic name or "Average accuracy". */
   metricLabel: string;
   accuracyPercent: number;
-  /** Suffix after the bold percent; pass '' when metricLabel already says "độ chính xác". */
+  /** Suffix after the bold percent; pass '' when metricLabel already says "accuracy". */
   percentSuffix?: string;
   onPractice: () => void;
 }) {
+  const { dict } = useN400Lang();
   return (
     // "Need improvement" strip (mockup): identity left, the metric with its
     // bar in the middle, one outline CTA right. Only rendered with enough
@@ -226,14 +235,17 @@ export function HubWeakAreasCard({
             <TrendingUp size={20} />
           </div>
           <div className="min-w-0">
-            <h2 className="font-extrabold text-gray-900">{title}</h2>
-            <p className="text-sm text-gray-500">{subtitle}</p>
+            <h2 className="font-extrabold text-gray-900">{title ?? dict.study.hub.weakAreasTitle}</h2>
+            <p className="text-sm text-gray-500">{subtitle ?? dict.study.hub.weakAreasSubtitle}</p>
           </div>
         </div>
         <div className="min-w-0 sm:w-[220px]">
           <p className="truncate text-sm font-semibold text-gray-700">{metricLabel}</p>
           <p className="text-xs font-bold text-gray-900">
-            {accuracyPercent}%{percentSuffix ? <span className="font-medium text-gray-500"> {percentSuffix}</span> : null}
+            {accuracyPercent}%
+            {(percentSuffix ?? dict.study.hub.accuracySuffix) ? (
+              <span className="font-medium text-gray-500"> {percentSuffix ?? dict.study.hub.accuracySuffix}</span>
+            ) : null}
           </p>
           <div className="mt-1">
             <ProgressBar progress={accuracyPercent} colorClass="bg-orange-500" />
@@ -244,7 +256,7 @@ export function HubWeakAreasCard({
           onClick={onPractice}
           className="group inline-flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-600 transition-colors hover:bg-orange-50"
         >
-          Luyện ngay
+          {dict.common.cta.practiceNow}
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>

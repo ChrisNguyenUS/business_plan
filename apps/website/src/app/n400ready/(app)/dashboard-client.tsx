@@ -3,9 +3,9 @@
 // Dashboard — single-column layout per the dashboard redesign mock:
 //   1. Hero: intent-based daily recommendation (recommendDailyHero) with the
 //      statue thumbnail.
-//   2. Two-column row: Mục tiêu hôm nay (4 daily-goal rows, deep-linked) and
-//      Gợi ý dành cho bạn (weak-topic drill + streak nudge).
-//   3. Quick-nav cards: Học tập / Thi thử / Tiến độ.
+//   2. Two-column row: Today's Goals (4 daily-goal rows, deep-linked) and
+//      Suggestion for you (weak-topic drill + streak nudge).
+//   3. Quick-nav cards: Study / Mock Test / Progress.
 //   4. Stats strip: streak · accuracy · mastered · badges.
 
 import Image from 'next/image';
@@ -42,8 +42,11 @@ import { recommendWeakCategory } from '@/lib/n400/quiz-engine';
 import { recommendDailyHero } from '@/lib/n400/hero-recommendation';
 import { deriveHubProgress } from '@/lib/n400/hub-progress';
 import type { SectionKey } from '@/lib/n400/section-progress';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export default function DashboardPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const { profile } = useAuth();
   const badges = useN400Badges();
@@ -66,9 +69,10 @@ export default function DashboardPage() {
   const todayStrLocal = getLocalDateStr(new Date());
 
   // Daily goals for the Yes/No and What Mean sections count distinct questions
-  // *practiced today* (any mode) — matching the "Luyện 5 câu hỏi" label and the
-  // Writing goal below. Mastery ("known") is derived from flashcard mode only,
-  // so measuring the goal by mastery left it stuck after a practice session.
+  // *practiced today* (any mode) — matching the "Practice 5 questions" label
+  // and the Writing goal below. Mastery ("known") is derived from flashcard
+  // mode only, so measuring the goal by mastery left it stuck after a
+  // practice session.
   const todaySectionCount = useMemo(() => {
     const seen: Record<string, Set<string>> = {};
     for (const a of state.sectionAttempts) {
@@ -78,8 +82,8 @@ export default function DashboardPage() {
     return (section: SectionKey) => seen[section]?.size ?? 0;
   }, [state.sectionAttempts, todayStrLocal]);
 
-  // Civics "Tiếp tục học" — same derivation as the Civics hub so both screens
-  // always agree on where the user left off.
+  // Civics "Continue learning" — same derivation as the Civics hub so both
+  // screens always agree on where the user left off.
   const attempted = useMemo(() => new Set(state.attempts.map((a) => a.questionId)), [state.attempts]);
   const civicsProgress = useMemo(
     () => deriveHubProgress(N400_QUESTIONS, (q) => attempted.has(q.id), (q) => q.id),
@@ -88,7 +92,7 @@ export default function DashboardPage() {
   const recommendation = useMemo(() => recommendWeakCategory(state.attempts), [state.attempts]);
 
   if (!hydrated) {
-    return <div className="text-sm font-medium text-slate-500 p-8">Đang tải…</div>;
+    return <div className="text-sm font-medium text-slate-500 p-8">{dict.common.loading}</div>;
   }
 
   // --- Daily goals ---
@@ -103,8 +107,8 @@ export default function DashboardPage() {
 
   const goals = [
     {
-      label: `Trả lời ${GOAL_QUESTIONS} câu hỏi`,
-      sub: 'Civics',
+      label: tFormat(dict.dashboard.goal.civics.label, { count: GOAL_QUESTIONS }),
+      sub: dict.dashboard.goal.civics.section,
       count: `${Math.min(todayQuestions, GOAL_QUESTIONS)}/${GOAL_QUESTIONS}`,
       done: todayQuestions >= GOAL_QUESTIONS,
       href: `${base}/practice`,
@@ -112,8 +116,8 @@ export default function DashboardPage() {
       tint: 'bg-teal-50 text-teal-600',
     },
     {
-      label: 'Luyện 5 câu hỏi',
-      sub: 'Yes / No',
+      label: dict.dashboard.goal.yesno.label,
+      sub: dict.dashboard.goal.yesno.section,
       count: `${yesNoDoneCount}/5`,
       done: yesNoDoneCount >= 5,
       href: `${base}/speaking/yes-no`,
@@ -121,8 +125,8 @@ export default function DashboardPage() {
       tint: 'bg-sky-50 text-sky-600',
     },
     {
-      label: 'Luyện 5 câu hỏi',
-      sub: 'What Mean',
+      label: dict.dashboard.goal.whatmean.label,
+      sub: dict.dashboard.goal.whatmean.section,
       count: `${whatMeanDoneCount}/5`,
       done: whatMeanDoneCount >= 5,
       href: `${base}/speaking/what-mean`,
@@ -130,8 +134,8 @@ export default function DashboardPage() {
       tint: 'bg-indigo-50 text-indigo-600',
     },
     {
-      label: 'Luyện tập Writing',
-      sub: 'Chép chính tả ít nhất 1 câu',
+      label: dict.dashboard.goal.writing.label,
+      sub: dict.dashboard.goal.writing.section,
       count: `${Math.min(writingToday, 1)}/1`,
       done: writingToday > 0,
       href: `${base}/writing`,
@@ -143,37 +147,40 @@ export default function DashboardPage() {
 
   // Intent-based hero: "what action creates the highest learning value right
   // now?" — see hero-recommendation.ts for the priority ladder.
-  const hero = recommendDailyHero({
-    now: new Date(),
-    civicsSeen: civicsProgress.seenCount,
-    civicsTotal: civicsProgress.totalCount,
-    attempts: state.attempts,
-    mockResults: state.mockResults,
-    sectionAttempts: state.sectionAttempts,
-    goalsDone,
-    goalsTotal: goals.length,
-  });
+  const hero = recommendDailyHero(
+    {
+      now: new Date(),
+      civicsSeen: civicsProgress.seenCount,
+      civicsTotal: civicsProgress.totalCount,
+      attempts: state.attempts,
+      mockResults: state.mockResults,
+      sectionAttempts: state.sectionAttempts,
+      goalsDone,
+      goalsTotal: goals.length,
+    },
+    dict,
+  );
 
-  // Quick-nav cards — Tổng quan dropped (this page IS the overview; Tiến độ
+  // Quick-nav cards — Overview dropped (this page IS the overview; Progress
   // covers the stats deep-dive).
   const navCards = [
     {
-      label: 'Học tập',
-      sub: 'Học và luyện tập theo từng kỹ năng.',
+      label: dict.dashboard.navcard.study.label,
+      sub: dict.dashboard.navcard.study.sub,
       href: `${base}/study`,
       icon: GraduationCap,
       tint: 'bg-teal-50 text-teal-600',
     },
     {
-      label: 'Thi thử',
-      sub: 'Thi thử như kỳ thi thật, đánh giá năng lực.',
+      label: dict.dashboard.navcard.mocktest.label,
+      sub: dict.dashboard.navcard.mocktest.sub,
       href: `${base}/mock-test`,
       icon: ClipboardCheck,
       tint: 'bg-indigo-50 text-indigo-600',
     },
     {
-      label: 'Tiến độ',
-      sub: 'Theo dõi tiến độ và thành tích của bạn.',
+      label: dict.dashboard.navcard.progress.label,
+      sub: dict.dashboard.navcard.progress.sub,
       href: `${base}/statistic`,
       icon: BarChart2,
       tint: 'bg-orange-50 text-orange-600',
@@ -182,8 +189,8 @@ export default function DashboardPage() {
 
   const bottomStats = [
     {
-      label: 'Chuỗi học tập',
-      value: `${state.streak.current} ngày`,
+      label: dict.dashboard.stat.streak.label,
+      value: tFormat(dict.dashboard.stat.streak.value, { count: state.streak.current }),
       caption: 'Keep it up!',
       captionTint: 'text-orange-500',
       href: `${base}/statistic`,
@@ -192,7 +199,7 @@ export default function DashboardPage() {
       tint: 'bg-orange-50 text-orange-500',
     },
     {
-      label: 'Độ chính xác',
+      label: dict.dashboard.stat.accuracy.label,
       value: `${stats.accuracy}%`,
       caption: 'Good progress!',
       captionTint: 'text-amber-500',
@@ -202,8 +209,8 @@ export default function DashboardPage() {
       tint: 'bg-amber-50 text-amber-500',
     },
     {
-      label: 'Câu đã thuộc',
-      value: `${stats.mastered} câu`,
+      label: dict.dashboard.stat.mastered.label,
+      value: tFormat(dict.dashboard.stat.mastered.value, { count: stats.mastered }),
       caption: 'Continue!',
       captionTint: 'text-teal-600',
       href: `${base}/flashcards?filter=known`,
@@ -211,9 +218,9 @@ export default function DashboardPage() {
       tint: 'bg-teal-50 text-teal-600',
     },
     {
-      label: 'Huy hiệu',
+      label: dict.dashboard.stat.badges.label,
       value: `${badges.earnedSlugs.size}`,
-      caption: 'Danh hiệu',
+      caption: dict.dashboard.stat.badges.caption,
       captionTint: 'text-yellow-600',
       href: `${base}/progress`,
       icon: Award,
@@ -224,17 +231,22 @@ export default function DashboardPage() {
   // Mobile greeting — the sticky header shows the brand on mobile, so the
   // time-of-day greeting scrolls with the content (per the mobile mock).
   const hour = new Date().getHours();
-  const greetingVi = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+  const greeting =
+    hour < 12
+      ? dict.dashboard.greeting.morning
+      : hour < 18
+        ? dict.dashboard.greeting.afternoon
+        : dict.dashboard.greeting.evening;
 
   return (
     <div className="animate-in fade-in duration-500 max-w-6xl mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
       {/* 0. MOBILE GREETING */}
       <div className="lg:hidden">
         <h1 className="text-2xl font-extrabold text-slate-900">
-          {greetingVi}
+          {greeting}
           {profile ? `, ${getShortName(profile)}` : ''}! 👋
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Sẵn sàng tiếp tục hành trình chinh phục quốc tịch Mỹ chưa?</p>
+        <p className="mt-1 text-sm text-slate-500">{dict.header.dashboardReadySubtitle}</p>
       </div>
 
       {/* 1. HERO — Continue studying the 128 Civics questions */}
@@ -308,7 +320,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-start gap-3 p-5 text-left sm:p-8 xl:tall:p-9 lg:w-[56%]">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700 shadow-sm">
                 <Star size={12} className="text-amber-400" fill="currentColor" />
-                Gợi ý hôm nay
+                {dict.dashboard.hero.badge}
               </span>
               {/* Title/subtitle keep clear of the statue below lg (image is
                   visible on mobile); the opaque buttons may overlap it. */}
@@ -340,7 +352,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 2. MỤC TIÊU HÔM NAY + GỢI Ý DÀNH CHO BẠN */}
+      {/* 2. TODAY'S GOALS + SUGGESTION FOR YOU */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-5 xl:tall:gap-5">
         {/* Amber-tinted below lg per the mobile mock; plain white on desktop. */}
         <Card className="!p-4 xl:tall:!p-6 lg:col-span-3 max-lg:border-amber-100 max-lg:bg-gradient-to-br max-lg:from-amber-50/60 max-lg:to-white">
@@ -350,14 +362,14 @@ export default function DashboardPage() {
                 <Target size={22} />
               </div>
               <div>
-                <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">Mục tiêu hôm nay</h3>
+                <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">{dict.dashboard.dailygoals.title}</h3>
                 <p className="mt-0.5 text-sm text-slate-500">
-                  Hoàn thành 1 hoạt động để tiến gần hơn đến buổi phỏng vấn quốc tịch!
+                  {dict.dashboard.dailygoals.subtitle}
                 </p>
               </div>
             </div>
             <span className="shrink-0 whitespace-nowrap rounded-xl bg-amber-100 px-2.5 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm font-bold text-amber-700">
-              {goalsDone} / {goals.length} hoàn thành
+              {tFormat(dict.dashboard.dailygoals.progress, { done: goalsDone, total: goals.length })}
             </span>
           </div>
 
@@ -398,33 +410,33 @@ export default function DashboardPage() {
               <Target size={22} />
             </span>
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-extrabold text-slate-900">Gợi ý dành cho bạn</h3>
+              <h3 className="text-sm font-extrabold text-slate-900">{dict.common.suggestionForYou}</h3>
               {recommendation ? (
                 <>
                   <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
-                    Bạn thường sai câu hỏi về{' '}
+                    {dict.dashboard.suggestion.weakPrefix}{' '}
                     <strong className="font-bold text-slate-800">
                       {N400_CATEGORY_LABELS[recommendation.category].vi}
                     </strong>
-                    . Luyện 5 câu để cải thiện độ chính xác!
+                    . {dict.dashboard.suggestion.weakCtaText}
                   </p>
                   <Link
                     href={`${base}/practice?start=weak`}
                     className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700"
                   >
-                    Luyện ngay <ArrowRight size={14} />
+                    {dict.common.cta.practiceNow} <ArrowRight size={14} />
                   </Link>
                 </>
               ) : (
                 <>
                   <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
-                    Luyện tập mỗi ngày để tiến bộ đều đặn. Làm 5 câu nhanh để khởi động hôm nay!
+                    {dict.dashboard.suggestion.fallbackText}
                   </p>
                   <Link
                     href={`${base}/practice?start=quick`}
                     className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700"
                   >
-                    Luyện ngay <ArrowRight size={14} />
+                    {dict.common.cta.practiceNow} <ArrowRight size={14} />
                   </Link>
                 </>
               )}
@@ -442,8 +454,8 @@ export default function DashboardPage() {
               <Lightbulb size={22} />
             </div>
             <div>
-              <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">Gợi ý dành cho bạn</h3>
-              <p className="mt-0.5 text-sm text-slate-500">Dựa trên quá trình học của bạn.</p>
+              <h3 className="text-base xl:tall:text-lg font-extrabold text-slate-900">{dict.common.suggestionForYou}</h3>
+              <p className="mt-0.5 text-sm text-slate-500">{dict.dashboard.suggestion.desktopSubtitle}</p>
             </div>
           </div>
 
@@ -454,29 +466,29 @@ export default function DashboardPage() {
             {recommendation ? (
               <>
                 <p className="text-sm font-bold leading-snug text-slate-800">
-                  Bạn thường sai câu hỏi về{' '}
+                  {dict.dashboard.suggestion.weakPrefix}{' '}
                   <span className="text-blue-700">{N400_CATEGORY_LABELS[recommendation.category].vi}</span>.
                 </p>
-                <p className="text-xs text-slate-500">Luyện 5 câu để cải thiện độ chính xác!</p>
+                <p className="text-xs text-slate-500">{dict.dashboard.suggestion.weakCtaText}</p>
                 <Link
                   href={`${base}/practice?start=weak`}
                   className="group mt-1 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  Luyện ngay
+                  {dict.common.cta.practiceNow}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </>
             ) : (
               <>
                 <p className="text-sm font-bold leading-snug text-slate-800">
-                  Luyện tập mỗi ngày để tiến bộ đều đặn.
+                  {dict.dashboard.suggestion.desktopFallback}
                 </p>
-                <p className="text-xs text-slate-500">Làm 5 câu nhanh để khởi động hôm nay!</p>
+                <p className="text-xs text-slate-500">{dict.dashboard.suggestion.desktopWarmup}</p>
                 <Link
                   href={`${base}/practice?start=quick`}
                   className="group mt-1 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  Luyện ngay
+                  {dict.common.cta.practiceNow}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </>
@@ -490,11 +502,14 @@ export default function DashboardPage() {
             <p className="text-sm leading-snug text-slate-600">
               {state.streak.current > 0 ? (
                 <>
-                  Đã <strong className="font-bold text-slate-800">{state.streak.current} ngày liên tiếp</strong> bạn
-                  duy trì việc học. Cố gắng giữ chuỗi nhé!
+                  {dict.dashboard.suggestion.streakPrefix}{' '}
+                  <strong className="font-bold text-slate-800">
+                    {tFormat(dict.dashboard.suggestion.streakBold, { count: state.streak.current })}
+                  </strong>{' '}
+                  {dict.dashboard.suggestion.streakSuffix}
                 </>
               ) : (
-                <>Bắt đầu chuỗi học tập của bạn ngay hôm nay!</>
+                <>{dict.dashboard.suggestion.nostreak}</>
               )}
             </p>
           </div>
@@ -573,9 +588,9 @@ export default function DashboardPage() {
             <BookOpen size={20} />
           </span>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-extrabold text-slate-900">Hãy luyện tập mỗi ngày!</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">{dict.dashboard.dailytip.title}</h3>
             <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
-              Chỉ cần 15-20 phút mỗi ngày sẽ giúp bạn ghi nhớ lâu hơn và tự tin hơn trong buổi phỏng vấn.
+              {dict.dashboard.dailytip.subtitle}
             </p>
           </div>
           <div className="relative h-14 w-16 shrink-0">

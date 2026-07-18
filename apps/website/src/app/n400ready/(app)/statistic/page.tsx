@@ -18,7 +18,8 @@ import { Card, ProgressBar } from '@/components/n400/ui';
 import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { deriveReadiness } from '@/lib/n400/readiness';
-import { buildHeatGrid, HEAT_COLORS, HEAT_WEEKDAYS } from '@/lib/n400/activity-heatmap';
+import { buildHeatGrid, HEAT_COLORS, heatWeekdays } from '@/lib/n400/activity-heatmap';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { lastWrongQuestionIds } from '@/lib/n400/quiz-engine';
 import { deriveSectionMastered, lastWrongSectionItemIds } from '@/lib/n400/section-progress';
 import {
@@ -42,6 +43,7 @@ const MOCK_MAX_SCORE = 20;
 const MOCK_PASS_SCORE = 12;
 
 export default function StatisticPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const base = '/n400ready';
 
@@ -54,8 +56,9 @@ export default function StatisticPage() {
           ...state.sectionAttempts.map((a) => ({ at: a.at })),
         ],
         new Date(),
+        dict,
       ),
-    [state.attempts, state.sectionAttempts],
+    [state.attempts, state.sectionAttempts, dict],
   );
 
   // "Thuộc" = last graded attempt correct (spec D1) — NOT the flashcard deck's
@@ -345,7 +348,7 @@ export default function StatisticPage() {
       <Card className="p-5">
         <h3 className="mb-6 font-bold text-gray-800">Hoạt động học tập</h3>
         <div className="mb-2 flex pl-12 text-[10px] text-gray-400">
-          {HEAT_WEEKDAYS.map((d) => (
+          {heatWeekdays(dict).map((d) => (
             <div key={d} className="flex-1 text-center">
               {d}
             </div>

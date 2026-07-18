@@ -102,5 +102,172 @@ export const en: N400Dict = {
     skillGrammar: 'Grammar',
     skillReading: 'Reading Comprehension',
     skillListening: 'Listening Comprehension',
+    loading: 'Loading...',
+    suggestionForYou: 'Suggestion for you',
+    reviewWrongAnswers: 'Review wrong answers',
+    cta: {
+      startLearning: 'Start learning',
+      continueLearning: 'Continue learning',
+      practiceNow: 'Practice now',
+      reviewAgain: 'Review again',
+      start: 'Start',
+    },
+    weekday: {
+      monday: 'Mon',
+      tuesday: 'Tue',
+      wednesday: 'Wed',
+      thursday: 'Thu',
+      friday: 'Fri',
+      saturday: 'Sat',
+      sunday: 'Sun',
+    },
+  },
+  dashboard: {
+    goal: {
+      civics: { label: 'Answer {count} questions', section: 'Civics' },
+      yesno: { label: 'Practice 5 questions', section: 'Yes / No' },
+      whatmean: { label: 'Practice 5 questions', section: 'What Mean' },
+      writing: { label: 'Practice Writing', section: 'Dictation at least 1 sentence' },
+    },
+    navcard: {
+      study: { label: 'Study', sub: 'Learn and practice by each skill.' },
+      mocktest: { label: 'Mock Test', sub: 'Practice like the real exam, assess your ability.' },
+      progress: { label: 'Progress', sub: 'Track your progress and achievements.' },
+    },
+    stat: {
+      streak: { label: 'Learning Streak', value: '{count} days' },
+      accuracy: { label: 'Accuracy' },
+      mastered: { label: 'Questions Mastered', value: '{count} questions' },
+      badges: { label: 'Badges', caption: 'Achievements' },
+    },
+    greeting: {
+      morning: 'Good morning',
+      afternoon: 'Good afternoon',
+      evening: 'Good evening',
+    },
+    hero: { badge: "Today's Suggestion" },
+    dailygoals: {
+      title: "Today's Goals",
+      subtitle: 'Complete 1 activity to get closer to your citizenship interview!',
+      progress: '{done} / {total} completed',
+    },
+    suggestion: {
+      weakPrefix: 'You often answer questions about',
+      weakCtaText: 'Practice 5 questions to improve accuracy!',
+      fallbackText: 'Practice daily to make steady progress. Do 5 quick questions to warm up today!',
+      desktopSubtitle: 'Based on your learning journey.',
+      desktopFallback: 'Practice daily to make steady progress.',
+      desktopWarmup: 'Do 5 quick questions to warm up today!',
+      streakPrefix: "You've kept a",
+      streakBold: '{count}-day streak',
+      streakSuffix: 'going. Keep it up!',
+      nostreak: 'Start your learning streak today!',
+    },
+    dailytip: {
+      title: 'Practice every day!',
+      subtitle:
+        'Just 15-20 minutes a day will help you remember longer and feel more confident in your interview.',
+    },
+  },
+  study: {
+    civics: {
+      title: 'Civics 128 Questions',
+      desc: 'Learn all 128 Civics questions in order and by subject.',
+      chip: { all: 'All', unknown: 'Learning', known: 'Mastered', bookmarks: '⭐ Saved' },
+      practice: {
+        wrongsDesc: 'Review the questions you answered wrong for better retention.',
+        countLabel: '{count} questions',
+        weakTitle: 'Weak Topic',
+        weakDesc: 'Focus on practicing the {category} topic.',
+      },
+    },
+    whatmean: { title: 'What Mean', desc: 'Learn and understand the meaning of important words and phrases.' },
+    yesno: { title: 'Yes / No', desc: 'Practice answering Yes/No questions on Form N-400.' },
+    writing: { title: 'Writing', desc: 'Practice dictation, capitalization, and proper punctuation.' },
+    secondary: {
+      savedQuestions: 'Saved Questions',
+      reviewWrongWords: 'Review Wrong Words',
+    },
+    moduleCard: { progress: '{done}/{total} questions' },
+    hub: {
+      progressLabel: 'Progress',
+      completionLabel: 'Completion',
+      progressValue: '{seen} / {total} {unit}',
+      unitQuestion: 'questions',
+      unitCard: 'cards',
+      flashcardsTitle: 'Flashcards',
+      flashcardsSubtitle: 'View and review all questions.',
+      viewAllCta: 'View all',
+      weakAreasTitle: 'Areas to Improve',
+      weakAreasSubtitle: "Focus on topics you're weak on.",
+      accuracySuffix: 'accuracy',
+    },
+  },
+  heroRec: {
+    cta: {
+      continueCivics: 'Continue learning Civics',
+      pickCategory: 'Choose another topic',
+      takeMockTest: 'Take a mock test',
+    },
+    intent: {
+      startCivics: {
+        title: 'Start learning Civics',
+        subtitle: 'Master {civicsTotal} civics questions — start today!',
+      },
+      reviewMistakes: {
+        title: 'Review {n} questions you just got wrong',
+        subtitle: 'Fixing mistakes right after a test helps you remember longer.',
+      },
+      goalComplete: {
+        title: "You've completed today's goal!",
+        subtitle: 'Excellent! Take a mock test to check your abilities.',
+        secondary: 'View progress',
+      },
+      firstMock: {
+        title: "You're ready to take a mock test!",
+        subtitle: "You've learned {civicsSeen}/{civicsTotal} Civics questions — try your first mock test.",
+      },
+      staleSection: {
+        neverStartedTitle: "You haven't started practicing {label}",
+        staleTitle: "It's been {days} days since you practiced {label}",
+        subtitle: 'The citizenship interview tests this skill too — practice a bit every day.',
+        cta: 'Practice {label}',
+      },
+      finishCivics: {
+        title: 'Only {remaining} questions left to finish Civics',
+        subtitle: "Keep going — you're about to finish all {civicsTotal} civics questions!",
+      },
+      continueCivics: {
+        allSeenTitle: 'Review {civicsTotal} Civics questions',
+        allSeenSubtitle: "You've learned all {civicsTotal} questions — review to keep your knowledge sharp!",
+        allSeenCta: 'Review now',
+        title: 'Continue learning Civics',
+        subtitle: '{remaining} more questions to complete {civicsTotal} civics questions.',
+      },
+    },
+  },
+  modules: {
+    tip: {
+      topWrong: {
+        line1: 'Review {n} {label} questions you got wrong.',
+        line2: 'Just ~5 minutes — clearing old mistakes helps you remember longer.',
+      },
+      weakCategory: {
+        line1: 'You often get {label} topic questions wrong.',
+        line2: 'Practice a focused session to improve your accuracy.',
+      },
+      lowestAccuracy: {
+        line1: '{label} accuracy is currently at {accuracy}%.',
+        line2: 'Practice a few more questions to improve your accuracy.',
+      },
+      lowestCoverage: {
+        line1: "{label} — you've only learned {done}/{total} questions.",
+        line2: 'Learn a few more new questions today.',
+      },
+      fallback: {
+        line1: 'Start your journey to master 128 Civics questions.',
+        line2: 'Practice a few questions every day to build a study habit.',
+      },
+    },
   },
 };

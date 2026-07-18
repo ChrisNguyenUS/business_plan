@@ -102,6 +102,173 @@ export const vi = {
     skillGrammar: 'Ngữ pháp',
     skillReading: 'Đọc hiểu',
     skillListening: 'Nghe hiểu',
+    loading: 'Đang tải…',
+    suggestionForYou: 'Gợi ý dành cho bạn',
+    reviewWrongAnswers: 'Ôn lại câu sai',
+    cta: {
+      startLearning: 'Học ngay',
+      continueLearning: 'Tiếp tục học',
+      practiceNow: 'Luyện ngay',
+      reviewAgain: 'Ôn luyện lại',
+      start: 'Bắt đầu',
+    },
+    weekday: {
+      monday: 'T2',
+      tuesday: 'T3',
+      wednesday: 'T4',
+      thursday: 'T5',
+      friday: 'T6',
+      saturday: 'T7',
+      sunday: 'CN',
+    },
+  },
+  dashboard: {
+    goal: {
+      civics: { label: 'Trả lời {count} câu hỏi', section: 'Civics' },
+      yesno: { label: 'Luyện 5 câu hỏi', section: 'Yes / No' },
+      whatmean: { label: 'Luyện 5 câu hỏi', section: 'What Mean' },
+      writing: { label: 'Luyện tập Writing', section: 'Chép chính tả ít nhất 1 câu' },
+    },
+    navcard: {
+      study: { label: 'Học tập', sub: 'Học và luyện tập theo từng kỹ năng.' },
+      mocktest: { label: 'Thi thử', sub: 'Thi thử như kỳ thi thật, đánh giá năng lực.' },
+      progress: { label: 'Tiến độ', sub: 'Theo dõi tiến độ và thành tích của bạn.' },
+    },
+    stat: {
+      streak: { label: 'Chuỗi học tập', value: '{count} ngày' },
+      accuracy: { label: 'Độ chính xác' },
+      mastered: { label: 'Câu đã thuộc', value: '{count} câu' },
+      badges: { label: 'Huy hiệu', caption: 'Danh hiệu' },
+    },
+    greeting: {
+      morning: 'Chào buổi sáng',
+      afternoon: 'Chào buổi chiều',
+      evening: 'Chào buổi tối',
+    },
+    hero: { badge: 'Gợi ý hôm nay' },
+    dailygoals: {
+      title: 'Mục tiêu hôm nay',
+      subtitle: 'Hoàn thành 1 hoạt động để tiến gần hơn đến buổi phỏng vấn quốc tịch!',
+      progress: '{done} / {total} hoàn thành',
+    },
+    suggestion: {
+      weakPrefix: 'Bạn thường sai câu hỏi về',
+      weakCtaText: 'Luyện 5 câu để cải thiện độ chính xác!',
+      fallbackText: 'Luyện tập mỗi ngày để tiến bộ đều đặn. Làm 5 câu nhanh để khởi động hôm nay!',
+      desktopSubtitle: 'Dựa trên quá trình học của bạn.',
+      desktopFallback: 'Luyện tập mỗi ngày để tiến bộ đều đặn.',
+      desktopWarmup: 'Làm 5 câu nhanh để khởi động hôm nay!',
+      streakPrefix: 'Đã',
+      streakBold: '{count} ngày liên tiếp',
+      streakSuffix: 'bạn duy trì việc học. Cố gắng giữ chuỗi nhé!',
+      nostreak: 'Bắt đầu chuỗi học tập của bạn ngay hôm nay!',
+    },
+    dailytip: {
+      title: 'Hãy luyện tập mỗi ngày!',
+      subtitle:
+        'Chỉ cần 15-20 phút mỗi ngày sẽ giúp bạn ghi nhớ lâu hơn và tự tin hơn trong buổi phỏng vấn.',
+    },
+  },
+  study: {
+    civics: {
+      title: 'Civic 128 câu',
+      desc: 'Học toàn bộ 128 câu hỏi Civics theo thứ tự và theo chủ đề.',
+      chip: { all: 'Tất cả', unknown: 'Đang học', known: 'Đã thuộc', bookmarks: '⭐ Đã lưu' },
+      practice: {
+        wrongsDesc: 'Ôn lại các câu bạn đã trả lời sai để ghi nhớ tốt hơn.',
+        countLabel: '{count} câu',
+        weakTitle: 'Chủ đề còn yếu',
+        weakDesc: 'Tập trung luyện chủ đề {category}.',
+      },
+    },
+    whatmean: { title: 'What Mean', desc: 'Học và hiểu ý nghĩa của các từ và cụm từ quan trọng.' },
+    yesno: { title: 'Yes / No', desc: 'Luyện tập trả lời các câu hỏi Yes / No trong đơn N-400.' },
+    writing: { title: 'Writing', desc: 'Luyện viết chính tả và viết hoa, dấu chấm đúng chuẩn.' },
+    secondary: {
+      savedQuestions: 'Câu đã lưu',
+      reviewWrongWords: 'Ôn lại từ sai',
+    },
+    moduleCard: { progress: '{done}/{total} câu' },
+    hub: {
+      progressLabel: 'Tiến độ',
+      completionLabel: 'Hoàn thành',
+      progressValue: '{seen} / {total} {unit}',
+      unitQuestion: 'câu',
+      unitCard: 'thẻ',
+      flashcardsTitle: 'Flashcards',
+      flashcardsSubtitle: 'Xem và ôn lại toàn bộ câu hỏi.',
+      viewAllCta: 'Xem tất cả',
+      weakAreasTitle: 'Điểm cần cải thiện',
+      weakAreasSubtitle: 'Tập trung vào các chủ đề bạn còn yếu.',
+      accuracySuffix: 'độ chính xác',
+    },
+  },
+  heroRec: {
+    cta: {
+      continueCivics: 'Tiếp tục học Civics',
+      pickCategory: 'Chọn chủ đề khác',
+      takeMockTest: 'Thi thử ngay',
+    },
+    intent: {
+      startCivics: {
+        title: 'Bắt đầu học Civics',
+        subtitle: 'Chinh phục {civicsTotal} câu hỏi công dân — bắt đầu từ hôm nay!',
+      },
+      reviewMistakes: {
+        title: 'Ôn lại {n} câu bạn vừa trả lời sai',
+        subtitle: 'Sửa lỗi ngay sau bài thi thử giúp bạn nhớ lâu hơn.',
+      },
+      goalComplete: {
+        title: 'Bạn đã hoàn thành mục tiêu hôm nay!',
+        subtitle: 'Tuyệt vời! Thi thử ngay để kiểm tra năng lực của bạn.',
+        secondary: 'Xem tiến độ',
+      },
+      firstMock: {
+        title: 'Bạn đã sẵn sàng để thi thử!',
+        subtitle: 'Bạn đã học {civicsSeen}/{civicsTotal} câu Civics — thử sức với bài thi thử đầu tiên nhé.',
+      },
+      staleSection: {
+        neverStartedTitle: 'Bạn chưa bắt đầu luyện {label}',
+        staleTitle: 'Đã {days} ngày bạn chưa luyện {label}',
+        subtitle: 'Buổi phỏng vấn quốc tịch kiểm tra cả kỹ năng này — luyện một chút mỗi ngày nhé.',
+        cta: 'Luyện {label}',
+      },
+      finishCivics: {
+        title: 'Chỉ còn {remaining} câu nữa để hoàn thành Civics',
+        subtitle: 'Cố lên — bạn sắp học hết {civicsTotal} câu hỏi công dân rồi!',
+      },
+      continueCivics: {
+        allSeenTitle: 'Ôn lại {civicsTotal} câu Civics',
+        allSeenSubtitle: 'Bạn đã học qua cả {civicsTotal} câu — ôn lại để giữ vững kiến thức!',
+        allSeenCta: 'Ôn lại ngay',
+        title: 'Tiếp tục học Civics',
+        subtitle: 'Còn {remaining} câu nữa để hoàn thành {civicsTotal} câu hỏi công dân.',
+      },
+    },
+  },
+  modules: {
+    tip: {
+      topWrong: {
+        line1: 'Ôn lại {n} câu {label} bạn trả lời sai.',
+        line2: 'Chỉ ~5 phút — xoá lỗi cũ giúp bạn nhớ lâu hơn.',
+      },
+      weakCategory: {
+        line1: 'Bạn thường sai chủ đề {label}.',
+        line2: 'Luyện một bài tập trung để cải thiện độ chính xác.',
+      },
+      lowestAccuracy: {
+        line1: 'Độ chính xác {label} đang ở mức {accuracy}%.',
+        line2: 'Luyện thêm vài câu để cải thiện độ chính xác nhé.',
+      },
+      lowestCoverage: {
+        line1: '{label} mới học {done}/{total} câu.',
+        line2: 'Học thêm vài câu mới hôm nay nhé.',
+      },
+      fallback: {
+        line1: 'Bắt đầu hành trình chinh phục 128 câu Civics.',
+        line2: 'Luyện vài câu mỗi ngày để tạo thói quen học tập.',
+      },
+    },
   },
 };
 

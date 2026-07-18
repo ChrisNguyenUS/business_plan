@@ -1,5 +1,5 @@
 // Intent-based hero recommendation for the dashboard. Instead of always
-// showing "câu #N trong 128", the hero answers one question — "What action
+// showing "question #N of 128", the hero answers one question — "What action
 // creates the highest learning value right now?" — by walking a fixed
 // priority ladder over the user's learning state:
 //
@@ -16,6 +16,8 @@
 
 import type { QuestionAttempt, MockResult } from './storage';
 import type { SectionAttempt, SectionKey } from './section-progress';
+import type { N400Dict } from './i18n/vi';
+import { tFormat } from './i18n/format';
 
 export type HeroIntent =
   | 'start_civics'
@@ -58,11 +60,9 @@ export const FIRST_MOCK_MIN_PERCENT = 80;
 
 const DAY_MS = 86_400_000;
 
-const CONTINUE_CIVICS_CTA: HeroCta = { label: 'Tiếp tục học Civics', href: '/flashcards?filter=unknown' };
-const PICK_CATEGORY_CTA: HeroCta = { label: 'Chọn chủ đề khác', href: '/categories' };
-
 // Ordered by nudge priority when staleness ties: Writing is graded hardest in
-// the real interview, so it wins over the two speaking drills.
+// the real interview, so it wins over the two speaking drills. Labels are
+// feature names (Writing / Yes-No / What Mean) — identical in both locales.
 const SECTION_META: { key: SectionKey; label: string; emoji: string; href: string }[] = [
   { key: 'writing', label: 'Writing', emoji: '✍️', href: '/writing' },
   { key: 'yesno', label: 'Yes / No', emoji: '🗣️', href: '/speaking/yes-no' },
@@ -73,7 +73,7 @@ const SECTION_META: { key: SectionKey; label: string; emoji: string; href: strin
  * Question ids the user got wrong in their most recent mock test (within the
  * review window) and has not answered correctly since. Order follows the mock.
  * Shared by the dashboard hero and the practice `?start=review` deep link so
- * both always agree on what "ôn lại câu sai" means.
+ * both always agree on what "review wrong answers" means.
  */
 export function pendingMockReviewIds(
   mockResults: readonly MockResult[],
@@ -153,7 +153,7 @@ function findStalestSection(
   return best;
 }
 
-export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
+export function recommendDailyHero(signals: HeroSignals, dict: N400Dict): HeroRecommendation {
   const {
     now,
     civicsSeen,
@@ -166,16 +166,20 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
   } = signals;
   const remaining = Math.max(civicsTotal - civicsSeen, 0);
   const percent = civicsTotal === 0 ? 0 : (civicsSeen / civicsTotal) * 100;
+  const t = dict.heroRec;
+
+  const continueCivicsCta: HeroCta = { label: t.cta.continueCivics, href: '/flashcards?filter=unknown' };
+  const pickCategoryCta: HeroCta = { label: t.cta.pickCategory, href: '/categories' };
 
   // 1. Brand-new account — one clear entry point, no branching choices.
   if (attempts.length === 0 && sectionAttempts.length === 0 && mockResults.length === 0) {
     return {
       intent: 'start_civics',
       emoji: '🇺🇸',
-      title: 'Bắt đầu học Civics',
-      subtitle: `Chinh phục ${civicsTotal} câu hỏi công dân — bắt đầu từ hôm nay!`,
-      cta: { label: 'Học ngay', href: '/flashcards?filter=unknown' },
-      secondary: PICK_CATEGORY_CTA,
+      title: t.intent.startCivics.title,
+      subtitle: tFormat(t.intent.startCivics.subtitle, { civicsTotal }),
+      cta: { label: dict.common.cta.startLearning, href: '/flashcards?filter=unknown' },
+      secondary: pickCategoryCta,
     };
   }
 
@@ -186,10 +190,10 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     return {
       intent: 'review_mistakes',
       emoji: '📖',
-      title: `Ôn lại ${reviewIds.length} câu bạn vừa trả lời sai`,
-      subtitle: 'Sửa lỗi ngay sau bài thi thử giúp bạn nhớ lâu hơn.',
-      cta: { label: 'Ôn lại câu sai', href: '/practice?start=review' },
-      secondary: CONTINUE_CIVICS_CTA,
+      title: tFormat(t.intent.reviewMistakes.title, { n: reviewIds.length }),
+      subtitle: t.intent.reviewMistakes.subtitle,
+      cta: { label: dict.common.reviewWrongAnswers, href: '/practice?start=review' },
+      secondary: continueCivicsCta,
     };
   }
 
@@ -198,10 +202,10 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     return {
       intent: 'goal_complete',
       emoji: '🎉',
-      title: 'Bạn đã hoàn thành mục tiêu hôm nay!',
-      subtitle: 'Tuyệt vời! Thi thử ngay để kiểm tra năng lực của bạn.',
-      cta: { label: 'Thi thử ngay', href: '/mock-test' },
-      secondary: { label: 'Xem tiến độ', href: '/progress' },
+      title: t.intent.goalComplete.title,
+      subtitle: t.intent.goalComplete.subtitle,
+      cta: { label: t.cta.takeMockTest, href: '/mock-test' },
+      secondary: { label: t.intent.goalComplete.secondary, href: '/progress' },
     };
   }
 
@@ -211,10 +215,10 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     return {
       intent: 'first_mock',
       emoji: '🚀',
-      title: 'Bạn đã sẵn sàng để thi thử!',
-      subtitle: `Bạn đã học ${civicsSeen}/${civicsTotal} câu Civics — thử sức với bài thi thử đầu tiên nhé.`,
-      cta: { label: 'Thi thử ngay', href: '/mock-test' },
-      secondary: CONTINUE_CIVICS_CTA,
+      title: t.intent.firstMock.title,
+      subtitle: tFormat(t.intent.firstMock.subtitle, { civicsSeen, civicsTotal }),
+      cta: { label: t.cta.takeMockTest, href: '/mock-test' },
+      secondary: continueCivicsCta,
     };
   }
 
@@ -226,11 +230,11 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
       emoji: stale.emoji,
       title:
         stale.days === null
-          ? `Bạn chưa bắt đầu luyện ${stale.label}`
-          : `Đã ${stale.days} ngày bạn chưa luyện ${stale.label}`,
-      subtitle: 'Buổi phỏng vấn quốc tịch kiểm tra cả kỹ năng này — luyện một chút mỗi ngày nhé.',
-      cta: { label: `Luyện ${stale.label}`, href: stale.href },
-      secondary: CONTINUE_CIVICS_CTA,
+          ? tFormat(t.intent.staleSection.neverStartedTitle, { label: stale.label })
+          : tFormat(t.intent.staleSection.staleTitle, { days: stale.days, label: stale.label }),
+      subtitle: t.intent.staleSection.subtitle,
+      cta: { label: tFormat(t.intent.staleSection.cta, { label: stale.label }), href: stale.href },
+      secondary: continueCivicsCta,
     };
   }
 
@@ -239,10 +243,10 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     return {
       intent: 'finish_civics',
       emoji: '🇺🇸',
-      title: `Chỉ còn ${remaining} câu nữa để hoàn thành Civics`,
-      subtitle: `Cố lên — bạn sắp học hết ${civicsTotal} câu hỏi công dân rồi!`,
-      cta: { label: 'Tiếp tục học', href: '/flashcards?filter=unknown' },
-      secondary: PICK_CATEGORY_CTA,
+      title: tFormat(t.intent.finishCivics.title, { remaining }),
+      subtitle: tFormat(t.intent.finishCivics.subtitle, { civicsTotal }),
+      cta: { label: dict.common.cta.continueLearning, href: '/flashcards?filter=unknown' },
+      secondary: pickCategoryCta,
     };
   }
 
@@ -251,18 +255,18 @@ export function recommendDailyHero(signals: HeroSignals): HeroRecommendation {
     return {
       intent: 'continue_civics',
       emoji: '📚',
-      title: `Ôn lại ${civicsTotal} câu Civics`,
-      subtitle: `Bạn đã học qua cả ${civicsTotal} câu — ôn lại để giữ vững kiến thức!`,
-      cta: { label: 'Ôn lại ngay', href: '/flashcards' },
-      secondary: PICK_CATEGORY_CTA,
+      title: tFormat(t.intent.continueCivics.allSeenTitle, { civicsTotal }),
+      subtitle: tFormat(t.intent.continueCivics.allSeenSubtitle, { civicsTotal }),
+      cta: { label: t.intent.continueCivics.allSeenCta, href: '/flashcards' },
+      secondary: pickCategoryCta,
     };
   }
   return {
     intent: 'continue_civics',
     emoji: '📚',
-    title: 'Tiếp tục học Civics',
-    subtitle: `Còn ${remaining} câu nữa để hoàn thành ${civicsTotal} câu hỏi công dân.`,
-    cta: { label: 'Tiếp tục học', href: '/flashcards?filter=unknown' },
-    secondary: PICK_CATEGORY_CTA,
+    title: t.intent.continueCivics.title,
+    subtitle: tFormat(t.intent.continueCivics.subtitle, { remaining, civicsTotal }),
+    cta: { label: dict.common.cta.continueLearning, href: '/flashcards?filter=unknown' },
+    secondary: pickCategoryCta,
   };
 }

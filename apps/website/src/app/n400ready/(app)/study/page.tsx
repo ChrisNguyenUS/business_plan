@@ -1,9 +1,9 @@
 'use client';
 
-// /study — the "Học tập" Learning Launcher. Single responsibility: help the
+// /study — the "Study" Learning Launcher. Single responsibility: help the
 // user pick and enter a learning module fast. It deliberately does NOT repeat
 // the dashboard's overall-progress hero, streak, or "continue learning"
-// recommendation (those live on Tổng quan). The page is just:
+// recommendation (those live on the Dashboard). The page is just:
 //   1. Four module cards (fixed order) — each with ONE smart status badge.
 //   2. One personalized tip strip.
 // The page title + subtitle + streak live in the shared <Header>.
@@ -40,6 +40,8 @@ import {
   type StudyBadgeKind,
   type StudyTipSignals,
 } from '@/lib/n400/study-modules';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 const CIVICS_TOTAL = 128;
 
@@ -106,6 +108,7 @@ function BadgeChip({ kind, className = '' }: { kind: StudyBadgeKind; className?:
 }
 
 export default function StudyPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const base = '/n400ready';
 
@@ -115,8 +118,8 @@ export default function StudyPage() {
         id: 'civics',
         href: `${base}/study/civics`,
         image: '/images/n400/civic-thumbnail-study.png',
-        title: 'Civic 128 câu',
-        desc: 'Học toàn bộ 128 câu hỏi Civics theo thứ tự và theo chủ đề.',
+        title: dict.study.civics.title,
+        desc: dict.study.civics.desc,
         barClass: 'bg-teal-500',
         btnFilled: 'bg-teal-600 text-white hover:bg-teal-700 shadow-md shadow-teal-600/20',
         btnOutline: 'border border-teal-300 text-teal-700 hover:bg-teal-50',
@@ -127,8 +130,8 @@ export default function StudyPage() {
         id: 'whatmean',
         href: `${base}/speaking/what-mean`,
         image: '/images/n400/whatmean-thumbnail-study.png',
-        title: 'What Mean',
-        desc: 'Học và hiểu ý nghĩa của các từ và cụm từ quan trọng.',
+        title: dict.study.whatmean.title,
+        desc: dict.study.whatmean.desc,
         barClass: 'bg-blue-500',
         btnFilled: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/20',
         btnOutline: 'border border-blue-300 text-blue-700 hover:bg-blue-50',
@@ -139,8 +142,8 @@ export default function StudyPage() {
         id: 'yesno',
         href: `${base}/speaking/yes-no`,
         image: '/images/n400/yesno-thumbnail-study.png',
-        title: 'Yes / No',
-        desc: 'Luyện tập trả lời các câu hỏi Yes / No trong đơn N-400.',
+        title: dict.study.yesno.title,
+        desc: dict.study.yesno.desc,
         barClass: 'bg-purple-500',
         btnFilled: 'bg-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-600/20',
         btnOutline: 'border border-purple-300 text-purple-700 hover:bg-purple-50',
@@ -151,8 +154,8 @@ export default function StudyPage() {
         id: 'writing',
         href: `${base}/writing`,
         image: '/images/n400/writing-thumbnail-study.png',
-        title: 'Writing',
-        desc: 'Luyện viết chính tả và viết hoa, dấu chấm đúng chuẩn.',
+        title: dict.study.writing.title,
+        desc: dict.study.writing.desc,
         barClass: 'bg-orange-500',
         btnFilled: 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20',
         btnOutline: 'border border-orange-300 text-orange-700 hover:bg-orange-50',
@@ -160,7 +163,7 @@ export default function StudyPage() {
         recBg: 'bg-gradient-to-b from-orange-50/50 to-white',
       },
     ],
-    [base],
+    [base, dict],
   );
 
   // ── Derive raw learning signals from user state ──────────────────────────
@@ -306,11 +309,11 @@ export default function StudyPage() {
     // A brand-new user gets the "start civics" fallback, not a coverage nudge.
     if (!anyStarted) lowestCoverage = null;
 
-    return buildStudyTip({ topWrongModule, weakCategory, lowestModule, lowestCoverage });
-  }, [configs, signalById, civics.wrong, sections.wrong, state.attempts]);
+    return buildStudyTip({ topWrongModule, weakCategory, lowestModule, lowestCoverage }, dict);
+  }, [configs, signalById, civics.wrong, sections.wrong, state.attempts, dict]);
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   const wrongById: Record<StudyModuleId, number> = {
@@ -331,7 +334,7 @@ export default function StudyPage() {
         {configs.map((c) => {
           const sig = signalById.get(c.id)!;
           const isRec = c.id === recommendedId;
-          const { badge, ctaLabel } = decideModuleBadge(sig, isRec);
+          const { badge, ctaLabel } = decideModuleBadge(sig, isRec, dict);
           const percent = modulePercent(sig);
           const btnClass = badge === 'completed' ? c.btnOutline : c.btnFilled;
 
@@ -340,9 +343,9 @@ export default function StudyPage() {
           // straight into that module's review session (one ≤10-item chunk).
           const secondary =
             badge === 'completed'
-              ? { label: 'Câu đã lưu', count: state.bookmarks.length, href: `${base}/bookmark` }
+              ? { label: dict.study.secondary.savedQuestions, count: state.bookmarks.length, href: `${base}/bookmark` }
               : {
-                  label: c.id === 'whatmean' ? 'Ôn lại từ sai' : 'Ôn lại câu sai',
+                  label: c.id === 'whatmean' ? dict.study.secondary.reviewWrongWords : dict.common.reviewWrongAnswers,
                   count: wrongById[c.id],
                   href: c.id === 'civics' ? `${base}/practice?start=wrongs` : `${c.href}?start=wrongs`,
                 };
@@ -384,7 +387,7 @@ export default function StudyPage() {
                 {/* Progress */}
                 <div className="mt-1.5 flex items-center justify-between text-xs lg:mt-3 lg:text-sm">
                   <span className="truncate font-semibold text-gray-700">
-                    {sig.done}/{sig.total} câu
+                    {tFormat(dict.study.moduleCard.progress, { done: sig.done, total: sig.total })}
                   </span>
                   <span className="shrink-0 font-semibold text-gray-400">{percent}%</span>
                 </div>
@@ -430,7 +433,7 @@ export default function StudyPage() {
           <Lightbulb size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-extrabold text-gray-900 lg:text-base">Gợi ý dành cho bạn</h3>
+          <h3 className="text-sm font-extrabold text-gray-900 lg:text-base">{dict.common.suggestionForYou}</h3>
           <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-gray-600 lg:text-sm">
             {tip.line1} {tip.line2}
           </p>
@@ -439,7 +442,7 @@ export default function StudyPage() {
           href={`${base}${tip.href}`}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-teal-700 shadow-sm transition-colors hover:bg-teal-50 lg:px-4 lg:py-2.5"
         >
-          <span className="hidden sm:inline">Luyện ngay</span>
+          <span className="hidden sm:inline">{dict.common.cta.practiceNow}</span>
           <ArrowRight size={16} />
         </Link>
       </section>

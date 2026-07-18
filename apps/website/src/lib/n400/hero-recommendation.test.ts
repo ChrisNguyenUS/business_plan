@@ -6,6 +6,7 @@ import {
 } from './hero-recommendation';
 import type { QuestionAttempt, MockResult } from './storage';
 import type { SectionAttempt, SectionKey } from './section-progress';
+import { vi } from './i18n/vi';
 
 const NOW = new Date('2026-07-12T12:00:00Z');
 
@@ -97,13 +98,14 @@ describe('recommendDailyHero — priority ladder', () => {
   it('start_civics for a brand-new account', () => {
     const rec = recommendDailyHero(
       base({ attempts: [], sectionAttempts: [], mockResults: [], civicsSeen: 0 }),
+      vi,
     );
     expect(rec.intent).toBe('start_civics');
     expect(rec.cta.href).toBe('/flashcards?filter=unknown');
   });
 
   it('review_mistakes when a fresh mock has uncorrected wrongs', () => {
-    const rec = recommendDailyHero(base({ mockResults: [mock(hoursAgo(2), [10, 20, 30])] }));
+    const rec = recommendDailyHero(base({ mockResults: [mock(hoursAgo(2), [10, 20, 30])] }), vi);
     expect(rec.intent).toBe('review_mistakes');
     expect(rec.title).toContain('3 câu');
     expect(rec.cta.href).toBe('/practice?start=review');
@@ -112,18 +114,19 @@ describe('recommendDailyHero — priority ladder', () => {
   it('review_mistakes beats goal_complete', () => {
     const rec = recommendDailyHero(
       base({ mockResults: [mock(hoursAgo(1), [10])], goalsDone: 4 }),
+      vi,
     );
     expect(rec.intent).toBe('review_mistakes');
   });
 
   it('goal_complete when all daily goals are done', () => {
-    const rec = recommendDailyHero(base({ goalsDone: 4 }));
+    const rec = recommendDailyHero(base({ goalsDone: 4 }), vi);
     expect(rec.intent).toBe('goal_complete');
     expect(rec.cta.href).toBe('/mock-test');
   });
 
   it('first_mock at ≥80% coverage with no mock history', () => {
-    const rec = recommendDailyHero(base({ civicsSeen: 110 }));
+    const rec = recommendDailyHero(base({ civicsSeen: 110 }), vi);
     expect(rec.intent).toBe('first_mock');
     expect(rec.cta.href).toBe('/mock-test');
   });
@@ -137,6 +140,7 @@ describe('recommendDailyHero — priority ladder', () => {
           sectionAtt('whatmean', daysAgo(1)),
         ],
       }),
+      vi,
     );
     expect(rec.intent).toBe('stale_section');
     expect(rec.title).toContain('12 ngày');
@@ -145,10 +149,10 @@ describe('recommendDailyHero — priority ladder', () => {
   });
 
   it('nudges a never-started section only after half of civics is seen', () => {
-    const early = recommendDailyHero(base({ civicsSeen: 40, sectionAttempts: [] }));
+    const early = recommendDailyHero(base({ civicsSeen: 40, sectionAttempts: [] }), vi);
     expect(early.intent).toBe('continue_civics');
 
-    const invested = recommendDailyHero(base({ civicsSeen: 70, sectionAttempts: [] }));
+    const invested = recommendDailyHero(base({ civicsSeen: 70, sectionAttempts: [] }), vi);
     expect(invested.intent).toBe('stale_section');
     expect(invested.title).toContain('chưa bắt đầu');
     expect(invested.title).toContain('Writing'); // priority tie-break
@@ -160,6 +164,7 @@ describe('recommendDailyHero — priority ladder', () => {
         civicsSeen: 70,
         sectionAttempts: [sectionAtt('yesno', daysAgo(15))], // writing/whatmean unstarted
       }),
+      vi,
     );
     expect(rec.intent).toBe('stale_section');
     expect(rec.title).toContain('Yes / No');
@@ -168,13 +173,14 @@ describe('recommendDailyHero — priority ladder', () => {
   it('finish_civics when ≤20 questions remain (mock history present)', () => {
     const rec = recommendDailyHero(
       base({ civicsSeen: 115, mockResults: [mock(daysAgo(10), [10])] }),
+      vi,
     );
     expect(rec.intent).toBe('finish_civics');
     expect(rec.title).toContain('13 câu');
   });
 
   it('continue_civics as the default mid-progress state', () => {
-    const rec = recommendDailyHero(base());
+    const rec = recommendDailyHero(base(), vi);
     expect(rec.intent).toBe('continue_civics');
     expect(rec.subtitle).toContain('78 câu');
     expect(rec.cta.href).toBe('/flashcards?filter=unknown');
@@ -183,6 +189,7 @@ describe('recommendDailyHero — priority ladder', () => {
   it('continue_civics switches to review copy when everything is seen', () => {
     const rec = recommendDailyHero(
       base({ civicsSeen: 128, mockResults: [mock(daysAgo(10), [10])] }),
+      vi,
     );
     expect(rec.intent).toBe('continue_civics');
     expect(rec.title).toContain('Ôn lại');
