@@ -308,6 +308,33 @@ function useN400UserStateInternal() {
     [user, state.streak.lastActivityDate]
   );
 
+  // Re-pull just the address/district after an out-of-band write. The setup form
+  // saves via a server action + redirect, so this client store (loaded once per
+  // `user`) never sees the new district until a full reload. Callers trigger this
+  // when returning from a save so the profile updates without a manual refresh.
+  const reloadAddress = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('n400_user_profile')
+      .select('city,state_code,zipcode,district_number')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (error || !data) return;
+    setState((s) => ({
+      ...s,
+      settings: {
+        ...s.settings,
+        stateCode: (data.state_code as StateCode | null) ?? s.settings.stateCode,
+      },
+      address: {
+        city: data.city ?? null,
+        stateCode: data.state_code ?? null,
+        zipcode: data.zipcode ?? null,
+        districtNumber: data.district_number ?? null,
+      },
+    }));
+  }, [user]);
+
   // Practice/flashcard answer recording — keeps streak in lockstep with v1 logic.
   // Returns the milestone day count (3/7/14/30/60/100) when this answer pushes
   // the streak across one, otherwise null. Mock test goes through the
@@ -643,6 +670,7 @@ function useN400UserStateInternal() {
     stats,
     toggleBookmark,
     updateSettings,
+    reloadAddress,
     recordAnswer,
     setFlashcardKnown,
     recordSectionAnswer,

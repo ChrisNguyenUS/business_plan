@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   User,
   MapPin,
@@ -22,10 +22,21 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { getAvatarUrl, getDisplayName, getInitials } from '@/lib/profile-utils';
 
 export default function ProfilePage() {
-  const { state, hydrated, stats, updateSettings, resetAll } = useN400UserState();
+  const { state, hydrated, stats, updateSettings, resetAll, reloadAddress } = useN400UserState();
   const badges = useN400Badges();
   const [confirmReset, setConfirmReset] = useState(false);
   const { user, profile } = useAuth();
+
+  // Returning from a setup save (?updated=1): the setup form wrote the new
+  // district via a server action, which this client store can't observe. Pull
+  // the fresh address in, then strip the marker so it fires once. Reading
+  // window.location avoids a useSearchParams Suspense boundary on the page.
+  useEffect(() => {
+    if (!user) return;
+    if (new URLSearchParams(window.location.search).get('updated') !== '1') return;
+    reloadAddress();
+    window.history.replaceState(null, '', '/n400ready/profile');
+  }, [user, reloadAddress]);
 
   const avatarUrl = profile ? getAvatarUrl(profile.avatar_path, profile.updated_at) : null;
 

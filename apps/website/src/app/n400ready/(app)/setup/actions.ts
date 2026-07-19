@@ -190,6 +190,8 @@ export async function saveSetupProfile(
   // Edit flow comes from /n400ready/profile and expects to land back there.
   // First-time setup falls through to the dashboard with ?welcome=signup so
   // the client can fire the n400_signup_complete GA4 event once on arrival.
+  // `?updated=1` tells the profile page to re-pull the address into the client
+  // store (the store loaded once at login and won't otherwise see this write).
   const from = (formData.get('from') as string | null)?.trim() ?? ''
-  redirect(from === 'profile' ? '/n400ready/profile' : '/n400ready?welcome=signup')
+  redirect(from === 'profile' ? '/n400ready/profile?updated=1' : '/n400ready?welcome=signup')
 }

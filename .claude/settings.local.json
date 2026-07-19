@@ -93,7 +93,10 @@
       "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3104/n400ready/login)",
       "Bash(curl -s -H \"Cookie: n400_lang=xx\" http://localhost:3104/n400ready/login)",
       "Bash(curl -s http://localhost:3105/n400ready/login)",
-      "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3105/n400ready/login)"
+      "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3105/n400ready/login)",
+      "Bash(awk '/^  badges: \\\\{/,/^  \\\\},/' src/lib/n400/i18n/vi.ts)",
+      "Bash(awk '/^  badges: \\\\{/,/^  \\\\},/' src/lib/n400/i18n/en.ts)",
+      "Bash(perl -pi -e \"s{saveForReview: 'Lưu lại',\\\\n}{}\" src/lib/n400/i18n/vi.ts)"
     ]
   },
   "enableAllProjectMcpServers": true,
