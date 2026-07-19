@@ -23,6 +23,10 @@ Mọi tương tác phải hữu ích và mang tính giáo dục trước. User k
 | CRM | Supabase (shared project) là source of truth; internal_app đọc và hiển thị. Không dùng external CRM. |
 | Booking | "Cả hai": form in-app là chính, màn confirm kèm link Calendly. |
 | Kiến trúc data | Event log append-only + lead score computed server-side (không dùng counters đơn thuần). |
+| Config-driven | Điểm số, ngưỡng, cooldown, copy CTA/prompt, on/off, variant nằm trong DB (marketing chỉnh không cần deploy). Hình dạng điều kiện (logic) vẫn ở code, đọc params từ DB. |
+| Service boundary | Toàn bộ logic quyết định nằm trong 1 module server-only `growth-engine/` (ingest → recompute → evaluate CTA → evaluate profiling → trigger notify). Không tách deployed service riêng. RPC chỉ append event; UI chỉ render kết quả. |
+| Attribution | Track first_touch (immutable) + last_touch từ ngày đầu: utm_source/medium/campaign, ad_id/fbclid, referrer, landing_page. |
+| A/B testing | Mỗi CTA/prompt/checklist có variant; gán deterministic hash(user_id, experiment_key); variant log vào mọi impression event. |
 | Roadmap | Growth Engine chạy song song / trước Phase 4. |
 
 ### Out of scope đợt này (defer)
@@ -65,10 +69,16 @@ lead_status text,          -- cold | warm | hot | sales_ready (derived, denorm �
 consultation_requested_at timestamptz,
 consultation_booked_at timestamptz,
 last_growth_prompt_at timestamptz,  -- enforce cap 1 CTA / 7 ngày
+first_touch jsonb,   -- immutable sau lần ghi đầu: {utm_source, utm_medium, utm_campaign, ad_id, fbclid, referrer, landing_page, ts}
+last_touch jsonb,    -- cùng shape, overwrite mỗi session mới có UTM/referrer
 created_at, updated_at
 ```
 
 RLS: user đọc dòng của mình; các cột trả lời profiling do user ghi qua RPC `answer_profile_prompt`; `lead_score`/`lead_status` chỉ function server ghi. Staff đọc tất cả.
+
+**Hai trục độc lập (không phụ thuộc nhau):** `journey_stage` phản ánh tiến trình N-400 và **chỉ** đến từ câu trả lời profiling; `lead_status` phản ánh mức sẵn sàng mua dịch vụ và **chỉ** derive từ `lead_score`. Không trục nào ghi đè trục kia. Score được phép *tiêu thụ* tín hiệu stage như một input qualification (vd. interview scheduled +60) — đó là quan hệ input→score, không phải coupling giữa 2 nhãn. Staff UI hiển thị cả 2 trục cạnh nhau (ma trận stage × status).
+
+**Attribution capture:** client lưu UTM/fbclid/referrer/landing_page vào cookie first-party ngay lần landing đầu (kể cả trước signup); khi user tạo account hoặc login, server ghi vào `first_touch` (chỉ khi đang NULL) và `last_touch` (luôn overwrite). Consultation request snapshot cả 2 lúc submit để attribution không bị đổi hồi tố.
 
 ### 1.3 `n400_profile_prompts` (bộ nhớ conversation)
 
@@ -106,13 +116,68 @@ RLS: user insert + đọc request của mình; staff đọc/update tất cả.
 
 **Giữ chỗ (chưa emit):** `app_shared`, `review_left`, `friend_invited`, `push_disabled`.
 
-### 1.6 Lead score compute
+### 1.6 Config tables (marketing chỉnh không cần deploy)
 
-- Function `recompute_n400_lead_score(user_id)` — SECURITY DEFINER, gọi cuối mỗi RPC ghi event server-side và trong `answer_profile_prompt` / khi tạo consultation request.
-- Điểm **base** tính từ events + profile answers (bảng §2).
+Ranh giới: DB chứa **tham số, ngưỡng, copy, on/off, variant**. *Hình dạng điều kiện* (cách so sánh, nguồn data) là code trong growth-engine đọc params. Thêm loại điều kiện mới = deploy; chỉnh số/copy/bật-tắt = update DB.
+
+```sql
+n400_growth_rules          -- scoring rules
+  rule_key text pk,        -- vd 'first_mock_completed', 'inactive_14d'
+  points int,              -- +/- điểm
+  params jsonb,            -- ngưỡng: {min_count: 5, min_avg: 90, days: 14...}
+  enabled boolean default true,
+  updated_at
+
+n400_cta_definitions       -- CTA scenarios (S1..S9 = rows)
+  cta_id text, variant text default 'a',   -- pk (cta_id, variant)
+  group_key text,          -- consultation | education (mute/convert theo group)
+  title_en, title_vi, body_en, body_vi, cta_label_en, cta_label_vi text,
+  action text,             -- book_consultation | open_checklist | start_mock...
+  conditions jsonb,        -- params cho evaluator: {min_mocks: 3, min_avg: 90}
+  priority int,            -- thứ tự khi nhiều scenario cùng thỏa
+  cooldown_days int default 7,
+  enabled boolean default true,
+  updated_at
+
+n400_prompt_definitions    -- câu hỏi profiling
+  question_key text, variant text default 'a',  -- pk
+  text_en, text_vi text, options jsonb,
+  trigger jsonb,           -- {after: 'first_practice'} | {distinct_days: 3}...
+  depends_on jsonb,        -- {question_key: 'filed', answer: 'not_yet'}
+  snooze_days int default 6, snooze_sessions int default 3,
+  sort_order int, enabled boolean default true,
+  updated_at
+```
+
+RLS: mọi user đọc (client cần render copy); chỉ staff ghi. Editing surface: giai đoạn đầu chỉnh qua Supabase dashboard; editor UI trong internal_app thuộc G4.
+
+**A/B testing:** variant gán deterministic `hash(user_id, cta_id) % số variant` — ổn định cho từng user, không cần bảng assignment. Mọi `cta_shown/clicked/dismissed` và `prompt_answered/skipped` đều mang `variant` trong payload.
+
+### 1.7 Growth Engine — service module (một nơi chịu trách nhiệm)
+
+Toàn bộ logic quyết định nằm trong **một module server-only** `apps/website/lib/growth-engine/` (không import được từ client). Không tách deployed service riêng — thêm hạ tầng + latency không cần thiết với stack Vercel + Supabase hiện tại; nếu sau này cần cron/queue thì nâng cấp thành Supabase Edge Function, interface giữ nguyên.
+
+Trách nhiệm (5 nhiệm vụ, 1 pipeline):
+
+```
+growth-engine/
+  ingest.ts      -- ingestEvent(): validate + append n400_growth_events
+  scoring.ts     -- recomputeScore(): đọc events + growth_rules → lead_score
+  cta.ts         -- evaluateCta(): đọc events/profile + cta_definitions → CTA nào hiện (hoặc null)
+  profiling.ts   -- evaluatePrompt(): đọc prompts state + definitions → câu hỏi active (hoặc null)
+  notify.ts      -- staff notifications (Resend): Sales Ready, consultation request
+  index.ts       -- processEvent() = ingest → recompute → notify nếu vượt ngưỡng
+```
+
+Phân công với DB:
+- **Finalize RPCs chỉ append event** (dumb ingest, giữ atomicity trong transaction) — không chứa logic scoring/CTA.
+- `recompute_n400_lead_score(user_id)` là SQL function do engine gọi (giữ score write server-authoritative), đọc điểm từ `n400_growth_rules` — không hardcode điểm trong SQL.
 - Điểm **trừ inactivity** (-30 sau 14 ngày, -60 sau 30 ngày) phụ thuộc `now()` nên **tính lúc đọc**: view `n400_leads_view` join last activity, trả `effective_score` + `lead_status`. Không cần cron.
+- Dashboard/result screen gọi 1 endpoint duy nhất (`getGrowthState`): trả về {CTA active, prompt active, dashboard intent} — UI chỉ render, không quyết định.
 
 ## 2. Lead Scoring (0–300)
+
+Bảng dưới là **giá trị seed** cho `n400_growth_rules` — sau khi ship, marketing chỉnh điểm/ngưỡng trực tiếp trong DB, engine recompute theo rules hiện hành (event log cho phép tính lại toàn bộ khi công thức đổi).
 
 ### Positive (base, từ events/answers)
 
@@ -153,7 +218,7 @@ Cold 0–50 · Warm 51–120 · Hot 121–200 · **Sales Ready 201–300**. Clam
 
 Nguyên tắc: app **trò chuyện** với user, không phỏng vấn. 1 câu active tại 1 thời điểm. Mọi câu skip được. Mỗi câu phải có lợi ích rõ cho user (personalization thấy được ngay).
 
-### 3.1 Hàng đợi câu hỏi (question_key, thứ tự ưu tiên)
+### 3.1 Hàng đợi câu hỏi (seed rows cho `n400_prompt_definitions`, thứ tự ưu tiên)
 
 1. `filed` — "Bạn đã nộp N-400 chưa?" (Yes / Not yet)
 2. `filing_timeline` — "Bạn định bao giờ nộp?" (30 ngày / 3 tháng / 6 tháng / mới tìm hiểu) — **chỉ hỏi nếu ① = Not yet**
@@ -211,9 +276,11 @@ Cắm vào `hero-recommendation.ts` ladder sẵn có: thêm tầng intent từ `
 4. Dismiss 1 lần → CTA đó snooze; **dismiss 3 lần → mute cả nhóm 30 ngày** (+ event trừ điểm nếu là nhóm consultation).
 5. Đã convert (booked consultation) → tắt vĩnh viễn nhóm consultation, chỉ còn nhóm education.
 6. Escalation ladder, không nhảy cóc: Free Resource → Free Checklist → Free Consultation → Mock Interview → Immigration Service.
-7. Ưu tiên khi nhiều scenario cùng thỏa: scenario gắn với interview date gần nhất thắng; còn lại theo thứ tự S9 > S4 > S1 > S5/S6 > S2 > S3 > S7.
+7. Ưu tiên khi nhiều scenario cùng thỏa: theo cột `priority` trong `n400_cta_definitions` (seed: S9 > S4 > S1 > S5/S6 > S2 > S3 > S7).
 
-### 4.2 Scenarios (map vào data thật)
+Cap 7 ngày, cooldown, mute-ngưỡng đều là params trong DB (`cooldown_days`, `conditions`) — rules cứng ở đây là **giá trị seed + bất biến về hành vi** (không random, không giữa session, value first), không phải magic numbers trong code.
+
+### 4.2 Scenarios (seed rows cho `n400_cta_definitions`, map vào data thật)
 
 | ID | Điều kiện (nguồn data) | Hiển thị |
 | --- | --- | --- |
@@ -255,7 +322,8 @@ Trang mới trong internal_app (staff-only):
 
 Toàn bộ KPI tính từ `n400_growth_events` + các bảng lead — **không thêm tool ngoài**:
 
-- Section thống kê trong internal_app: funnel Activation → First Practice → First Mock → Readiness distribution → CTA CTR → Consultation requests → Booked → Done; Lead score distribution; profiling answer rate (answered / shown per question).
+- **Funnel per-CTA** (view `n400_cta_funnel`): impression → click → consultation request → booked → done, group by `cta_id × variant`. Conversion attribution = `source_cta` trên consultation request (last CTA click trước khi submit). Đây là bảng trả lời "CTA nào thực sự tạo consultation" và "variant nào thắng".
+- Section thống kê trong internal_app: funnel Activation → First Practice → First Mock → Readiness distribution → CTA CTR → Consultation requests → Booked → Done; Lead score distribution; profiling answer rate (answered / shown per question, per variant); breakdown theo `first_touch.utm_campaign` khi chạy ads.
 - Meta CAPI: `Lead` (consultation request) mới; `n400_mock_test_pass`, `n400_setup_complete` đã có sẵn.
 - Referral rate, CLV — defer cùng với referral tracking.
 
@@ -263,10 +331,10 @@ Toàn bộ KPI tính từ `n400_growth_events` + các bảng lead — **không t
 
 Chạy song song Website Phase 4. Mỗi phase 1 branch, ship độc lập:
 
-- **G1 — Nền data**: migrations (4 bảng + view + functions), mở rộng finalize RPCs để emit events, backfill điểm cơ bản cho user hiện có (account/onboarding/address/practice/mock từ data lịch sử), RLS. Không có UI. *Ship xong là data tích lũy ngay.*
-- **G2 — Conversation model**: hàng đợi câu hỏi + Level 2 card (màn kết quả) + Level 1 soft card (Home) + Level 3 Dashboard reaction (hero-recommendation tầng intent) + RPC `answer_profile_prompt`.
-- **G3 — CTA engine + booking**: rules engine client-side đọc events/profile, 8 scenarios, N-400 Filing Checklist page, form booking + confirm + Calendly link + Resend notify + CAPI `Lead`.
-- **G4 — internal_app Leads + analytics**: trang Leads, consultation inbox, convert-to-client, staff email notify, section thống kê funnel.
+- **G1 — Nền data + engine core**: migrations (7 bảng: 4 data + 3 config, seed rules/definitions, views, functions), attribution capture (cookie → first/last touch), growth-engine module (ingest + scoring), mở rộng finalize RPCs để emit events, backfill điểm cơ bản cho user hiện có (account/onboarding/address/practice/mock từ data lịch sử), RLS. Không có UI. *Ship xong là data + attribution tích lũy ngay.*
+- **G2 — Conversation model**: `evaluatePrompt` trong engine + Level 2 card (màn kết quả) + Level 1 soft card (Home) + Level 3 Dashboard reaction (hero-recommendation tầng intent) + RPC `answer_profile_prompt`. Copy/trigger đọc từ `n400_prompt_definitions`.
+- **G3 — CTA engine + booking**: `evaluateCta` trong engine (đọc `n400_cta_definitions`, A/B variant assignment), endpoint `getGrowthState`, 8 scenarios seed, N-400 Filing Checklist page, form booking + confirm + Calendly link + Resend notify + CAPI `Lead`.
+- **G4 — internal_app Leads + analytics + rules editor**: trang Leads (ma trận stage × status), consultation inbox, convert-to-client, staff email notify, section thống kê funnel (gồm `n400_cta_funnel` per variant + UTM breakdown), editor UI cho `growth_rules`/`cta_definitions`/`prompt_definitions` để marketing chỉnh không cần Supabase dashboard.
 
 ### Design principles checklist (mọi screen phải trả lời "yes" ≥1 câu)
 
