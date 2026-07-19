@@ -8,6 +8,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 /** Per-skill accent, so each card is recognisable at a glance. */
 const ACCENTS = {
@@ -38,9 +40,11 @@ export interface SkillRow {
 }
 
 export function SkillsCard({ rows }: { rows: SkillRow[] }) {
+  const { dict } = useN400Lang();
+  const t = dict.progress.skills;
   return (
     <Card className="!p-3 sm:!p-6">
-      <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Kỹ năng</h2>
+      <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t.title}</h2>
       <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3 lg:grid-cols-4">
         {rows.map((row) => {
           const percent = row.total === 0 ? 0 : Math.round((row.known / row.total) * 100);
@@ -67,7 +71,7 @@ export function SkillsCard({ rows }: { rows: SkillRow[] }) {
                     {/* Only the weakest skill is flagged — a badge on every card
                         would flag nothing. */}
                     {row.weak ? (
-                      <span className="shrink-0 text-[10px]" title="Cần luyện thêm">
+                      <span className="shrink-0 text-[10px]" title={t.weak}>
                         ⚠️
                       </span>
                     ) : null}
@@ -79,7 +83,7 @@ export function SkillsCard({ rows }: { rows: SkillRow[] }) {
               <div className="mt-2 flex items-baseline justify-between gap-2 sm:mt-3">
                 <span className="text-xs font-bold tabular-nums text-slate-800">
                   {row.known}
-                  <span className="font-medium text-slate-400">/{row.total} câu</span>
+                  <span className="font-medium text-slate-400">{tFormat(t.questionCount, { total: row.total })}</span>
                 </span>
                 <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-500">{percent}%</span>
               </div>

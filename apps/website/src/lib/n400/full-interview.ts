@@ -53,6 +53,7 @@ export function buildCivicsPhase(
 }
 
 export function buildSpeakingPhase(seed: string, dict: N400Dict): MCQuestion[] {
+  const it = dict.mockTest.interview;
   const whatMean = shuffle([...WHATMEAN_QUESTIONS], `full-sp-wm-${seed}`)
     .slice(0, 5)
     .map((q, i): MCQuestion => ({
@@ -83,13 +84,13 @@ export function buildSpeakingPhase(seed: string, dict: N400Dict): MCQuestion[] {
         questionAudioSrc: audio,
         answerAudioSrc: audio,
         options: [
-          { id: 'A', en: 'Yes, officer', vi: 'Có', isCorrect: q.answer === 'yes' },
-          { id: 'B', en: 'No, officer', vi: 'Không', isCorrect: q.answer === 'no' },
+          { id: 'A', en: 'Yes, officer', vi: it.yes, isCorrect: q.answer === 'yes' },
+          { id: 'B', en: 'No, officer', vi: it.no, isCorrect: q.answer === 'no' },
         ],
         accepted: [
           {
             en: q.answer === 'yes' ? 'Yes, officer' : 'No, officer',
-            vi: q.answer === 'yes' ? 'Có, thưa cán bộ' : 'Không, thưa cán bộ',
+            vi: q.answer === 'yes' ? it.yesOfficer : it.noOfficer,
           },
         ],
       };

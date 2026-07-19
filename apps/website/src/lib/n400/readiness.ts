@@ -14,6 +14,8 @@
 
 import type { MockResult, SectionMockResult } from './storage';
 import { FIRST_MOCK_MIN_PERCENT } from './hero-recommendation';
+import type { N400Dict } from './i18n/vi';
+import { tFormat } from './i18n/format';
 
 export type ReadinessCriterionId =
   | 'civics_known'
@@ -193,6 +195,7 @@ function knownCriterion(
   total: number,
   ctaLabel: string,
   href: string,
+  t: N400Dict['readiness'],
 ): ReadinessCriterion {
   const target = total * KNOWN_THRESHOLD;
   const progress = target <= 0 ? 0 : Math.min(known / target, 1);
@@ -201,9 +204,9 @@ function knownCriterion(
   const remaining = Math.max(0, Math.ceil(target) - known);
   return {
     id,
-    label: `Thuộc ${FIRST_MOCK_MIN_PERCENT}% câu ${skillLabel}`,
-    milestone: `Học thêm ${remaining} câu ${skillLabel}`,
-    detail: `${known}/${total} câu`,
+    label: tFormat(t.knownLabel, { percent: FIRST_MOCK_MIN_PERCENT, skillLabel }),
+    milestone: tFormat(t.milestoneLabel, { remaining, skillLabel }),
+    detail: tFormat(t.detailLabel, { known, total }),
     met: progress >= 1,
     progress,
     remaining,
@@ -239,7 +242,8 @@ function latestSectionMock(
   );
 }
 
-export function deriveReadiness(s: ReadinessSignals): Readiness {
+export function deriveReadiness(s: ReadinessSignals, dict: N400Dict): Readiness {
+  const t = dict.readiness;
   const passes = recentMockPasses(s.mockResults);
   const lastWriting = latestSectionMock(s.sectionMockResults, 'writing');
   const writingPassed = lastWriting?.passed ?? false;
@@ -250,42 +254,42 @@ export function deriveReadiness(s: ReadinessSignals): Readiness {
     // The civics CTA lands on the skill hub, not /flashcards: "thuộc" only
     // moves through graded answers, and the hub offers both the deck to learn
     // and the practice mode to prove — same target as the SkillsCard row.
-    knownCriterion('civics_known', 'Civics', s.civicsKnown, s.civicsTotal, 'Học Civics', '/study/civics'),
-    knownCriterion('whatmean_known', 'What Mean', s.whatmeanKnown, s.whatmeanTotal, 'Luyện What Mean', '/speaking/what-mean'),
-    knownCriterion('yesno_known', 'Yes/No', s.yesnoKnown, s.yesnoTotal, 'Luyện Yes/No', '/speaking/yes-no'),
+    knownCriterion('civics_known', t.skillLabels.civics, s.civicsKnown, s.civicsTotal, t.cta.civics, '/study/civics', t),
+    knownCriterion('whatmean_known', t.skillLabels.whatmean, s.whatmeanKnown, s.whatmeanTotal, t.cta.whatmean, '/speaking/what-mean', t),
+    knownCriterion('yesno_known', t.skillLabels.yesno, s.yesnoKnown, s.yesnoTotal, t.cta.yesno, '/speaking/yes-no', t),
     // The writing mock samples only 3 random sentences per attempt (pass = 1
     // correct), so it can never prove pool coverage — this criterion is what
     // guarantees the learner has written every topic correctly in practice.
-    knownCriterion('writing_known', 'Viết', s.writingKnown, s.writingTotal, 'Luyện Viết', '/writing'),
+    knownCriterion('writing_known', t.skillLabels.writing, s.writingKnown, s.writingTotal, t.cta.writing, '/writing', t),
     {
       id: 'writing_mock',
-      label: 'Đậu bài thi thử Viết gần nhất',
-      milestone: 'Đậu bài thi thử Viết gần nhất',
-      detail: writingPassed ? 'Đã đậu' : lastWriting ? 'Chưa đậu' : 'Chưa thi',
+      label: t.writingMockLabel,
+      milestone: t.writingMockLabel,
+      detail: writingPassed ? t.statusPassed : lastWriting ? t.statusFailed : t.statusNotTaken,
       met: writingPassed,
       progress: writingPassed ? 1 : 0,
       remaining: writingPassed ? 0 : 1,
-      cta: { label: 'Thi thử Viết', href: '/mock-test/viet' },
+      cta: { label: t.cta.writingMock, href: '/mock-test/viet' },
     },
     {
       id: 'speaking_mock',
-      label: 'Đậu bài thi thử Speaking gần nhất',
-      milestone: 'Đậu bài thi thử Speaking gần nhất',
-      detail: speakingPassed ? 'Đã đậu' : lastSpeaking ? 'Chưa đậu' : 'Chưa thi',
+      label: t.speakingMockLabel,
+      milestone: t.speakingMockLabel,
+      detail: speakingPassed ? t.statusPassed : lastSpeaking ? t.statusFailed : t.statusNotTaken,
       met: speakingPassed,
       progress: speakingPassed ? 1 : 0,
       remaining: speakingPassed ? 0 : 1,
-      cta: { label: 'Thi thử Speaking', href: '/mock-test/speaking' },
+      cta: { label: t.cta.speakingMock, href: '/mock-test/speaking' },
     },
     {
       id: 'civics_mock',
-      label: `Đậu ${CIVICS_MOCK_PASS_STREAK} bài thi thử Civics gần nhất`,
-      milestone: `Đậu ${CIVICS_MOCK_PASS_STREAK} bài thi thử Civics gần nhất`,
-      detail: `${passes}/${CIVICS_MOCK_PASS_STREAK} lần đậu`,
+      label: tFormat(t.civicsMockLabel, { streak: CIVICS_MOCK_PASS_STREAK }),
+      milestone: tFormat(t.civicsMockLabel, { streak: CIVICS_MOCK_PASS_STREAK }),
+      detail: tFormat(t.civicsMockDetail, { passes, streak: CIVICS_MOCK_PASS_STREAK }),
       met: passes >= CIVICS_MOCK_PASS_STREAK,
       progress: passes / CIVICS_MOCK_PASS_STREAK,
       remaining: Math.max(0, CIVICS_MOCK_PASS_STREAK - passes),
-      cta: { label: 'Thi thử Civics', href: '/mock-test' },
+      cta: { label: t.cta.civicsMock, href: '/mock-test' },
     },
   ];
 

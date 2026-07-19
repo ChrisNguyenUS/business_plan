@@ -12,7 +12,7 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { deriveSectionGradedTally, deriveSectionMastered } from '@/lib/n400/section-progress';
 import { gradedOnly } from '@/lib/n400/quiz-engine';
-import { deriveLearningPace, deriveReadiness } from '@/lib/n400/readiness';
+import { deriveLearningPace, deriveReadiness, CIVICS_MOCK_PASS_STREAK } from '@/lib/n400/readiness';
 import {
   moduleAccuracy,
   NEEDS_PRACTICE_MIN_ATTEMPTS,
@@ -26,15 +26,19 @@ import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { ReadinessHero } from '@/components/n400/progress/ReadinessHero';
 import { SkillsCard, type SkillRow } from '@/components/n400/progress/SkillsCard';
 import { StatsRow, type StatCell } from '@/components/n400/progress/StatsRow';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 /** Plain-language read of the accuracy number, so the cell says something. */
-function accuracyHint(accuracy: number): string {
-  if (accuracy >= 80) return 'Rất tốt!';
-  if (accuracy >= 60) return 'Đang tiến bộ';
-  return 'Cần cải thiện';
+function accuracyHint(accuracy: number, t: N400Dict['progress']['stats']): string {
+  if (accuracy >= 80) return t.accuracyExcellent;
+  if (accuracy >= 60) return t.accuracyProgressing;
+  return t.accuracyNeedsWork;
 }
 
 export default function ProgressPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const badges = useN400Badges();
   const base = '/n400ready';
@@ -56,19 +60,22 @@ export default function ProgressPage() {
 
   const readiness = useMemo(
     () =>
-      deriveReadiness({
-        civicsKnown: stats.mastered,
-        civicsTotal: N400_QUESTIONS.length,
-        whatmeanKnown: sectionMastered.whatmean.length,
-        whatmeanTotal: WHATMEAN_QUESTIONS.length,
-        yesnoKnown: sectionMastered.yesno.length,
-        yesnoTotal: YESNO_QUESTIONS.length,
-        writingKnown: sectionMastered.writing.length,
-        writingTotal: WRITING_SENTENCES.length,
-        mockResults: state.mockResults,
-        sectionMockResults: state.sectionMockResults,
-      }),
-    [stats.mastered, sectionMastered, state.mockResults, state.sectionMockResults],
+      deriveReadiness(
+        {
+          civicsKnown: stats.mastered,
+          civicsTotal: N400_QUESTIONS.length,
+          whatmeanKnown: sectionMastered.whatmean.length,
+          whatmeanTotal: WHATMEAN_QUESTIONS.length,
+          yesnoKnown: sectionMastered.yesno.length,
+          yesnoTotal: YESNO_QUESTIONS.length,
+          writingKnown: sectionMastered.writing.length,
+          writingTotal: WRITING_SENTENCES.length,
+          mockResults: state.mockResults,
+          sectionMockResults: state.sectionMockResults,
+        },
+        dict,
+      ),
+    [stats.mastered, sectionMastered, state.mockResults, state.sectionMockResults, dict],
   );
 
   // The weakest skill: lowest accuracy among those with enough evidence to
@@ -108,50 +115,56 @@ export default function ProgressPage() {
     () =>
       (
         [
-          { id: 'civics', thumbnail: 'civics-thumbnail.png', label: 'Civics', subtitle: `${N400_QUESTIONS.length} câu hỏi`, known: stats.mastered, total: N400_QUESTIONS.length, href: `${base}/study/civics`, accent: 'teal' },
-          { id: 'whatmean', thumbnail: 'whatmean-thumbnail.png', label: 'What Mean', subtitle: `${WHATMEAN_QUESTIONS.length} từ & cụm từ`, known: sectionMastered.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean`, accent: 'blue' },
-          { id: 'yesno', thumbnail: 'yesno-thumbnail.png', label: 'Yes / No', subtitle: `${YESNO_QUESTIONS.length} câu hỏi`, known: sectionMastered.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no`, accent: 'purple' },
-          { id: 'writing', thumbnail: 'writing-thumbnail.png', label: 'Viết', subtitle: `${WRITING_SENTENCES.length} chủ đề`, known: sectionMastered.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing`, accent: 'orange' },
+          { id: 'civics', thumbnail: 'civics-thumbnail.png', label: 'Civics', subtitle: tFormat(dict.flashcards.categoryCount, { count: N400_QUESTIONS.length }), known: stats.mastered, total: N400_QUESTIONS.length, href: `${base}/study/civics`, accent: 'teal' },
+          { id: 'whatmean', thumbnail: 'whatmean-thumbnail.png', label: 'What Mean', subtitle: tFormat(dict.progress.skills.whatmeanSubtitle, { count: WHATMEAN_QUESTIONS.length }), known: sectionMastered.whatmean.length, total: WHATMEAN_QUESTIONS.length, href: `${base}/speaking/what-mean`, accent: 'blue' },
+          { id: 'yesno', thumbnail: 'yesno-thumbnail.png', label: 'Yes / No', subtitle: tFormat(dict.flashcards.categoryCount, { count: YESNO_QUESTIONS.length }), known: sectionMastered.yesno.length, total: YESNO_QUESTIONS.length, href: `${base}/speaking/yes-no`, accent: 'purple' },
+          { id: 'writing', thumbnail: 'writing-thumbnail.png', label: dict.readiness.skillLabels.writing, subtitle: tFormat(dict.progress.skills.writingSubtitle, { count: WRITING_SENTENCES.length }), known: sectionMastered.writing.length, total: WRITING_SENTENCES.length, href: `${base}/writing`, accent: 'orange' },
         ] as const
       ).map((row) => ({
         ...row,
         weak: row.id === weakestId,
         // "Tiếp tục học" only once there's something to continue from.
-        ctaLabel: row.known > 0 ? 'Tiếp tục học' : 'Học ngay',
+        ctaLabel: row.known > 0 ? dict.common.cta.continueLearning : dict.common.cta.startLearning,
       })),
-    [stats.mastered, sectionMastered, base, weakestId],
+    [stats.mastered, sectionMastered, base, weakestId, dict],
   );
 
   // Mock standing reuses the readiness criterion rather than recounting passes,
   // so this cell and the hero can never disagree about where the learner stands.
   const civicsMock = readiness.criteria.find((c) => c.id === 'civics_mock')!;
   const hasCivicsMocks = state.mockResults.length > 0;
+  // civicsMock.detail is dict-formatted text (e.g. "1/2 lần đậu" / "1/2 passed");
+  // the stat cell wants only the bare "X/Y" count, so derive it from the
+  // criterion's own numbers instead of parsing the localized string.
+  const civicsMockPasses = CIVICS_MOCK_PASS_STREAK - civicsMock.remaining;
+  const streakCurrent = state.streak.current;
+  const streakValue = tFormat(dict.progress.activity.daysUnit, { count: streakCurrent });
 
   const statCells: StatCell[] = useMemo(
     () => [
       {
         id: 'streak',
         icon: 'flame',
-        label: 'Chuỗi học tập',
-        value: `${state.streak.current} ngày`,
-        hint: state.streak.current > 0 ? 'Giữ vững phong độ!' : 'Học hôm nay để bắt đầu',
+        label: dict.progress.stats.streak,
+        value: streakValue,
+        hint: streakCurrent > 0 ? dict.progress.stats.streakActive : dict.progress.stats.streakInactive,
         tint: 'orange',
       },
       {
         id: 'badges',
         icon: 'trophy',
-        label: 'Huy hiệu',
+        label: dict.progress.stats.badges,
         value: badges.hydrated ? `${badges.earned.length}` : '—',
-        hint: 'Danh hiệu',
+        hint: dict.progress.stats.badgesCaption,
         tint: 'yellow',
         href: `${base}/profile`,
       },
       {
         id: 'accuracy',
         icon: 'target',
-        label: 'Độ chính xác',
+        label: dict.progress.stats.accuracy,
         value: `${stats.accuracy}%`,
-        hint: accuracyHint(stats.accuracy),
+        hint: accuracyHint(stats.accuracy, dict.progress.stats),
         tint: 'teal',
         href: `${base}/statistic`,
       },
@@ -162,22 +175,22 @@ export default function ProgressPage() {
         // number actually is — passes among the 2 most recent Civics mocks,
         // the readiness condition's own bar. Never attempted is its own state:
         // "0/2" would look like two failures, so invite the first mock instead.
-        label: 'Thi thử Civics',
-        value: hasCivicsMocks ? civicsMock.detail.replace(' lần đậu', '') : 'Chưa thi',
+        label: dict.progress.stats.civicsMock,
+        value: hasCivicsMocks ? `${civicsMockPasses}/${CIVICS_MOCK_PASS_STREAK}` : dict.progress.stats.noMockYet,
         hint: hasCivicsMocks
           ? civicsMock.met
-            ? 'Đạt chuẩn phỏng vấn!'
-            : 'Đậu 2 bài gần nhất để đạt'
-          : 'Làm bài thi thử đầu tiên',
+            ? dict.progress.stats.passStandard
+            : dict.progress.stats.needMorePasses
+          : dict.progress.stats.firstMock,
         tint: 'purple',
         href: hasCivicsMocks ? `${base}/statistic` : `${base}/mock-test`,
       },
     ],
-    [state.streak, badges.hydrated, badges.earned.length, stats.accuracy, civicsMock.detail, civicsMock.met, hasCivicsMocks, base],
+    [streakValue, streakCurrent, badges.hydrated, badges.earned.length, stats.accuracy, civicsMockPasses, civicsMock.met, hasCivicsMocks, base, dict],
   );
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   return (

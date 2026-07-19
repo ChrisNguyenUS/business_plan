@@ -16,12 +16,18 @@ import {
   XCircle,
 } from 'lucide-react';
 import { FULL_CIVICS_PASS, FULL_SPEAKING_PASS } from '@/lib/n400/full-interview';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
-export const INTERVIEW_STEPS = [
-  { part: 'Phần 1', label: 'Civics' },
-  { part: 'Phần 2', label: 'Speaking' },
-  { part: 'Phần 3', label: 'Writing' },
-] as const;
+/** Stepper's 3 parts, built from the dict so the labels follow the locale. */
+function interviewSteps(t: N400Dict['mockTest']['interview']) {
+  return [
+    { part: t.part1, label: t.civics },
+    { part: t.part2, label: t.speaking },
+    { part: t.part3, label: t.writing },
+  ] as const;
+}
 
 /**
  * ●━━○━━○ progress stepper. `completed` = how many parts are finished (1–3);
@@ -29,13 +35,16 @@ export const INTERVIEW_STEPS = [
  * continues.
  */
 export function InterviewStepper({ completed }: { completed: number }) {
+  const { dict } = useN400Lang();
+  const t = dict.mockTest.interview;
+  const steps = interviewSteps(t);
   return (
     <div>
       <div className="text-center text-sm font-semibold text-gray-500">
-        Tiến trình Full Interview
+        {t.stepperLabel}
       </div>
       <div className="mx-auto mt-3 flex max-w-md items-start">
-        {INTERVIEW_STEPS.map((step, i) => {
+        {steps.map((step, i) => {
           const isDone = i < completed;
           const isCurrent = i === completed;
           return (
@@ -68,7 +77,7 @@ export function InterviewStepper({ completed }: { completed: number }) {
                   {step.label}
                 </span>
               </div>
-              {i < INTERVIEW_STEPS.length - 1 ? (
+              {i < steps.length - 1 ? (
                 <div
                   className={`mt-[13px] h-0.5 flex-1 rounded-full ${
                     isDone ? 'bg-teal-500' : 'bg-gray-200'
@@ -98,12 +107,14 @@ export function InterludeScreen({
   donePart: { correct: number; total: number; passed: boolean } | null;
   onContinue: () => void;
 }) {
+  const { dict } = useN400Lang();
+  const t = dict.mockTest.interview;
   const isSpeaking = next === 'speaking';
   const partNumber = isSpeaking ? 1 : 2;
-  const doneLabel = isSpeaking ? 'Civics' : 'Speaking';
-  const nextLabel = isSpeaking ? 'Speaking' : 'Writing';
+  const doneLabel = isSpeaking ? t.civics : t.speaking;
+  const nextLabel = isSpeaking ? t.speaking : t.writing;
   const passMin = isSpeaking ? FULL_CIVICS_PASS : FULL_SPEAKING_PASS;
-  const estimate = isSpeaking ? '7–10 phút' : '5–8 phút';
+  const estimate = isSpeaking ? t.speakingEstimate : t.writingEstimate;
   const remaining = Math.max(0, passMin - (donePart?.correct ?? 0));
 
   return (
@@ -118,19 +129,17 @@ export function InterludeScreen({
           <PartyPopper size={32} />
         </div>
         <h1 className="mt-4 text-[1.75rem] font-extrabold leading-tight text-gray-900">
-          Hoàn thành Phần {partNumber}!
+          {tFormat(t.complete, { partNumber })}
         </h1>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-600">
-          Bạn đã hoàn thành phần <span className="font-bold text-gray-800">{doneLabel}</span>.
+          {t.completedPrefix} <span className="font-bold text-gray-800">{doneLabel}</span>.
           <br className="hidden sm:block" />{' '}
-          {isSpeaking
-            ? 'Làm tốt lắm! Hãy tiếp tục phần tiếp theo.'
-            : 'Tiến bộ lắm! Cùng bước vào phần cuối nhé.'}
+          {isSpeaking ? t.completedCivicsMsg : t.completedSpeakingMsg}
         </p>
 
         {donePart ? (
           <div className="mx-auto mt-6 max-w-md rounded-2xl border border-slate-100 p-5">
-            <div className="text-sm font-bold text-gray-700">Điểm của bạn</div>
+            <div className="text-sm font-bold text-gray-700">{t.yourScore}</div>
             <div className="mt-1.5 flex items-center justify-center gap-3">
               <div className="text-4xl font-extrabold text-gray-900">
                 {donePart.correct}
@@ -141,24 +150,24 @@ export function InterludeScreen({
                   donePart.passed ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
                 }`}
               >
-                {donePart.passed ? 'Đạt' : 'Chưa đạt'}
+                {donePart.passed ? dict.mockTest.summary.passedLabel : dict.mockTest.summary.failedLabel}
               </span>
             </div>
             <p className="mt-2 text-sm text-gray-500">
               {donePart.passed
-                ? `Bạn đã vượt qua phần ${doneLabel}.`
-                : `Cần thêm ${remaining} câu đúng để đạt phần này.`}
+                ? tFormat(t.partPassed, { doneLabel })
+                : tFormat(t.needMore, { remaining })}
             </p>
             <div className="mt-4 border-t border-slate-100 pt-4">
               <div className="flex items-center justify-center gap-10">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 size={18} className="shrink-0 text-teal-600" />
-                  <span className="text-sm text-gray-600">Đúng</span>
+                  <span className="text-sm text-gray-600">{dict.mockTest.result.filterCorrect}</span>
                   <span className="text-lg font-extrabold text-teal-600">{donePart.correct}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <XCircle size={18} className="shrink-0 text-red-400" />
-                  <span className="text-sm text-gray-600">Sai</span>
+                  <span className="text-sm text-gray-600">{dict.mockTest.result.filterWrong}</span>
                   <span className="text-lg font-extrabold text-red-500">
                     {donePart.total - donePart.correct}
                   </span>
@@ -169,10 +178,8 @@ export function InterludeScreen({
         ) : null}
 
         <div className="mx-auto mt-4 max-w-md">
-          <EncourageBanner title={isSpeaking ? 'Cố lên!' : 'Sắp xong rồi!'}>
-            {isSpeaking
-              ? 'Bạn vẫn có thể đậu Full Interview. Hãy làm thật tốt các phần tiếp theo!'
-              : 'Bạn đang làm rất tốt! Còn một phần cuối — hoàn thành thật tốt phần Writing nhé!'}
+          <EncourageBanner title={isSpeaking ? t.encourageSpeaking : t.encourageWriting}>
+            {isSpeaking ? t.encourageSpeakingMsg : t.encourageWritingMsg}
           </EncourageBanner>
         </div>
 
@@ -181,12 +188,12 @@ export function InterludeScreen({
           onClick={onContinue}
           className="group mx-auto mt-6 inline-flex w-full max-w-[300px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-base font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
         >
-          Tiếp tục phần {nextLabel}
+          {tFormat(t.continuePart, { nextLabel })}
           <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
         </button>
         <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-gray-500">
           <Clock size={14} className="shrink-0" />
-          Thời gian dự kiến: {estimate}
+          {tFormat(t.estimatedTime, { estimate })}
         </div>
       </div>
     </div>
