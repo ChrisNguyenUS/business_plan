@@ -678,7 +678,7 @@ export const en: N400Dict = {
       yourScore: 'Your Score',
       partPassed: "You've passed {doneLabel}.",
       needMore: 'Need {remaining} more correct to pass this part.',
-      encourageSpeaking: 'Come on!',
+      encourageSpeaking: "You've got this!",
       encourageSpeakingMsg: 'You can still pass the Full Interview. Do great on the next parts!',
       encourageWriting: 'Almost there!',
       encourageWritingMsg: "You're doing great! One final part — nail the Writing section!",
