@@ -22,6 +22,7 @@ import { questionAudioUrl } from '@/lib/n400/quiz-engine';
 import { gradeWritingSentence } from '@/lib/n400/writing-grader';
 import type { WritingSentence } from '@/lib/n400/writing-data';
 import type { MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export interface CivicsAnswer {
   questionId: number;
@@ -112,6 +113,7 @@ export default function ReviewAnswers({
   onRetake,
 }: ReviewAnswersProps) {
   const { state, toggleBookmark } = useN400UserState();
+  const { dict } = useN400Lang();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sectionFilter, setSectionFilter] = useState<SectionFilter>('all');
 
@@ -388,6 +390,7 @@ export default function ReviewAnswers({
                         gradeWritingSentence(
                           item.writingDiff.userInput,
                           item.writingDiff.sentenceEn,
+                          dict,
                         ).wordResults
                       }
                       showAnnotations={false}

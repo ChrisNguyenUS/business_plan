@@ -12,6 +12,7 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { WRITING_SENTENCES, type WritingSentence } from '@/lib/n400/writing-data';
 import { writingPresets } from '@/lib/n400/section-presets';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 import { shuffle } from '@/lib/n400/quiz-engine';
 import {
   deriveSectionSeen,
@@ -33,12 +34,6 @@ const ALL = WRITING_SENTENCES;
 type Mode =
   | { kind: 'landing' }
   | { kind: 'quiz'; questions: WritingSentence[]; minutes?: number | null };
-
-const WRITING_RULES = [
-  'Viết hoa tên người và địa danh (ví dụ: George Washington, California).',
-  'Viết hoa chữ cái đầu câu và không viết tắt (viết United States, không viết U.S.).',
-  'Nghe kỹ — dùng nút "Đọc chậm" nếu chưa rõ, rồi gõ lại đúng chính tả.',
-];
 
 export default function WritingPage() {
   const { dict } = useN400Lang();
@@ -69,9 +64,9 @@ export default function WritingPage() {
     if (wrongsCount > 0) {
       list.push({
         id: 'wrongs',
-        title: 'Ôn lại câu sai',
-        desc: 'Viết lại các câu bạn đã viết sai để ghi nhớ tốt hơn.',
-        countLabel: `${wrongsCount} câu`,
+        title: dict.common.reviewWrongAnswers,
+        desc: dict.writing.wrongsDesc,
+        countLabel: tFormat(dict.study.civics.practice.countLabel, { count: wrongsCount }),
         minutes: 5,
       });
     }
@@ -104,7 +99,7 @@ export default function WritingPage() {
   });
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   const startQuizWith = (count: number, minutes?: number | null) => {
@@ -153,8 +148,8 @@ export default function WritingPage() {
           emoji="✍️"
           imageSrc="/images/n400/writing-thumbnail-study.png"
           title="Writing"
-          countLabel={`${ALL.length} câu viết`}
-          tagline="Nghe và gõ lại câu — luyện phần thi viết N-400."
+          countLabel={tFormat(dict.writing.heroCount, { count: ALL.length })}
+          tagline={dict.writing.tagline}
           accentTextClass="text-orange-600"
           accentBarClass="bg-orange-500"
           stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
@@ -173,10 +168,10 @@ export default function WritingPage() {
         <section className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
           <div className="mb-2 flex items-center gap-2">
             <Lightbulb size={18} className="shrink-0 text-yellow-500" />
-            <span className="text-sm font-bold text-yellow-800">Quy tắc viết</span>
+            <span className="text-sm font-bold text-yellow-800">{dict.writing.rulesCardTitle}</span>
           </div>
           <ul className="list-disc space-y-1 pl-5 text-sm text-yellow-900">
-            {WRITING_RULES.map((rule) => (
+            {dict.writing.rules.map((rule) => (
               <li key={rule}>{rule}</li>
             ))}
           </ul>
@@ -184,9 +179,9 @@ export default function WritingPage() {
 
         {showWeak ? (
           <HubWeakAreasCard
-            title="Câu cần cải thiện"
-            subtitle="Tập trung vào các câu bạn hay viết sai."
-            metricLabel="Độ chính xác trung bình"
+            title={dict.writing.weakTitle}
+            subtitle={dict.writing.weakSubtitle}
+            metricLabel={dict.quiz.avgAccuracyLabel}
             percentSuffix=""
             accuracyPercent={accuracy}
             onPractice={() => {

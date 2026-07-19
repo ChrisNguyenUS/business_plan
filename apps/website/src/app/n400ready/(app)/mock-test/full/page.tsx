@@ -44,6 +44,9 @@ import {
 } from '@/lib/n400/full-interview';
 import { SectionMCQuiz } from '@/components/n400/speaking/SectionMCQuiz';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 interface PartResult {
   correct: number;
@@ -72,56 +75,66 @@ function generateAttemptId(): string {
 
 const FULL_TOTAL_COUNT = FULL_CIVICS_COUNT + FULL_SPEAKING_COUNT + FULL_WRITING_COUNT;
 
-const PARTS_COPY: {
+function buildPartsCopy(dict: N400Dict): {
   icon: LucideIcon;
   tone: string;
   label: string;
   desc: string;
   passMin: number;
   total: number;
-}[] = [
-  {
-    icon: BookOpen,
-    tone: 'bg-teal-50 text-teal-600',
-    label: 'Phần 1 · Civics',
-    desc: `${FULL_CIVICS_COUNT} câu hỏi trắc nghiệm về kiến thức công dân (128 câu hỏi).`,
-    passMin: FULL_CIVICS_PASS,
-    total: FULL_CIVICS_COUNT,
-  },
-  {
-    icon: MessageCircle,
-    tone: 'bg-blue-50 text-blue-600',
-    label: 'Phần 2 · Speaking',
-    desc: `${FULL_SPEAKING_COUNT} câu hỏi phỏng vấn (What Mean + Yes/No).`,
-    passMin: FULL_SPEAKING_PASS,
-    total: FULL_SPEAKING_COUNT,
-  },
-  {
-    icon: PenLine,
-    tone: 'bg-orange-50 text-orange-500',
-    label: 'Phần 3 · Writing',
-    desc: `${FULL_WRITING_COUNT} câu viết theo yêu cầu của viên chức USCIS.`,
-    passMin: FULL_WRITING_PASS,
-    total: FULL_WRITING_COUNT,
-  },
-];
+}[] {
+  return [
+    {
+      icon: BookOpen,
+      tone: 'bg-teal-50 text-teal-600',
+      label: dict.mockTest.full.partLabels.civics,
+      desc: tFormat(dict.mockTest.full.civicsDesc, { count: FULL_CIVICS_COUNT }),
+      passMin: FULL_CIVICS_PASS,
+      total: FULL_CIVICS_COUNT,
+    },
+    {
+      icon: MessageCircle,
+      tone: 'bg-blue-50 text-blue-600',
+      label: dict.mockTest.full.partLabels.speaking,
+      desc: tFormat(dict.mockTest.full.speakingDesc, { count: FULL_SPEAKING_COUNT }),
+      passMin: FULL_SPEAKING_PASS,
+      total: FULL_SPEAKING_COUNT,
+    },
+    {
+      icon: PenLine,
+      tone: 'bg-orange-50 text-orange-500',
+      label: dict.mockTest.full.partLabels.writing,
+      desc: tFormat(dict.mockTest.full.writingDesc, { count: FULL_WRITING_COUNT }),
+      passMin: FULL_WRITING_PASS,
+      total: FULL_WRITING_COUNT,
+    },
+  ];
+}
 
-const INTRO_CHIPS: { icon: LucideIcon; label: string }[] = [
-  { icon: ClipboardList, label: `${FULL_TOTAL_COUNT} Câu hỏi` },
-  { icon: Clock, label: '15 – 18 Phút' },
-  { icon: ShieldCheck, label: 'Chuẩn USCIS' },
-  { icon: Lock, label: 'Không thể quay lại' },
-];
+function buildIntroChips(dict: N400Dict): { icon: LucideIcon; label: string }[] {
+  return [
+    { icon: ClipboardList, label: tFormat(dict.mockTest.full.introChips.totalQuestions, { count: FULL_TOTAL_COUNT }) },
+    { icon: Clock, label: dict.mockTest.full.introChips.duration },
+    { icon: ShieldCheck, label: dict.mockTest.full.introChips.standard },
+    { icon: Lock, label: dict.mockTest.full.introChips.noReview },
+  ];
+}
 
-const INTRO_RULES: { icon: LucideIcon; text: string }[] = [
-  { icon: Play, text: 'Bài thi sẽ diễn ra liên tục qua 3 phần.' },
-  { icon: XCircle, text: 'Bạn không thể quay lại các câu đã trả lời.' },
-  { icon: BarChart3, text: 'Kết quả sẽ được hiển thị sau khi hoàn thành bài thi.' },
-];
+function buildIntroRules(dict: N400Dict): { icon: LucideIcon; text: string }[] {
+  return [
+    { icon: Play, text: dict.mockTest.full.introRules.continuous },
+    { icon: XCircle, text: dict.mockTest.full.introRules.noBack },
+    { icon: BarChart3, text: dict.mockTest.full.introRules.resultAfter },
+  ];
+}
 
 export default function FullInterviewPage() {
+  const { dict } = useN400Lang();
   const base = '/n400ready';
   const { state, hydrated, recordMockResult, recordSectionMockResult } = useN400UserState();
+  const PARTS_COPY = buildPartsCopy(dict);
+  const INTRO_CHIPS = buildIntroChips(dict);
+  const INTRO_RULES = buildIntroRules(dict);
 
   const [seed, setSeed] = useState(0);
   const [phase, setPhase] = useState<Phase>({ kind: 'intro' });
@@ -142,14 +155,14 @@ export default function FullInterviewPage() {
   const districtNumber = state.address.districtNumber;
 
   const civicsQuestions = useMemo(
-    () => buildCivicsPhase(`full-${seed}`, stateCode, districtNumber),
-    [seed, stateCode, districtNumber],
+    () => buildCivicsPhase(`full-${seed}`, stateCode, districtNumber, dict),
+    [seed, stateCode, districtNumber, dict],
   );
-  const speakingQuestions = useMemo(() => buildSpeakingPhase(`full-${seed}`), [seed]);
+  const speakingQuestions = useMemo(() => buildSpeakingPhase(`full-${seed}`, dict), [seed, dict]);
   const writingQuestions = useMemo(() => buildWritingPhase(`full-${seed}`), [seed]);
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   const begin = () => {
@@ -187,11 +200,11 @@ export default function FullInterviewPage() {
       <SectionMCQuiz
         key={`civ-${seed}`}
         questions={civicsQuestions}
-        title="Phỏng vấn đầy đủ — Civics"
+        title={dict.mockTest.full.civicsQuizTitle}
         skipSummary
         examMode
         mockMode="full"
-        examSection={{ current: 1, total: 3, label: 'Civics', labelVi: 'Kiến thức công dân' }}
+        examSection={{ current: 1, total: 3, ...dict.mockTest.full.civicsSection }}
         onAnswer={(itemId, ok, selected) =>
           civicsAnswers.current.push({
             questionId: Number(itemId.slice(4)),
@@ -232,11 +245,11 @@ export default function FullInterviewPage() {
       <SectionMCQuiz
         key={`sp-${seed}`}
         questions={speakingQuestions}
-        title="Phỏng vấn đầy đủ — Speaking"
+        title={dict.mockTest.full.speakingQuizTitle}
         skipSummary
         examMode
         mockMode="full"
-        examSection={{ current: 2, total: 3, label: 'Speaking', labelVi: 'Kỹ năng nói' }}
+        examSection={{ current: 2, total: 3, ...dict.mockTest.full.speakingSection }}
         onAnswer={(itemId, ok, selected) =>
           speakingAnswers.current.push({ itemId, wasCorrect: ok, selectedEn: selected?.en })
         }
@@ -261,7 +274,7 @@ export default function FullInterviewPage() {
         skipSummary
         examMode
         mockMode="full"
-        examSection={{ current: 3, total: 3, label: 'Writing', labelVi: 'Kỹ năng viết' }}
+        examSection={{ current: 3, total: 3, ...dict.mockTest.full.writingSection }}
         onSessionEnd={({ correct, total, answered, perItem }) => {
           // Mid-quiz "Đổi chế độ" abandons the part — record nothing, matching
           // civics/speaking onExit semantics. Only a fully answered session
@@ -342,12 +355,11 @@ export default function FullInterviewPage() {
         <Mic size={28} />
       </div>
       <h1 className="mt-4 text-[1.75rem] font-extrabold leading-tight text-gray-900">
-        Bắt đầu Full Interview
+        {dict.mockTest.full.startTitle}
       </h1>
       <p className="mx-auto mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-gray-600">
-        Thực hành buổi phỏng vấn nhập tịch N-400 đầy đủ như thật.
-        <br className="hidden sm:block" /> Bài thi sẽ diễn ra liên tục qua 3 phần, theo đúng tiêu
-        chuẩn của USCIS.
+        {dict.mockTest.full.introLine1}
+        <br className="hidden sm:block" /> {dict.mockTest.full.introLine2}
       </p>
 
       {/* Quick info chips */}
@@ -390,10 +402,10 @@ export default function FullInterviewPage() {
               <div className="w-full shrink-0 pl-16 text-left sm:w-auto sm:pl-0 sm:text-right">
                 <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600">
                   <CheckCircle2 size={15} className="shrink-0" />
-                  Đạt nếu đúng ≥ {p.passMin}
+                  {tFormat(dict.mockTest.full.passMinLabel, { passMin: p.passMin })}
                 </span>{' '}
                 <span className="whitespace-nowrap text-xs font-medium text-teal-600/80 sm:block">
-                  (trên {p.total} câu)
+                  {tFormat(dict.mockTest.full.onTotalLabel, { total: p.total })}
                 </span>
               </div>
             </div>
@@ -405,7 +417,7 @@ export default function FullInterviewPage() {
       <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-left sm:p-5">
         <div className="flex items-center gap-2 text-sm font-bold text-blue-700">
           <Info size={16} className="shrink-0" />
-          Lưu ý quan trọng
+          {dict.mockTest.full.importantNote}
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {INTRO_RULES.map((r) => {
@@ -426,10 +438,10 @@ export default function FullInterviewPage() {
         onClick={begin}
         className="group mx-auto mt-7 inline-flex w-full max-w-[300px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-base font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
       >
-        Bắt đầu Full Interview
+        {dict.mockTest.full.startTitle}
         <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
       </button>
-      <p className="mt-3 text-sm text-gray-600">Chúc bạn bình tĩnh và làm bài thật tốt! 🍀</p>
+      <p className="mt-3 text-sm text-gray-600">{dict.mockTest.full.goodLuck}</p>
     </CenterCard>
   );
 }

@@ -35,6 +35,8 @@ import {
   type MockExamSection,
   type MockMode,
 } from '@/components/n400/mock-test-chrome';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 interface DictationResult {
   sentenceId: string;
@@ -80,10 +82,6 @@ function stripBold(text: string): string {
   return text.replace(/\*\*/g, '');
 }
 
-const WRITING_TIP = (
-  <>Nghe kỹ, dùng nút <b className="font-semibold">Đọc chậm</b> nếu chưa rõ. Viết hoa tên
-  riêng &amp; địa danh, không viết tắt (viết <i>United States</i>, không <i>U.S.</i>).</>
-);
 
 /**
  * Audio transport for the dictation card (image mock): a strong primary
@@ -92,6 +90,7 @@ const WRITING_TIP = (
  * finishes. Single shared audio element — no duplicate audio buttons elsewhere.
  */
 function DictationAudio({ src, examMode = false }: { src: string | null; examMode?: boolean }) {
+  const { dict } = useN400Lang();
   const [playing, setPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -153,10 +152,10 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
   // Practice/study keep the buttons Vietnamese-only ("Nghe", "Nghe lại"); the
   // exam keeps the bilingual USCIS-style labels.
   const listenLabel = playing
-    ? 'Đang phát…'
+    ? dict.quiz.audio.playing
     : hasPlayed
-      ? 'Nghe lại'
-      : 'Nghe';
+      ? dict.quiz.audio.replay
+      : dict.quiz.audio.listen;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -179,7 +178,7 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
       >
         <Turtle size={17} className="shrink-0" />
         {/* Both exam and practice/study use the Vietnamese-only "Đọc chậm". */}
-        <span>Đọc chậm</span>
+        <span>{dict.quiz.audio.slow}</span>
       </button>
     </div>
   );
@@ -194,6 +193,18 @@ export function DictationQuiz({
   mockMode = 'full',
   estimatedMinutes,
 }: DictationQuizProps) {
+  const { dict } = useN400Lang();
+  const WRITING_TIP = (
+    <>
+      {dict.writing.tipCard.before}
+      <b className="font-semibold">{dict.quiz.audio.slow}</b>
+      {dict.writing.tipCard.afterSlow}
+      <i>United States</i>
+      {dict.writing.tipCard.betweenItalics}
+      <i>U.S.</i>
+      {dict.writing.tipCard.afterItalics}
+    </>
+  );
   const [index, setIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null);
@@ -283,7 +294,7 @@ export function DictationQuiz({
 
   const onCheck = () => {
     if (!userInput.trim()) return;
-    const result = gradeWritingSentence(userInput, q.sentenceEn);
+    const result = gradeWritingSentence(userInput, q.sentenceEn, dict);
     setGradeResult(result);
     setShowFeedback(true);
     // Score the question by its first attempt only.
@@ -314,7 +325,7 @@ export function DictationQuiz({
     // Exam mode grades right here — the learner never saw a Kiểm tra step, so
     // the one submitted attempt IS the graded attempt.
     const examCorrect = examMode
-      ? gradeWritingSentence(userInput, q.sentenceEn).isCorrect
+      ? gradeWritingSentence(userInput, q.sentenceEn, dict).isCorrect
       : null;
     if (typeof window !== 'undefined') window.sessionStorage.removeItem(`n400.writing.draft.${q.id}`);
     setResults((prev) => [
@@ -336,7 +347,7 @@ export function DictationQuiz({
   };
 
   const audioSrc = writingAudioUrl(q.num);
-  const feedbackBlocks = gradeResult ? buildFeedbackBlocks(gradeResult.annotations) : [];
+  const feedbackBlocks = gradeResult ? buildFeedbackBlocks(gradeResult.annotations, dict) : [];
   const guidance = feedbackBlocks.find((b) => b.type === 'guidance');
   const annotationHints = feedbackBlocks.filter((b) => b.type === 'annotation');
 
@@ -352,7 +363,7 @@ export function DictationQuiz({
         <PracticeProgressRow
           index={index}
           total={questions.length}
-          unit="Câu"
+          unit={dict.quiz.unit.sentence}
           onBack={() => onSessionEnd(sessionResults())}
           showTime
           estimatedMinutes={estimatedMinutes}
@@ -372,7 +383,7 @@ export function DictationQuiz({
               {/* Item badge / topic hint intentionally omitted — the progress
                   row above already tracks position. */}
               <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
-                Nghe và gõ lại câu bạn nghe
+                {dict.writing.instructionTitle}
               </div>
               <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                 Listen and type the sentence you hear
@@ -399,7 +410,7 @@ export function DictationQuiz({
                   }
                 }}
                 readOnly={showFeedback && isCorrect}
-                placeholder="Gõ chính xác câu bạn nghe... / Type exactly what you hear..."
+                placeholder={dict.writing.textareaPlaceholder}
                 rows={2}
                 className="w-full resize-none rounded-2xl border-2 border-gray-200 bg-white p-[clamp(0.625rem,1.5vh,1rem)] text-gray-800 leading-relaxed outline-none transition-colors focus:border-teal-400"
                 style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1.05rem)' }}
@@ -409,10 +420,10 @@ export function DictationQuiz({
               <div className="mt-1.5 flex items-center justify-end text-xs">
                 {userInput.length > 0 ? (
                   <span className="flex items-center gap-1 font-medium text-teal-600">
-                    <Check size={13} className="shrink-0" /> Auto saving…
+                    <Check size={13} className="shrink-0" /> {dict.writing.autoSaving}
                   </span>
                 ) : (
-                  <span className="text-gray-400">{wordCount} từ / words</span>
+                  <span className="text-gray-400">{tFormat(dict.writing.wordCount, { count: wordCount })}</span>
                 )}
               </div>
             </div>
@@ -424,7 +435,7 @@ export function DictationQuiz({
                 <div className="flex items-center gap-2 mb-1">
                   <EarOff size={16} className="text-blue-500 shrink-0" />
                   <span className="font-bold text-blue-800 uppercase tracking-wide" style={{ fontSize: 'clamp(0.6rem, 1vw, 0.7rem)' }}>
-                    Câu đúng — gõ lại để tiếp tục
+                    {dict.writing.revealedLabel}
                   </span>
                 </div>
                 <div className="font-medium text-blue-900" style={{ fontSize: 'clamp(0.85rem, 1.6vw, 1rem)' }}>
@@ -447,7 +458,7 @@ export function DictationQuiz({
                     <XCircle size={18} className="text-red-500 shrink-0" />
                   )}
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)' }}>
-                    {isCorrect ? '✓ Đúng!' : '✗ Sai — vui lòng thử lại'}
+                    {isCorrect ? dict.writing.feedbackCorrect : dict.writing.feedbackIncorrect}
                   </span>
                 </div>
 
@@ -457,7 +468,7 @@ export function DictationQuiz({
                 {/* Correct answer (shown so the learner can retype it) */}
                 <div className="rounded-2xl bg-gray-50 border border-gray-100 p-[clamp(0.5rem,1.2vh,0.875rem)]">
                   <div className="text-gray-400 uppercase tracking-wide mb-1" style={{ fontSize: 'clamp(0.6rem, 1vw, 0.7rem)' }}>
-                    Câu đúng / Answer
+                    {dict.writing.correctAnswerLabel}
                   </div>
                   <div className="font-medium text-gray-800" style={{ fontSize: 'clamp(0.85rem, 1.6vw, 1rem)' }}>
                     {q.sentenceEn}
@@ -470,7 +481,7 @@ export function DictationQuiz({
                     <div className="flex items-center gap-2 mb-1.5">
                       <Lightbulb size={16} className="text-yellow-500 shrink-0" />
                       <span className="font-bold text-yellow-800" style={{ fontSize: 'clamp(0.75rem, 1.4vw, 0.875rem)' }}>
-                        Quy tắc viết
+                        {dict.writing.rulesCardTitle}
                       </span>
                     </div>
                     <p className="text-yellow-900/90 whitespace-pre-line leading-relaxed" style={{ fontSize: 'clamp(0.75rem, 1.4vw, 0.875rem)' }}>
@@ -495,7 +506,7 @@ export function DictationQuiz({
               </div>
             ) : !showFeedback && !revealed ? (
               <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
-                <LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>
+                <LearningTipCard title={dict.writing.tipTitle}>{WRITING_TIP}</LearningTipCard>
               </div>
             ) : null}
           </div>
@@ -518,7 +529,7 @@ export function DictationQuiz({
                 }`}
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>{index === questions.length - 1 ? 'Nộp bài' : 'Next'}</span>
+                <span>{index === questions.length - 1 ? dict.mockTest.submitButton : 'Next'}</span>
                 <ArrowRight size={16} />
               </button>
             ) : !showFeedback ? (
@@ -534,7 +545,7 @@ export function DictationQuiz({
                   }`}
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                 >
-                  <CheckCircle size={16} /> Kiểm tra / Check
+                  <CheckCircle size={16} /> {dict.writing.checkButton}
                 </button>
                 {!revealed ? (
                   <button
@@ -543,7 +554,7 @@ export function DictationQuiz({
                     className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-600 hover:bg-gray-50 transition-all"
                     style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                   >
-                    <EarOff size={16} /> Chưa nghe được
+                    <EarOff size={16} /> {dict.writing.unheardButton}
                   </button>
                 ) : null}
               </div>
@@ -556,7 +567,7 @@ export function DictationQuiz({
                     className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 transition-all"
                     style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                   >
-                    <RotateCw size={16} /> Thử lại
+                    <RotateCw size={16} /> {dict.writing.retryButton}
                   </button>
                 ) : null}
                 {/* After revealing the caption the learner must type it correctly —
@@ -568,7 +579,7 @@ export function DictationQuiz({
                     className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all"
                     style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                   >
-                    <span>Tiếp theo / Next</span>
+                    <span>{dict.practice.next}</span>
                     <ArrowRight size={16} />
                   </button>
                 ) : null}
@@ -582,7 +593,7 @@ export function DictationQuiz({
           <MockExamPanel mode={mockMode} />
         ) : (
           <PracticeSupportPanel
-            tip={<LearningTipCard title="Mẹo viết / Writing Tip">{WRITING_TIP}</LearningTipCard>}
+            tip={<LearningTipCard title={dict.writing.tipTitle}>{WRITING_TIP}</LearningTipCard>}
           />
         )}
       </div>

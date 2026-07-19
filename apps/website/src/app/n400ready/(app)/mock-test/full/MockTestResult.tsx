@@ -21,6 +21,8 @@ import {
   FULL_WRITING_PASS,
 } from '@/lib/n400/full-interview';
 import type { CivicsAnswer } from './ReviewAnswers';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 interface PartResult {
   correct: number;
@@ -80,6 +82,7 @@ export default function MockTestResult({
   onReviewAnswers,
   basePath,
 }: MockTestResultProps) {
+  const { dict } = useN400Lang();
   const civicsWrongCount = civicsAnswers.filter((a) => !a.wasCorrect).length;
 
   const sections: {
@@ -111,28 +114,28 @@ export default function MockTestResult({
       const weakCategory = findWeakestCategory(civicsAnswers);
       const weakLabel = weakCategory ? N400_CATEGORY_LABELS[weakCategory]?.vi : null;
       return {
-        title: `Xem lại ${civicsWrongCount} câu Civics sai`,
+        title: tFormat(dict.mockTest.summary.recommendCivicsTitle, { count: civicsWrongCount }),
         desc: weakLabel
-          ? `Civics là phần yếu nhất của bạn — sai nhiều nhất ở chủ đề ${weakLabel}. Hiểu rõ câu sai trước khi thi lại.`
-          : 'Civics là phần yếu nhất của bạn. Hiểu rõ câu sai trước khi thi lại.',
-        cta: { label: 'Xem câu sai Civics', onClick: onReviewAnswers },
+          ? tFormat(dict.mockTest.summary.recommendCivicsDescWithCategory, { category: weakLabel })
+          : dict.mockTest.summary.recommendCivicsDesc,
+        cta: { label: dict.mockTest.summary.recommendCivicsCta, onClick: onReviewAnswers },
       };
     }
     if (weakest.key === 'speaking') {
       return {
-        title: 'Luyện tập Speaking',
-        desc: 'Speaking là phần yếu nhất của bạn. Luyện thêm What Mean và Yes/No để nghe câu hỏi tự tin hơn.',
-        cta: { label: 'Luyện tập Speaking', href: `${basePath}/speaking` },
+        title: dict.mockTest.summary.recommendSpeaking,
+        desc: dict.mockTest.summary.recommendSpeakingDesc,
+        cta: { label: dict.mockTest.summary.recommendSpeaking, href: `${basePath}/speaking` },
       };
     }
     return {
-      title: 'Luyện tập Viết',
-      desc: 'Writing là phần yếu nhất của bạn. Luyện nghe – viết lại câu để quen quy tắc viết của USCIS.',
-      cta: { label: 'Luyện tập Viết', href: `${basePath}/writing` },
+      title: dict.mockTest.summary.recommendWriting,
+      desc: dict.mockTest.summary.recommendWritingDesc,
+      cta: { label: dict.mockTest.summary.recommendWriting, href: `${basePath}/writing` },
     };
     // `sections` is rebuilt every render from props — depend on the underlying values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [civics, speaking, writing, civicsAnswers, civicsWrongCount, basePath, onReviewAnswers]);
+  }, [civics, speaking, writing, civicsAnswers, civicsWrongCount, basePath, onReviewAnswers, dict]);
 
   const lowAccuracy = totalQuestions > 0 && totalScore / totalQuestions < 0.5;
 
@@ -149,7 +152,7 @@ export default function MockTestResult({
           <Trophy size={34} />
         </div>
         <h1 className="mt-4 text-[1.75rem] font-extrabold leading-tight text-gray-900">
-          Hoàn thành cả 3 phần!
+          {dict.mockTest.summary.title}
         </h1>
         <div className="mt-2">
           <span
@@ -157,24 +160,22 @@ export default function MockTestResult({
               overall ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
             }`}
           >
-            {overall ? 'Đạt' : 'Chưa đạt'}
+            {overall ? dict.mockTest.summary.passedLabel : dict.mockTest.summary.failedLabel}
           </span>
         </div>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-600">
-          {overall
-            ? 'Chúc mừng! Bạn đã vượt qua cả 3 phần của buổi phỏng vấn thử.'
-            : 'Bạn đã hoàn thành buổi phỏng vấn đầy đủ. Cùng xem kết quả nhé!'}
+          {overall ? dict.mockTest.summary.passSubtitle : dict.mockTest.summary.failSubtitle}
         </p>
 
         {/* Overall score */}
         <div className="mt-6 rounded-2xl border border-teal-100 bg-teal-50/50 p-5">
-          <div className="text-sm font-bold text-gray-700">Điểm Full Interview của bạn</div>
+          <div className="text-sm font-bold text-gray-700">{dict.mockTest.summary.scoreTitle}</div>
           <div className="mt-1 text-5xl font-extrabold text-teal-600">
             {totalScore}
             <span className="text-2xl font-bold text-gray-400">/{totalQuestions}</span>
           </div>
           <p className="mt-1.5 text-sm text-gray-600">
-            Bạn trả lời đúng {totalScore} trên {totalQuestions} câu hỏi.
+            {tFormat(dict.mockTest.summary.scoreSummary, { score: totalScore, total: totalQuestions })}
           </p>
         </div>
 
@@ -199,7 +200,7 @@ export default function MockTestResult({
                       passed ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
                     }`}
                   >
-                    {passed ? 'Đạt' : 'Chưa đạt'}
+                    {passed ? dict.mockTest.summary.passedLabel : dict.mockTest.summary.failedLabel}
                   </span>
                 </div>
                 <div className="mt-2.5 text-2xl font-extrabold text-gray-900">
@@ -214,7 +215,9 @@ export default function MockTestResult({
                   />
                 </div>
                 <p className="mt-2 text-xs text-gray-500">
-                  {passed ? 'Đã vượt qua phần này' : `Cần thêm ${remaining} câu để đạt`}
+                  {passed
+                    ? dict.mockTest.summary.sectionPassed
+                    : tFormat(dict.mockTest.summary.sectionRemaining, { remaining })}
                 </p>
               </div>
             );
@@ -235,7 +238,7 @@ export default function MockTestResult({
                 <div className="text-sm font-bold text-gray-800">{recommendation.title}</div>
                 <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-gray-600">
                   {recommendation.desc}
-                  {lowAccuracy ? ' Sau khi luyện tập, hãy thi lại Full Interview nhé.' : ''}
+                  {lowAccuracy ? dict.mockTest.summary.lowAccuracyNote : ''}
                 </p>
               </div>
               {recommendation.cta.href ? (
@@ -262,10 +265,12 @@ export default function MockTestResult({
 
         {/* Encouragement */}
         <div className="mt-4">
-          <EncourageBanner title={overall ? 'Làm tốt lắm!' : 'Mỗi lần thi là một lần tiến bộ!'}>
+          <EncourageBanner
+            title={overall ? dict.mockTest.summary.encouragePassTitle : dict.mockTest.summary.encourageFailTitle}
+          >
             {overall
-              ? 'Bạn đã sẵn sàng cho buổi phỏng vấn quốc tịch. Ôn lại đều đặn để giữ vững phong độ nhé!'
-              : 'Xem lại đáp án, luyện phần còn yếu và thử lại nhé.'}
+              ? dict.mockTest.summary.encouragePassBody
+              : dict.mockTest.summary.encourageFailBody}
           </EncourageBanner>
         </div>
 
@@ -277,7 +282,7 @@ export default function MockTestResult({
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-teal-600 bg-white px-6 py-3.5 text-sm font-bold text-teal-700 transition-colors hover:bg-teal-50"
           >
             <FileText size={16} />
-            Xem lại đáp án
+            {dict.mockTest.summary.reviewAnswersButton}
           </button>
           <button
             type="button"
@@ -285,13 +290,13 @@ export default function MockTestResult({
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
           >
             <RotateCcw size={16} />
-            Thi lại Full Interview
+            {dict.mockTest.summary.retakeFullButton}
           </button>
         </div>
 
         <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-gray-500">
           <Clock size={14} className="shrink-0" />
-          Thời gian dự kiến: 15–18 phút
+          {dict.mockTest.summary.estimatedTime}
         </div>
 
         <Link
@@ -299,7 +304,7 @@ export default function MockTestResult({
           className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 transition-colors hover:text-gray-600"
         >
           <BookOpen size={14} />
-          Chọn bài thi khác
+          {dict.mockTest.summary.chooseAnotherTest}
         </Link>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { vi } from './i18n/vi';
 import {
   FULL_CIVICS_COUNT,
   FULL_CIVICS_PASS,
@@ -19,7 +20,7 @@ describe('full interview builders', () => {
   });
 
   it('civics phase: 20 unique questions, 4 options each, exactly one correct, civ- item ids', () => {
-    const qs = buildCivicsPhase('seed-1', 'TX', null);
+    const qs = buildCivicsPhase('seed-1', 'TX', null, vi);
     expect(qs).toHaveLength(20);
     expect(new Set(qs.map((q) => q.itemId)).size).toBe(20);
     for (const q of qs) {
@@ -30,13 +31,13 @@ describe('full interview builders', () => {
   });
 
   it('civics phase is deterministic per seed', () => {
-    const a = buildCivicsPhase('seed-1', 'TX', null).map((q) => q.itemId);
-    const b = buildCivicsPhase('seed-1', 'TX', null).map((q) => q.itemId);
+    const a = buildCivicsPhase('seed-1', 'TX', null, vi).map((q) => q.itemId);
+    const b = buildCivicsPhase('seed-1', 'TX', null, vi).map((q) => q.itemId);
     expect(a).toEqual(b);
   });
 
   it('speaking phase: 5 what-mean then 5 yes-no, yes/no graded correctly', () => {
-    const qs = buildSpeakingPhase('seed-1');
+    const qs = buildSpeakingPhase('seed-1', vi);
     expect(qs).toHaveLength(10);
     expect(qs.slice(0, 5).every((q) => q.itemId.startsWith('wm-'))).toBe(true);
     const yn = qs.slice(5);

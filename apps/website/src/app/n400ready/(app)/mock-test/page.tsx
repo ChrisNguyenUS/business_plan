@@ -19,15 +19,10 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Card } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 const THUMB_DIR = '/images/n400/Mock test thumbanil';
-
-const HERO_FEATURES: { icon: LucideIcon; label: string }[] = [
-  { icon: Shuffle, label: 'Câu hỏi ngẫu nhiên' },
-  { icon: Clock, label: 'Giới hạn thời gian' },
-  { icon: ShieldCheck, label: 'Chấm điểm chuẩn USCIS' },
-  { icon: Lock, label: 'Không thể quay lại đáp án' },
-];
 
 interface TestCard {
   slug: 'full' | 'civics' | 'speaking' | 'viet';
@@ -41,49 +36,51 @@ interface TestCard {
   featured?: boolean;
 }
 
-const TESTS: TestCard[] = [
-  {
-    slug: 'full',
-    image: `${THUMB_DIR}/fullinterview-mocktest.png`,
-    title: 'Full Interview',
-    desc: 'Mô phỏng đầy đủ 3 phần: Civics, Speaking và Writing như kỳ thi thật.',
-    questions: '33 câu tổng cộng',
-    duration: '15–18 phút',
-    passRule: 'Đạt cả 3 phần để đậu',
-    buttonClass: 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20',
-    featured: true,
-  },
-  {
-    slug: 'civics',
-    image: `${THUMB_DIR}/Civic-moctest.png`,
-    title: 'Thi thử Civics',
-    desc: '20 câu hỏi trắc nghiệm về kiến thức công dân (128 câu hỏi).',
-    questions: '20 câu hỏi',
-    duration: '7–10 phút',
-    passRule: 'Cần 60% (12/20)',
-    buttonClass: 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20',
-  },
-  {
-    slug: 'speaking',
-    image: `${THUMB_DIR}/Speaking-mocktest.png`,
-    title: 'Thi thử Speaking',
-    desc: 'Trả lời 10 câu hỏi phỏng vấn với 5 What Mean và 5 Yes/No.',
-    questions: '10 câu hỏi',
-    duration: '5–7 phút',
-    passRule: 'Cần 80% (8/10)',
-    buttonClass: 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20',
-  },
-  {
-    slug: 'viet',
-    image: `${THUMB_DIR}/Writing-mocktest.png`,
-    title: 'Thi thử Writing',
-    desc: 'Viết lại 3 câu theo yêu cầu của viên chức USCIS.',
-    questions: '3 câu hỏi',
-    duration: '3–5 phút',
-    passRule: 'Đúng 1/3 câu là đậu',
-    buttonClass: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
-  },
-];
+function buildTests(dict: N400Dict): TestCard[] {
+  return [
+    {
+      slug: 'full',
+      image: `${THUMB_DIR}/fullinterview-mocktest.png`,
+      title: dict.mockTest.tests.full.title,
+      desc: dict.mockTest.tests.full.desc,
+      questions: dict.mockTest.tests.full.questions,
+      duration: dict.mockTest.tests.full.duration,
+      passRule: dict.mockTest.tests.full.passRule,
+      buttonClass: 'bg-teal-600 hover:bg-teal-700 shadow-teal-600/20',
+      featured: true,
+    },
+    {
+      slug: 'civics',
+      image: `${THUMB_DIR}/Civic-moctest.png`,
+      title: dict.mockTest.tests.civics.title,
+      desc: dict.mockTest.tests.civics.desc,
+      questions: dict.mockTest.tests.civics.questions,
+      duration: dict.mockTest.tests.civics.duration,
+      passRule: dict.mockTest.tests.civics.passRule,
+      buttonClass: 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20',
+    },
+    {
+      slug: 'speaking',
+      image: `${THUMB_DIR}/Speaking-mocktest.png`,
+      title: dict.mockTest.tests.speaking.title,
+      desc: dict.mockTest.tests.speaking.desc,
+      questions: dict.mockTest.tests.speaking.questions,
+      duration: dict.mockTest.tests.speaking.duration,
+      passRule: dict.mockTest.tests.speaking.passRule,
+      buttonClass: 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20',
+    },
+    {
+      slug: 'viet',
+      image: `${THUMB_DIR}/Writing-mocktest.png`,
+      title: dict.mockTest.tests.writing.title,
+      desc: dict.mockTest.tests.writing.desc,
+      questions: dict.mockTest.tests.writing.questions,
+      duration: dict.mockTest.tests.writing.duration,
+      passRule: dict.mockTest.tests.writing.passRule,
+      buttonClass: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
+    },
+  ];
+}
 
 function CardMeta({ icon: Icon, tone, label }: { icon: LucideIcon; tone: string; label: string }) {
   return (
@@ -97,7 +94,15 @@ function CardMeta({ icon: Icon, tone, label }: { icon: LucideIcon; tone: string;
 }
 
 export default function MockTestPickerPage() {
+  const { dict } = useN400Lang();
   const base = '/n400ready/mock-test';
+  const TESTS = buildTests(dict);
+  const HERO_FEATURES: { icon: LucideIcon; label: string }[] = [
+    { icon: Shuffle, label: dict.mockTest.hub.features.randomQuestions },
+    { icon: Clock, label: dict.mockTest.hub.features.timeLimit },
+    { icon: ShieldCheck, label: dict.mockTest.hub.features.uscisScoring },
+    { icon: Lock, label: dict.mockTest.hub.features.noReview },
+  ];
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-[clamp(1rem,2.5vh,1.5rem)] animate-in fade-in duration-300 pb-2 lg:h-full lg:justify-center lg:pb-0">
@@ -119,14 +124,13 @@ export default function MockTestPickerPage() {
         <div className="relative z-[1] p-[clamp(1rem,2.5vh,1.5rem)] lg:w-[56%]">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-700 shadow-sm">
             <Star size={12} className="text-amber-400" fill="currentColor" />
-            Thi như thật
+            {dict.mockTest.hub.heroBadge}
           </span>
           <h2 className="mt-[clamp(0.5rem,1.5vh,0.75rem)] text-[clamp(1.25rem,3vh,1.5rem)] font-extrabold leading-tight text-gray-900">
-            Thi thử như phỏng vấn thật!
+            {dict.mockTest.hub.heroTitle}
           </h2>
           <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-gray-600">
-            Mô phỏng đầy đủ kỳ thi quốc tịch Mỹ với câu hỏi ngẫu nhiên, thời gian thực và tiêu
-            chuẩn chấm điểm như USCIS.
+            {dict.mockTest.hub.heroSubtitle}
           </p>
 
           <div className="mt-[clamp(0.5rem,1.5vh,1rem)] grid grid-cols-2 gap-x-3 gap-y-2 xl:grid-cols-4">
@@ -150,7 +154,7 @@ export default function MockTestPickerPage() {
               href={`${base}/full`}
               className="group inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-colors hover:bg-teal-700"
             >
-              Bắt đầu thi thử đầy đủ
+              {dict.mockTest.hub.heroCta}
               <ArrowRight
                 size={16}
                 className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
@@ -158,7 +162,7 @@ export default function MockTestPickerPage() {
             </Link>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
               <Clock size={14} className="text-teal-600" />
-              Khoảng 15–18 phút
+              {dict.mockTest.hub.heroDuration}
             </span>
           </div>
         </div>
@@ -166,7 +170,7 @@ export default function MockTestPickerPage() {
 
       {/* Test picker */}
       <section className="flex flex-col min-h-0 flex-1">
-        <h2 className="shrink-0 text-[clamp(1.125rem,2.5vh,1.25rem)] font-bold text-gray-800">Chọn bài thi phù hợp với bạn</h2>
+        <h2 className="shrink-0 text-[clamp(1.125rem,2.5vh,1.25rem)] font-bold text-gray-800">{dict.mockTest.hub.sectionTitle}</h2>
         <div className="mt-[clamp(0.5rem,1.5vh,0.75rem)] grid grid-cols-1 gap-[clamp(0.75rem,2vh,1rem)] pb-4 sm:grid-cols-2 xl:grid-cols-4 xl:pb-0">
           {TESTS.map((t) => (
             <div
@@ -187,7 +191,7 @@ export default function MockTestPickerPage() {
                 />
                 {t.featured ? (
                   <span className="absolute left-2.5 top-2.5 rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                    Đề xuất
+                    {dict.mockTest.hub.featuredTag}
                   </span>
                 ) : null}
               </div>
@@ -206,7 +210,7 @@ export default function MockTestPickerPage() {
                 href={`${base}/${t.slug}${t.slug === 'civics' ? '?start=1' : ''}`}
                 className={`mt-[clamp(0.5rem,1.5vh,0.75rem)] inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-[clamp(0.8125rem,1.5vh,0.875rem)] font-semibold text-white shadow-md transition-colors ${t.buttonClass}`}
               >
-                Bắt đầu
+                {dict.common.cta.start}
                 <ArrowRight
                   size={16}
                   className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"

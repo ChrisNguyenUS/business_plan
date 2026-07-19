@@ -14,6 +14,8 @@
 //     changed word count).
 
 import { levenshtein } from 'edit-distance';
+import type { N400Dict } from './i18n/vi';
+import { tFormat } from './i18n/format';
 
 export interface WordAnnotation {
   wordIndex: number;
@@ -86,6 +88,7 @@ function tokenize(text: string): string[] {
 export function compareWords(
   userWord: string,
   canonicalWord: string,
+  dict: N400Dict,
 ): { isCorrect: boolean; annotation: WordAnnotation | null } {
   // Exact match — nothing to flag.
   if (userWord === canonicalWord) {
@@ -104,7 +107,7 @@ export function compareWords(
         type: 'capitalization',
         userWord,
         canonicalWord,
-        hint: `Viết hoa: "${canonicalWord}"`,
+        hint: tFormat(dict.writing.compareCapitalizationHint, { word: canonicalWord }),
       },
     };
   }
@@ -124,7 +127,7 @@ export function compareWords(
         type: 'spelling',
         userWord,
         canonicalWord,
-        hint: `Chính tả: "${canonicalWord}"`,
+        hint: tFormat(dict.writing.compareSpellingHint, { word: canonicalWord }),
       },
     };
   }
@@ -133,22 +136,22 @@ export function compareWords(
   return { isCorrect: false, annotation: null };
 }
 
-function buildFeedback(isCorrect: boolean, annotations: WordAnnotation[]): string {
+function buildFeedback(isCorrect: boolean, annotations: WordAnnotation[], dict: N400Dict): string {
   if (!isCorrect) {
-    return 'Chưa đúng. Hãy nghe lại và thử viết chính xác từng từ.';
+    return dict.writing.feedbackWrong;
   }
   if (annotations.length === 0) {
-    return 'Chính xác! Viết đúng hoàn toàn.';
+    return dict.writing.feedbackPerfect;
   }
   const hasSpelling = annotations.some((a) => a.type === 'spelling');
   const hasCapitalization = annotations.some((a) => a.type === 'capitalization');
   if (hasSpelling && hasCapitalization) {
-    return 'Đạt yêu cầu. Lưu ý một vài lỗi chính tả và viết hoa nhỏ.';
+    return dict.writing.feedbackBoth;
   }
   if (hasSpelling) {
-    return 'Đạt yêu cầu. Lưu ý một vài lỗi chính tả nhỏ.';
+    return dict.writing.feedbackSpelling;
   }
-  return 'Đạt yêu cầu. Lưu ý viết hoa cho đúng.';
+  return dict.writing.feedbackCapitalization;
 }
 
 /**
@@ -158,7 +161,7 @@ function buildFeedback(isCorrect: boolean, annotations: WordAnnotation[]): strin
  * allowed capitalization/spelling slip) and the typed answer has no extra or
  * missing words.
  */
-export function gradeWritingSentence(userInput: string, canonical: string): GradeResult {
+export function gradeWritingSentence(userInput: string, canonical: string, dict: N400Dict): GradeResult {
   const userTokens = tokenize(userInput);
   const canonicalTokens = tokenize(canonical);
   const maxLen = Math.max(userTokens.length, canonicalTokens.length);
@@ -178,7 +181,7 @@ export function gradeWritingSentence(userInput: string, canonical: string): Grad
       continue;
     }
 
-    const { isCorrect, annotation } = compareWords(userWord, canonicalWord);
+    const { isCorrect, annotation } = compareWords(userWord, canonicalWord, dict);
     const positioned = annotation ? { ...annotation, wordIndex: i } : null;
     wordResults.push({ userWord, canonicalWord, isCorrect, annotation: positioned });
     if (positioned) annotations.push(positioned);
@@ -189,6 +192,6 @@ export function gradeWritingSentence(userInput: string, canonical: string): Grad
     isCorrect: allCorrect,
     wordResults,
     annotations,
-    feedback: buildFeedback(allCorrect, annotations),
+    feedback: buildFeedback(allCorrect, annotations, dict),
   };
 }

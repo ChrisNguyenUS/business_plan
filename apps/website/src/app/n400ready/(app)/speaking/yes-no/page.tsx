@@ -11,6 +11,8 @@ import { useN400UserState } from '@/lib/n400/user-state';
 import { YESNO_QUESTIONS, YESNO_QUESTIONS_BY_ID } from '@/lib/n400/yesno-data';
 import { yesnoPresets } from '@/lib/n400/section-presets';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 import {
   deriveSectionSeen,
   deriveSectionGradedTally,
@@ -40,12 +42,12 @@ type Mode =
 
 const answerLabel = (answer: 'yes' | 'no') => (answer === 'yes' ? 'Yes, officer' : 'No, officer');
 
-function toCard(id: string): SectionCard {
+function toCard(id: string, dict: N400Dict): SectionCard {
   const q = YESNO_QUESTIONS_BY_ID[id];
   const audio = yesNoAudioUrl(q.num);
   return {
     id,
-    badge: `Câu hỏi Yes/No #${q.num}`,
+    badge: tFormat(dict.speaking.yesno.badge, { num: q.num }),
     questionEn: q.questionEn,
     questionVi: q.questionVi,
     questionAudioSrc: audio,
@@ -86,9 +88,9 @@ export default function YesNoPage() {
     if (wrongsCount > 0) {
       list.push({
         id: 'wrongs',
-        title: 'Ôn lại câu sai',
-        desc: 'Ôn lại các câu bạn đã trả lời sai để ghi nhớ tốt hơn.',
-        countLabel: `${wrongsCount} câu`,
+        title: dict.common.reviewWrongAnswers,
+        desc: dict.study.civics.practice.wrongsDesc,
+        countLabel: tFormat(dict.study.civics.practice.countLabel, { count: wrongsCount }),
         minutes: 5,
       });
     }
@@ -118,20 +120,20 @@ export default function YesNoPage() {
   });
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   if (mode.kind === 'deck') {
     return (
       <SectionFlashcardScreen
-        cards={mode.ids.map(toCard)}
+        cards={mode.ids.map((id) => toCard(id, dict))}
         known={known}
         onSetKnown={(id, v) => void setSectionKnown('yesno', id, v)}
         onExit={() => {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });
         }}
-        title="Câu hỏi Yes/No"
+        title={dict.speaking.yesno.title}
       />
     );
   }
@@ -187,9 +189,9 @@ export default function YesNoPage() {
         <HubHero
           emoji="📋"
           imageSrc="/images/n400/yesno-thumbnail-study.png"
-          title="Yes / No Questions"
-          countLabel={`${ALL_IDS.length} câu hỏi`}
-          tagline="Luyện các câu hỏi dạng Yes/No trong đơn N-400 và các câu hỏi phỏng vấn cá nhân."
+          title={dict.speaking.yesno.heroTitle}
+          countLabel={tFormat(dict.speaking.yesno.heroCount, { count: ALL_IDS.length })}
+          tagline={dict.speaking.yesno.tagline}
           accentTextClass="text-purple-600"
           accentBarClass="bg-purple-500"
           stats={{ seenCount: progress.seenCount, totalCount: progress.totalCount, percent: progress.percent }}
@@ -205,16 +207,16 @@ export default function YesNoPage() {
         <HubStudyCardsCard
           totalCount={ALL_IDS.length}
           chips={[
-            { id: 'all', label: 'Tất cả' },
-            { id: 'unknown', label: 'Đang học' },
-            { id: 'known', label: 'Đã thuộc' },
+            { id: 'all', label: dict.study.civics.chip.all },
+            { id: 'unknown', label: dict.study.civics.chip.unknown },
+            { id: 'known', label: dict.study.civics.chip.known },
           ]}
           onBrowse={browse}
         />
         {showWeak ? (
           <HubWeakAreasCard
-            subtitle="Tập trung vào các nhóm câu hỏi bạn còn yếu."
-            metricLabel="Độ chính xác trung bình"
+            subtitle={dict.speaking.yesno.weakSubtitle}
+            metricLabel={dict.quiz.avgAccuracyLabel}
             percentSuffix=""
             accuracyPercent={accuracy}
             onPractice={() => {
