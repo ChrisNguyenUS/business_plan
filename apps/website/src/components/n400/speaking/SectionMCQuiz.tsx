@@ -76,7 +76,7 @@ export function SectionMCQuiz({
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
 }) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<MCOption['id'] | null>(null);
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
@@ -179,7 +179,7 @@ export function SectionMCQuiz({
                   </div>
                   {/* Exam (mock/full interview): English only while taking — the
                       Vietnamese gloss surfaces on the review screen after the run. */}
-                  {!examMode ? (
+                  {!examMode && lang !== 'en' ? (
                     <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                       {q.headerVi}
                     </div>
@@ -231,7 +231,7 @@ export function SectionMCQuiz({
                     </div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {!examMode && opt.vi && opt.vi !== opt.en ? (
+                      {!examMode && lang !== 'en' && opt.vi && opt.vi !== opt.en ? (
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>
                           {opt.vi}
                         </div>
@@ -275,7 +275,7 @@ export function SectionMCQuiz({
                   {q.accepted.map((a, i) => (
                     <li key={i}>
                       <span className="font-medium">{a.en}</span>
-                      {a.vi && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                      {lang !== 'en' && a.vi && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                     </li>
                   ))}
                 </ul>

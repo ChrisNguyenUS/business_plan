@@ -32,7 +32,7 @@ const civicsChips = (dict: N400Dict): { id: StudyCardsFilter; label: string }[] 
 ];
 
 export default function CivicsHubPage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, hydrated } = useN400UserState();
   const router = useRouter();
   const base = '/n400ready';
@@ -70,7 +70,7 @@ export default function CivicsHubPage() {
         id: 'weak',
         title: dict.study.civics.practice.weakTitle,
         desc: tFormat(dict.study.civics.practice.weakDesc, {
-          category: N400_CATEGORY_LABELS[recommendation.category].vi,
+          category: N400_CATEGORY_LABELS[recommendation.category][lang === 'en' ? 'en' : 'vi'],
         }),
         countLabel: tFormat(dict.study.civics.practice.countLabel, { count: 5 }),
         minutes: 3,
@@ -78,7 +78,7 @@ export default function CivicsHubPage() {
     }
     list.push(...presetModes(practicePresets(dict), N400_QUESTIONS.length, dict.study.hub.unitQuestion));
     return list;
-  }, [wrongsCount, recommendation, dict]);
+  }, [wrongsCount, recommendation, dict, lang]);
 
   if (!hydrated) {
     return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
@@ -117,7 +117,7 @@ export default function CivicsHubPage() {
 
       {recommendation ? (
         <HubWeakAreasCard
-          metricLabel={N400_CATEGORY_LABELS[recommendation.category].vi}
+          metricLabel={N400_CATEGORY_LABELS[recommendation.category][lang === 'en' ? 'en' : 'vi']}
           accuracyPercent={weakAccuracy}
           onPractice={() => router.push(`${base}/practice?start=weak`)}
         />

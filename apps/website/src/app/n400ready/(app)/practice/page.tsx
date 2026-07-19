@@ -100,7 +100,7 @@ function readStoredCategory(): N400CategoryKey | null {
 type StudyPhase = 'idle' | 'revealed';
 
 export default function PracticePage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const {
     state,
     hydrated,
@@ -539,9 +539,11 @@ export default function PracticePage() {
                   <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {question.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
-                    {question.questionVi}
-                  </div>
+                  {lang !== 'en' && (
+                    <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
+                      {question.questionVi}
+                    </div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <AudioButton src={questionAudioUrl(question.id)} label={dict.flashcards.listenQuestion} size="sm" />
@@ -602,7 +604,7 @@ export default function PracticePage() {
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${chip}`} style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {opt.vi !== opt.en ? (
+                      {lang !== 'en' && opt.vi !== opt.en ? (
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
                       ) : null}
                     </div>
@@ -650,7 +652,7 @@ export default function PracticePage() {
                   {allAnswers.slice(0, 2).map((a, i) => (
                     <li key={i}>
                       <span className="font-medium">{a.en}</span>
-                      {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                      {lang !== 'en' && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                     </li>
                   ))}
                 </ul>
@@ -675,7 +677,7 @@ export default function PracticePage() {
                         {allAnswers.slice(2).map((a, i) => (
                           <li key={i + 2}>
                             <span className="font-medium">{a.en}</span>
-                            {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                            {lang !== 'en' && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                           </li>
                         ))}
                       </ul>

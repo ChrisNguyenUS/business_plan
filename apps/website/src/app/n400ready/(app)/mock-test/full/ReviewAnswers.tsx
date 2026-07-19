@@ -128,7 +128,7 @@ export default function ReviewAnswers({
   onRetake,
 }: ReviewAnswersProps) {
   const { state, toggleBookmark } = useN400UserState();
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const rt = dict.mockTest.review;
   const SECTION_META = sectionMeta(rt);
   const SECTION_FILTERS = sectionFilters(rt);
@@ -140,11 +140,12 @@ export default function ReviewAnswers({
       const q = N400_QUESTIONS_BY_ID.get(a.questionId);
       if (!q) return [];
       const categoryLabel = N400_CATEGORY_LABELS[q.category];
+      const categoryName = (lang === 'en' ? categoryLabel?.en : categoryLabel?.vi) ?? q.category;
       return [
         {
           key: `civ-${a.questionId}`,
           section: 'civics',
-          badge: tFormat(rt.civicsBadge, { category: categoryLabel?.vi ?? q.category, id: q.id }),
+          badge: tFormat(rt.civicsBadge, { category: categoryName, id: q.id }),
           promptEn: q.questionEn,
           promptVi: q.questionVi,
           userAnswer: a.selectedEn ?? null,
@@ -194,7 +195,7 @@ export default function ReviewAnswers({
     });
 
     return [...civicsItems, ...speakingItems, ...writingItems];
-  }, [civicsAnswers, speakingQuestions, speakingAnswers, writingQuestions, writingAnswers, rt]);
+  }, [civicsAnswers, speakingQuestions, speakingAnswers, writingQuestions, writingAnswers, rt, lang]);
 
   // Pill counts follow the active section filter so they always describe
   // what the pill would show, not the whole test.
@@ -334,7 +335,7 @@ export default function ReviewAnswers({
                 <h3 className="mt-2.5 text-[0.9375rem] font-bold leading-snug text-gray-800">
                   {item.promptEn}
                 </h3>
-                {item.promptVi ? (
+                {lang !== 'en' && item.promptVi ? (
                   <p className="mt-0.5 text-[0.8125rem] text-gray-500">{item.promptVi}</p>
                 ) : null}
               </div>
@@ -435,7 +436,7 @@ export default function ReviewAnswers({
                     {item.correct.map((ans, i) => (
                       <p key={i} className="text-sm font-medium text-teal-800">
                         {ans.en}
-                        {ans.vi && ans.vi !== ans.en ? (
+                        {lang !== 'en' && ans.vi && ans.vi !== ans.en ? (
                           <span className="ml-2 text-xs font-normal text-teal-600">({ans.vi})</span>
                         ) : null}
                       </p>

@@ -177,7 +177,7 @@ export function MockResultScreen({
   /** "Về trang Thi thử" target on the pass footer. */
   hubHref: string;
 }) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, toggleBookmark } = useN400UserState();
   const [filter, setFilter] = useState<ResultFilter>('all');
   const [savedOnly, setSavedOnly] = useState(false);
@@ -271,7 +271,7 @@ export function MockResultScreen({
                 <div className="flex-1">
                   <div className="text-xs text-gray-500">{row.badge}</div>
                   <div className="font-semibold text-gray-800 mt-1">{row.prompt}</div>
-                  {row.promptVi ? (
+                  {lang !== 'en' && row.promptVi ? (
                     <div className="text-xs text-gray-500 mt-0.5">{row.promptVi}</div>
                   ) : null}
                   <div className="text-sm mt-2">
@@ -284,7 +284,7 @@ export function MockResultScreen({
                     <div className="text-sm">
                       <span className="text-gray-500">{dict.mockTest.result.correctAnswerPrefix}</span>
                       <span className="text-teal-700 font-medium">{row.correctAnswer}</span>
-                      {row.correctAnswerVi && row.correctAnswerVi !== row.correctAnswer ? (
+                      {lang !== 'en' && row.correctAnswerVi && row.correctAnswerVi !== row.correctAnswer ? (
                         <span className="text-gray-500"> ({row.correctAnswerVi})</span>
                       ) : null}
                     </div>

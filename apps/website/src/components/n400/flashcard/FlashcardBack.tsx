@@ -15,7 +15,7 @@ interface FlashcardBackProps {
 }
 
 export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   return (
     <div className="h-full rounded-[32px] bg-gradient-to-b from-teal-50/80 to-teal-100/50 shadow-[0_8px_40px_-12px_rgba(20,184,166,0.2)] border border-teal-100 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.25)] group-hover:-translate-y-0.5 transition-[box-shadow,translate] duration-300 ease-out">
       {/* Pinned: Audio */}
@@ -44,7 +44,7 @@ export function FlashcardBack({ audioSrc, answers }: FlashcardBackProps) {
               >
                 {a.en}
               </div>
-              {a.vi !== a.en ? (
+              {lang !== 'en' && a.vi !== a.en ? (
                 <div
                   className="text-teal-600/80 font-medium max-w-[36ch] mx-auto mt-[clamp(0.25rem,0.5vw,0.75rem)]"
                   style={{ fontSize: 'clamp(0.85rem, 2vw, 1.25rem)' }}

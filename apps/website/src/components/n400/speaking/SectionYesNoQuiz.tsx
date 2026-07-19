@@ -34,7 +34,7 @@ export function SectionYesNoQuiz({
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
 }) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Choice | null>(null);
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
@@ -113,9 +113,11 @@ export function SectionYesNoQuiz({
                   <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
-                    {q.questionVi}
-                  </div>
+                  {lang !== 'en' && (
+                    <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
+                      {q.questionVi}
+                    </div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <AudioButton src={audioSrc} label={dict.flashcards.listenQuestion} size="sm" />
@@ -186,9 +188,11 @@ export function SectionYesNoQuiz({
                   <li>
                     <span className="font-medium">{tFormat(dict.speaking.yesno.standardAnswer, { label: answerLabel })}</span>
                   </li>
-                  <li>
-                    <span className="text-gray-500">{q.questionVi}</span>
-                  </li>
+                  {lang !== 'en' && (
+                    <li>
+                      <span className="text-gray-500">{q.questionVi}</span>
+                    </li>
+                  )}
                 </ul>
               </div>
             ) : null}

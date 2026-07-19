@@ -65,23 +65,25 @@ const categoryCount = (id: N400CategoryKey | 'all') =>
   id === 'all' ? N400_QUESTIONS.length : N400_QUESTIONS.filter((q) => q.category === id).length;
 
 function buildCategoryOptions(
-  dict: N400Dict
+  dict: N400Dict,
+  lang: 'vi' | 'en',
 ): { id: N400CategoryKey | 'all'; label: string; count: number; icon: LucideIcon }[] {
+  const catLabel = (key: N400CategoryKey) => N400_CATEGORY_LABELS[key][lang === 'en' ? 'en' : 'vi'];
   return [
     { id: 'all', label: dict.flashcards.allTopics, count: categoryCount('all'), icon: Layers },
-    { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi, count: categoryCount('principles'), icon: Landmark },
-    { id: 'system', label: N400_CATEGORY_LABELS.system.vi, count: categoryCount('system'), icon: Building2 },
-    { id: 'rights', label: N400_CATEGORY_LABELS.rights.vi, count: categoryCount('rights'), icon: Scale },
-    { id: 'history', label: N400_CATEGORY_LABELS.history.vi, count: categoryCount('history'), icon: ScrollText },
-    { id: 'symbols', label: N400_CATEGORY_LABELS.symbols.vi, count: categoryCount('symbols'), icon: Flag },
+    { id: 'principles', label: catLabel('principles'), count: categoryCount('principles'), icon: Landmark },
+    { id: 'system', label: catLabel('system'), count: categoryCount('system'), icon: Building2 },
+    { id: 'rights', label: catLabel('rights'), count: categoryCount('rights'), icon: Scale },
+    { id: 'history', label: catLabel('history'), count: categoryCount('history'), icon: ScrollText },
+    { id: 'symbols', label: catLabel('symbols'), count: categoryCount('symbols'), icon: Flag },
   ];
 }
 
 export default function FlashcardsPage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
   const statusOptions = useMemo(() => buildStatusOptions(dict), [dict]);
-  const baseCategoryOptions = useMemo(() => buildCategoryOptions(dict), [dict]);
+  const baseCategoryOptions = useMemo(() => buildCategoryOptions(dict, lang), [dict, lang]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<N400CategoryKey | null>(null);
   const [view, setView] = useState<'cards' | 'list'>('cards');

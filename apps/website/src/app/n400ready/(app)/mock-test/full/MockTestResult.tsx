@@ -82,7 +82,7 @@ export default function MockTestResult({
   onReviewAnswers,
   basePath,
 }: MockTestResultProps) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const civicsWrongCount = civicsAnswers.filter((a) => !a.wasCorrect).length;
 
   const sections: {
@@ -112,7 +112,7 @@ export default function MockTestResult({
 
     if (weakest.key === 'civics') {
       const weakCategory = findWeakestCategory(civicsAnswers);
-      const weakLabel = weakCategory ? N400_CATEGORY_LABELS[weakCategory]?.vi : null;
+      const weakLabel = weakCategory ? N400_CATEGORY_LABELS[weakCategory]?.[lang === 'en' ? 'en' : 'vi'] : null;
       return {
         title: tFormat(dict.mockTest.summary.recommendCivicsTitle, { count: civicsWrongCount }),
         desc: weakLabel
@@ -135,7 +135,7 @@ export default function MockTestResult({
     };
     // `sections` is rebuilt every render from props — depend on the underlying values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [civics, speaking, writing, civicsAnswers, civicsWrongCount, basePath, onReviewAnswers, dict]);
+  }, [civics, speaking, writing, civicsAnswers, civicsWrongCount, basePath, onReviewAnswers, dict, lang]);
 
   const lowAccuracy = totalQuestions > 0 && totalScore / totalQuestions < 0.5;
 

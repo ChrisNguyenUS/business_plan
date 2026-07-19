@@ -27,7 +27,7 @@ export function FlashcardFront({
   onToggleBookmark,
   badge,
 }: FlashcardFrontProps) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   return (
     <div className="h-full rounded-[32px] bg-white shadow-[0_8px_40px_-12px_rgba(20,184,166,0.15)] border border-teal-50 flex flex-col p-[clamp(1rem,2vw,2rem)] relative group-hover:shadow-[0_16px_48px_-10px_rgba(20,184,166,0.22)] group-hover:-translate-y-0.5 transition-[box-shadow,translate] duration-300 ease-out">
       {/* Pinned: Audio & Bookmark */}
@@ -94,12 +94,14 @@ export function FlashcardFront({
         </div>
 
         {/* Vietnamese Translation */}
-        <div
-          className="text-center text-slate-500 font-medium max-w-[36ch] mx-auto w-full mt-[clamp(0.5rem,1vw,1.5rem)]"
-          style={{ fontSize: 'clamp(0.85rem, 2vw, 1.25rem)' }}
-        >
-          {questionVi}
-        </div>
+        {lang !== 'en' && (
+          <div
+            className="text-center text-slate-500 font-medium max-w-[36ch] mx-auto w-full mt-[clamp(0.5rem,1vw,1.5rem)]"
+            style={{ fontSize: 'clamp(0.85rem, 2vw, 1.25rem)' }}
+          >
+            {questionVi}
+          </div>
+        )}
       </div>
 
       {/* Hint — always visible, never scrolls */}

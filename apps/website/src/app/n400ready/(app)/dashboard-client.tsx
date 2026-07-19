@@ -46,7 +46,7 @@ import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
 
 export default function DashboardPage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const { profile } = useAuth();
   const badges = useN400Badges();
@@ -233,10 +233,10 @@ export default function DashboardPage() {
   const hour = new Date().getHours();
   const greeting =
     hour < 12
-      ? dict.dashboard.greeting.morning
+      ? dict.header.greetingMorning
       : hour < 18
-        ? dict.dashboard.greeting.afternoon
-        : dict.dashboard.greeting.evening;
+        ? dict.header.greetingAfternoon
+        : dict.header.greetingEvening;
 
   return (
     <div className="animate-in fade-in duration-500 max-w-6xl mx-auto space-y-3 lg:short:space-y-2 xl:tall:space-y-5">
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                   <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
                     {dict.dashboard.suggestion.weakPrefix}{' '}
                     <strong className="font-bold text-slate-800">
-                      {N400_CATEGORY_LABELS[recommendation.category].vi}
+                      {N400_CATEGORY_LABELS[recommendation.category][lang === 'en' ? 'en' : 'vi']}
                     </strong>
                     . {dict.dashboard.suggestion.weakCtaText}
                   </p>
@@ -467,7 +467,7 @@ export default function DashboardPage() {
               <>
                 <p className="text-sm font-bold leading-snug text-slate-800">
                   {dict.dashboard.suggestion.weakPrefix}{' '}
-                  <span className="text-blue-700">{N400_CATEGORY_LABELS[recommendation.category].vi}</span>.
+                  <span className="text-blue-700">{N400_CATEGORY_LABELS[recommendation.category][lang === 'en' ? 'en' : 'vi']}</span>.
                 </p>
                 <p className="text-xs text-slate-500">{dict.dashboard.suggestion.weakCtaText}</p>
                 <Link

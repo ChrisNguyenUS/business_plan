@@ -73,9 +73,9 @@ function displayDescription(
   return locale === 'vi' ? b.description_vi : b.description_en;
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: N400Lang): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
@@ -171,7 +171,7 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
             </p>
             {earnedMap.has(open.slug) ? (
               <p className="mt-4 text-xs text-teal-700 bg-teal-50 rounded-full inline-block px-3 py-1">
-                {dict.badges.unlockedDate} {formatDate(earnedMap.get(open.slug)!)}
+                {dict.badges.unlockedDate} {formatDate(earnedMap.get(open.slug)!, lang)}
               </p>
             ) : (
               <p className="mt-4 text-xs text-gray-500 bg-gray-50 rounded-full inline-flex items-center gap-1.5 px-3 py-1">

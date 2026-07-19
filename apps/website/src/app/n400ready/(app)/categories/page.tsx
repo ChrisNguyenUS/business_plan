@@ -43,7 +43,7 @@ const TREE_POSITIONS: ReadonlyArray<readonly [string, string]> = [
 ];
 
 export default function CategoriesPage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const [search, setSearch] = useState('');
   const [openCategory, setOpenCategory] = useState<N400CategoryKey | null>(null);
@@ -106,7 +106,13 @@ export default function CategoriesPage() {
           onClick={() => setOpenCategory(null)}
           className="flex h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 xl:w-56"
         >
-          <span>{openCategory ? N400_CATEGORY_LABELS[openCategory].vi : dict.categories.allCategories}</span>
+          <span>
+            {openCategory
+              ? lang === 'en'
+                ? N400_CATEGORY_LABELS[openCategory].en
+                : N400_CATEGORY_LABELS[openCategory].vi
+              : dict.categories.allCategories}
+          </span>
           <ChevronDown size={16} className="text-slate-400" />
         </button>
       </div>
@@ -132,10 +138,12 @@ export default function CategoriesPage() {
                     style={{ backgroundColor: node?.color ?? '#2C9F9A' }}
                   />
                   <div className="text-sm font-bold text-gray-800">
-                    {N400_CATEGORY_LABELS[key].vi}
+                    {lang === 'en' ? N400_CATEGORY_LABELS[key].en : N400_CATEGORY_LABELS[key].vi}
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mb-3">{N400_CATEGORY_LABELS[key].en}</div>
+                {lang !== 'en' && (
+                  <div className="text-xs text-gray-500 mb-3">{N400_CATEGORY_LABELS[key].en}</div>
+                )}
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className="text-2xl font-bold text-gray-800">{cs.mastered}</span>
                   <span className="text-xs text-gray-400">{tFormat(dict.categories.masteredSuffix, { total: cs.total })}</span>
@@ -194,11 +202,15 @@ export default function CategoriesPage() {
                   className="min-w-28 rounded-lg px-3 py-1.5 text-center text-sm font-bold leading-tight text-white shadow-sm"
                   style={{ backgroundColor: node.color }}
                 >
-                  <span>{N400_CATEGORY_LABELS[node.key].vi}</span>
-                  <br />
-                  <span className="text-xs font-semibold opacity-95">
-                    {N400_CATEGORY_LABELS[node.key].en}
-                  </span>
+                  <span>{lang === 'en' ? N400_CATEGORY_LABELS[node.key].en : N400_CATEGORY_LABELS[node.key].vi}</span>
+                  {lang !== 'en' && (
+                    <>
+                      <br />
+                      <span className="text-xs font-semibold opacity-95">
+                        {N400_CATEGORY_LABELS[node.key].en}
+                      </span>
+                    </>
+                  )}
                 </div>
               </button>
             ))}
@@ -235,10 +247,11 @@ export default function CategoriesPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="font-bold text-gray-800">
-                {N400_CATEGORY_LABELS[openCategory].vi}
+                {lang === 'en' ? N400_CATEGORY_LABELS[openCategory].en : N400_CATEGORY_LABELS[openCategory].vi}
               </h3>
               <p className="text-xs text-gray-500">
-                {N400_CATEGORY_LABELS[openCategory].en} • {tFormat(dict.categories.questionCount, { count: filteredQuestions.length })}
+                {lang !== 'en' && <>{N400_CATEGORY_LABELS[openCategory].en} • </>}
+                {tFormat(dict.categories.questionCount, { count: filteredQuestions.length })}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -272,7 +285,9 @@ export default function CategoriesPage() {
                     <div className="flex-1">
                       <div className="text-xs text-teal-600 font-bold mb-1">Q. {q.id}</div>
                       <div className="font-semibold text-gray-800">{q.questionEn}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{q.questionVi}</div>
+                      {lang !== 'en' && (
+                        <div className="text-xs text-gray-500 mt-0.5">{q.questionVi}</div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <AudioButton src={questionAudioUrl(q.id)} size="sm" label={dict.flashcards.listenQuestion} />
@@ -287,7 +302,7 @@ export default function CategoriesPage() {
                       {answers.map((a, i) => (
                         <li key={i}>
                           <span className="font-medium">{a.en}</span>
-                          {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                          {lang !== 'en' && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                         </li>
                       ))}
                     </ul>

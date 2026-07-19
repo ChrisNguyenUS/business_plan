@@ -44,7 +44,7 @@ const MOCK_MAX_SCORE = 20;
 const MOCK_PASS_SCORE = 12;
 
 export default function StatisticPage() {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const base = '/n400ready';
 
@@ -305,7 +305,7 @@ export default function StatisticPage() {
               return (
                 <div key={key}>
                   <div className="mb-1.5 flex items-start justify-between gap-3 text-sm">
-                    <span className="font-medium text-gray-700">{N400_CATEGORY_LABELS[key].vi}</span>
+                    <span className="font-medium text-gray-700">{N400_CATEGORY_LABELS[key][lang === 'en' ? 'en' : 'vi']}</span>
                     <span className="shrink-0 font-bold text-gray-800">
                       {percent}% <span className="text-xs font-normal text-gray-400">({a.correct}/{a.total})</span>
                     </span>

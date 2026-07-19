@@ -250,7 +250,7 @@ export function Header() {
                 hasStreak ? 'text-orange-700' : 'text-gray-800'
               }`}
             >
-              {tFormat(dict.header.streakDays, { streak })}
+              {tFormat(streak === 1 ? dict.header.streakDay : dict.header.streakDays, { streak })}
             </span>
           </div>
         </div>

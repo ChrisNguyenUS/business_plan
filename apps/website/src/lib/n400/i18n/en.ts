@@ -76,6 +76,7 @@ export const en: N400Dict = {
     streakTooltipInactive: "You haven't studied today — answer one question to keep your streak.",
     streakTooltipNoStreak: 'Study today to start a new streak.',
     streakLabel: 'Learning streak',
+    streakDay: '{streak} day',
     streakDays: '{streak} days',
     avatarGreeting: 'Hello,',
     accountLink: 'Account',
@@ -139,11 +140,6 @@ export const en: N400Dict = {
       accuracy: { label: 'Accuracy' },
       mastered: { label: 'Questions Mastered', value: '{count} questions' },
       badges: { label: 'Badges', caption: 'Achievements' },
-    },
-    greeting: {
-      morning: 'Good morning',
-      afternoon: 'Good afternoon',
-      evening: 'Good evening',
     },
     hero: { badge: "Today's Suggestion" },
     dailygoals: {
@@ -665,7 +661,7 @@ export const en: N400Dict = {
     submitButton: 'Submit',
     slowSpeakLabel: 'Slow',
     civicsMock: {
-      badge: 'Question {index} / Question #{id}',
+      badge: 'Question {index} / #{id}',
     },
     interview: {
       stepperLabel: 'Full Interview Progress',

@@ -44,7 +44,7 @@ export function QuestionList({
   districtNumber,
   onSelectQuestion,
 }: QuestionListProps) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const [search, setSearch] = useState('');
 
   const items = useMemo(() => {
@@ -106,10 +106,12 @@ export function QuestionList({
                   <div className="text-slate-800 font-semibold text-sm leading-snug">
                     {q.questionEn}
                   </div>
-                  <div className="text-slate-500 text-xs mt-0.5 leading-normal">
-                    {q.questionVi}
-                  </div>
-                  
+                  {lang !== 'en' && (
+                    <div className="text-slate-500 text-xs mt-0.5 leading-normal">
+                      {q.questionVi}
+                    </div>
+                  )}
+
                   {/* Answers */}
                   <div className="mt-2 text-xs text-slate-600 flex flex-wrap items-center gap-x-1">
                     <span className="font-semibold text-teal-700">Answer:</span>
@@ -117,7 +119,7 @@ export function QuestionList({
                       <span key={i} className="inline-flex items-center">
                         {i > 0 && <span className="text-slate-300 mx-1">•</span>}
                         <span className="font-medium text-slate-700">{a.en}</span>
-                        {a.vi && a.vi !== a.en && (
+                        {lang !== 'en' && a.vi && a.vi !== a.en && (
                           <span className="text-slate-400 ml-1">({a.vi})</span>
                         )}
                       </span>
@@ -127,7 +129,7 @@ export function QuestionList({
                   {/* Topic tag */}
                   <div className="mt-2 flex items-center gap-2">
                     <span className={`px-2 py-0.5 ${tone.chip} text-[10px] font-bold rounded`}>
-                      {N400_CATEGORY_LABELS[q.category].vi}
+                      {lang === 'en' ? N400_CATEGORY_LABELS[q.category].en : N400_CATEGORY_LABELS[q.category].vi}
                     </span>
                   </div>
                 </div>

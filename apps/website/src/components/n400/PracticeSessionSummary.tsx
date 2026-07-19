@@ -86,7 +86,7 @@ export function PracticeSessionSummary({
   /** Sessions finished today — the progress card renders only when provided. */
   sessionsToday?: { done: number; goal: number } | null;
 }) {
-  const { dict } = useN400Lang();
+  const { dict, lang } = useN400Lang();
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const need = Math.ceil(total * PASS_RATIO);
   const tier: Tier = pct === 100 ? 'perfect' : correct >= need ? 'passed' : 'low';
@@ -212,7 +212,7 @@ export function PracticeSessionSummary({
                 {topCategory ? (
                   <div className="mt-0.5">
                     {dict.practice.mostMissedTopic}{' '}
-                    <span className="font-semibold text-orange-600">{topCategory.vi}</span>
+                    <span className="font-semibold text-orange-600">{lang === 'en' ? topCategory.en : topCategory.vi}</span>
                   </div>
                 ) : null}
                 <div className="mt-0.5 text-gray-500">

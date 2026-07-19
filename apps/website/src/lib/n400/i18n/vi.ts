@@ -76,6 +76,7 @@ export const vi = {
     streakTooltipInactive: 'Bạn chưa học hôm nay — học một câu để giữ chuỗi.',
     streakTooltipNoStreak: 'Học hôm nay để bắt đầu chuỗi mới.',
     streakLabel: 'Chuỗi học tập',
+    streakDay: '{streak} ngày',
     streakDays: '{streak} ngày',
     avatarGreeting: 'Xin chào,',
     accountLink: 'Tài khoản',
@@ -139,11 +140,6 @@ export const vi = {
       accuracy: { label: 'Độ chính xác' },
       mastered: { label: 'Câu đã thuộc', value: '{count} câu' },
       badges: { label: 'Huy hiệu', caption: 'Danh hiệu' },
-    },
-    greeting: {
-      morning: 'Chào buổi sáng',
-      afternoon: 'Chào buổi chiều',
-      evening: 'Chào buổi tối',
     },
     hero: { badge: 'Gợi ý hôm nay' },
     dailygoals: {
