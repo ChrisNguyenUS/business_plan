@@ -11,10 +11,10 @@ const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
 const N400_RE = /^\/n400ready(\/|$)/;
 // Auth pages inside /n400ready that must be accessible without a session.
 const N400_PUBLIC_RE = /^\/n400ready\/login(\/|$)/;
-// Routes that signed-in users can hit before completing /setup. /setup itself
-// would loop without this exemption; /help is informational and can render
-// without a profile row.
-const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(setup|help|login)(\/|$)/;
+// Routes that signed-in users can hit before completing onboarding. /onboarding
+// itself would loop without this exemption; /setup is the Profile edit-address
+// form; /help is informational and can render without a profile row.
+const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(onboarding|setup|help|login)(\/|$)/;
 // Old bookmarked URLs from the /{locale}/n400app era.
 const N400_LEGACY_RE = /^\/(?:en|vi)\/n400app(\/.*)?$/;
 
@@ -133,8 +133,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/n400ready/login', request.url));
   }
 
-  // N400 profile gate: redirect to /setup when no n400_user_profile row exists,
-  // unless the user is already on /setup or /help (those render without a profile).
+  // N400 profile gate: no n400_user_profile row means onboarding never finished
+  // (step 2's upsert is what creates it), so send the user to step 1.
   if (isN400Path && !N400_NO_PROFILE_GATE_RE.test(pathname)) {
     const { data: n400Profile } = await supabase
       .from('n400_user_profile')
@@ -142,7 +142,7 @@ export async function middleware(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle();
     if (!n400Profile) {
-      return NextResponse.redirect(new URL('/n400ready/setup', request.url));
+      return NextResponse.redirect(new URL('/n400ready/onboarding', request.url));
     }
     // DB is the source of truth once chosen — heal the cookie (new device,
     // cleared cookies). Takes effect from the next request; the action that
