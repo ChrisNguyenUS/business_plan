@@ -57,34 +57,6 @@ function ShieldCheckIcon({ width = 16, height = 16, className }: { width?: numbe
   );
 }
 
-function StatueIcon() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <circle cx="24" cy="24" r="22" fill="#DFF7F3" />
-      <g transform="translate(12, 4) scale(0.5)">
-        <path d="M24 6l-2 4-2-4-3 2 1 5h8l1-5-3-2z" fill="#16A394" opacity="0.7" />
-        <path d="M22 15c-2 0-4 2-4 5v3h12v-3c0-3-2-5-4-5h-4z" fill="#16A394" opacity="0.5" />
-        <path d="M18 23v20l-3 3h18l-3-3V23H18z" fill="#16A394" opacity="0.6" />
-        <path d="M24 8v-4" stroke="#16A394" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M20 9l-4-6" stroke="#16A394" strokeWidth="1" strokeLinecap="round" />
-        <path d="M28 9l4-6" stroke="#16A394" strokeWidth="1" strokeLinecap="round" />
-        <circle cx="24" cy="12" r="5" fill="#16A394" opacity="0.4" />
-        <rect x="21" y="38" width="6" height="8" rx="1" fill="#16A394" opacity="0.5" />
-      </g>
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg className={styles.providerIcon} viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  );
-}
-
-
 function StarIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#FBBF24" aria-hidden="true">
@@ -92,73 +64,6 @@ function StarIcon() {
     </svg>
   );
 }
-
-/* ─── Feature icons (desktop left panel) ─── */
-function FeatureIcon({ children }: { children: React.ReactNode }) {
-  return <div className={styles.featureIcon}>{children}</div>;
-}
-
-function BookIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  );
-}
-
-function ChartIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-
-/* ─── Feature data ─── */
-const FEATURES = [
-  {
-    icon: <BookIcon />,
-    title: 'Học tập cá nhân hóa',
-    desc: 'Nội dung bám sát N-400, gợi ý thông minh theo tiến độ của bạn.',
-  },
-  {
-    icon: <TargetIcon />,
-    title: 'Luyện tập hiệu quả',
-    desc: 'Học theo từng chủ đề, luyện câu hỏi, từ vựng, Yes/No và Writing.',
-  },
-  {
-    icon: <ChartIcon />,
-    title: 'Theo dõi tiến độ',
-    desc: 'Thống kê chi tiết, giúp bạn cải thiện mỗi ngày.',
-  },
-  {
-    icon: <ShieldIcon />,
-    title: 'Sẵn sàng cho buổi phỏng vấn',
-    desc: 'Tự tin trả lời, chinh phục giấc mơ trở thành công dân Mỹ.',
-  },
-];
 
 /* ─── Provider button data ─── */
 type OAuthId = 'google' | 'apple' | 'facebook';

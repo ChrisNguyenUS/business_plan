@@ -89,7 +89,7 @@ function stripBold(text: string): string {
  * "Đang phát… / Playing" while audio plays and to "Nghe lại / Replay" once it
  * finishes. Single shared audio element — no duplicate audio buttons elsewhere.
  */
-function DictationAudio({ src, examMode = false }: { src: string | null; examMode?: boolean }) {
+function DictationAudio({ src }: { src: string | null }) {
   const { dict } = useN400Lang();
   const [playing, setPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -149,8 +149,7 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
   };
 
   const ListenIcon = playing ? Pause : hasPlayed ? RotateCcw : Volume2;
-  // Practice/study keep the buttons Vietnamese-only ("Nghe", "Nghe lại"); the
-  // exam keeps the bilingual USCIS-style labels.
+  // Listen/replay labels come from the dictionary and follow the app language.
   const listenLabel = playing
     ? dict.quiz.audio.playing
     : hasPlayed
@@ -177,7 +176,6 @@ function DictationAudio({ src, examMode = false }: { src: string | null; examMod
         style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}
       >
         <Turtle size={17} className="shrink-0" />
-        {/* Both exam and practice/study use the Vietnamese-only "Đọc chậm". */}
         <span>{dict.quiz.audio.slow}</span>
       </button>
     </div>
@@ -392,7 +390,7 @@ export function DictationQuiz({
 
             {/* Audio controls — Listen (primary) + Slow (secondary).
                 key remounts the transport for each new sentence. */}
-            <DictationAudio key={audioSrc} src={audioSrc} examMode={examMode} />
+            <DictationAudio key={audioSrc} src={audioSrc} />
 
             {/* Input */}
             <div className="mt-[clamp(0.75rem,1.5vh,1.25rem)]">
