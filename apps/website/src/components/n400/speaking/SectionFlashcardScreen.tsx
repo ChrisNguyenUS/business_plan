@@ -10,6 +10,8 @@ import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Flashcard } from '@/components/n400/flashcard/Flashcard';
 import { ProgressBar } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export interface SectionCard {
   id: string;
@@ -25,12 +27,6 @@ export interface SectionCard {
 
 type StatusFilter = 'all' | 'unknown' | 'known';
 
-const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
-  { id: 'all', label: 'All Questions' },
-  { id: 'unknown', label: 'Chưa thuộc' },
-  { id: 'known', label: 'Đã thuộc' },
-];
-
 export function SectionFlashcardScreen({
   cards,
   known,
@@ -44,6 +40,12 @@ export function SectionFlashcardScreen({
   onExit: () => void;
   title: string;
 }) {
+  const { dict } = useN400Lang();
+  const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
+    { id: 'all', label: 'All Questions' },
+    { id: 'unknown', label: dict.flashcards.unknown },
+    { id: 'known', label: dict.flashcards.known },
+  ];
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [index, setIndex] = useState(0);
@@ -99,8 +101,8 @@ export function SectionFlashcardScreen({
         <div className="inline-flex bg-slate-100 rounded-lg p-0.5 shrink-0">
           {(
             [
-              { id: 'cards', label: 'Flashcard' },
-              { id: 'list', label: 'List' },
+              { id: 'cards', label: dict.quiz.view.cards },
+              { id: 'list', label: dict.quiz.view.list },
             ] as const
           ).map(({ id, label }) => (
             <button
@@ -138,7 +140,7 @@ export function SectionFlashcardScreen({
 
       {total === 0 ? (
         <div className="flex flex-1 items-center justify-center text-slate-500">
-          Không có thẻ nào trong bộ lọc này.
+          {dict.quiz.noCards}
         </div>
       ) : view === 'cards' && current ? (
         <>
@@ -146,7 +148,7 @@ export function SectionFlashcardScreen({
           <div className="shrink-0">
             <div className="flex items-center justify-between mb-1.5 text-sm text-slate-500">
               <span className="font-medium">
-                Câu {index + 1} / {total}
+                {tFormat(dict.quiz.cardCounter, { index: index + 1, total })}
               </span>
             </div>
             <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-1.5" />
@@ -175,7 +177,7 @@ export function SectionFlashcardScreen({
               onClick={goPrev}
               disabled={index === 0}
               className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
-              aria-label="Trước"
+              aria-label={dict.flashcards.prev}
             >
               <ChevronLeft size={22} />
             </button>
@@ -190,7 +192,7 @@ export function SectionFlashcardScreen({
               }`}
             >
               <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap">
-                <ThumbsDown size={18} className="hidden sm:block" /> Chưa thuộc
+                <ThumbsDown size={18} className="hidden sm:block" /> {dict.flashcards.unknown}
               </div>
             </button>
 
@@ -200,7 +202,7 @@ export function SectionFlashcardScreen({
               className="flex-1 sm:flex-none flex flex-col items-center justify-center px-4 py-3 sm:px-8 sm:py-3.5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 shadow-sm bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700"
             >
               <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap">
-                <ThumbsUp size={18} className="hidden sm:block" /> Đã thuộc
+                <ThumbsUp size={18} className="hidden sm:block" /> {dict.flashcards.known}
               </div>
             </button>
 
@@ -209,7 +211,7 @@ export function SectionFlashcardScreen({
               onClick={goNext}
               disabled={index === total - 1}
               className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
-              aria-label="Tiếp"
+              aria-label={dict.flashcards.next}
             >
               <ChevronRight size={22} />
             </button>
@@ -222,7 +224,7 @@ export function SectionFlashcardScreen({
               <div className="flex items-center justify-between gap-2">
                 <div className="font-semibold text-slate-800">{c.listPrimary}</div>
                 {known.has(c.id) ? (
-                  <span className="text-xs font-bold text-teal-600">Đã thuộc</span>
+                  <span className="text-xs font-bold text-teal-600">{dict.flashcards.known}</span>
                 ) : null}
               </div>
               <div className="mt-1 text-sm text-slate-600">{c.listSecondary}</div>

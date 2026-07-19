@@ -10,6 +10,7 @@ import {
   type VelocityEvent,
 } from './readiness';
 import type { MockResult, SectionMockResult } from './storage';
+import { vi } from './i18n/vi';
 
 function mock(passed: boolean, completedAt: string): MockResult {
   return {
@@ -65,7 +66,7 @@ function readySignals(): ReadinessSignals {
 
 describe('deriveReadiness', () => {
   it('reports zero for a brand-new learner and points at civics first', () => {
-    const r = deriveReadiness(emptySignals());
+    const r = deriveReadiness(emptySignals(), vi);
     expect(r.percent).toBe(0);
     expect(r.metCount).toBe(0);
     expect(r.totalCount).toBe(7);
@@ -74,7 +75,7 @@ describe('deriveReadiness', () => {
   });
 
   it('reports 100 and no next action once every criterion is met', () => {
-    const r = deriveReadiness(readySignals());
+    const r = deriveReadiness(readySignals(), vi);
     expect(r.percent).toBe(100);
     expect(r.metCount).toBe(7);
     expect(r.ready).toBe(true);
@@ -82,7 +83,7 @@ describe('deriveReadiness', () => {
   });
 
   it('orders criteria foundations-first, mock tests last', () => {
-    expect(deriveReadiness(emptySignals()).criteria.map((c) => c.id)).toEqual([
+    expect(deriveReadiness(emptySignals(), vi).criteria.map((c) => c.id)).toEqual([
       'civics_known',
       'whatmean_known',
       'yesno_known',
@@ -95,7 +96,7 @@ describe('deriveReadiness', () => {
 
   it('treats the 80% threshold as full credit for a known-criterion', () => {
     // 80% of 128 = 102.4, so 103 known clears it.
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 103 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 103 }, vi);
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(true);
     expect(civics.progress).toBe(1);
@@ -105,7 +106,7 @@ describe('deriveReadiness', () => {
 
   it('gives partial credit below the threshold, so the ring moves while learning', () => {
     // Half of the 102.4 target.
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 51 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 51 }, vi);
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     expect(civics.met).toBe(false);
     expect(civics.progress).toBeCloseTo(0.498, 2);
@@ -116,7 +117,7 @@ describe('deriveReadiness', () => {
     // 100/128 = 78.1% known → progress 0.977, just short of the 80% bar. The
     // other six criteria are fully met, so the rounded average rounds up to
     // 100 even though the learner is not ready.
-    const r = deriveReadiness({ ...readySignals(), civicsKnown: 100 });
+    const r = deriveReadiness({ ...readySignals(), civicsKnown: 100 }, vi);
     expect(r.ready).toBe(false);
     expect(r.metCount).toBe(6);
     expect(r.next?.id).toBe('civics_known');
@@ -125,7 +126,7 @@ describe('deriveReadiness', () => {
 
   it('requires the latest speaking mock to have passed — every full-interview part has a criterion', () => {
     // Without it a learner could reach "Sẵn sàng" having never passed Speaking.
-    const never = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', true)] });
+    const never = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', true)] }, vi);
     const speaking = never.criteria.find((c) => c.id === 'speaking_mock')!;
     expect(speaking.met).toBe(false);
     expect(speaking.detail).toBe('Chưa thi');
@@ -140,20 +141,20 @@ describe('deriveReadiness', () => {
         sectionMock('speaking', true, '2026-07-01T00:00:00Z'),
         sectionMock('speaking', false, '2026-07-05T00:00:00Z'),
       ],
-    });
+    }, vi);
     const regressedSpeaking = regressed.criteria.find((c) => c.id === 'speaking_mock')!;
     expect(regressedSpeaking.met).toBe(false);
     expect(regressedSpeaking.detail).toBe('Chưa đậu');
 
     // And a writing mock never satisfies the speaking criterion.
-    expect(deriveReadiness(readySignals()).criteria.find((c) => c.id === 'speaking_mock')!.met).toBe(true);
+    expect(deriveReadiness(readySignals(), vi).criteria.find((c) => c.id === 'speaking_mock')!.met).toBe(true);
   });
 
   it('covers the writing pool through practice: 80% of 45 sentences must be mastered', () => {
     // The writing mock samples only 3 random sentences per attempt, so passing
     // it proves almost nothing about pool coverage — this criterion is what
     // guarantees the learner has actually written all topics correctly.
-    const short = deriveReadiness({ ...readySignals(), writingKnown: 35 });
+    const short = deriveReadiness({ ...readySignals(), writingKnown: 35 }, vi);
     const writing = short.criteria.find((c) => c.id === 'writing_known')!;
     // 80% of 45 = 36 exactly.
     expect(writing.met).toBe(false);
@@ -162,13 +163,13 @@ describe('deriveReadiness', () => {
     expect(writing.cta.href).toBe('/writing');
     expect(short.ready).toBe(false);
 
-    const enough = deriveReadiness({ ...readySignals(), writingKnown: 36 });
+    const enough = deriveReadiness({ ...readySignals(), writingKnown: 36 }, vi);
     expect(enough.criteria.find((c) => c.id === 'writing_known')!.met).toBe(true);
     expect(enough.ready).toBe(true);
   });
 
   it('never lets a known-criterion exceed full credit', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 }, vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.progress).toBe(1);
   });
 
@@ -177,14 +178,14 @@ describe('deriveReadiness', () => {
       ...readySignals(),
       mockResults: [mock(true, '2026-07-01T00:00:00Z'), mock(false, '2026-07-02T00:00:00Z')],
     };
-    const civicsMock = deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!;
+    const civicsMock = deriveReadiness(signals, vi).criteria.find((c) => c.id === 'civics_mock')!;
     expect(civicsMock.met).toBe(false);
     expect(civicsMock.progress).toBe(0.5);
   });
 
   it('gives a single passing mock only half credit, since two in a row is the bar', () => {
     const signals = { ...readySignals(), mockResults: [mock(true, '2026-07-01T00:00:00Z')] };
-    const civicsMock = deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!;
+    const civicsMock = deriveReadiness(signals, vi).criteria.find((c) => c.id === 'civics_mock')!;
     expect(civicsMock.met).toBe(false);
     expect(civicsMock.progress).toBe(0.5);
   });
@@ -200,7 +201,7 @@ describe('deriveReadiness', () => {
         mock(false, '2026-07-04T00:00:00Z'),
       ],
     };
-    expect(deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!.met).toBe(false);
+    expect(deriveReadiness(signals, vi).criteria.find((c) => c.id === 'civics_mock')!.met).toBe(false);
   });
 
   it('sorts mocks by completion date rather than trusting array order', () => {
@@ -209,15 +210,15 @@ describe('deriveReadiness', () => {
       mockResults: [mock(false, '2026-07-09T00:00:00Z'), mock(true, '2026-07-01T00:00:00Z'), mock(true, '2026-07-02T00:00:00Z')],
     };
     // Chronologically the newest is the failure → last two are [pass, fail].
-    expect(deriveReadiness(signals).criteria.find((c) => c.id === 'civics_mock')!.met).toBe(false);
+    expect(deriveReadiness(signals, vi).criteria.find((c) => c.id === 'civics_mock')!.met).toBe(false);
   });
 
   it('treats the writing mock as all-or-nothing and ignores speaking mocks', () => {
-    const failed = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', false)] });
+    const failed = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('writing', false)] }, vi);
     expect(failed.criteria.find((c) => c.id === 'writing_mock')!.progress).toBe(0);
     expect(failed.next?.id).toBe('writing_mock');
 
-    const speakingOnly = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('speaking', true)] });
+    const speakingOnly = deriveReadiness({ ...readySignals(), sectionMockResults: [sectionMock('speaking', true)] }, vi);
     expect(speakingOnly.criteria.find((c) => c.id === 'writing_mock')!.met).toBe(false);
 
     const passed = deriveReadiness({
@@ -226,7 +227,7 @@ describe('deriveReadiness', () => {
         sectionMock('writing', false, '2026-07-01T00:00:00Z'),
         sectionMock('writing', true, '2026-07-02T00:00:00Z'),
       ],
-    });
+    }, vi);
     expect(passed.criteria.find((c) => c.id === 'writing_mock')!.met).toBe(true);
   });
 
@@ -241,7 +242,7 @@ describe('deriveReadiness', () => {
         sectionMock('writing', false, '2026-07-05T00:00:00Z'),
       ],
     };
-    const writing = deriveReadiness(signals).criteria.find((c) => c.id === 'writing_mock')!;
+    const writing = deriveReadiness(signals, vi).criteria.find((c) => c.id === 'writing_mock')!;
     expect(writing.met).toBe(false);
     expect(writing.progress).toBe(0);
     expect(writing.remaining).toBe(1);
@@ -256,31 +257,31 @@ describe('deriveReadiness', () => {
         sectionMock('writing', true, '2026-07-01T00:00:00Z'),
       ],
     };
-    expect(deriveReadiness(signals).criteria.find((c) => c.id === 'writing_mock')!.met).toBe(false);
+    expect(deriveReadiness(signals, vi).criteria.find((c) => c.id === 'writing_mock')!.met).toBe(false);
   });
 
   it('distinguishes "never attempted" from "latest attempt failed" in the writing detail', () => {
-    const never = deriveReadiness(emptySignals()).criteria.find((c) => c.id === 'writing_mock')!;
+    const never = deriveReadiness(emptySignals(), vi).criteria.find((c) => c.id === 'writing_mock')!;
     expect(never.detail).toBe('Chưa thi');
 
     const failedLatest = deriveReadiness({
       ...readySignals(),
       sectionMockResults: [sectionMock('writing', false)],
-    }).criteria.find((c) => c.id === 'writing_mock')!;
+    }, vi).criteria.find((c) => c.id === 'writing_mock')!;
     expect(failedLatest.detail).toBe('Chưa đậu');
 
-    const passedLatest = deriveReadiness(readySignals()).criteria.find((c) => c.id === 'writing_mock')!;
+    const passedLatest = deriveReadiness(readySignals(), vi).criteria.find((c) => c.id === 'writing_mock')!;
     expect(passedLatest.detail).toBe('Đã đậu');
   });
 
   it('picks the first unmet criterion in order as the next action', () => {
     // Civics done, What Mean not → What Mean is next even though later ones are also unmet.
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 }, vi);
     expect(r.next?.id).toBe('whatmean_known');
   });
 
   it('gives every criterion a base-relative CTA href', () => {
-    for (const c of deriveReadiness(emptySignals()).criteria) {
+    for (const c of deriveReadiness(emptySignals(), vi).criteria) {
       expect(c.cta.href.startsWith('/')).toBe(true);
       expect(c.cta.label.length).toBeGreaterThan(0);
     }
@@ -290,7 +291,7 @@ describe('deriveReadiness', () => {
     // "Thuộc" only moves through graded answers, so a known-criterion CTA must
     // not strand the learner in flashcards (self-grades never count). The hub
     // offers both learn (deck) and prove (practice); same target as SkillsCard.
-    const r = deriveReadiness(emptySignals());
+    const r = deriveReadiness(emptySignals(), vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.cta.href).toBe('/study/civics');
     expect(r.criteria.find((c) => c.id === 'whatmean_known')!.cta.href).toBe('/speaking/what-mean');
     expect(r.criteria.find((c) => c.id === 'yesno_known')!.cta.href).toBe('/speaking/yes-no');
@@ -298,7 +299,7 @@ describe('deriveReadiness', () => {
   });
 
   it('guards against an empty question pool instead of dividing by zero', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0, whatmeanTotal: 0, yesnoTotal: 0 });
+    const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0, whatmeanTotal: 0, yesnoTotal: 0 }, vi);
     expect(Number.isNaN(r.percent)).toBe(false);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.progress).toBe(0);
   });
@@ -307,38 +308,38 @@ describe('deriveReadiness', () => {
 describe('criterion.remaining', () => {
   it('counts items still needed to clear the 80% bar, not items left in the pool', () => {
     // 80% of 128 = 102.4 → 103 known clears it; 56 known leaves 47 to go.
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 }, vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(47);
   });
 
   it('is zero once a criterion is met, even when the learner overshot the bar', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 128 }, vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(0);
   });
 
   it('counts a missing writing mock as one item and missing civics mocks individually', () => {
-    const empty = deriveReadiness(emptySignals());
+    const empty = deriveReadiness(emptySignals(), vi);
     expect(empty.criteria.find((c) => c.id === 'writing_mock')!.remaining).toBe(1);
     expect(empty.criteria.find((c) => c.id === 'civics_mock')!.remaining).toBe(2);
 
-    const onePass = deriveReadiness({ ...emptySignals(), mockResults: [mock(true, '2026-07-01T00:00:00Z')] });
+    const onePass = deriveReadiness({ ...emptySignals(), mockResults: [mock(true, '2026-07-01T00:00:00Z')] }, vi);
     expect(onePass.criteria.find((c) => c.id === 'civics_mock')!.remaining).toBe(1);
   });
 
   it('never goes negative when the pool is empty', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0 });
+    const r = deriveReadiness({ ...emptySignals(), civicsTotal: 0 }, vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.remaining).toBe(0);
   });
 });
 
 describe('criterion.milestone', () => {
   it('phrases a known-criterion as the work left, not the bar to clear', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 }, vi);
     expect(r.criteria.find((c) => c.id === 'civics_known')!.milestone).toBe('Học thêm 47 câu Civics');
   });
 
   it('reuses the checklist label for mock criteria, which have no count to phrase', () => {
-    const r = deriveReadiness(emptySignals());
+    const r = deriveReadiness(emptySignals(), vi);
     const writing = r.criteria.find((c) => c.id === 'writing_mock')!;
     expect(writing.milestone).toBe(writing.label);
   });
@@ -433,38 +434,38 @@ describe('deriveLearningPace', () => {
 
 describe('estimateSessions', () => {
   it("divides remaining work by the learner's own measured pace when given", () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 }, vi);
     const civics = r.criteria.find((c) => c.id === 'civics_known')!;
     // 47 left at 12 câu per buổi → 4 buổi, shown as a 4–5 range.
     expect(estimateSessions(civics, 12)).toEqual({ min: 4, max: 5 });
   });
 
   it('keeps mock criteria as exact one-session items regardless of pace', () => {
-    const r = deriveReadiness(emptySignals());
+    const r = deriveReadiness(emptySignals(), vi);
     expect(estimateSessions(r.criteria.find((c) => c.id === 'writing_mock')!, 12)).toEqual({ min: 1, max: 1 });
   });
 
   it('turns items left to learn into a session range', () => {
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 56 }, vi);
     // 47 items to go at 25 per session → 2 sessions, shown as a 2–3 range.
     expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_known')!)).toEqual({ min: 2, max: 3 });
   });
 
   it('rounds a partial session up rather than promising less work than there is', () => {
     // 102 known → 1 item left, still a whole session.
-    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 102 });
+    const r = deriveReadiness({ ...emptySignals(), civicsKnown: 102 }, vi);
     expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_known')!)).toEqual({ min: 1, max: 2 });
   });
 
   it('gives mock criteria an exact count, since a mock IS one session', () => {
-    const r = deriveReadiness(emptySignals());
+    const r = deriveReadiness(emptySignals(), vi);
     expect(estimateSessions(r.criteria.find((c) => c.id === 'writing_mock')!)).toEqual({ min: 1, max: 1 });
     expect(estimateSessions(r.criteria.find((c) => c.id === 'speaking_mock')!)).toEqual({ min: 1, max: 1 });
     expect(estimateSessions(r.criteria.find((c) => c.id === 'civics_mock')!)).toEqual({ min: 2, max: 2 });
   });
 
   it('returns null for a met criterion — there is nothing left to estimate', () => {
-    const r = deriveReadiness(readySignals());
+    const r = deriveReadiness(readySignals(), vi);
     for (const c of r.criteria) {
       expect(estimateSessions(c)).toBeNull();
     }

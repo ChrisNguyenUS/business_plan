@@ -25,6 +25,9 @@ import {
   whatMeanAnswerAudioUrl,
   yesNoAudioUrl,
 } from '@/lib/n400/quiz-engine';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 const MC_COUNT = 5;
 const YESNO_COUNT = 5;
@@ -57,13 +60,13 @@ interface YesNoItem {
 
 type MockItem = McItem | YesNoItem;
 
-function buildItems(seed: number): MockItem[] {
+function buildItems(seed: number, dict: N400Dict): MockItem[] {
   const mc: McItem[] = shuffle([...WHATMEAN_QUESTIONS], `mock-spk-wm-${seed}`)
     .slice(0, MC_COUNT)
     .map((q) => ({
       kind: 'mc',
       id: q.id,
-      badge: `Từ vựng / Vocabulary #${q.num}`,
+      badge: tFormat(dict.speaking.whatmean.badge, { num: q.num }),
       headerEn: q.termEn,
       headerVi: q.questionVi,
       questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
@@ -92,10 +95,11 @@ function buildItems(seed: number): MockItem[] {
 }
 
 export default function ThiThuSpeakingPage() {
+  const { dict } = useN400Lang();
   const { recordSectionMockResult } = useN400UserState();
 
   const [seed, setSeed] = useState(0);
-  const items = useMemo(() => buildItems(seed), [seed]);
+  const items = useMemo(() => buildItems(seed, dict), [seed, dict]);
 
   const [index, setIndex] = useState(0);
   const [pickedMc, setPickedMc] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
@@ -124,13 +128,13 @@ export default function ThiThuSpeakingPage() {
         passed={correctCount >= PASS_THRESHOLD}
         score={correctCount}
         total={TOTAL}
-        requirement={`Cần trả lời đúng ≥ ${PASS_THRESHOLD}/${TOTAL} câu để vượt qua.`}
-        passSubtitle="Bạn đã sẵn sàng cho phần Speaking của buổi phỏng vấn."
+        requirement={tFormat(dict.mockTest.speakingMock.requirement, { need: PASS_THRESHOLD, total: TOTAL })}
+        passSubtitle={dict.mockTest.speakingMock.passSubtitle}
         onRetake={retake}
         rows={answers}
         reviewHref={`/n400ready/study`}
-        reviewLabel="Ôn luyện Speaking"
-        reviewTip="Ôn lại phần Từ vựng và câu hỏi Yes/No để cải thiện điểm số của bạn!"
+        reviewLabel={dict.mockTest.speakingMock.reviewLabel}
+        reviewTip={dict.mockTest.speakingMock.reviewTip}
         hubHref={`/n400ready/mock-test`}
       />
     );
@@ -163,7 +167,7 @@ export default function ThiThuSpeakingPage() {
       item.kind === 'mc'
         ? {
             key: `${index}-${item.id}`,
-            badge: `Câu ${index + 1} / ${item.badge}`,
+            badge: tFormat(dict.mockTest.speakingMock.mcBadge, { index: index + 1, badge: item.badge }),
             prompt: item.headerEn,
             promptVi: item.headerVi,
             userAnswer: item.options.find((o) => o.id === pickedMc)?.en ?? null,
@@ -174,7 +178,7 @@ export default function ThiThuSpeakingPage() {
           }
         : {
             key: `${index}-${item.id}`,
-            badge: `Câu ${index + 1} / Yes-No #${item.num}`,
+            badge: tFormat(dict.mockTest.speakingMock.ynBadge, { index: index + 1, num: item.num }),
             prompt: item.questionEn,
             promptVi: item.questionVi,
             userAnswer: pickedYn === 'yes' ? 'Yes, officer' : 'No, officer',
@@ -248,6 +252,7 @@ function NextButton({
   onClick: () => void;
   isLast: boolean;
 }) {
+  const { dict } = useN400Lang();
   return (
     <button
       type="button"
@@ -260,7 +265,7 @@ function NextButton({
       }`}
       style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
     >
-      <span>{isLast ? 'Nộp bài' : 'Next'}</span>
+      <span>{isLast ? dict.mockTest.submitButton : 'Next'}</span>
       <ArrowRight size={16} />
     </button>
   );
@@ -275,6 +280,7 @@ function McBody({
   picked: 'A' | 'B' | 'C' | 'D' | null;
   onPick: (id: 'A' | 'B' | 'C' | 'D') => void;
 }) {
+  const { dict } = useN400Lang();
   return (
     <>
       {/* Header */}
@@ -289,8 +295,8 @@ function McBody({
             {/* English only while taking — Vietnamese gloss appears in the result. */}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <AudioButton src={item.questionAudioSrc} label="Nghe câu hỏi" size="sm" />
-            <AudioButton src={item.questionAudioSrc} label="Đọc chậm / Speak Slower" size="sm" rate={0.7} variant="slow" />
+            <AudioButton src={item.questionAudioSrc} label={dict.flashcards.listenQuestion} size="sm" />
+            <AudioButton src={item.questionAudioSrc} label={dict.mockTest.slowSpeakLabel} size="sm" rate={0.7} variant="slow" />
           </div>
         </div>
       </div>
@@ -341,6 +347,7 @@ function YesNoBody({
   picked: Choice | null;
   onPick: (choice: Choice) => void;
 }) {
+  const { dict } = useN400Lang();
   const choices: { id: Choice; label: string }[] = [
     { id: 'yes', label: 'Yes, officer' },
     { id: 'no', label: 'No, officer' },
@@ -359,8 +366,8 @@ function YesNoBody({
             {/* English only while taking — Vietnamese gloss appears in the result. */}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <AudioButton src={item.audioSrc} label="Nghe câu hỏi" size="sm" />
-            <AudioButton src={item.audioSrc} label="Đọc chậm / Speak Slower" size="sm" rate={0.7} variant="slow" />
+            <AudioButton src={item.audioSrc} label={dict.flashcards.listenQuestion} size="sm" />
+            <AudioButton src={item.audioSrc} label={dict.mockTest.slowSpeakLabel} size="sm" rate={0.7} variant="slow" />
           </div>
         </div>
       </div>

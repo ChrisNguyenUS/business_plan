@@ -22,6 +22,8 @@ import { questionAudioUrl } from '@/lib/n400/quiz-engine';
 import { gradeWritingSentence } from '@/lib/n400/writing-grader';
 import type { WritingSentence } from '@/lib/n400/writing-data';
 import type { MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export interface CivicsAnswer {
   questionId: number;
@@ -83,18 +85,32 @@ interface ReviewItem {
   writingDiff?: { userInput: string; sentenceEn: string };
 }
 
-const SECTION_META: Record<SectionKey, { icon: string; label: string }> = {
-  civics: { icon: '🏛', label: 'Civics' },
-  speaking: { icon: '💬', label: 'Speaking' },
-  writing: { icon: '✍️', label: 'Writing' },
-};
+/** Icon + label per section, built from the dict so labels follow the locale. */
+function sectionMeta(rt: {
+  civicsSection: string;
+  speakingSection: string;
+  writingSection: string;
+}): Record<SectionKey, { icon: string; label: string }> {
+  return {
+    civics: { icon: '🏛', label: rt.civicsSection },
+    speaking: { icon: '💬', label: rt.speakingSection },
+    writing: { icon: '✍️', label: rt.writingSection },
+  };
+}
 
-const SECTION_FILTERS: { id: SectionFilter; label: string }[] = [
-  { id: 'all', label: 'Tất cả phần' },
-  { id: 'civics', label: 'Civics' },
-  { id: 'speaking', label: 'Speaking' },
-  { id: 'writing', label: 'Writing' },
-];
+function sectionFilters(rt: {
+  allSections: string;
+  civicsOption: string;
+  speakingOption: string;
+  writingOption: string;
+}): { id: SectionFilter; label: string }[] {
+  return [
+    { id: 'all', label: rt.allSections },
+    { id: 'civics', label: rt.civicsOption },
+    { id: 'speaking', label: rt.speakingOption },
+    { id: 'writing', label: rt.writingOption },
+  ];
+}
 
 export default function ReviewAnswers({
   civicsAnswers,
@@ -112,6 +128,10 @@ export default function ReviewAnswers({
   onRetake,
 }: ReviewAnswersProps) {
   const { state, toggleBookmark } = useN400UserState();
+  const { dict, lang } = useN400Lang();
+  const rt = dict.mockTest.review;
+  const SECTION_META = sectionMeta(rt);
+  const SECTION_FILTERS = sectionFilters(rt);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sectionFilter, setSectionFilter] = useState<SectionFilter>('all');
 
@@ -120,11 +140,12 @@ export default function ReviewAnswers({
       const q = N400_QUESTIONS_BY_ID.get(a.questionId);
       if (!q) return [];
       const categoryLabel = N400_CATEGORY_LABELS[q.category];
+      const categoryName = (lang === 'en' ? categoryLabel?.en : categoryLabel?.vi) ?? q.category;
       return [
         {
           key: `civ-${a.questionId}`,
           section: 'civics',
-          badge: `Civics · ${categoryLabel?.vi ?? q.category} · Câu #${q.id}`,
+          badge: tFormat(rt.civicsBadge, { category: categoryName, id: q.id }),
           promptEn: q.questionEn,
           promptVi: q.questionVi,
           userAnswer: a.selectedEn ?? null,
@@ -164,7 +185,7 @@ export default function ReviewAnswers({
           key: `wr-${a.sentenceId}`,
           section: 'writing',
           badge: `Writing · ${q.topicVi}`,
-          promptEn: 'Nghe và viết lại câu bạn nghe',
+          promptEn: rt.writingPrompt,
           userAnswer: a.userInput || null,
           correct: [{ en: q.sentenceEn, vi: q.sentenceVi }],
           ok: a.correct,
@@ -174,7 +195,7 @@ export default function ReviewAnswers({
     });
 
     return [...civicsItems, ...speakingItems, ...writingItems];
-  }, [civicsAnswers, speakingQuestions, speakingAnswers, writingQuestions, writingAnswers]);
+  }, [civicsAnswers, speakingQuestions, speakingAnswers, writingQuestions, writingAnswers, rt, lang]);
 
   // Pill counts follow the active section filter so they always describe
   // what the pill would show, not the whole test.
@@ -192,24 +213,24 @@ export default function ReviewAnswers({
   const summaryCells: { icon: string; label: string; result: PartResult | null }[] = [
     {
       icon: '📋',
-      label: 'Full Interview',
+      label: rt.fullInterview,
       result: { correct: totalScore, total: totalQuestions, passed: overall },
     },
-    { icon: SECTION_META.civics.icon, label: 'Civics', result: civics },
-    { icon: SECTION_META.speaking.icon, label: 'Speaking', result: speaking },
-    { icon: SECTION_META.writing.icon, label: 'Writing', result: writing },
+    { icon: SECTION_META.civics.icon, label: SECTION_META.civics.label, result: civics },
+    { icon: SECTION_META.speaking.icon, label: SECTION_META.speaking.label, result: speaking },
+    { icon: SECTION_META.writing.icon, label: SECTION_META.writing.label, result: writing },
   ];
 
   const statusPills: { id: StatusFilter; label: string; icon?: React.ReactNode }[] = [
-    { id: 'all', label: `Tất cả (${sectionItems.length})` },
+    { id: 'all', label: tFormat(rt.allQuestions, { count: sectionItems.length }) },
     {
       id: 'wrong',
-      label: `Câu sai (${wrongCount})`,
+      label: tFormat(rt.wrongQuestions, { count: wrongCount }),
       icon: <XCircle size={15} className="shrink-0 text-red-400" />,
     },
     {
       id: 'correct',
-      label: `Câu đúng (${correctCount})`,
+      label: tFormat(rt.correctQuestions, { count: correctCount }),
       icon: <CheckCircle size={15} className="shrink-0 text-teal-500" />,
     },
   ];
@@ -223,20 +244,20 @@ export default function ReviewAnswers({
           onClick={onBack}
           className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
         >
-          <ArrowLeft size={16} /> Quay lại kết quả
+          <ArrowLeft size={16} /> {rt.back}
         </button>
         <button
           type="button"
           onClick={onRetake}
           className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
         >
-          <RotateCcw size={14} /> Thi lại
+          <RotateCcw size={14} /> {dict.mockTest.result.retakeButton}
         </button>
       </div>
 
       <div>
-        <h2 className="text-xl font-extrabold text-gray-900">Xem lại đáp án</h2>
-        <p className="mt-0.5 text-sm text-gray-500">Xem lại đáp án và chi tiết cho từng câu hỏi.</p>
+        <h2 className="text-xl font-extrabold text-gray-900">{rt.title}</h2>
+        <p className="mt-0.5 text-sm text-gray-500">{rt.subtitle}</p>
       </div>
 
       {/* Summary strip — overall + one cell per part */}
@@ -286,7 +307,7 @@ export default function ReviewAnswers({
         <select
           value={sectionFilter}
           onChange={(e) => setSectionFilter(e.target.value as SectionFilter)}
-          aria-label="Lọc theo phần"
+          aria-label={rt.filterLabel}
           className="cursor-pointer rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 outline-none transition-colors hover:border-teal-300 focus:border-teal-400"
         >
           {SECTION_FILTERS.map((f) => (
@@ -301,7 +322,7 @@ export default function ReviewAnswers({
       <div className="space-y-3">
         {visible.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center text-sm text-gray-500">
-            Không có câu nào khớp bộ lọc này.
+            {dict.mockTest.result.noMatches}
           </div>
         ) : null}
         {visible.map((item) => (
@@ -314,13 +335,13 @@ export default function ReviewAnswers({
                 <h3 className="mt-2.5 text-[0.9375rem] font-bold leading-snug text-gray-800">
                   {item.promptEn}
                 </h3>
-                {item.promptVi ? (
+                {lang !== 'en' && item.promptVi ? (
                   <p className="mt-0.5 text-[0.8125rem] text-gray-500">{item.promptVi}</p>
                 ) : null}
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {item.audioSrc !== undefined ? (
-                  <AudioButton src={item.audioSrc} size="sm" label="Nghe câu hỏi" />
+                  <AudioButton src={item.audioSrc} size="sm" label={dict.flashcards.listenQuestion} />
                 ) : null}
                 {item.bookmarkId != null ? (
                   <button
@@ -333,8 +354,8 @@ export default function ReviewAnswers({
                     }`}
                     aria-label={
                       state.bookmarks.includes(item.bookmarkId)
-                        ? 'Bỏ đánh dấu'
-                        : 'Đánh dấu để học sau'
+                        ? dict.flashcards.unbookmark
+                        : dict.mockTest.result.bookmarkHint
                     }
                   >
                     <Bookmark
@@ -348,7 +369,7 @@ export default function ReviewAnswers({
                     item.ok ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
                   }`}
                 >
-                  {item.ok ? 'Đúng' : 'Sai'}
+                  {item.ok ? dict.mockTest.result.filterCorrect : dict.mockTest.result.filterWrong}
                 </span>
               </div>
             </div>
@@ -371,7 +392,7 @@ export default function ReviewAnswers({
                       item.ok ? 'text-teal-700' : 'text-orange-600'
                     }`}
                   >
-                    {item.section === 'writing' ? 'Bạn viết' : 'Câu trả lời của bạn'}
+                    {item.section === 'writing' ? rt.yourAnswer : rt.yourSelection}
                   </span>
                 </div>
                 <p
@@ -379,7 +400,7 @@ export default function ReviewAnswers({
                     item.ok ? 'text-teal-800' : 'text-orange-800'
                   }`}
                 >
-                  {item.userAnswer ?? '— (không ghi nhận được lựa chọn)'}
+                  {item.userAnswer ?? rt.noSelection}
                 </p>
                 {item.writingDiff ? (
                   <div className="mt-2">
@@ -388,6 +409,7 @@ export default function ReviewAnswers({
                         gradeWritingSentence(
                           item.writingDiff.userInput,
                           item.writingDiff.sentenceEn,
+                          dict,
                         ).wordResults
                       }
                       showAnnotations={false}
@@ -404,17 +426,17 @@ export default function ReviewAnswers({
                     <CheckCircle size={14} className="shrink-0 text-teal-600" />
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-teal-700">
                       {item.section === 'writing'
-                        ? 'Câu đúng'
+                        ? rt.rightAnswer
                         : item.section === 'speaking'
-                          ? 'Câu trả lời mong đợi'
-                          : 'Đáp án đúng'}
+                          ? rt.expectedAnswer
+                          : rt.correctAnswer}
                     </span>
                   </div>
                   <div className="mt-1 space-y-0.5">
                     {item.correct.map((ans, i) => (
                       <p key={i} className="text-sm font-medium text-teal-800">
                         {ans.en}
-                        {ans.vi && ans.vi !== ans.en ? (
+                        {lang !== 'en' && ans.vi && ans.vi !== ans.en ? (
                           <span className="ml-2 text-xs font-normal text-teal-600">({ans.vi})</span>
                         ) : null}
                       </p>
@@ -431,13 +453,14 @@ export default function ReviewAnswers({
 }
 
 function PassBadge({ passed }: { passed: boolean }) {
+  const { dict } = useN400Lang();
   return (
     <span
       className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
         passed ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
       }`}
     >
-      {passed ? 'Đạt' : 'Chưa đạt'}
+      {passed ? dict.mockTest.summary.passedLabel : dict.mockTest.summary.failedLabel}
     </span>
   );
 }

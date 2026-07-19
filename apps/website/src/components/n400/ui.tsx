@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 type CardProps = {
   children: ReactNode;
@@ -34,9 +35,12 @@ export function ProgressBar({
   );
 }
 
-export const SKILL_DATA = [
-  { name: 'Từ vựng', value: 80, color: 'bg-teal-600', text: 'text-teal-600', trend: '+5%' },
-  { name: 'Ngữ pháp', value: 65, color: 'bg-orange-500', text: 'text-orange-500', trend: '+4%' },
-  { name: 'Đọc hiểu', value: 70, color: 'bg-yellow-500', text: 'text-yellow-500', trend: '+6%' },
-  { name: 'Nghe hiểu', value: 75, color: 'bg-purple-600', text: 'text-purple-600', trend: '+7%' },
-];
+/** Not currently consumed by any screen — kept translated for future use. */
+export function getSkillData(dict: N400Dict) {
+  return [
+    { name: dict.common.skillVocabulary, value: 80, color: 'bg-teal-600', text: 'text-teal-600', trend: '+5%' },
+    { name: dict.common.skillGrammar, value: 65, color: 'bg-orange-500', text: 'text-orange-500', trend: '+4%' },
+    { name: dict.common.skillReading, value: 70, color: 'bg-yellow-500', text: 'text-yellow-500', trend: '+6%' },
+    { name: dict.common.skillListening, value: 75, color: 'bg-purple-600', text: 'text-purple-600', trend: '+7%' },
+  ];
+}

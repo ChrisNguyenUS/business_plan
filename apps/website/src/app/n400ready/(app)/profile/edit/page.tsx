@@ -12,6 +12,7 @@ import type { User as AuthUser } from '@supabase/supabase-js';
 import type { N400Lang } from '@/lib/n400/i18n/config';
 import { readN400LangCookie } from '@/lib/n400/i18n/client';
 import { setN400Language } from '@/lib/n400/i18n/actions';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 const PROVIDER_LABELS: Record<string, string> = {
   email: 'Email',
@@ -21,10 +22,11 @@ const PROVIDER_LABELS: Record<string, string> = {
 };
 
 export default function ProfileEditPage() {
+  const { dict } = useN400Lang();
   const { user, profile } = useAuth();
 
   if (!profile || !user) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   // Form state lives in a child that mounts only once the profile exists,
@@ -34,6 +36,7 @@ export default function ProfileEditPage() {
 
 function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }) {
   const router = useRouter();
+  const { dict } = useN400Lang();
   const { refreshProfile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,13 +81,13 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
       await refreshProfile();
       const { ok } = await setN400Language(language);
       if (!ok) {
-        setError('Hồ sơ đã lưu nhưng không lưu được ngôn ngữ. Vui lòng thử lại.');
+        setError(dict.profile.languageSaveError);
         return;
       }
       setSaved(true);
       router.push(`/n400ready/profile`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không lưu được. Vui lòng thử lại.');
+      setError(err instanceof Error ? err.message : dict.profile.saveFailedFallback);
     } finally {
       setSaving(false);
     }
@@ -103,7 +106,7 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
         await refreshProfile();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Tải ảnh thất bại. Vui lòng thử lại.');
+      setError(err instanceof Error ? err.message : dict.profile.avatarUploadError);
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -116,11 +119,11 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
         href={`/n400ready/profile`}
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-teal-700"
       >
-        <ArrowLeft size={16} /> Quay lại hồ sơ
+        <ArrowLeft size={16} /> {dict.profile.backToProfile}
       </Link>
 
       <Card className="p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Chỉnh sửa hồ sơ</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">{dict.profile.editProfileTitle}</h2>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">
@@ -149,9 +152,9 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
               disabled={uploading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-50 text-teal-700 text-sm font-semibold hover:bg-teal-100 disabled:opacity-50"
             >
-              <Camera size={14} /> {uploading ? 'Đang tải lên…' : 'Đổi ảnh đại diện'}
+              <Camera size={14} /> {uploading ? dict.profile.uploadingLabel : dict.profile.changeAvatar}
             </button>
-            <p className="text-xs text-gray-500 mt-2">JPG, PNG, WebP hoặc GIF.</p>
+            <p className="text-xs text-gray-500 mt-2">{dict.profile.avatarFormatHint}</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -166,43 +169,43 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Tên / First Name"
+              label={dict.profile.firstNameLabel}
               value={firstName}
               onChange={setFirstName}
               placeholder="Christopher"
             />
             <Field
-              label="Họ / Last Name"
+              label={dict.profile.lastNameLabel}
               value={lastName}
               onChange={setLastName}
               placeholder="Nguyen"
             />
             <Field
-              label="Tên đệm / Middle Name"
+              label={dict.profile.middleNameLabel}
               value={middleName}
               onChange={setMiddleName}
               placeholder="Van"
-              hint="Chỉ dùng cho giấy tờ pháp lý — không hiển thị trong ứng dụng."
+              hint={dict.profile.middleNameHint}
             />
             <Field
-              label="Hậu tố / Suffix"
+              label={dict.profile.suffixLabel}
               value={nameSuffix}
               onChange={setNameSuffix}
               placeholder="Jr., III…"
-              hint="Không bắt buộc."
+              hint={dict.profile.optional}
             />
           </div>
           <Field
-            label="Tên thường gọi / Preferred Name"
+            label={dict.profile.preferredNameLabel}
             value={preferredName}
             onChange={setPreferredName}
             placeholder="Chris"
-            hint="Tên hiển thị trong ứng dụng. Không bắt buộc."
+            hint={dict.profile.preferredNameHint}
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ngôn ngữ / Language
+              {dict.profile.languageLabel}
             </label>
             <select
               value={language}
@@ -221,13 +224,13 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
               className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 disabled:opacity-50 inline-flex items-center gap-2"
             >
               {saved ? <Check size={14} /> : null}
-              {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
+              {saving ? dict.profile.saving : dict.profile.saveChanges}
             </button>
             <Link
               href={`/n400ready/profile`}
               className="px-5 py-2.5 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50"
             >
-              Hủy
+              {dict.profile.cancel}
             </Link>
           </div>
         </form>
@@ -235,13 +238,11 @@ function ProfileEditForm({ profile, user }: { profile: Profile; user: AuthUser }
 
       {/* Connected accounts */}
       <Card className="p-6">
-        <h3 className="font-bold text-gray-800 mb-1">Tài khoản đã liên kết</h3>
-        <p className="text-xs text-gray-500 mb-4">
-          Email và đăng nhập được quản lý bởi hệ thống xác thực — chỉ đọc.
-        </p>
+        <h3 className="font-bold text-gray-800 mb-1">{dict.profile.linkedAccountsTitle}</h3>
+        <p className="text-xs text-gray-500 mb-4">{dict.profile.linkedAccountsHint}</p>
         <div className="flex flex-wrap gap-2">
           {providers.length === 0 ? (
-            <span className="text-sm text-gray-400">Đang tải…</span>
+            <span className="text-sm text-gray-400">{dict.common.loading}</span>
           ) : (
             providers.map((p) => (
               <span

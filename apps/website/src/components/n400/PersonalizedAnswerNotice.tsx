@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { TriangleAlert } from 'lucide-react';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export function PersonalizedAnswerNotice({ from }: { from: 'practice' | 'flashcards' }) {
+  const { dict } = useN400Lang();
+
   return (
     <div
       role="note"
@@ -12,16 +15,14 @@ export function PersonalizedAnswerNotice({ from }: { from: 'practice' | 'flashca
       <TriangleAlert size={16} className="text-amber-500 shrink-0 mt-0.5" />
       <p className="flex-1 min-w-0 leading-snug" style={{ fontSize: 'clamp(0.7rem, 1.2vw, 0.8125rem)' }}>
         <span className="font-semibold text-amber-800">
-          Đáp án cá nhân hóa chưa có / Personalized answer unavailable.
+          {dict.common.personalizedAnswerUnavailable}.
         </span>{' '}
-        <span className="text-amber-700">
-          Bạn chưa thêm địa chỉ — mọi Dân biểu đương nhiệm của tiểu bang đều được chấp nhận khi luyện tập.
-        </span>{' '}
+        <span className="text-amber-700">{dict.common.addressNotSetWarning}</span>{' '}
         <Link
           href={{ pathname: `/n400ready/setup`, query: { from } }}
           className="font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900 whitespace-nowrap"
         >
-          Thêm địa chỉ →
+          {dict.common.addAddressLink}
         </Link>
       </p>
     </div>

@@ -13,6 +13,8 @@ import { shuffle, writingAudioUrl } from '@/lib/n400/quiz-engine';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 import { MockResultScreen, type MockResultRow } from '@/components/n400/MockResultScreen';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 const SENTENCE_COUNT = 3;
 const PASS_THRESHOLD = 1; // đúng ít nhất 1/3 là đạt
@@ -24,6 +26,7 @@ interface Outcome {
 }
 
 export default function ThiThuVietPage() {
+  const { dict } = useN400Lang();
   const router = useRouter();
   const { recordSectionMockResult } = useN400UserState();
 
@@ -47,14 +50,14 @@ export default function ThiThuVietPage() {
         passed={outcome.correct >= PASS_THRESHOLD}
         score={outcome.correct}
         total={outcome.total}
-        requirement={`Cần viết đúng ≥ ${PASS_THRESHOLD}/${outcome.total} câu để vượt qua.`}
-        passSubtitle="Bạn đã sẵn sàng cho phần Viết của buổi phỏng vấn."
+        requirement={tFormat(dict.mockTest.writingMock.requirement, { need: PASS_THRESHOLD, total: outcome.total })}
+        passSubtitle={dict.mockTest.writingMock.passSubtitle}
         onRetake={retake}
         rows={outcome.rows}
-        userAnswerLabel="Bạn viết:"
+        userAnswerLabel={dict.mockTest.writingMock.userAnswerLabel}
         reviewHref={`/n400ready/writing`}
-        reviewLabel="Ôn luyện Viết"
-        reviewTip="Ôn lại phần viết chính tả để cải thiện điểm số của bạn!"
+        reviewLabel={dict.mockTest.writingMock.reviewLabel}
+        reviewTip={dict.mockTest.writingMock.reviewTip}
         hubHref={`/n400ready/mock-test`}
       />
     );
@@ -79,7 +82,7 @@ export default function ThiThuVietPage() {
           return [
             {
               key: item.sentenceId,
-              badge: `Câu ${i + 1} / Viết #${q.num}`,
+              badge: tFormat(dict.mockTest.writingMock.badge, { index: i + 1, num: q.num }),
               prompt: q.sentenceEn,
               promptVi: q.sentenceVi,
               userAnswer: item.userInput.trim() || null,

@@ -17,6 +17,7 @@ import {
 } from '@/lib/n400/questions-data';
 import { questionAudioUrl, correctAnswersFor } from '@/lib/n400/quiz-engine';
 import type { StateCode } from '@/lib/n400/state-data';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 const CATEGORY_TONE: Record<N400CategoryKey, { bg: string; text: string; chip: string; chipText: string }> = {
   principles: { bg: 'bg-teal-50', text: 'text-teal-600', chip: 'bg-teal-50', chipText: 'text-teal-700' },
@@ -43,6 +44,7 @@ export function QuestionList({
   districtNumber,
   onSelectQuestion,
 }: QuestionListProps) {
+  const { dict, lang } = useN400Lang();
   const [search, setSearch] = useState('');
 
   const items = useMemo(() => {
@@ -68,15 +70,15 @@ export function QuestionList({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm câu hỏi..."
+          placeholder={dict.flashcards.searchPlaceholder}
           className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
         />
       </label>
 
       {items.length === 0 ? (
         <Card className="p-8 text-center">
-          <h4 className="font-bold text-gray-800">Không có kết quả phù hợp</h4>
-          <p className="text-sm text-gray-500 mt-1">Thử từ khóa khác hoặc xóa ô tìm kiếm.</p>
+          <h4 className="font-bold text-gray-800">{dict.flashcards.noResults}</h4>
+          <p className="text-sm text-gray-500 mt-1">{dict.flashcards.noResultsHint}</p>
         </Card>
       ) : (
         <div className="flex flex-col gap-2">
@@ -104,10 +106,12 @@ export function QuestionList({
                   <div className="text-slate-800 font-semibold text-sm leading-snug">
                     {q.questionEn}
                   </div>
-                  <div className="text-slate-500 text-xs mt-0.5 leading-normal">
-                    {q.questionVi}
-                  </div>
-                  
+                  {lang !== 'en' && (
+                    <div className="text-slate-500 text-xs mt-0.5 leading-normal">
+                      {q.questionVi}
+                    </div>
+                  )}
+
                   {/* Answers */}
                   <div className="mt-2 text-xs text-slate-600 flex flex-wrap items-center gap-x-1">
                     <span className="font-semibold text-teal-700">Answer:</span>
@@ -115,7 +119,7 @@ export function QuestionList({
                       <span key={i} className="inline-flex items-center">
                         {i > 0 && <span className="text-slate-300 mx-1">•</span>}
                         <span className="font-medium text-slate-700">{a.en}</span>
-                        {a.vi && a.vi !== a.en && (
+                        {lang !== 'en' && a.vi && a.vi !== a.en && (
                           <span className="text-slate-400 ml-1">({a.vi})</span>
                         )}
                       </span>
@@ -125,7 +129,7 @@ export function QuestionList({
                   {/* Topic tag */}
                   <div className="mt-2 flex items-center gap-2">
                     <span className={`px-2 py-0.5 ${tone.chip} text-[10px] font-bold rounded`}>
-                      {N400_CATEGORY_LABELS[q.category].vi}
+                      {lang === 'en' ? N400_CATEGORY_LABELS[q.category].en : N400_CATEGORY_LABELS[q.category].vi}
                     </span>
                   </div>
                 </div>
@@ -148,7 +152,7 @@ export function QuestionList({
                   <AudioButton
                     src={questionAudioUrl(q.id)}
                     size="sm"
-                    label="Nghe câu hỏi"
+                    label={dict.flashcards.listenQuestion}
                     className="w-8 h-8 shrink-0"
                   />
                   <button
@@ -157,7 +161,7 @@ export function QuestionList({
                       e.stopPropagation();
                       onToggleBookmark(q.id);
                     }}
-                    aria-label={isBookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
+                    aria-label={isBookmarked ? dict.flashcards.unbookmark : dict.flashcards.bookmark}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
                       isBookmarked
                         ? 'bg-amber-100 text-amber-500 shadow-sm'

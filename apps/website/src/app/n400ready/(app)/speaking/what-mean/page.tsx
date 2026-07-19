@@ -9,7 +9,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '@/lib/n400/whatmean-data';
-import { WHATMEAN_PRESETS } from '@/lib/n400/section-presets';
+import { whatmeanPresets } from '@/lib/n400/section-presets';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 import {
   deriveSectionSeen,
   deriveSectionGradedTally,
@@ -42,11 +45,11 @@ type Mode =
   | { kind: 'deck'; ids: string[] }
   | { kind: 'practice'; ids: string[]; seed: string; minutes?: number | null };
 
-function toCard(id: string): SectionCard {
+function toCard(id: string, dict: N400Dict): SectionCard {
   const q = WHATMEAN_QUESTIONS_BY_ID[id];
   return {
     id,
-    badge: `Từ vựng / Vocabulary #${q.num}`,
+    badge: tFormat(dict.speaking.whatmean.badge, { num: q.num }),
     questionEn: q.termEn,
     questionVi: q.termVi,
     questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
@@ -57,7 +60,7 @@ function toCard(id: string): SectionCard {
   };
 }
 
-function toQuestion(id: string, seed: string, i: number): MCQuestion {
+function toQuestion(id: string, seed: string, i: number, dict: N400Dict): MCQuestion {
   const q = WHATMEAN_QUESTIONS_BY_ID[id];
   const options = buildWhatMeanOptions(q, `${seed}-${i}`).map((o) => ({
     id: o.id,
@@ -67,7 +70,7 @@ function toQuestion(id: string, seed: string, i: number): MCQuestion {
   }));
   return {
     itemId: id,
-    badge: `Từ vựng / Vocabulary #${q.num}`,
+    badge: tFormat(dict.speaking.whatmean.badge, { num: q.num }),
     headerEn: q.termEn,
     headerVi: q.questionVi,
     questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
@@ -78,6 +81,7 @@ function toQuestion(id: string, seed: string, i: number): MCQuestion {
 }
 
 export default function WhatMeanPage() {
+  const { dict } = useN400Lang();
   const { state, hydrated, recordSectionAnswer, setSectionKnown } = useN400UserState();
   const [mode, setMode] = useState<Mode>({ kind: 'landing' });
   const router = useRouter();
@@ -109,15 +113,15 @@ export default function WhatMeanPage() {
     if (wrongsCount > 0) {
       list.push({
         id: 'wrongs',
-        title: 'Ôn lại từ sai',
-        desc: 'Ôn lại các từ bạn đã trả lời sai để ghi nhớ tốt hơn.',
-        countLabel: `${wrongsCount} từ`,
+        title: dict.speaking.whatmean.wrongsTitle,
+        desc: dict.speaking.whatmean.wrongsDesc,
+        countLabel: tFormat(dict.speaking.whatmean.wrongsCount, { count: wrongsCount }),
         minutes: 5,
       });
     }
-    list.push(...presetModes(WHATMEAN_PRESETS, ALL_IDS.length, 'từ'));
+    list.push(...presetModes(whatmeanPresets(dict), ALL_IDS.length, dict.speaking.whatmean.unit));
     return list;
-  }, [wrongsCount]);
+  }, [wrongsCount, dict]);
 
   // ?start=wrongs deep link (study tip / card review link): one 10-question
   // chunk of review debt. Param is stripped immediately; with no debt the hub
@@ -141,20 +145,20 @@ export default function WhatMeanPage() {
   });
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   if (mode.kind === 'deck') {
     return (
       <SectionFlashcardScreen
-        cards={mode.ids.map(toCard)}
+        cards={mode.ids.map((id) => toCard(id, dict))}
         known={known}
         onSetKnown={(id, v) => void setSectionKnown('whatmean', id, v)}
         onExit={() => {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });
         }}
-        title="Câu hỏi What Mean"
+        title={dict.speaking.whatmean.title}
       />
     );
   }
@@ -162,14 +166,14 @@ export default function WhatMeanPage() {
   if (mode.kind === 'practice') {
     return (
       <SectionMCQuiz
-        questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i))}
+        questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i, dict))}
         onAnswer={(id, ok) => void recordSectionAnswer('whatmean', id, ok, 'practice')}
         onExit={() => {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });
         }}
         onRestart={() => startPracticeWith(mode.ids.length)}
-        title="Câu hỏi What Mean"
+        title={dict.speaking.whatmean.title}
         estimatedMinutes={mode.minutes}
       />
     );
@@ -185,7 +189,7 @@ export default function WhatMeanPage() {
   const startMode = (m: PracticeMode) => {
     if (m.id === 'wrongs') startWrongsReview();
     else {
-      const preset = WHATMEAN_PRESETS.find((p) => p.id === m.id);
+      const preset = whatmeanPresets(dict).find((p) => p.id === m.id);
       startPracticeWith(preset?.count ?? ALL_IDS.length, preset?.minutes);
     }
   };
@@ -212,15 +216,15 @@ export default function WhatMeanPage() {
           emoji="💬"
           imageSrc="/images/n400/whatmean-thumbnail-study.png"
           title="What Mean"
-          countLabel={`${ALL_IDS.length} từ vựng`}
-          tagline="Hiểu và trả lời các câu hỏi “What mean” trong buổi phỏng vấn."
+          countLabel={tFormat(dict.speaking.whatmean.heroCount, { count: ALL_IDS.length })}
+          tagline={dict.speaking.whatmean.tagline}
           accentTextClass="text-blue-600"
           accentBarClass="bg-blue-500"
           stats={{
             seenCount: progress.seenCount,
             totalCount: progress.totalCount,
             percent: progress.percent,
-            unitLabel: 'từ',
+            unitLabel: dict.speaking.whatmean.unit,
           }}
         />
         <PracticeSelector
@@ -234,17 +238,17 @@ export default function WhatMeanPage() {
         <HubStudyCardsCard
           totalCount={ALL_IDS.length}
           chips={[
-            { id: 'all', label: 'Tất cả' },
-            { id: 'unknown', label: 'Đang học' },
-            { id: 'known', label: 'Đã thuộc' },
+            { id: 'all', label: dict.study.civics.chip.all },
+            { id: 'unknown', label: dict.study.civics.chip.unknown },
+            { id: 'known', label: dict.study.civics.chip.known },
           ]}
           onBrowse={browse}
         />
         {showWeak ? (
           <HubWeakAreasCard
-            title="Từ cần cải thiện"
-            subtitle="Tập trung vào những từ bạn chưa nhớ chắc."
-            metricLabel="Độ chính xác trung bình"
+            title={dict.speaking.whatmean.weakTitle}
+            subtitle={dict.speaking.whatmean.weakSubtitle}
+            metricLabel={dict.quiz.avgAccuracyLabel}
             percentSuffix=""
             accuracyPercent={accuracy}
             onPractice={() => {

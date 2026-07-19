@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { BadgeIcon } from './BadgeIcon';
 import type { BadgeGroupCode } from '@/lib/n400/use-badges';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
+import type { N400Lang } from '@/lib/n400/i18n/config';
 
 interface BadgeMeta {
   slug: string;
@@ -26,16 +30,18 @@ interface BadgeGalleryProps {
   earned: UserBadge[];
 }
 
-const GROUP_LABELS: Record<BadgeGroupCode, { vi: string; en: string }> = {
-  streak: { vi: 'Chuỗi học tập', en: 'Streak' },
-  civics: { vi: 'Civics', en: 'Civics' },
-  writing: { vi: 'Viết', en: 'Writing' },
-  yesno: { vi: 'Yes/No', en: 'Yes/No' },
-  whatmean: { vi: 'What Mean', en: 'What Mean' },
-  combo: { vi: 'Thành tựu tổng hợp', en: 'Combo achievements' },
-  practice: { vi: 'Thành tích luyện tập', en: 'Practice performance' },
-  other: { vi: 'Thành tựu khác', en: 'Other achievements' },
-  secret: { vi: 'Bí mật', en: 'Secret' },
+// Group header copy lives in the `badges` i18n namespace — this just maps
+// each catalog group code to its dict key.
+const GROUP_LABEL_KEYS: Record<BadgeGroupCode, keyof N400Dict['badges']> = {
+  streak: 'groupStreak',
+  civics: 'groupCivics',
+  writing: 'groupWriting',
+  yesno: 'groupYesno',
+  whatmean: 'groupWhatmean',
+  combo: 'groupCombo',
+  practice: 'groupPractice',
+  other: 'groupOther',
+  secret: 'groupSecret',
 };
 
 const GROUP_ORDER: BadgeGroupCode[] = [
@@ -52,27 +58,28 @@ const GROUP_ORDER: BadgeGroupCode[] = [
 
 // Secret badges hide their real name/description until earned, so a
 // scan of the gallery doesn't spoil what triggers them.
-const SECRET_TITLE_VI = '???';
-const SECRET_TITLE_EN = 'Secret badge';
-const SECRET_DESC_VI = 'Tiếp tục học để khám phá huy hiệu bí mật này!';
-const SECRET_DESC_EN = 'Keep studying to discover this secret badge!';
-
-function displayTitle(b: BadgeMeta, isEarned: boolean, locale: 'vi' | 'en'): string {
-  if (b.is_secret && !isEarned) return locale === 'vi' ? SECRET_TITLE_VI : SECRET_TITLE_EN;
+function displayTitle(b: BadgeMeta, isEarned: boolean, locale: N400Lang, dict: N400Dict): string {
+  if (b.is_secret && !isEarned) return dict.badges.secretTitle;
   return locale === 'vi' ? b.title_vi : b.title_en;
 }
 
-function displayDescription(b: BadgeMeta, isEarned: boolean, locale: 'vi' | 'en'): string {
-  if (b.is_secret && !isEarned) return locale === 'vi' ? SECRET_DESC_VI : SECRET_DESC_EN;
+function displayDescription(
+  b: BadgeMeta,
+  isEarned: boolean,
+  locale: N400Lang,
+  dict: N400Dict
+): string {
+  if (b.is_secret && !isEarned) return dict.badges.secretDescription;
   return locale === 'vi' ? b.description_vi : b.description_en;
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: N400Lang): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
+  const { lang, dict } = useN400Lang();
   const [open, setOpen] = useState<BadgeMeta | null>(null);
   const earnedMap = new Map(earned.map((e) => [e.slug, e.unlocked_at]));
 
@@ -90,9 +97,9 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
     <section id="badges" className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h3 className="font-bold text-gray-800">Huy hiệu / Badges</h3>
+          <h3 className="font-bold text-gray-800">{dict.badges.title}</h3>
           <p className="text-xs text-gray-500 mt-1">
-            Mở khóa khi bạn đạt cột mốc trong việc học. Đã mở: {totalEarned} / {totalCatalog}
+            {tFormat(dict.badges.subtitle, { totalEarned, totalCatalog })}
           </p>
         </div>
         <div className="text-2xl font-bold text-teal-700">
@@ -105,10 +112,7 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
         {grouped.map(({ code, badges }) => (
           <div key={code}>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              {GROUP_LABELS[code].vi}{' '}
-              <span className="text-gray-400 font-normal normal-case tracking-normal">
-                / {GROUP_LABELS[code].en}
-              </span>
+              {dict.badges[GROUP_LABEL_KEYS[code]]}
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
               {badges.map((b) => {
@@ -120,13 +124,18 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
                     onClick={() => setOpen(b)}
                     className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-gray-50 transition-colors text-center"
                   >
-                    <BadgeIcon slug={b.slug} alt={displayTitle(b, isEarned, 'vi')} size={64} earned={isEarned} />
+                    <BadgeIcon
+                      slug={b.slug}
+                      alt={displayTitle(b, isEarned, lang, dict)}
+                      size={64}
+                      earned={isEarned}
+                    />
                     <span
                       className={`text-[11px] font-medium leading-tight ${
                         isEarned ? 'text-gray-700' : 'text-gray-400'
                       }`}
                     >
-                      {displayTitle(b, isEarned, 'vi')}
+                      {displayTitle(b, isEarned, lang, dict)}
                     </span>
                   </button>
                 );
@@ -149,22 +158,24 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
           >
             <BadgeIcon
               slug={open.slug}
-              alt={displayTitle(open, earnedMap.has(open.slug), 'vi')}
+              alt={displayTitle(open, earnedMap.has(open.slug), lang, dict)}
               size={120}
               earned={earnedMap.has(open.slug)}
               className="mx-auto"
             />
-            <h4 className="mt-4 text-lg font-bold text-gray-800">{displayTitle(open, earnedMap.has(open.slug), 'vi')}</h4>
-            <p className="text-xs text-gray-500">{displayTitle(open, earnedMap.has(open.slug), 'en')}</p>
-            <p className="mt-3 text-sm text-gray-700">{displayDescription(open, earnedMap.has(open.slug), 'vi')}</p>
-            <p className="text-xs text-gray-500 mt-1">{displayDescription(open, earnedMap.has(open.slug), 'en')}</p>
+            <h4 className="mt-4 text-lg font-bold text-gray-800">
+              {displayTitle(open, earnedMap.has(open.slug), lang, dict)}
+            </h4>
+            <p className="mt-3 text-sm text-gray-700">
+              {displayDescription(open, earnedMap.has(open.slug), lang, dict)}
+            </p>
             {earnedMap.has(open.slug) ? (
               <p className="mt-4 text-xs text-teal-700 bg-teal-50 rounded-full inline-block px-3 py-1">
-                Đã mở khóa: {formatDate(earnedMap.get(open.slug)!)}
+                {dict.badges.unlockedDate} {formatDate(earnedMap.get(open.slug)!, lang)}
               </p>
             ) : (
               <p className="mt-4 text-xs text-gray-500 bg-gray-50 rounded-full inline-flex items-center gap-1.5 px-3 py-1">
-                <Lock size={12} /> Chưa mở khóa
+                <Lock size={12} /> {dict.badges.locked}
               </p>
             )}
             <button
@@ -172,7 +183,7 @@ export function BadgeGallery({ catalog, earned }: BadgeGalleryProps) {
               onClick={() => setOpen(null)}
               className="mt-5 w-full py-2 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700"
             >
-              Đóng
+              {dict.common.closeButton}
             </button>
           </div>
         </div>

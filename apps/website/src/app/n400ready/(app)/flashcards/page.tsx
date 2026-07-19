@@ -43,34 +43,47 @@ import {
   type FlashcardFilter,
 } from '@/lib/n400/quiz-engine';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 /* ── Status filter chips (learning state) ─────────────────────────── */
 
 type StatusFilter = 'all' | 'unknown' | 'known' | 'bookmarks';
 
-const STATUS_OPTIONS: { id: StatusFilter; label: string }[] = [
-  { id: 'all', label: 'All Questions' },
-  { id: 'unknown', label: 'Chưa thuộc' },
-  { id: 'known', label: 'Đã thuộc' },
-  { id: 'bookmarks', label: 'Saved' },
-];
+function buildStatusOptions(dict: N400Dict): { id: StatusFilter; label: string }[] {
+  return [
+    { id: 'all', label: 'All Questions' },
+    { id: 'unknown', label: dict.flashcards.unknown },
+    { id: 'known', label: dict.flashcards.known },
+    { id: 'bookmarks', label: 'Saved' },
+  ];
+}
 
 /* ── Category dropdown options ────────────────────────────────────── */
 
 const categoryCount = (id: N400CategoryKey | 'all') =>
   id === 'all' ? N400_QUESTIONS.length : N400_QUESTIONS.filter((q) => q.category === id).length;
 
-const CATEGORY_OPTIONS: { id: N400CategoryKey | 'all'; label: string; count: number; icon: LucideIcon }[] = [
-  { id: 'all', label: 'Tất cả chủ đề', count: categoryCount('all'), icon: Layers },
-  { id: 'principles', label: N400_CATEGORY_LABELS.principles.vi, count: categoryCount('principles'), icon: Landmark },
-  { id: 'system', label: N400_CATEGORY_LABELS.system.vi, count: categoryCount('system'), icon: Building2 },
-  { id: 'rights', label: N400_CATEGORY_LABELS.rights.vi, count: categoryCount('rights'), icon: Scale },
-  { id: 'history', label: N400_CATEGORY_LABELS.history.vi, count: categoryCount('history'), icon: ScrollText },
-  { id: 'symbols', label: N400_CATEGORY_LABELS.symbols.vi, count: categoryCount('symbols'), icon: Flag },
-];
+function buildCategoryOptions(
+  dict: N400Dict,
+  lang: 'vi' | 'en',
+): { id: N400CategoryKey | 'all'; label: string; count: number; icon: LucideIcon }[] {
+  const catLabel = (key: N400CategoryKey) => N400_CATEGORY_LABELS[key][lang === 'en' ? 'en' : 'vi'];
+  return [
+    { id: 'all', label: dict.flashcards.allTopics, count: categoryCount('all'), icon: Layers },
+    { id: 'principles', label: catLabel('principles'), count: categoryCount('principles'), icon: Landmark },
+    { id: 'system', label: catLabel('system'), count: categoryCount('system'), icon: Building2 },
+    { id: 'rights', label: catLabel('rights'), count: categoryCount('rights'), icon: Scale },
+    { id: 'history', label: catLabel('history'), count: categoryCount('history'), icon: ScrollText },
+    { id: 'symbols', label: catLabel('symbols'), count: categoryCount('symbols'), icon: Flag },
+  ];
+}
 
 export default function FlashcardsPage() {
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, toggleBookmark, setFlashcardKnown } = useN400UserState();
+  const statusOptions = useMemo(() => buildStatusOptions(dict), [dict]);
+  const baseCategoryOptions = useMemo(() => buildCategoryOptions(dict, lang), [dict, lang]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<N400CategoryKey | null>(null);
   const [view, setView] = useState<'cards' | 'list'>('cards');
@@ -111,7 +124,7 @@ export default function FlashcardsPage() {
   // Category options with live mastery percent (known cards / category size).
   const categoryOptions = useMemo(
     () =>
-      CATEGORY_OPTIONS.map((opt) => ({
+      baseCategoryOptions.map((opt) => ({
         ...opt,
         percent:
           opt.id === 'all'
@@ -124,7 +137,7 @@ export default function FlashcardsPage() {
                   100
               ),
       })),
-    [state.flashcardKnown]
+    [baseCategoryOptions, state.flashcardKnown]
   );
 
   // Render-time adjustment: clamp the index when the filtered set shrinks
@@ -192,10 +205,10 @@ export default function FlashcardsPage() {
       const v = p.get('view');
 
       setTimeout(() => {
-        if (f && STATUS_OPTIONS.some((o) => o.id === f)) {
+        if (f && statusOptions.some((o) => o.id === f)) {
           setStatusFilter(f);
         }
-        if (cat && CATEGORY_OPTIONS.some((o) => o.id === cat)) {
+        if (cat && baseCategoryOptions.some((o) => o.id === cat)) {
           setCategoryFilter(cat);
         }
         if (v === 'list') {
@@ -203,10 +216,12 @@ export default function FlashcardsPage() {
         }
       }, 0);
     }
+    // One-shot URL-to-state sync on mount (same deep-link pattern as practice/page.tsx).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   if (total === 0) {
@@ -214,17 +229,17 @@ export default function FlashcardsPage() {
       <Card className="p-8 text-center max-w-md mx-auto">
         <h3 className="font-bold text-gray-800 mb-2">
           {statusFilter === 'bookmarks'
-            ? 'Bạn chưa lưu (Saved) câu hỏi nào'
+            ? dict.flashcards.noBookmarked
             : statusFilter === 'known'
-              ? 'Chưa có câu nào trong mục "Mastered"'
-              : 'Không có câu nào trong bộ lọc này'}
+              ? dict.flashcards.noMastered
+              : dict.flashcards.noFilter}
         </h3>
         <p className="text-sm text-gray-500 mb-6">
           {statusFilter === 'bookmarks'
-            ? 'Nhấn biểu tượng dấu trang trên thẻ hoặc trong Luyện tập để lưu câu cần ôn lại.'
+            ? dict.flashcards.bookmarkHint
             : statusFilter === 'known'
-              ? 'Hãy học vài thẻ trước — đánh dấu "Mastered" khi bạn đã nhớ câu trả lời.'
-              : 'Đổi sang bộ lọc khác hoặc luyện tập để thay đổi trạng thái câu hỏi.'}
+              ? dict.flashcards.masteredHint
+              : dict.flashcards.filterHint}
         </p>
         <div className="flex items-center justify-center gap-3">
           {statusFilter === 'bookmarks' ? (
@@ -232,7 +247,7 @@ export default function FlashcardsPage() {
               href={`/n400ready/study/civics`}
               className="px-4 py-2 rounded-xl bg-teal-600 text-white font-semibold"
             >
-              Vào luyện tập
+              {dict.flashcards.goPractice}
             </Link>
           ) : null}
           <button
@@ -244,7 +259,7 @@ export default function FlashcardsPage() {
                 : 'bg-teal-600 text-white'
             }`}
           >
-            Xem tất cả 128 câu
+            {dict.flashcards.viewAll}
           </button>
         </div>
       </Card>
@@ -299,7 +314,7 @@ export default function FlashcardsPage() {
             value={categoryFilter ?? 'all'}
             onChange={(id) => setCategoryFilter(id === 'all' ? null : (id as N400CategoryKey))}
           />
-          {STATUS_OPTIONS.map((opt) => (
+          {statusOptions.map((opt) => (
             <button
               key={opt.id}
               type="button"
@@ -323,7 +338,7 @@ export default function FlashcardsPage() {
       <div className="shrink-0">
         <div className="flex items-center justify-between mb-1.5 text-sm text-slate-500">
           <span className="font-medium">
-            Câu {index + 1} / {total}
+            {dict.flashcards.questionShort} {index + 1} / {total}
           </span>
         </div>
         <ProgressBar progress={((index + 1) / total) * 100} heightClass="h-1.5" />
@@ -356,7 +371,7 @@ export default function FlashcardsPage() {
           onClick={goPrev}
           disabled={index === 0}
           className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
-          aria-label="Trước"
+          aria-label={dict.flashcards.prev}
         >
           <ChevronLeft size={22} />
         </button>
@@ -370,7 +385,7 @@ export default function FlashcardsPage() {
               : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600'
           }`}
         >
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> Chưa thuộc</div>
+          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsDown size={18} className="hidden sm:block" /> {dict.flashcards.unknown}</div>
           <span className="text-[10px] text-slate-400 font-medium mt-0.5 hidden sm:block">R</span>
         </button>
 
@@ -383,7 +398,7 @@ export default function FlashcardsPage() {
               : 'bg-teal-600 text-white border-teal-600 shadow-teal-600/30 hover:bg-teal-700'
           }`}
         >
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> Đã thuộc</div>
+          <div className="flex items-center gap-2 font-bold text-sm sm:text-base whitespace-nowrap"><ThumbsUp size={18} className="hidden sm:block" /> {dict.flashcards.known}</div>
           <span className="text-[10px] text-white/60 font-medium mt-0.5 hidden sm:block">M</span>
         </button>
 
@@ -392,7 +407,7 @@ export default function FlashcardsPage() {
           onClick={goNext}
           disabled={index === total - 1}
           className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 disabled:opacity-30 hover:border-slate-300 hover:bg-slate-50 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
-          aria-label="Tiếp"
+          aria-label={dict.flashcards.next}
         >
           <ChevronRight size={22} />
         </button>

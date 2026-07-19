@@ -24,6 +24,7 @@ import {
   type MockExamSection,
   type MockMode,
 } from '@/components/n400/mock-test-chrome';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export interface MCOption {
   id: 'A' | 'B' | 'C' | 'D';
@@ -75,6 +76,7 @@ export function SectionMCQuiz({
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
 }) {
+  const { dict, lang } = useN400Lang();
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<MCOption['id'] | null>(null);
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
@@ -177,14 +179,14 @@ export function SectionMCQuiz({
                   </div>
                   {/* Exam (mock/full interview): English only while taking — the
                       Vietnamese gloss surfaces on the review screen after the run. */}
-                  {!examMode ? (
+                  {!examMode && lang !== 'en' ? (
                     <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
                       {q.headerVi}
                     </div>
                   ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={q.questionAudioSrc} label="Nghe câu hỏi" size="sm" />
+                  <AudioButton src={q.questionAudioSrc} label={dict.flashcards.listenQuestion} size="sm" />
                 </div>
               </div>
             </div>
@@ -229,7 +231,7 @@ export function SectionMCQuiz({
                     </div>
                     <div className="flex-1 text-gray-800 font-medium">
                       <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {!examMode && opt.vi && opt.vi !== opt.en ? (
+                      {!examMode && lang !== 'en' && opt.vi && opt.vi !== opt.en ? (
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>
                           {opt.vi}
                         </div>
@@ -263,17 +265,17 @@ export function SectionMCQuiz({
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {pickedOption?.isCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
+                    {pickedOption?.isCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   {q.answerAudioSrc ? (
-                    <AudioButton src={q.answerAudioSrc} label="Nghe đáp án" size="sm" className="ml-auto" />
+                    <AudioButton src={q.answerAudioSrc} label={dict.flashcards.listenAnswer} size="sm" className="ml-auto" />
                   ) : null}
                 </div>
                 <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   {q.accepted.map((a, i) => (
                     <li key={i}>
                       <span className="font-medium">{a.en}</span>
-                      {a.vi && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                      {lang !== 'en' && a.vi && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                     </li>
                   ))}
                 </ul>
@@ -298,7 +300,7 @@ export function SectionMCQuiz({
                 }`}
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>{examMode ? (isLast ? 'Nộp bài' : 'Next') : 'Tiếp theo / Next'}</span>
+                <span>{examMode ? (isLast ? dict.mockTest.submitButton : 'Next') : dict.practice.next}</span>
                 <ArrowRight size={16} />
               </button>
             </div>

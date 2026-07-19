@@ -13,6 +13,7 @@ import { use, useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Card } from '@/components/n400/ui'
 import { AddressAutocomplete, type AddressSelection } from '@/components/n400/AddressAutocomplete'
+import { useN400Lang } from '@/lib/n400/i18n/provider'
 import { saveSetupProfile, type SetupFormState } from './actions'
 
 const US_STATES: ReadonlyArray<readonly [string, string]> = [
@@ -31,6 +32,7 @@ const US_STATES: ReadonlyArray<readonly [string, string]> = [
 
 function SubmitButton() {
   const { pending } = useFormStatus()
+  const { dict } = useN400Lang()
   return (
     <button
       type="submit"
@@ -38,7 +40,7 @@ function SubmitButton() {
       aria-busy={pending}
       className="w-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white rounded-2xl px-4 py-4 text-lg font-semibold mt-2 disabled:opacity-60 transition-colors"
     >
-      {pending ? 'Đang xác định khu vực... / Resolving district...' : 'Tiếp tục / Continue →'}
+      {pending ? dict.setup.submitting : dict.setup.submitButton}
     </button>
   )
 }
@@ -50,6 +52,7 @@ export default function SetupPage({
 }: {
   searchParams?: Promise<SetupSearchParams>
 }) {
+  const { dict } = useN400Lang()
   const prefill = searchParams ? use(searchParams) : {}
   const [state, formAction] = useActionState<SetupFormState, FormData>(saveSetupProfile, null)
 
@@ -76,26 +79,11 @@ export default function SetupPage({
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       <div className="w-full max-w-md">
         <Card>
-          <h1 className="text-2xl font-bold mb-1">Cho biết bạn đang ở đâu</h1>
-          <p className="text-base font-semibold text-gray-500 mb-6">Where do you live?</p>
+          <h1 className="text-2xl font-bold mb-1">{dict.setup.title}</h1>
 
-          <p className="text-sm text-gray-600 mb-2">
-            Vui lòng điền địa chỉ chính xác để app xác định đúng đáp án cho câu hỏi về Hạ nghị sĩ
-            khu vực bạn đang sinh sống. Zipcode đôi khi chồng lên nhiều khu vực bầu cử, nên cần
-            địa chỉ cụ thể.
-          </p>
-          <p className="text-xs text-gray-400 mb-6">
-            Please enter your accurate address so we can identify your U.S. Representative.
-            Zipcodes sometimes span multiple districts.
-          </p>
+          <p className="text-sm text-gray-600 mb-6">{dict.setup.description}</p>
 
-          <p className="text-xs text-gray-400 mb-6 italic">
-            Địa chỉ đầy đủ được gửi đến Geocodio (dịch vụ tra cứu khu vực bầu cử) chỉ để xác định
-            Hạ nghị sĩ của bạn — không lưu trữ trên hệ thống của chúng tôi.
-            <br />
-            Your full address is sent to Geocodio (a districting lookup service) solely to identify
-            your Representative — it is not stored on our servers.
-          </p>
+          <p className="text-xs text-gray-400 mb-6 italic">{dict.setup.disclaimer}</p>
 
           {state && !state.ok && (
             <div
@@ -110,7 +98,7 @@ export default function SetupPage({
             {fromProfile && <input type="hidden" name="from" value="profile" />}
             <div>
               <label htmlFor="street-autocomplete" className="block text-sm font-medium mb-1">
-                Địa chỉ nhà / Street Address <span className="text-red-500">*</span>
+                {dict.setup.streetLabel} <span className="text-red-500">*</span>
               </label>
               <AddressAutocomplete
                 apiKey={apiKey}
@@ -124,16 +112,13 @@ export default function SetupPage({
                   <input type="hidden" name="lon" value={coords.lon} />
                 </>
               )}
-              <p className="text-xs text-gray-400 mt-1">
-                Bắt đầu gõ địa chỉ và chọn từ gợi ý. /
-                Start typing your address and pick from the suggestions.
-              </p>
+              <p className="text-xs text-gray-400 mt-1">{dict.setup.streetHint}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="city" className="block text-sm font-medium mb-1">
-                  Thành phố / City <span className="text-red-500">*</span>
+                  {dict.setup.cityLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="city"
@@ -149,7 +134,7 @@ export default function SetupPage({
               </div>
               <div>
                 <label htmlFor="zip" className="block text-sm font-medium mb-1">
-                  Zipcode <span className="text-red-500">*</span>
+                  {dict.setup.zipcodeLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="zip"
@@ -170,7 +155,7 @@ export default function SetupPage({
 
             <div>
               <label htmlFor="state" className="block text-sm font-medium mb-1">
-                Tiểu bang / State <span className="text-red-500">*</span>
+                {dict.setup.stateLabel} <span className="text-red-500">*</span>
               </label>
               <select
                 id="state"
@@ -180,7 +165,7 @@ export default function SetupPage({
                 onChange={(e) => setStateCode(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                <option value="">-- Chọn tiểu bang / Select state --</option>
+                <option value="">{dict.setup.stateSelectPlaceholder}</option>
                 {US_STATES.map(([code, name]) => (
                   <option key={code} value={code}>
                     {name}

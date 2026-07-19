@@ -58,6 +58,8 @@ import {
   finalizeMockAttempt,
 } from './actions';
 import type { PublicSlide, FinalizeMockAttemptResult } from './types';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 type Stage = 'intro' | 'taking' | 'result';
 
@@ -88,15 +90,21 @@ interface MockStats {
   latest: number;
 }
 
+function LoadingFallback() {
+  const { dict } = useN400Lang();
+  return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
+}
+
 export default function MockTestPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-gray-500">Đang tải…</div>}>
+    <Suspense fallback={<LoadingFallback />}>
       <MockTestPageInner />
     </Suspense>
   );
 }
 
 function MockTestPageInner() {
+  const { dict } = useN400Lang();
   const { state, hydrated } = useN400UserState();
 
   // Aggregate the user's finished mock attempts for the motivational stats
@@ -207,7 +215,7 @@ function MockTestPageInner() {
         id = (await startMockAttempt(pendingStart.current)).attemptId;
         setAttemptId(id);
       }
-      if (!id) throw new Error('Không thể nộp bài. / Could not submit. Please retry.');
+      if (!id) throw new Error(dict.mockTest.intro.submitError);
       const r = await finalizeMockAttempt(
         id,
         finalPicks
@@ -220,7 +228,7 @@ function MockTestPageInner() {
       if (r.milestone) trackStreakMilestone(r.milestone);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'Không thể nộp bài. / Could not submit. Please retry.',
+        e instanceof Error ? e.message : dict.mockTest.intro.submitError,
       );
     } finally {
       setSubmitting(false);
@@ -248,7 +256,7 @@ function MockTestPageInner() {
   };
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   // When auto-starting from the picker card, show a loading state
@@ -257,7 +265,7 @@ function MockTestPageInner() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 animate-in fade-in duration-300">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
-        <p className="text-sm font-medium text-gray-600">Đang chuẩn bị câu hỏi…</p>
+        <p className="text-sm font-medium text-gray-600">{dict.mockTest.intro.preparingQuestions}</p>
       </div>
     );
   }
@@ -315,7 +323,7 @@ function MockTestPageInner() {
                       surfaces on the result screen after the test is submitted. */}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={questionAudioUrl(question.id)} label="Nghe câu hỏi" size="sm" />
+                  <AudioButton src={questionAudioUrl(question.id)} label={dict.flashcards.listenQuestion} size="sm" />
                 </div>
               </div>
             </div>
@@ -381,7 +389,7 @@ function MockTestPageInner() {
               }`}
               style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
             >
-              <span>{submitting && isLast ? 'Đang chấm bài...' : isLast ? 'Nộp bài' : 'Next'}</span>
+              <span>{submitting && isLast ? dict.mockTest.grading : isLast ? dict.mockTest.submitButton : 'Next'}</span>
               <ArrowRight size={16} />
             </button>
           </div>
@@ -407,6 +415,7 @@ function Intro({
   stats: MockStats | null;
   results: MockResult[];
 }) {
+  const { dict } = useN400Lang();
   const isFirstTime = !stats;
 
   // Last 5 attempts, newest first. Each carries its score delta vs the
@@ -441,10 +450,10 @@ function Intro({
                   Mock Exam
                 </div>
                 <h2 className="mt-3 text-3xl font-extrabold leading-tight text-gray-800 sm:text-4xl">
-                  Thi thử như thi thật
+                  {dict.mockTest.intro.title}
                 </h2>
                 <p className="mt-2.5 max-w-md text-sm leading-relaxed text-gray-500 sm:text-base">
-                  Trải nghiệm kỳ thi phỏng vấn quốc tịch Mỹ với mô phỏng sát thực tế nhất.
+                  {dict.mockTest.intro.subtitle}
                 </p>
               </div>
               <div className="relative -my-2 hidden h-44 w-52 shrink-0 animate-float-subtle motion-reduce:animate-none sm:block lg:h-52 lg:w-64">
@@ -467,7 +476,7 @@ function Intro({
                 iconBg="bg-teal-50"
                 iconColor="text-teal-600"
                 value={`${MOCK_TEST_QUESTION_COUNT}`}
-                label="Câu hỏi ngẫu nhiên"
+                label={dict.mockTest.hub.features.randomQuestions}
               />
               <ExamFact
                 primary
@@ -475,38 +484,37 @@ function Intro({
                 iconBg="bg-rose-50"
                 iconColor="text-rose-500"
                 value={`${MOCK_TEST_PASS_THRESHOLD}/${MOCK_TEST_QUESTION_COUNT}`}
-                label="Điểm đạt"
+                label={dict.mockTest.intro.passScoreLabel}
               />
               <ExamFact
                 icon={<Clock size={18} />}
                 iconBg="bg-blue-50"
                 iconColor="text-blue-500"
-                value="5–8 phút"
-                label="Thời gian ước tính"
+                value={dict.mockTest.intro.estimatedTimeValue}
+                label={dict.mockTest.intro.estimatedTimeLabel}
               />
               <ExamFact
                 icon={<EyeOff size={18} />}
                 iconBg="bg-orange-50"
                 iconColor="text-orange-500"
-                value="Không hiển thị"
-                label="Đáp án giữa chừng"
+                value={dict.mockTest.intro.noAnswerMidwayValue}
+                label={dict.mockTest.intro.noAnswerMidwayLabel}
               />
               <ExamFact
                 icon={<Headphones size={18} />}
                 iconBg="bg-yellow-50"
                 iconColor="text-yellow-600"
                 value="Audio MP3"
-                label="Cho từng câu hỏi"
+                label={dict.mockTest.intro.perQuestionLabel}
               />
             </div>
 
             {/* Empty state / primary CTA */}
             {isFirstTime ? (
               <div className="mt-7">
-                <h4 className="text-lg font-bold text-gray-800">Sẵn sàng cho bài thi thử đầu tiên?</h4>
+                <h4 className="text-lg font-bold text-gray-800">{dict.mockTest.intro.firstTimeTitle}</h4>
                 <p className="mt-1 text-sm text-gray-500">
-                  Trải nghiệm kỳ thi quốc tịch thật với {MOCK_TEST_QUESTION_COUNT} câu hỏi ngẫu nhiên —
-                  không xem đáp án cho tới khi bạn hoàn thành.
+                  {tFormat(dict.mockTest.intro.firstTimeSubtitle, { count: MOCK_TEST_QUESTION_COUNT })}
                 </p>
               </div>
             ) : null}
@@ -520,10 +528,10 @@ function Intro({
             >
               <Play size={18} className="shrink-0 fill-current" />
               {starting
-                ? 'Đang chuẩn bị câu hỏi...'
+                ? dict.mockTest.intro.startingButton
                 : isFirstTime
-                  ? 'Bắt đầu thi thử'
-                  : 'Bắt đầu thi thử mới'}
+                  ? dict.mockTest.intro.startButtonFirst
+                  : dict.mockTest.intro.startButtonAgain}
               <ArrowRight
                 size={18}
                 className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
@@ -539,7 +547,7 @@ function Intro({
             {/* Trust indicator */}
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
               <ShieldCheck size={15} className="shrink-0 text-teal-600" />
-              Dựa trên 128 câu hỏi chính thức từ USCIS
+              {dict.mockTest.intro.trustIndicator}
             </div>
           </div>
         </Card>
@@ -600,6 +608,7 @@ function RecentHistory({
   latestDelta: number | null;
   viewAllHref: string;
 }) {
+  const { dict } = useN400Lang();
   return (
     <Card className="p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
@@ -607,13 +616,13 @@ function RecentHistory({
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
             <BarChart3 size={18} />
           </div>
-          <h3 className="text-base font-bold text-gray-800">Lịch sử thi gần đây</h3>
+          <h3 className="text-base font-bold text-gray-800">{dict.mockTest.recentHistory.title}</h3>
         </div>
         <Link
           href={viewAllHref}
           className="shrink-0 text-sm font-semibold text-teal-600 transition-colors duration-200 hover:text-teal-700"
         >
-          Xem tất cả
+          {dict.study.hub.viewAllCta}
         </Link>
       </div>
 
@@ -628,7 +637,7 @@ function RecentHistory({
             >
               {i === 0 ? (
                 <span className="absolute -top-2 right-3 rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                  Mới nhất
+                  {dict.mockTest.recentHistory.latestTag}
                 </span>
               ) : null}
               <div className="flex items-baseline justify-between gap-1">
@@ -658,8 +667,9 @@ function RecentHistory({
         <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
           <Trophy size={16} className="shrink-0 text-teal-600" />
           <span>
-            Bạn đã tiến bộ <span className="font-bold">{latestDelta} điểm</span> so với lần trước — tiếp
-            tục phát huy nhé!
+            {dict.mockTest.recentHistory.progressPrefix}
+            <span className="font-bold">{tFormat(dict.mockTest.recentHistory.progressBold, { delta: latestDelta })}</span>
+            {dict.mockTest.recentHistory.progressSuffix}
           </span>
         </div>
       ) : null}
@@ -668,6 +678,7 @@ function RecentHistory({
 }
 
 function ExamOverview({ stats }: { stats: MockStats | null }) {
+  const { dict } = useN400Lang();
   return (
     <Card className="p-5 sm:p-6">
       <div className="relative mx-auto mt-1 h-40 w-40 lg:h-48 lg:w-48">
@@ -686,11 +697,11 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
       </div>
 
       <div className="mt-4 text-center">
-        <h3 className="text-lg font-bold text-gray-800">Tổng quan kết quả</h3>
+        <h3 className="text-lg font-bold text-gray-800">{dict.mockTest.overview.title}</h3>
         <p className="mt-1 text-sm text-gray-500">
           {stats
-            ? 'Vượt qua điểm cao nhất của bạn nhé!'
-            : 'Chuẩn bị tốt hơn – Tự tin hơn. Chinh phục giấc mơ Mỹ!'}
+            ? dict.mockTest.overview.subtitleWithStats
+            : dict.mockTest.overview.subtitleEmpty}
         </p>
       </div>
 
@@ -701,16 +712,16 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
               icon={<Trophy size={18} />}
               iconBg="bg-yellow-50"
               iconColor="text-yellow-500"
-              label="Điểm cao nhất"
+              label={dict.mockTest.overview.bestScore}
               value={`${stats.best}`}
               suffix={`/ ${stats.total}`}
-              tag={stats.latest === stats.best ? 'Mới nhất' : undefined}
+              tag={stats.latest === stats.best ? dict.mockTest.recentHistory.latestTag : undefined}
             />
             <StatTile
               icon={<BarChart3 size={18} />}
               iconBg="bg-purple-50"
               iconColor="text-purple-500"
-              label="Điểm trung bình"
+              label={dict.mockTest.overview.avgScore}
               value={stats.avg.toFixed(1)}
               suffix={`/ ${stats.total}`}
             />
@@ -718,7 +729,7 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
               icon={<Target size={18} />}
               iconBg="bg-teal-50"
               iconColor="text-teal-600"
-              label="Tỷ lệ vượt qua"
+              label={dict.mockTest.overview.passRate}
               value={`${stats.passRate}%`}
               valueClass="text-teal-600"
             />
@@ -726,7 +737,7 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
               icon={<Calendar size={18} />}
               iconBg="bg-blue-50"
               iconColor="text-blue-500"
-              label="Số lần thi"
+              label={dict.mockTest.overview.attemptCount}
               value={`${stats.attempts}`}
             />
             {stats.avgMs != null ? (
@@ -734,7 +745,7 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
                 icon={<Clock size={18} />}
                 iconBg="bg-rose-50"
                 iconColor="text-rose-500"
-                label="Thời gian trung bình"
+                label={dict.mockTest.overview.avgTime}
                 value={formatDuration(stats.avgMs)}
               />
             ) : null}
@@ -743,14 +754,14 @@ function ExamOverview({ stats }: { stats: MockStats | null }) {
           <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-teal-50 px-4 py-3">
             <Sparkles size={16} className="shrink-0 text-teal-500" />
             <div>
-              <div className="text-sm font-semibold text-teal-800">Cải thiện từng ngày</div>
-              <div className="text-xs text-teal-700">Bạn đang đi đúng hướng!</div>
+              <div className="text-sm font-semibold text-teal-800">{dict.mockTest.overview.improvingTitle}</div>
+              <div className="text-xs text-teal-700">{dict.mockTest.overview.improvingSubtitle}</div>
             </div>
           </div>
         </>
       ) : (
         <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-5 text-center text-sm text-gray-500">
-          Hoàn thành bài thi thử đầu tiên để xem thống kê kết quả của bạn tại đây.
+          {dict.mockTest.overview.emptyState}
         </div>
       )}
     </Card>
@@ -808,6 +819,7 @@ function Result({
   picks: PickState[];
   onRetake: () => void;
 }) {
+  const { dict } = useN400Lang();
   const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
   const badges = useN400Badges();
   const catalogMap = Object.fromEntries(badges.catalog.map((b) => [b.slug, b]));
@@ -821,7 +833,7 @@ function Result({
     return [
       {
         key: String(q.id),
-        badge: `Câu ${i + 1} / Question #${q.id}`,
+        badge: tFormat(dict.mockTest.civicsMock.badge, { index: i + 1, id: q.id }),
         prompt: q.questionEn,
         promptVi: q.questionVi,
         userAnswer: picked?.en ?? null,
@@ -846,7 +858,7 @@ function Result({
         passed={isPass(result.score)}
         score={result.score}
         total={result.total}
-        requirement={`Cần đạt ≥ ${MOCK_TEST_PASS_THRESHOLD} câu đúng để vượt qua.`}
+        requirement={tFormat(dict.practice.passThreshold, { need: MOCK_TEST_PASS_THRESHOLD })}
         streak={{ current: result.currentStreak, longest: result.longestStreak }}
         onRetake={onRetake}
         rows={rows}

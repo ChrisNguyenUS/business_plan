@@ -17,18 +17,20 @@
 import Image from 'next/image';
 import { Clock, ChevronLeft } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export function PracticeProgressRow({
   index,
   total,
-  unit = 'Câu hỏi',
+  unit,
   onBack,
   showTime = true,
   estimatedMinutes,
 }: {
   index: number;
   total: number;
-  /** Leading noun before the counter, e.g. "Câu hỏi" or "Câu". */
+  /** Leading noun before the counter, e.g. "Câu hỏi" or "Câu". Defaults to dict.practice.questionUnit. */
   unit?: string;
   /** When provided, renders a subtle leading back-chevron (return to hub). */
   onBack?: () => void;
@@ -37,6 +39,8 @@ export function PracticeProgressRow({
   /** Total estimated minutes for the session (from preset). Used to derive remaining time proportionally. */
   estimatedMinutes?: number | null;
 }) {
+  const { dict } = useN400Lang();
+  const effectiveUnit = unit ?? dict.practice.questionUnit;
   const percent = ((index + 1) / total) * 100;
   const perQ = (estimatedMinutes ?? total * 0.5) / total;
   const minutesRemaining = Math.max(1, Math.round((total - index) * perQ));
@@ -47,24 +51,24 @@ export function PracticeProgressRow({
         <button
           type="button"
           onClick={onBack}
-          aria-label="Quay lại"
+          aria-label={dict.header.backButton}
           className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
         >
           <ChevronLeft size={18} />
         </button>
       ) : null}
       <span className="font-bold text-gray-700 whitespace-nowrap" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.9375rem)' }}>
-        {unit} {index + 1} / {total}
+        {effectiveUnit} {index + 1} / {total}
       </span>
       <div className="min-w-0 flex-1">
         <ProgressBar progress={percent} heightClass="h-[clamp(6px,0.6vw,10px)]" />
       </div>
       <span className="hidden whitespace-nowrap text-gray-700 sm:inline" style={{ fontSize: 'clamp(0.75rem, 1.4vw, 0.875rem)' }}>
-        <span className="font-bold">{Math.round(percent)}%</span> <span className="text-gray-500">hoàn thành</span>
+        <span className="font-bold">{Math.round(percent)}%</span> <span className="text-gray-500">{dict.practice.completedSuffix}</span>
       </span>
       {showTime ? (
         <span className="flex items-center gap-1.5 whitespace-nowrap text-gray-500" style={{ fontSize: 'clamp(0.7rem, 1.3vw, 0.8125rem)' }}>
-          <Clock size={14} className="shrink-0" /> Còn ~ {minutesRemaining} phút
+          <Clock size={14} className="shrink-0" /> {tFormat(dict.practice.timeRemaining, { minutes: minutesRemaining })}
         </span>
       ) : null}
     </div>
@@ -77,22 +81,22 @@ export function PracticeProgressRow({
  * `title`/`children` to make it contextual (e.g. writing rules).
  */
 export function LearningTipCard({
-  title = 'Mẹo học tập / Learning Tip',
+  title,
   children,
 }: {
+  /** Defaults to dict.practice.learningTipTitle. */
   title?: string;
   children?: React.ReactNode;
 }) {
+  const { dict } = useN400Lang();
   return (
     <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
       <div className="mb-1.5 flex items-center gap-2">
         <span className="text-base" aria-hidden>💡</span>
-        <span className="text-sm font-bold text-gray-800">{title}</span>
+        <span className="text-sm font-bold text-gray-800">{title ?? dict.practice.learningTipTitle}</span>
       </div>
       <div className="text-[13px] leading-relaxed text-gray-600">
-        {children ?? (
-          <>Đọc kỹ tất cả các đáp án trước khi chọn. Nhiều đáp án sai được thiết kế để rất dễ gây nhầm lẫn.</>
-        )}
+        {children ?? dict.practice.defaultTip}
       </div>
     </div>
   );

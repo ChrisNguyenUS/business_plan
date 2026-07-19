@@ -7,7 +7,7 @@ import {
   shuffle,
   selectPracticeQuestionIds,
   recommendWeakCategory,
-  PRACTICE_PRESETS,
+  practicePresets,
   isPersonalizedAnswerUnavailable,
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
@@ -24,6 +24,7 @@ import {
 } from './quiz-engine';
 import type { QuizMode } from './storage';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
+import { vi } from './i18n/vi';
 
 // These tests lock in the security-critical invariants of the quiz engine.
 // The scoring path on the server (slide_manifest + submit_mock_answer RPC)
@@ -258,8 +259,9 @@ describe('selectPracticeQuestionIds', () => {
   });
 
   it('exposes the four product presets in display order', () => {
-    expect(PRACTICE_PRESETS.map((p) => p.id)).toEqual(['quick', 'standard', 'deep', 'full']);
-    expect(PRACTICE_PRESETS.map((p) => p.count)).toEqual([5, 10, 20, null]);
+    const presets = practicePresets(vi);
+    expect(presets.map((p) => p.id)).toEqual(['quick', 'standard', 'deep', 'full']);
+    expect(presets.map((p) => p.count)).toEqual([5, 10, 20, null]);
   });
 
   it('draws only from the requested category when one is given', () => {

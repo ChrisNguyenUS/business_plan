@@ -10,6 +10,9 @@ import Image from 'next/image';
 import { ArrowRight, CalendarDays, ChevronRight, Star, Target } from 'lucide-react';
 import { Card, ProgressBar } from '@/components/n400/ui';
 import { estimateSessions, isMockCriterion, type Readiness } from '@/lib/n400/readiness';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
+import type { N400Dict } from '@/lib/n400/i18n/vi';
 
 // The ring is drawn in a fixed 92-unit viewBox and scaled down by CSS on
 // mobile, so the geometry maths stays in one place.
@@ -19,9 +22,13 @@ const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 /** "2 – 3 buổi học nữa". A mock is one sitting, so it gets an exact count. */
-function sessionsLabel(estimate: { min: number; max: number }, isMock: boolean): string {
-  if (isMock) return `${estimate.min} bài thi thử`;
-  return `${estimate.min} – ${estimate.max} buổi học nữa`;
+function sessionsLabel(
+  estimate: { min: number; max: number },
+  isMock: boolean,
+  t: N400Dict['progress']['hero'],
+): string {
+  if (isMock) return tFormat(t.sessionsMock, { count: estimate.min });
+  return tFormat(t.sessionsRange, { min: estimate.min, max: estimate.max });
 }
 
 export function ReadinessHero({
@@ -34,6 +41,8 @@ export function ReadinessHero({
   /** Measured câu-per-buổi from deriveLearningPace; null falls back to the default. */
   pace?: number | null;
 }) {
+  const { dict } = useN400Lang();
+  const t = dict.progress.hero;
   const { percent, metCount, totalCount, next, ready } = readiness;
   const estimate = next ? estimateSessions(next, pace ?? undefined) : null;
   const isMockNext = next ? isMockCriterion(next.id) : false;
@@ -100,19 +109,17 @@ export function ReadinessHero({
                 }`}
               >
                 <Star size={11} className="text-amber-400" fill="currentColor" />
-                {ready ? 'Sẵn sàng' : 'Mức sẵn sàng'}
+                {ready ? t.readyBadge : t.readinessLevel}
               </span>
               <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                {metCount}/{totalCount} điều kiện
+                {tFormat(t.conditions, { metCount, totalCount })}
               </span>
             </div>
-            <h1 className="mt-1.5 text-base font-extrabold text-slate-900 sm:text-xl">Sẵn sàng phỏng vấn</h1>
+            <h1 className="mt-1.5 text-base font-extrabold text-slate-900 sm:text-xl">{t.title}</h1>
             {/* Encouragement is the first thing to go on mobile — the milestone
                 below it is the part that drives the next action. */}
             <p className="mt-1 hidden text-sm text-slate-600 sm:block">
-              {ready
-                ? 'Bạn đã đạt đủ điều kiện — hãy tự tin bước vào buổi phỏng vấn USCIS!'
-                : 'Bạn đang trên đúng lộ trình! Hãy tiếp tục học để tự tin chinh phục buổi phỏng vấn USCIS.'}
+              {ready ? t.readyMessage : t.onTrackMessage}
             </p>
           </div>
         </div>
@@ -127,11 +134,11 @@ export function ReadinessHero({
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Mốc tiếp theo
+                      {t.nextMilestone}
                       {/* The estimate has no room for its own cell on mobile, so
                           it rides along here instead of being dropped. */}
                       {estimate ? (
-                        <span className="sm:hidden"> · {sessionsLabel(estimate, isMockNext)}</span>
+                        <span className="sm:hidden"> · {sessionsLabel(estimate, isMockNext, t)}</span>
                       ) : null}
                     </p>
                     <p className="truncate text-sm font-semibold text-slate-800">{next.milestone}</p>
@@ -153,9 +160,9 @@ export function ReadinessHero({
                   <CalendarDays size={17} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ước tính hoàn thành</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t.estimatedCompletion}</p>
                   <p className="truncate text-sm font-semibold text-slate-800">
-                    {estimate ? sessionsLabel(estimate, isMockNext) : '—'}
+                    {estimate ? sessionsLabel(estimate, isMockNext, t) : '—'}
                   </p>
                 </div>
                 <ChevronRight
@@ -178,7 +185,7 @@ export function ReadinessHero({
             href={`${base}/mock-test`}
             className="group mt-4 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition-all hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0"
           >
-            🎉 Giữ phong độ với một bài thi thử
+            {t.celebratory}
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         )}

@@ -13,6 +13,8 @@ import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary
 import { PracticeProgressRow, PracticeSupportPanel, LearningTipCard } from '@/components/n400/practice-chrome';
 import { yesNoAudioUrl } from '@/lib/n400/quiz-engine';
 import type { YesNoQuestion } from '@/lib/n400/yesno-data';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 type Choice = 'yes' | 'no';
 
@@ -32,6 +34,7 @@ export function SectionYesNoQuiz({
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
 }) {
+  const { dict, lang } = useN400Lang();
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Choice | null>(null);
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
@@ -110,13 +113,15 @@ export function SectionYesNoQuiz({
                   <div className="font-bold leading-snug text-gray-800" style={{ fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }}>
                     {q.questionEn}
                   </div>
-                  <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
-                    {q.questionVi}
-                  </div>
+                  {lang !== 'en' && (
+                    <div className="text-gray-500 mt-1" style={{ fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)' }}>
+                      {q.questionVi}
+                    </div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={audioSrc} label="Nghe câu hỏi" size="sm" />
-                  <AudioButton src={audioSrc} label="Nghe chậm" size="sm" rate={0.7} variant="slow" />
+                  <AudioButton src={audioSrc} label={dict.flashcards.listenQuestion} size="sm" />
+                  <AudioButton src={audioSrc} label={dict.speaking.yesno.slowLabel} size="sm" rate={0.7} variant="slow" />
                 </div>
               </div>
             </div>
@@ -161,9 +166,7 @@ export function SectionYesNoQuiz({
             {/* Learning Tip — mobile only, before answering */}
             {phase !== 'revealed' ? (
               <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
-                <LearningTipCard>
-                  Đọc kỹ câu hỏi — chú ý các từ phủ định (never, not) dễ làm đổi đáp án.
-                </LearningTipCard>
+                <LearningTipCard>{dict.speaking.yesno.learningTip}</LearningTipCard>
               </div>
             ) : null}
 
@@ -177,17 +180,19 @@ export function SectionYesNoQuiz({
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {wasCorrect ? 'Chính xác! / Correct!' : 'Chưa đúng / Not quite'}
+                    {wasCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
-                  <AudioButton src={audioSrc} label="Nghe đáp án" size="sm" className="ml-auto" />
+                  <AudioButton src={audioSrc} label={dict.flashcards.listenAnswer} size="sm" className="ml-auto" />
                 </div>
                 <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   <li>
-                    <span className="font-medium">Đáp án chuẩn: {answerLabel}</span>
+                    <span className="font-medium">{tFormat(dict.speaking.yesno.standardAnswer, { label: answerLabel })}</span>
                   </li>
-                  <li>
-                    <span className="text-gray-500">{q.questionVi}</span>
-                  </li>
+                  {lang !== 'en' && (
+                    <li>
+                      <span className="text-gray-500">{q.questionVi}</span>
+                    </li>
+                  )}
                 </ul>
               </div>
             ) : null}
@@ -205,7 +210,7 @@ export function SectionYesNoQuiz({
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 py-3 font-semibold text-white shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-colors"
                 style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
               >
-                <span>Tiếp theo / Next</span>
+                <span>{dict.practice.next}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -214,11 +219,7 @@ export function SectionYesNoQuiz({
 
         {/* Support panel — illustration + one Learning Tip */}
         <PracticeSupportPanel
-          tip={
-            <LearningTipCard>
-              Đọc kỹ câu hỏi — chú ý các từ phủ định (never, not) dễ làm đổi đáp án.
-            </LearningTipCard>
-          }
+          tip={<LearningTipCard>{dict.speaking.yesno.learningTip}</LearningTipCard>}
         />
       </div>
 

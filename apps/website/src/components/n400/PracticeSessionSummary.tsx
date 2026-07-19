@@ -14,6 +14,8 @@ import {
   TrendingUp,
   XCircle,
 } from 'lucide-react';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 /*
  * Practice completion screen — a "completion moment", not a dialog.
@@ -84,6 +86,7 @@ export function PracticeSessionSummary({
   /** Sessions finished today — the progress card renders only when provided. */
   sessionsToday?: { done: number; goal: number } | null;
 }) {
+  const { dict, lang } = useN400Lang();
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const need = Math.ceil(total * PASS_RATIO);
   const tier: Tier = pct === 100 ? 'perfect' : correct >= need ? 'passed' : 'low';
@@ -120,19 +123,19 @@ export function PracticeSessionSummary({
             <div className="text-center">
               <h2 className="text-xl font-extrabold text-gray-800 sm:text-2xl">
                 {tier === 'perfect' ? (
-                  <>Hoàn hảo! Bạn đã trả lời đúng <span className="text-teal-600">tất cả các câu</span>!</>
+                  <>{dict.practice.result.perfect.prefix}<span className="text-teal-600">{dict.practice.result.perfect.highlight}</span>{dict.practice.result.perfect.suffix}</>
                 ) : tier === 'passed' ? (
-                  <>Chúc mừng! Bạn đã <span className="text-teal-600">vượt qua</span> bài luyện tập!</>
+                  <>{dict.practice.result.passed.prefix}<span className="text-teal-600">{dict.practice.result.passed.highlight}</span>{dict.practice.result.passed.suffix}</>
                 ) : (
-                  <>Tiếp tục nhé! Bạn đang <span className="text-teal-600">tiến bộ mỗi ngày</span>!</>
+                  <>{dict.practice.result.low.prefix}<span className="text-teal-600">{dict.practice.result.low.highlight}</span>{dict.practice.result.low.suffix}</>
                 )}
               </h2>
               <p className="mt-1.5 text-sm text-gray-500 sm:text-base">
                 {tier === 'perfect'
-                  ? 'Thành tích tuyệt vời — hãy giữ vững phong độ này.'
+                  ? dict.practice.perfectSubtitle
                   : tier === 'passed'
-                    ? 'Bạn đang tiến rất gần đến buổi phỏng vấn.'
-                    : 'Ôn lại những câu sai sẽ giúp bạn nắm chắc hơn.'}
+                    ? dict.practice.passedSubtitle
+                    : dict.practice.lowSubtitle}
               </p>
 
               <div className="mt-2 text-5xl font-extrabold text-teal-600 sm:text-6xl">
@@ -148,12 +151,12 @@ export function PracticeSessionSummary({
                 }`}
               >
                 <CheckCircle size={15} />
-                Đạt {pct}% độ chính xác
+                {tFormat(dict.practice.accuracy, { pct })}
               </div>
 
               <p className="mt-2.5 text-sm text-gray-600">
-                Cần đạt ≥ {need} câu đúng để vượt qua.{' '}
-                {passed ? 'Bạn đã làm rất tốt!' : 'Cùng cố gắng nhé!'}
+                {tFormat(dict.practice.passThreshold, { need })}{' '}
+                {passed ? dict.practice.passedCongrats : dict.practice.lowEncourage}
               </p>
             </div>
           </div>
@@ -169,7 +172,7 @@ export function PracticeSessionSummary({
                 <Target size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-500">Câu đúng</div>
+                <div className="text-xs text-gray-500">{dict.practice.correct}</div>
                 <div className="font-extrabold text-gray-800">{correct} / {total}</div>
                 <div className="text-xs text-gray-500">{pct}%</div>
               </div>
@@ -179,9 +182,9 @@ export function PracticeSessionSummary({
                 <XCircle size={18} />
               </div>
               <div>
-                <div className="text-xs text-gray-500">Câu sai</div>
-                <div className="font-extrabold text-gray-800">{total - correct} câu</div>
-                <div className="text-xs text-gray-500">{total - correct > 0 ? 'Cần ôn lại' : 'Tuyệt vời!'}</div>
+                <div className="text-xs text-gray-500">{dict.practice.incorrect}</div>
+                <div className="font-extrabold text-gray-800">{tFormat(dict.practice.wrongCountLabel, { count: total - correct })}</div>
+                <div className="text-xs text-gray-500">{total - correct > 0 ? dict.practice.needsReview : dict.practice.perfect}</div>
               </div>
             </div>
             {elapsedSec != null ? (
@@ -190,9 +193,9 @@ export function PracticeSessionSummary({
                   <Clock size={18} />
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Thời gian làm bài</div>
+                  <div className="text-xs text-gray-500">{dict.practice.elapsedTime}</div>
                   <div className="font-extrabold text-gray-800">{formatDuration(elapsedSec)}</div>
-                  <div className="text-xs text-gray-500">Phút</div>
+                  <div className="text-xs text-gray-500">{dict.practice.minutesLabel}</div>
                 </div>
               </div>
             ) : null}
@@ -205,15 +208,15 @@ export function PracticeSessionSummary({
                 <Lightbulb size={16} />
               </div>
               <div className="text-sm text-gray-700">
-                <div className="font-bold text-gray-800">Gợi ý cho bạn</div>
+                <div className="font-bold text-gray-800">{dict.practice.tipsForYou}</div>
                 {topCategory ? (
                   <div className="mt-0.5">
-                    Bạn sai nhiều nhất ở chủ đề:{' '}
-                    <span className="font-semibold text-orange-600">{topCategory.vi}</span>
+                    {dict.practice.mostMissedTopic}{' '}
+                    <span className="font-semibold text-orange-600">{lang === 'en' ? topCategory.en : topCategory.vi}</span>
                   </div>
                 ) : null}
                 <div className="mt-0.5 text-gray-500">
-                  Ôn lại {wrongCount} câu sai mất khoảng {reviewMinutes} phút.
+                  {tFormat(dict.practice.reviewTime, { wrongCount, reviewMinutes })}
                 </div>
               </div>
             </div>
@@ -229,8 +232,8 @@ export function PracticeSessionSummary({
               >
                 <ListChecks size={20} className="shrink-0" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-bold">Ôn lại câu sai</span>
-                  <span className="block text-xs text-teal-100">Xem lại và hiểu rõ những câu bạn chưa đúng</span>
+                  <span className="block font-bold">{dict.practice.reviewWrong}</span>
+                  <span className="block text-xs text-teal-100">{dict.practice.reviewWrongDesc}</span>
                 </span>
                 <ArrowRight size={18} className="shrink-0" />
               </button>
@@ -242,8 +245,8 @@ export function PracticeSessionSummary({
               >
                 <RotateCw size={20} className="shrink-0" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-bold">Luyện bài mới</span>
-                  <span className="block text-xs text-teal-100">Bắt đầu một lượt luyện tập khác</span>
+                  <span className="block font-bold">{dict.practice.practiceNew}</span>
+                  <span className="block text-xs text-teal-100">{dict.practice.practiceNewDesc}</span>
                 </span>
                 <ArrowRight size={18} className="shrink-0" />
               </button>
@@ -257,8 +260,8 @@ export function PracticeSessionSummary({
               >
                 <RotateCw size={18} className="shrink-0 text-gray-500" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-bold">Luyện lại</span>
-                  <span className="block text-xs text-gray-500">Làm lại bài luyện tập này</span>
+                  <span className="block font-bold">{dict.practice.retry}</span>
+                  <span className="block text-xs text-gray-500">{dict.practice.retryDesc}</span>
                 </span>
               </button>
             ) : null}
@@ -269,7 +272,7 @@ export function PracticeSessionSummary({
             onClick={onChangeMode}
             className="relative mx-auto mt-4 flex cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700"
           >
-            <ArrowLeft size={14} /> Chọn chế độ luyện tập khác
+            <ArrowLeft size={14} /> {dict.practice.changeModeCTA}
           </button>
         </section>
 
@@ -280,13 +283,13 @@ export function PracticeSessionSummary({
               <TrendingUp size={20} />
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-bold text-gray-800">Tiến độ hôm nay</div>
+              <div className="text-sm font-bold text-gray-800">{dict.practice.todayProgress}</div>
               <div className="text-sm text-gray-500">
-                Bạn đã hoàn thành{' '}
+                {dict.practice.sessionsPrefix}{' '}
                 <span className="font-semibold text-gray-700">
                   {sessionsToday.done} / {sessionsToday.goal}
                 </span>{' '}
-                phiên luyện tập.
+                {dict.practice.sessionsSuffix}
               </div>
             </div>
             <div className="ml-auto hidden max-w-[260px] flex-1 items-center gap-1.5 sm:flex">

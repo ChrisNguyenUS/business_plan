@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { Flashcard } from './Flashcard';
+import { N400LangProvider } from '@/lib/n400/i18n/provider';
+import { vi as viDict } from '@/lib/n400/i18n/vi';
+
+// Flashcard reads its labels (aria-label="Lật thẻ", etc.) from the i18n dict
+// via useN400Lang(), so every render needs the provider in the tree.
+function renderWithLang(ui: ReactElement) {
+  return render(<N400LangProvider lang="vi" dict={viDict}>{ui}</N400LangProvider>);
+}
 
 // The bug: the 3D rotating container persisted across question changes, so
 // resetting `flipped` while navigating to the next card ran the 500ms flip
@@ -23,20 +32,20 @@ const rotor = (container: HTMLElement) =>
 
 describe('Flashcard flip vs navigation', () => {
   it('keeps the same rotating element when the same card flips (flip stays animated)', () => {
-    const { container, rerender } = render(
+    const { container, rerender } = renderWithLang(
       <Flashcard {...baseProps} questionId={1} flipped={false} />,
     );
     const before = rotor(container);
-    rerender(<Flashcard {...baseProps} questionId={1} flipped />);
+    rerender(<N400LangProvider lang="vi" dict={viDict}><Flashcard {...baseProps} questionId={1} flipped /></N400LangProvider>);
     expect(rotor(container)).toBe(before);
   });
 
   it('remounts the rotating element when the question changes (no unflip animation can leak the opposite face)', () => {
-    const { container, rerender } = render(
+    const { container, rerender } = renderWithLang(
       <Flashcard {...baseProps} questionId={1} flipped />,
     );
     const before = rotor(container);
-    rerender(<Flashcard {...baseProps} questionId={2} flipped={false} />);
+    rerender(<N400LangProvider lang="vi" dict={viDict}><Flashcard {...baseProps} questionId={2} flipped={false} /></N400LangProvider>);
     expect(rotor(container)).not.toBe(before);
   });
 
@@ -48,7 +57,7 @@ describe('Flashcard flip vs navigation', () => {
   // descendants cannot counteract an ancestor's opacity), and the face
   // components must never use `transition-all`.
   it('gates the hidden face with opacity + pointer-events, not just visibility', () => {
-    const { container } = render(
+    const { container } = renderWithLang(
       <Flashcard {...baseProps} questionId={1} flipped />,
     );
     const front = rotor(container).children[0] as HTMLElement;
@@ -60,17 +69,17 @@ describe('Flashcard flip vs navigation', () => {
   });
 
   it('face content never uses transition-all (it re-animates inherited visibility)', () => {
-    const { container } = render(
+    const { container } = renderWithLang(
       <Flashcard {...baseProps} questionId={1} flipped={false} />,
     );
     expect(container.innerHTML).not.toContain('transition-all');
   });
 
   it('renders the new card front-side up after navigating away from a flipped card', () => {
-    const { container, rerender } = render(
+    const { container, rerender } = renderWithLang(
       <Flashcard {...baseProps} questionId={1} flipped />,
     );
-    rerender(<Flashcard {...baseProps} questionId={2} flipped={false} />);
+    rerender(<N400LangProvider lang="vi" dict={viDict}><Flashcard {...baseProps} questionId={2} flipped={false} /></N400LangProvider>);
     const el = rotor(container) as HTMLElement;
     expect(el.style.transform).toBe('rotateY(0deg)');
   });

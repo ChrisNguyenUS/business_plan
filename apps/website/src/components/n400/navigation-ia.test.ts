@@ -55,7 +55,7 @@ describe('N400 information architecture contracts', () => {
 
   test('desktop sidebar collapses to four top-level areas with subtitles', () => {
     const sidebar = source('src/components/n400/Sidebar.tsx');
-    const desktop = sidebar.slice(sidebar.indexOf('DESKTOP_MENU'), sidebar.indexOf('MOBILE_MENU'));
+    const desktop = sidebar.slice(sidebar.indexOf('buildDesktopMenu'), sidebar.indexOf('buildMobileMenu'));
 
     expect(desktop).toContain("href: 'study'");
     expect(desktop).toContain("href: 'mock-test'");
@@ -75,7 +75,7 @@ describe('N400 information architecture contracts', () => {
 
   test('mobile nav is Home / Học tập / Thi thử / Tiến độ', () => {
     const sidebar = source('src/components/n400/Sidebar.tsx');
-    const mobile = sidebar.slice(sidebar.indexOf('MOBILE_MENU'));
+    const mobile = sidebar.slice(sidebar.indexOf('buildMobileMenu'));
 
     expect(mobile).toContain("href: 'study'");
     expect(mobile).toContain("href: 'mock-test'");
@@ -99,8 +99,10 @@ describe('N400 information architecture contracts', () => {
 
   test('the two progress tabs split by depth and never duplicate badges', () => {
     const tabs = source('src/components/n400/progress/ProgressTabs.tsx');
-    expect(tabs).toContain("label: 'Tổng quan'");
-    expect(tabs).toContain("label: 'Chi tiết'");
+    // Labels are i18n-dict-driven (not hard-coded VI strings) — see vi.ts's
+    // progress.tabs.{overview,details}, asserted verbatim in the i18n suite.
+    expect(tabs).toContain('dict.progress.tabs.overview');
+    expect(tabs).toContain('dict.progress.tabs.details');
 
     // Badges live on the Tài khoản page only — the gallery used to render on
     // both, which is the duplication this redesign removed.

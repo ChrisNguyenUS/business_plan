@@ -10,6 +10,9 @@
 // cards (fixed civics → what-mean → yes/no → writing order preserves muscle
 // memory). All hrefs are relative to the n400ready base (`/n400ready`).
 
+import type { N400Dict } from './i18n/vi';
+import { tFormat } from './i18n/format';
+
 export type StudyModuleId = 'civics' | 'whatmean' | 'yesno' | 'writing';
 
 export type StudyBadgeKind =
@@ -27,7 +30,7 @@ export interface StudyModuleSignal {
   total: number;
   /**
    * Graded attempts (correct + wrong): practice and mock only. Flashcard
-   * self-grades are NOT attempts (spec D1) — counting a "Đã thuộc" tap as a
+   * self-grades are NOT attempts (spec D1) — counting a "Mastered" tap as a
    * correct answer would make a learner who never practises look flawless and
    * never get flagged weak.
    */
@@ -38,7 +41,7 @@ export interface StudyModuleSignal {
 
 export interface StudyModuleDecision {
   badge: StudyBadgeKind;
-  /** Verb chuẩn theo state: Học ngay | Tiếp tục học | Luyện ngay | Ôn luyện lại. */
+  /** Verb fixed by state: Start learning | Continue learning | Practice now | Review again. */
   ctaLabel: string;
 }
 
@@ -90,14 +93,16 @@ export function pickRecommendedModule(signals: readonly StudyModuleSignal[]): St
 
 type StudyStateBadge = Exclude<StudyBadgeKind, 'recommended'>;
 
-// CTA verb theo state của module — badge "recommended" không đổi verb,
-// chỉ đổi khung/⭐ trên card.
-const CTA_BY_STATE: Record<StudyStateBadge, string> = {
-  completed: 'Ôn luyện lại',
-  new: 'Học ngay',
-  'needs-practice': 'Luyện ngay',
-  continue: 'Tiếp tục học',
-};
+// CTA verb by module state — the "recommended" badge never changes the verb,
+// it only changes the card's frame/⭐.
+function ctaByState(dict: N400Dict): Record<StudyStateBadge, string> {
+  return {
+    completed: dict.common.cta.reviewAgain,
+    new: dict.common.cta.startLearning,
+    'needs-practice': dict.common.cta.practiceNow,
+    continue: dict.common.cta.continueLearning,
+  };
+}
 
 function decideStateBadge(sig: StudyModuleSignal): StudyStateBadge {
   if (isComplete(sig)) return 'completed';
@@ -118,11 +123,12 @@ function decideStateBadge(sig: StudyModuleSignal): StudyStateBadge {
 export function decideModuleBadge(
   sig: StudyModuleSignal,
   isRecommended: boolean,
+  dict: N400Dict,
 ): StudyModuleDecision {
   const state = decideStateBadge(sig);
   return {
     badge: isRecommended ? 'recommended' : state,
-    ctaLabel: CTA_BY_STATE[state],
+    ctaLabel: ctaByState(dict)[state],
   };
 }
 
@@ -154,45 +160,50 @@ export const TIP_MIN_WRONGS = 3;
 export const TIP_REVIEW_CHUNK = 10;
 
 /**
- * One dynamic tip — "chữa lỗi trước, mở rộng sau". The dashboard hero owns the
- * journey nudges (stale skills, civics sprint, mock tests); this ladder only
- * diagnoses weaknesses inside the study modules: pay down wrong-answer debt →
- * drill the weak civics topic → lift the lowest accuracy → expand coverage.
- * Debt is offered as a ≤10-question chunk; the total is never shown.
+ * One dynamic tip — "fix mistakes first, then expand". The dashboard hero owns
+ * the journey nudges (stale skills, civics sprint, mock tests); this ladder
+ * only diagnoses weaknesses inside the study modules: pay down wrong-answer
+ * debt → drill the weak civics topic → lift the lowest accuracy → expand
+ * coverage. Debt is offered as a ≤10-question chunk; the total is never shown.
  */
-export function buildStudyTip(s: StudyTipSignals): StudyTip {
+export function buildStudyTip(s: StudyTipSignals, dict: N400Dict): StudyTip {
+  const t = dict.modules.tip;
   if (s.topWrongModule && s.topWrongModule.count >= TIP_MIN_WRONGS) {
     const n = Math.min(s.topWrongModule.count, TIP_REVIEW_CHUNK);
     return {
-      line1: `Ôn lại ${n} câu ${s.topWrongModule.label} bạn trả lời sai.`,
-      line2: 'Chỉ ~5 phút — xoá lỗi cũ giúp bạn nhớ lâu hơn.',
+      line1: tFormat(t.topWrong.line1, { n, label: s.topWrongModule.label }),
+      line2: t.topWrong.line2,
       href: s.topWrongModule.href,
     };
   }
   if (s.weakCategory) {
     return {
-      line1: `Bạn thường sai chủ đề ${s.weakCategory.label}.`,
-      line2: 'Luyện một bài tập trung để cải thiện độ chính xác.',
+      line1: tFormat(t.weakCategory.line1, { label: s.weakCategory.label }),
+      line2: t.weakCategory.line2,
       href: '/practice?start=weak',
     };
   }
   if (s.lowestModule) {
     return {
-      line1: `Độ chính xác ${s.lowestModule.label} đang ở mức ${s.lowestModule.accuracy}%.`,
-      line2: 'Luyện thêm vài câu để cải thiện độ chính xác nhé.',
+      line1: tFormat(t.lowestAccuracy.line1, { label: s.lowestModule.label, accuracy: s.lowestModule.accuracy }),
+      line2: t.lowestAccuracy.line2,
       href: s.lowestModule.href,
     };
   }
   if (s.lowestCoverage) {
     return {
-      line1: `${s.lowestCoverage.label} mới học ${s.lowestCoverage.done}/${s.lowestCoverage.total} câu.`,
-      line2: 'Học thêm vài câu mới hôm nay nhé.',
+      line1: tFormat(t.lowestCoverage.line1, {
+        label: s.lowestCoverage.label,
+        done: s.lowestCoverage.done,
+        total: s.lowestCoverage.total,
+      }),
+      line2: t.lowestCoverage.line2,
       href: s.lowestCoverage.href,
     };
   }
   return {
-    line1: 'Bắt đầu hành trình chinh phục 128 câu Civics.',
-    line2: 'Luyện vài câu mỗi ngày để tạo thói quen học tập.',
+    line1: t.fallback.line1,
+    line2: t.fallback.line2,
     href: '/study/civics',
   };
 }

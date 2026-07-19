@@ -13,6 +13,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Check, ChevronDown, ChevronRight, Layers, Lightbulb, type LucideIcon } from 'lucide-react';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export interface CategoryOption {
   id: string;
@@ -30,6 +32,7 @@ interface CategoryFilterPickerProps {
 }
 
 export function CategoryFilterPicker({ options, value, onChange }: CategoryFilterPickerProps) {
+  const { dict } = useN400Lang();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -126,7 +129,7 @@ export function CategoryFilterPicker({ options, value, onChange }: CategoryFilte
             {opt.label}
           </span>
           <span className={`block text-xs font-medium ${active ? 'text-teal-600' : 'text-slate-400'}`}>
-            {opt.count} câu hỏi
+            {tFormat(dict.flashcards.categoryCount, { count: opt.count })}
           </span>
         </span>
         {active ? (
@@ -154,9 +157,9 @@ export function CategoryFilterPicker({ options, value, onChange }: CategoryFilte
         <Lightbulb size={18} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-slate-800">Gợi ý</span>
+        <span className="block text-sm font-bold text-slate-800">{dict.flashcards.tips}</span>
         <span className="block text-xs font-medium text-slate-500">
-          Học theo từng chủ đề giúp bạn ghi nhớ lâu hơn.
+          {dict.flashcards.topicLearningTip}
         </span>
       </span>
       {withArrow ? <ChevronRight size={18} className="shrink-0 text-teal-600" /> : null}
@@ -187,7 +190,7 @@ export function CategoryFilterPicker({ options, value, onChange }: CategoryFilte
           {/* ── Desktop: floating popover card anchored below the chip ── */}
           <div
             role="listbox"
-            aria-label="Chọn chủ đề"
+            aria-label={dict.flashcards.selectTopic}
             className="hidden sm:flex absolute left-0 top-full z-50 mt-2 w-[380px] origin-top-left flex-col gap-2 rounded-3xl border border-slate-100 bg-white p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200"
           >
             {options.map(optionRow)}
@@ -203,15 +206,15 @@ export function CategoryFilterPicker({ options, value, onChange }: CategoryFilte
             />
             <div
               role="listbox"
-              aria-label="Chọn chủ đề"
+              aria-label={dict.flashcards.selectTopic}
               className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white shadow-2xl animate-in slide-in-from-bottom duration-300"
               style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.75rem)' }}
             >
               <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-slate-200" />
               <div className="px-5 pb-3 pt-3">
-                <h3 className="text-lg font-bold text-slate-900">Chọn chủ đề</h3>
+                <h3 className="text-lg font-bold text-slate-900">{dict.flashcards.selectTopic}</h3>
                 <p className="mt-0.5 text-sm text-slate-500">
-                  Lọc câu hỏi theo từng chủ đề để học hiệu quả hơn.
+                  {dict.flashcards.filterTip}
                 </p>
               </div>
               <div className="flex max-h-[65vh] flex-col gap-2.5 overflow-y-auto px-4 pb-2">

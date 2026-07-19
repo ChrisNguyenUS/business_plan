@@ -19,6 +19,8 @@ import {
 } from './quiz-engine';
 import type { StateCode } from './state-data';
 import type { MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
+import type { N400Dict } from './i18n/vi';
+import { tFormat } from './i18n/format';
 
 export const FULL_CIVICS_COUNT = 20;
 export const FULL_CIVICS_PASS = 12; // 12/20 USCIS rule
@@ -31,6 +33,7 @@ export function buildCivicsPhase(
   seed: string,
   stateCode: StateCode,
   districtNumber: number | null,
+  dict: N400Dict,
 ): MCQuestion[] {
   return selectMockTestQuestions(seed).map((q, i) => {
     const located = correctAnswersFor(q, stateCode, districtNumber);
@@ -38,7 +41,7 @@ export function buildCivicsPhase(
       located.length > 0 ? located : q.answersEn.map((en, j) => ({ en, vi: q.answersVi[j] ?? en }));
     return {
       itemId: `civ-${q.id}`,
-      badge: `Civics · Câu hỏi #${q.id}`,
+      badge: tFormat(dict.mockTest.badges.civics, { id: q.id }),
       headerEn: q.questionEn,
       headerVi: q.questionVi,
       questionAudioSrc: questionAudioUrl(q.id),
@@ -49,12 +52,13 @@ export function buildCivicsPhase(
   });
 }
 
-export function buildSpeakingPhase(seed: string): MCQuestion[] {
+export function buildSpeakingPhase(seed: string, dict: N400Dict): MCQuestion[] {
+  const it = dict.mockTest.interview;
   const whatMean = shuffle([...WHATMEAN_QUESTIONS], `full-sp-wm-${seed}`)
     .slice(0, 5)
     .map((q, i): MCQuestion => ({
       itemId: q.id,
-      badge: `Speaking · What Mean #${q.num}`,
+      badge: tFormat(dict.speaking.mockBadge.whatmean, { num: q.num }),
       headerEn: q.termEn,
       headerVi: q.questionVi,
       questionAudioSrc: whatMeanQuestionAudioUrl(q.num),
@@ -74,19 +78,19 @@ export function buildSpeakingPhase(seed: string): MCQuestion[] {
       const audio = yesNoAudioUrl(q.num);
       return {
         itemId: q.id,
-        badge: `Speaking · Yes/No #${q.num}`,
+        badge: tFormat(dict.speaking.mockBadge.yesno, { num: q.num }),
         headerEn: q.questionEn,
         headerVi: q.questionVi,
         questionAudioSrc: audio,
         answerAudioSrc: audio,
         options: [
-          { id: 'A', en: 'Yes, officer', vi: 'Có', isCorrect: q.answer === 'yes' },
-          { id: 'B', en: 'No, officer', vi: 'Không', isCorrect: q.answer === 'no' },
+          { id: 'A', en: 'Yes, officer', vi: it.yes, isCorrect: q.answer === 'yes' },
+          { id: 'B', en: 'No, officer', vi: it.no, isCorrect: q.answer === 'no' },
         ],
         accepted: [
           {
             en: q.answer === 'yes' ? 'Yes, officer' : 'No, officer',
-            vi: q.answer === 'yes' ? 'Có, thưa cán bộ' : 'Không, thưa cán bộ',
+            vi: q.answer === 'yes' ? it.yesOfficer : it.noOfficer,
           },
         ],
       };

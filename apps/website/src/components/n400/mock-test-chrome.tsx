@@ -20,6 +20,7 @@
 import Image from 'next/image';
 import { ClipboardCheck, ClipboardList, FileText } from 'lucide-react';
 import { ProgressBar } from '@/components/n400/ui';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 /** Which mock surface is running — selects the matching exam-page thumbnail. */
 export type MockMode = 'full' | 'civics' | 'speaking' | 'writing';
@@ -70,6 +71,7 @@ export function MockExamProgress({
   total: number;
   section?: MockExamSection;
 }) {
+  const { lang } = useN400Lang();
   const percent = ((index + 1) / total) * 100;
   const remaining = Math.max(0, total - (index + 1));
 
@@ -89,7 +91,7 @@ export function MockExamProgress({
               <div className="mt-1 font-bold leading-tight text-gray-800" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
                 {section.label}
               </div>
-              {section.labelVi ? (
+              {lang !== 'en' && section.labelVi ? (
                 <div className="hidden text-[11px] leading-tight text-gray-500 sm:block">({section.labelVi})</div>
               ) : null}
             </div>

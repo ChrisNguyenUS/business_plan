@@ -7,14 +7,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export function ProgressTabs() {
   const pathname = usePathname();
+  const { dict } = useN400Lang();
   const base = '/n400ready';
 
   const tabs = [
-    { href: `${base}/progress`, label: 'Tổng quan' },
-    { href: `${base}/statistic`, label: 'Chi tiết' },
+    { href: `${base}/progress`, label: dict.progress.tabs.overview },
+    { href: `${base}/statistic`, label: dict.progress.tabs.details },
   ];
 
   return (

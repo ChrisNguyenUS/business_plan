@@ -13,6 +13,8 @@ import {
   type N400CategoryKey,
 } from '@/lib/n400/questions-data';
 import { questionAudioUrl, answerAudioUrlFor, correctAnswersFor } from '@/lib/n400/quiz-engine';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 const CATEGORY_NODES: { key: N400CategoryKey; top: string; left: string; color: string }[] = [
   { key: 'principles', top: '16%', left: '28%', color: '#2C9F9A' },
@@ -41,6 +43,7 @@ const TREE_POSITIONS: ReadonlyArray<readonly [string, string]> = [
 ];
 
 export default function CategoriesPage() {
+  const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const [search, setSearch] = useState('');
   const [openCategory, setOpenCategory] = useState<N400CategoryKey | null>(null);
@@ -79,7 +82,7 @@ export default function CategoriesPage() {
   }, [openCategory, search]);
 
   if (!hydrated) {
-    return <div className="text-sm text-gray-500">Đang tải…</div>;
+    return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
   }
 
   return (
@@ -94,7 +97,7 @@ export default function CategoriesPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm câu hỏi theo từ khóa hoặc số (1-128)..."
+            placeholder={dict.categories.searchPlaceholder}
             className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#2C9F9A] focus:ring-4 focus:ring-[#2C9F9A]/10"
           />
         </label>
@@ -103,7 +106,13 @@ export default function CategoriesPage() {
           onClick={() => setOpenCategory(null)}
           className="flex h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 xl:w-56"
         >
-          <span>{openCategory ? N400_CATEGORY_LABELS[openCategory].vi : 'Tất cả danh mục'}</span>
+          <span>
+            {openCategory
+              ? lang === 'en'
+                ? N400_CATEGORY_LABELS[openCategory].en
+                : N400_CATEGORY_LABELS[openCategory].vi
+              : dict.categories.allCategories}
+          </span>
           <ChevronDown size={16} className="text-slate-400" />
         </button>
       </div>
@@ -129,13 +138,15 @@ export default function CategoriesPage() {
                     style={{ backgroundColor: node?.color ?? '#2C9F9A' }}
                   />
                   <div className="text-sm font-bold text-gray-800">
-                    {N400_CATEGORY_LABELS[key].vi}
+                    {lang === 'en' ? N400_CATEGORY_LABELS[key].en : N400_CATEGORY_LABELS[key].vi}
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mb-3">{N400_CATEGORY_LABELS[key].en}</div>
+                {lang !== 'en' && (
+                  <div className="text-xs text-gray-500 mb-3">{N400_CATEGORY_LABELS[key].en}</div>
+                )}
                 <div className="flex items-baseline gap-2 mb-3">
                   <span className="text-2xl font-bold text-gray-800">{cs.mastered}</span>
-                  <span className="text-xs text-gray-400">/ {cs.total} thuộc</span>
+                  <span className="text-xs text-gray-400">{tFormat(dict.categories.masteredSuffix, { total: cs.total })}</span>
                 </div>
                 <ProgressBar
                   progress={pct}
@@ -144,7 +155,7 @@ export default function CategoriesPage() {
                 />
                 <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
                   <span>{cs.bookmarks > 0 ? `★ ${cs.bookmarks}` : ' '}</span>
-                  <span className="text-teal-600 font-semibold">Xem &rarr;</span>
+                  <span className="text-teal-600 font-semibold">{dict.categories.viewMore}</span>
                 </div>
               </Card>
             </button>
@@ -154,7 +165,7 @@ export default function CategoriesPage() {
 
       {!openCategory ? (
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="relative z-20 px-1 text-xl font-bold text-slate-950">Bản đồ chinh phục</h3>
+          <h3 className="relative z-20 px-1 text-xl font-bold text-slate-950">{dict.categories.roadmapTitle}</h3>
           <div className="relative mt-2 overflow-hidden rounded-xl bg-white" style={{ minHeight: 470 }}>
             <RoadmapPath />
 
@@ -191,11 +202,15 @@ export default function CategoriesPage() {
                   className="min-w-28 rounded-lg px-3 py-1.5 text-center text-sm font-bold leading-tight text-white shadow-sm"
                   style={{ backgroundColor: node.color }}
                 >
-                  <span>{N400_CATEGORY_LABELS[node.key].vi}</span>
-                  <br />
-                  <span className="text-xs font-semibold opacity-95">
-                    {N400_CATEGORY_LABELS[node.key].en}
-                  </span>
+                  <span>{lang === 'en' ? N400_CATEGORY_LABELS[node.key].en : N400_CATEGORY_LABELS[node.key].vi}</span>
+                  {lang !== 'en' && (
+                    <>
+                      <br />
+                      <span className="text-xs font-semibold opacity-95">
+                        {N400_CATEGORY_LABELS[node.key].en}
+                      </span>
+                    </>
+                  )}
                 </div>
               </button>
             ))}
@@ -206,10 +221,10 @@ export default function CategoriesPage() {
             style={{ minHeight: 128, backgroundColor: '#ECF8F8' }}
           >
             <div className="relative z-10 max-w-md">
-              <h4 className="text-lg font-bold text-slate-950">Khám phá tất cả danh mục</h4>
+              <h4 className="text-lg font-bold text-slate-950">{dict.categories.exploreAll}</h4>
               <div className="mt-1 text-sm font-bold text-slate-950">Explore all categories</div>
               <p className="mt-4 max-w-xs text-sm leading-6 text-slate-600">
-                Đã thuộc {stats.mastered} / 128 câu — tập trung vào nhóm còn yếu để tiến bộ nhanh hơn.
+                {tFormat(dict.categories.mastered, { count: stats.mastered })}
               </p>
             </div>
 
@@ -232,10 +247,11 @@ export default function CategoriesPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="font-bold text-gray-800">
-                {N400_CATEGORY_LABELS[openCategory].vi}
+                {lang === 'en' ? N400_CATEGORY_LABELS[openCategory].en : N400_CATEGORY_LABELS[openCategory].vi}
               </h3>
               <p className="text-xs text-gray-500">
-                {N400_CATEGORY_LABELS[openCategory].en} • {filteredQuestions.length} câu
+                {lang !== 'en' && <>{N400_CATEGORY_LABELS[openCategory].en} • </>}
+                {tFormat(dict.categories.questionCount, { count: filteredQuestions.length })}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -243,7 +259,7 @@ export default function CategoriesPage() {
                 href={`/n400ready/study/civics`}
                 className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-semibold flex items-center gap-2 hover:bg-teal-700"
               >
-                Luyện tập <ArrowRight size={14} />
+                {dict.categories.practiceCta} <ArrowRight size={14} />
               </Link>
               <Link
                 href={`/n400ready/flashcards`}
@@ -269,22 +285,24 @@ export default function CategoriesPage() {
                     <div className="flex-1">
                       <div className="text-xs text-teal-600 font-bold mb-1">Q. {q.id}</div>
                       <div className="font-semibold text-gray-800">{q.questionEn}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{q.questionVi}</div>
+                      {lang !== 'en' && (
+                        <div className="text-xs text-gray-500 mt-0.5">{q.questionVi}</div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <AudioButton src={questionAudioUrl(q.id)} size="sm" label="Nghe câu hỏi" />
+                      <AudioButton src={questionAudioUrl(q.id)} size="sm" label={dict.flashcards.listenQuestion} />
                       <ChevronDown size={16} className="text-gray-400 transition-transform group-open:rotate-180" />
                     </div>
                   </summary>
                   <div className="px-4 pb-4 text-sm">
                     <div className="text-xs font-bold uppercase tracking-wider text-teal-700 mb-2 flex items-center gap-2">
-                      <Volume2 size={12} /> Đáp án
+                      <Volume2 size={12} /> {dict.categories.answers}
                     </div>
                     <ul className="space-y-1.5 list-disc pl-5 text-gray-700">
                       {answers.map((a, i) => (
                         <li key={i}>
                           <span className="font-medium">{a.en}</span>
-                          {a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
+                          {lang !== 'en' && a.vi !== a.en ? <span className="text-gray-500"> — {a.vi}</span> : null}
                         </li>
                       ))}
                     </ul>

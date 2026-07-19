@@ -8,6 +8,7 @@ import {
   type StudyModuleSignal,
   type StudyTipSignals,
 } from './study-modules';
+import { vi } from './i18n/vi';
 
 const sig = (
   id: StudyModuleSignal['id'],
@@ -57,35 +58,35 @@ describe('pickRecommendedModule', () => {
 describe('decideModuleBadge — exactly one badge per card', () => {
   const rec = pickRecommendedModule(REFERENCE)!;
   const byId = (id: StudyModuleSignal['id']) =>
-    decideModuleBadge(REFERENCE.find((s) => s.id === id)!, id === rec);
+    decideModuleBadge(REFERENCE.find((s) => s.id === id)!, id === rec, vi);
 
-  it('recommended module → recommended + Tiếp tục học', () => {
-    expect(byId('civics')).toEqual({ badge: 'recommended', ctaLabel: 'Tiếp tục học' });
+  it('recommended module → recommended + continueLearning', () => {
+    expect(byId('civics')).toEqual({ badge: 'recommended', ctaLabel: vi.common.cta.continueLearning });
   });
   it('started, healthy accuracy → continue', () => {
-    expect(byId('whatmean')).toEqual({ badge: 'continue', ctaLabel: 'Tiếp tục học' });
+    expect(byId('whatmean')).toEqual({ badge: 'continue', ctaLabel: vi.common.cta.continueLearning });
   });
   it('started, low accuracy → needs-practice', () => {
-    expect(byId('yesno')).toEqual({ badge: 'needs-practice', ctaLabel: 'Luyện ngay' });
+    expect(byId('yesno')).toEqual({ badge: 'needs-practice', ctaLabel: vi.common.cta.practiceNow });
   });
-  it('finished module → completed + Ôn luyện lại', () => {
-    expect(byId('writing')).toEqual({ badge: 'completed', ctaLabel: 'Ôn luyện lại' });
+  it('finished module → completed + reviewAgain', () => {
+    expect(byId('writing')).toEqual({ badge: 'completed', ctaLabel: vi.common.cta.reviewAgain });
   });
   it('never-opened module → new', () => {
-    expect(decideModuleBadge(sig('whatmean', 0, 62), false)).toEqual({
+    expect(decideModuleBadge(sig('whatmean', 0, 62), false, vi)).toEqual({
       badge: 'new',
-      ctaLabel: 'Học ngay',
+      ctaLabel: vi.common.cta.startLearning,
     });
   });
-  it('recommended brand-new module keeps the state verb Học ngay', () => {
-    expect(decideModuleBadge(sig('civics', 0, 128), true).ctaLabel).toBe('Học ngay');
+  it('recommended brand-new module keeps the state verb startLearning', () => {
+    expect(decideModuleBadge(sig('civics', 0, 128), true, vi).ctaLabel).toBe(vi.common.cta.startLearning);
   });
   it('low accuracy below the attempt threshold stays continue, not needs-practice', () => {
-    expect(decideModuleBadge(sig('whatmean', 2, 62, 2, 0), false).badge).toBe('continue');
+    expect(decideModuleBadge(sig('whatmean', 2, 62, 2, 0), false, vi).badge).toBe('continue');
   });
 });
 
-describe('buildStudyTip — chữa lỗi trước, mở rộng sau', () => {
+describe('buildStudyTip — fix mistakes first, then expand', () => {
   const base: StudyTipSignals = {
     topWrongModule: null,
     weakCategory: null,
@@ -94,60 +95,78 @@ describe('buildStudyTip — chữa lỗi trước, mở rộng sau', () => {
   };
 
   it('leads with the module owing the most unreviewed wrongs, chunked — never exposes total debt', () => {
-    const tip = buildStudyTip({
-      ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 56, href: '/practice?start=wrongs' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        topWrongModule: { id: 'civics', label: 'Civics', count: 56, href: '/practice?start=wrongs' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('10 câu Civics');
     expect(tip.line1).not.toContain('56');
     expect(tip.href).toBe('/practice?start=wrongs');
   });
   it('shows the real count when the debt is smaller than a chunk', () => {
-    const tip = buildStudyTip({
-      ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 4, href: '/practice?start=wrongs' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        topWrongModule: { id: 'civics', label: 'Civics', count: 4, href: '/practice?start=wrongs' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('4 câu Civics');
   });
   it('section debt links to that module review session', () => {
-    const tip = buildStudyTip({
-      ...base,
-      topWrongModule: { id: 'writing', label: 'Writing', count: 8, href: '/writing?start=wrongs' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        topWrongModule: { id: 'writing', label: 'Writing', count: 8, href: '/writing?start=wrongs' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('8 câu Writing');
     expect(tip.href).toBe('/writing?start=wrongs');
   });
   it('ignores debt below the minimum and moves to the weak category', () => {
-    const tip = buildStudyTip({
-      ...base,
-      topWrongModule: { id: 'civics', label: 'Civics', count: 2, href: '/practice?start=wrongs' },
-      weakCategory: { label: 'American History' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        topWrongModule: { id: 'civics', label: 'Civics', count: 2, href: '/practice?start=wrongs' },
+        weakCategory: { label: 'American History' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('American History');
     expect(tip.href).toBe('/practice?start=weak');
   });
   it('weak civics category deep-links straight into a focused session', () => {
-    const tip = buildStudyTip({ ...base, weakCategory: { label: 'System of Government' } });
+    const tip = buildStudyTip({ ...base, weakCategory: { label: 'System of Government' } }, vi);
     expect(tip.line1).toContain('System of Government');
     expect(tip.href).toBe('/practice?start=weak');
   });
   it('falls back to lowest-accuracy module', () => {
-    const tip = buildStudyTip({
-      ...base,
-      lowestModule: { label: 'Yes / No', accuracy: 33, href: '/speaking/yes-no' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        lowestModule: { label: 'Yes / No', accuracy: 33, href: '/speaking/yes-no' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('33%');
     expect(tip.href).toBe('/speaking/yes-no');
   });
   it('expands the lowest-coverage module when nothing is weak', () => {
-    const tip = buildStudyTip({
-      ...base,
-      lowestCoverage: { label: 'What Mean', done: 14, total: 62, href: '/speaking/what-mean' },
-    });
+    const tip = buildStudyTip(
+      {
+        ...base,
+        lowestCoverage: { label: 'What Mean', done: 14, total: 62, href: '/speaking/what-mean' },
+      },
+      vi,
+    );
     expect(tip.line1).toContain('14/62');
     expect(tip.href).toBe('/speaking/what-mean');
   });
   it('has a brand-new-user fallback', () => {
-    expect(buildStudyTip(base).href).toBe('/study/civics');
+    expect(buildStudyTip(base, vi).href).toBe('/study/civics');
   });
 });

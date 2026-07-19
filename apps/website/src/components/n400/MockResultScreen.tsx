@@ -22,6 +22,8 @@ import {
 import { Card } from '@/components/n400/ui';
 import { AudioButton } from '@/components/n400/AudioButton';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { tFormat } from '@/lib/n400/i18n/format';
 
 export interface MockResultRow {
   key: string;
@@ -45,7 +47,7 @@ export function MockResultHero({
   score,
   total,
   requirement,
-  passSubtitle = 'Bạn đã sẵn sàng cho buổi phỏng vấn.',
+  passSubtitle,
   streak,
   onRetake,
 }: {
@@ -58,6 +60,8 @@ export function MockResultHero({
   streak?: { current: number; longest: number };
   onRetake: () => void;
 }) {
+  const { dict } = useN400Lang();
+  const effectivePassSubtitle = passSubtitle ?? dict.mockTest.result.defaultPassSubtitle;
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
 
   return (
@@ -82,14 +86,16 @@ export function MockResultHero({
           <h3 className="text-2xl font-extrabold text-gray-800 sm:text-3xl">
             {passed ? (
               <>
-                Tuyệt vời! Bạn đã <span className="text-teal-600">vượt qua</span> bài thi!
+                {dict.mockTest.result.passTitle.prefix}
+                <span className="text-teal-600">{dict.mockTest.result.passTitle.highlight}</span>
+                {dict.mockTest.result.passTitle.suffix}
               </>
             ) : (
-              'Cố lên! Lần sau bạn sẽ làm tốt hơn.'
+              dict.mockTest.result.failTitle
             )}
           </h3>
           {passed ? (
-            <p className="mt-1.5 text-sm text-gray-500 sm:text-base">{passSubtitle}</p>
+            <p className="mt-1.5 text-sm text-gray-500 sm:text-base">{effectivePassSubtitle}</p>
           ) : null}
 
           <div className="mt-3 text-5xl font-extrabold text-teal-600 sm:text-6xl">
@@ -100,19 +106,24 @@ export function MockResultHero({
           {passed ? (
             <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3.5 py-1.5 text-sm font-semibold text-teal-700">
               <CheckCircle size={15} />
-              Đạt {accuracy}% độ chính xác
+              {tFormat(dict.practice.accuracy, { pct: accuracy })}
             </div>
           ) : null}
 
           <p className="mt-3 text-sm text-gray-600">
-            {requirement} {passed ? 'Bạn đã làm rất tốt!' : `Bạn đạt ${accuracy}% độ chính xác.`}
+            {requirement}{' '}
+            {passed
+              ? dict.practice.passedCongrats
+              : tFormat(dict.mockTest.result.failAccuracy, { accuracy })}
           </p>
 
           {!passed && streak ? (
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/70 px-3 py-1.5 text-sm text-gray-700">
               <Flame size={16} className="text-orange-500" />
-              <span className="font-semibold">{streak.current} ngày</span>
-              <span className="text-xs text-gray-500">· Cao nhất: {streak.longest} ngày</span>
+              <span className="font-semibold">{tFormat(dict.dashboard.stat.streak.value, { count: streak.current })}</span>
+              <span className="text-xs text-gray-500">
+                · {tFormat(dict.mockTest.result.streakLongest, { count: streak.longest })}
+              </span>
             </div>
           ) : null}
 
@@ -123,7 +134,7 @@ export function MockResultHero({
               className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-7 py-3 font-semibold text-white shadow-md transition-colors duration-200 hover:bg-teal-800"
             >
               <RefreshCw size={16} />
-              Thi lại
+              {dict.mockTest.result.retakeButton}
             </button>
           </div>
         </div>
@@ -134,12 +145,6 @@ export function MockResultHero({
 
 type ResultFilter = 'all' | 'correct' | 'wrong';
 
-const FILTERS: { id: ResultFilter; label: string }[] = [
-  { id: 'all', label: 'Tất cả' },
-  { id: 'correct', label: 'Đúng' },
-  { id: 'wrong', label: 'Sai' },
-];
-
 export function MockResultScreen({
   passed,
   score,
@@ -149,10 +154,10 @@ export function MockResultScreen({
   streak,
   onRetake,
   rows,
-  userAnswerLabel = 'Bạn chọn:',
+  userAnswerLabel,
   reviewHref,
-  reviewLabel = 'Ôn câu sai',
-  reviewTip = 'Ôn lại những câu sai để cải thiện điểm số của bạn!',
+  reviewLabel,
+  reviewTip,
   hubHref,
 }: {
   passed: boolean;
@@ -172,9 +177,18 @@ export function MockResultScreen({
   /** "Về trang Thi thử" target on the pass footer. */
   hubHref: string;
 }) {
+  const { dict, lang } = useN400Lang();
   const { state, toggleBookmark } = useN400UserState();
   const [filter, setFilter] = useState<ResultFilter>('all');
   const [savedOnly, setSavedOnly] = useState(false);
+  const effectiveUserAnswerLabel = userAnswerLabel ?? dict.mockTest.result.userAnswerLabelDefault;
+  const effectiveReviewLabel = reviewLabel ?? dict.mockTest.result.reviewLabelDefault;
+  const effectiveReviewTip = reviewTip ?? dict.mockTest.result.reviewTipDefault;
+  const FILTERS: { id: ResultFilter; label: string }[] = [
+    { id: 'all', label: dict.study.civics.chip.all },
+    { id: 'correct', label: dict.mockTest.result.filterCorrect },
+    { id: 'wrong', label: dict.mockTest.result.filterWrong },
+  ];
 
   const bookmarkable = rows.some((r) => r.bookmarkId != null);
 
@@ -200,7 +214,7 @@ export function MockResultScreen({
       {/* Answer breakdown — filterable Tất cả / Đúng / Sai + Đã lưu */}
       <Card className="p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h4 className="font-bold text-gray-800">Chi tiết các câu trả lời</h4>
+          <h4 className="font-bold text-gray-800">{dict.mockTest.result.detailsTitle}</h4>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 rounded-full bg-gray-100 p-1">
               {FILTERS.map((f) => (
@@ -231,7 +245,7 @@ export function MockResultScreen({
                 }`}
               >
                 <Bookmark size={14} fill={savedOnly ? 'currentColor' : 'none'} />
-                Đã lưu
+                {dict.mockTest.result.filterSaved}
               </button>
             ) : null}
           </div>
@@ -240,7 +254,7 @@ export function MockResultScreen({
         <div className="mt-4 space-y-3">
           {visible.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm text-gray-500">
-              Không có câu nào khớp bộ lọc này.
+              {dict.mockTest.result.noMatches}
             </div>
           ) : null}
           {visible.map((row) => (
@@ -257,20 +271,20 @@ export function MockResultScreen({
                 <div className="flex-1">
                   <div className="text-xs text-gray-500">{row.badge}</div>
                   <div className="font-semibold text-gray-800 mt-1">{row.prompt}</div>
-                  {row.promptVi ? (
+                  {lang !== 'en' && row.promptVi ? (
                     <div className="text-xs text-gray-500 mt-0.5">{row.promptVi}</div>
                   ) : null}
                   <div className="text-sm mt-2">
-                    <span className="text-gray-500">{userAnswerLabel} </span>
+                    <span className="text-gray-500">{effectiveUserAnswerLabel} </span>
                     <span className={row.ok ? 'text-teal-700 font-medium' : 'text-orange-600 font-medium'}>
-                      {row.userAnswer ?? '— (bỏ qua)'}
+                      {row.userAnswer ?? dict.mockTest.result.skipped}
                     </span>
                   </div>
                   {!row.ok && row.correctAnswer ? (
                     <div className="text-sm">
-                      <span className="text-gray-500">Đáp án đúng: </span>
+                      <span className="text-gray-500">{dict.mockTest.result.correctAnswerPrefix}</span>
                       <span className="text-teal-700 font-medium">{row.correctAnswer}</span>
-                      {row.correctAnswerVi && row.correctAnswerVi !== row.correctAnswer ? (
+                      {lang !== 'en' && row.correctAnswerVi && row.correctAnswerVi !== row.correctAnswer ? (
                         <span className="text-gray-500"> ({row.correctAnswerVi})</span>
                       ) : null}
                     </div>
@@ -279,7 +293,7 @@ export function MockResultScreen({
                 <div className="flex flex-col items-end gap-2 shrink-0 self-stretch justify-between">
                   <div className="flex items-center gap-1.5">
                     {row.audioSrc !== undefined ? (
-                      <AudioButton src={row.audioSrc} size="sm" label="Nghe câu hỏi" />
+                      <AudioButton src={row.audioSrc} size="sm" label={dict.flashcards.listenQuestion} />
                     ) : null}
                     {row.bookmarkId != null ? (
                       <BookmarkToggle
@@ -294,7 +308,7 @@ export function MockResultScreen({
                       row.ok ? 'bg-teal-100 text-teal-700' : 'bg-orange-100 text-orange-600'
                     }`}
                   >
-                    {row.ok ? 'Đúng' : 'Sai'}
+                    {row.ok ? dict.mockTest.result.filterCorrect : dict.mockTest.result.filterWrong}
                   </span>
                 </div>
               </div>
@@ -308,14 +322,14 @@ export function MockResultScreen({
             <div className="flex items-center gap-2.5 text-sm text-gray-700">
               <Lightbulb size={16} className="shrink-0 text-indigo-500" />
               <span>
-                <span className="font-semibold">Mẹo học hiệu quả:</span> {reviewTip}
+                <span className="font-semibold">{dict.mockTest.result.tipsPrefix}</span> {effectiveReviewTip}
               </span>
             </div>
             <Link
               href={reviewHref}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-sm font-semibold text-indigo-600 transition-colors duration-200 hover:bg-indigo-50"
             >
-              {reviewLabel}
+              {effectiveReviewLabel}
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -327,14 +341,14 @@ export function MockResultScreen({
               className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:border-teal-300 hover:text-teal-700"
             >
               <RefreshCw size={15} />
-              Làm lại bài thi
+              {dict.mockTest.result.retryButton}
             </button>
             <Link
               href={hubHref}
               className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-teal-700"
             >
               <ClipboardCheck size={15} />
-              Về trang Thi thử
+              {dict.mockTest.result.backToHub}
             </Link>
           </div>
         ) : null}
@@ -352,6 +366,7 @@ function BookmarkToggle({
   active: boolean;
   onToggle: (id: number) => void;
 }) {
+  const { dict } = useN400Lang();
   return (
     <button
       type="button"
@@ -361,8 +376,8 @@ function BookmarkToggle({
           ? 'text-teal-600 bg-teal-50 hover:bg-teal-100'
           : 'text-gray-300 hover:text-teal-500 hover:bg-gray-100'
       }`}
-      aria-label={active ? 'Bỏ đánh dấu' : 'Đánh dấu để học sau'}
-      title={active ? 'Bỏ đánh dấu' : 'Đánh dấu để học sau'}
+      aria-label={active ? dict.flashcards.unbookmark : dict.mockTest.result.bookmarkHint}
+      title={active ? dict.flashcards.unbookmark : dict.mockTest.result.bookmarkHint}
     >
       <Bookmark size={16} fill={active ? 'currentColor' : 'none'} />
     </button>
