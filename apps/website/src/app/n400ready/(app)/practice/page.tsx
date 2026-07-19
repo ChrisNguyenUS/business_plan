@@ -705,7 +705,7 @@ export default function PracticePage() {
                   style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}
                 >
                   <Bookmark size={16} fill={isBookmarked ? 'currentColor' : 'none'} />
-                  <span className="leading-tight">{dict.practice.saveForReview}<span className="hidden sm:inline">{dict.practice.saveForReviewSuffix}</span></span>
+                  <span className="leading-tight"><span className="sm:hidden">{dict.practice.saveForReviewShort}</span><span className="hidden sm:inline">{dict.practice.saveForReviewFull}</span></span>
                 </button>
                 <button
                   type="button"

@@ -427,8 +427,8 @@ export const vi = {
     acceptedAnswers: 'Đáp án USCIS chấp nhận:',
     collapse: 'Thu gọn',
     viewAllAnswers: 'Xem tất cả {count} đáp án',
-    saveForReview: 'Lưu lại',
-    saveForReviewSuffix: ' / Review Later',
+    saveForReviewShort: 'Lưu lại',
+    saveForReviewFull: 'Lưu lại / Review Later',
     next: 'Tiếp theo / Next',
     presets: {
       quick: { title: 'Ôn nhanh', desc: 'Ôn nhanh để làm mới trí nhớ.' },

@@ -428,8 +428,8 @@ export const en: N400Dict = {
     acceptedAnswers: 'USCIS accepts:',
     collapse: 'Collapse',
     viewAllAnswers: 'View all {count} answers',
-    saveForReview: 'Save for review',
-    saveForReviewSuffix: ' / Review Later',
+    saveForReviewShort: 'Save',
+    saveForReviewFull: 'Save for review',
     next: 'Next',
     presets: {
       quick: { title: 'Quick Review', desc: 'Quick review to refresh your memory.' },
