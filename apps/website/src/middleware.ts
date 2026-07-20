@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { locales, defaultLocale } from '@/lib/i18n/config';
 import { N400_LANG_COOKIE, N400_LANG_COOKIE_MAX_AGE, isN400Lang } from '@/lib/n400/i18n/config';
+import {
+  ATTRIB_COOKIE,
+  ATTRIB_COOKIE_MAX_AGE,
+  buildTouch,
+  hasAttributionSignal,
+  mergeAttributionCookie,
+} from '@/lib/n400/growth/attribution';
 
 const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
@@ -17,6 +24,27 @@ const N400_PUBLIC_RE = /^\/n400ready\/login(\/|$)/;
 const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(onboarding|setup|help|login)(\/|$)/;
 // Old bookmarked URLs from the /{locale}/n400app era.
 const N400_LEGACY_RE = /^\/(?:en|vi)\/n400app(\/.*)?$/;
+
+// Growth attribution: stamp/refresh the first-party touch cookie whenever a
+// request carries UTM/click-id params, or on the very first visit (organic —
+// captures referrer + landing page). Redirect responses are skipped: Next
+// preserves the query string, so the follow-up request captures instead.
+function captureAttribution(request: NextRequest, response: NextResponse): NextResponse {
+  const url = request.nextUrl;
+  const existingRaw = request.cookies.get(ATTRIB_COOKIE)?.value;
+  const signal = hasAttributionSignal(url);
+  if (existingRaw && !signal) return response;
+
+  const touch = buildTouch(url, request.headers.get('referer'));
+  const merged = mergeAttributionCookie(existingRaw, touch);
+  response.cookies.set(ATTRIB_COOKIE, JSON.stringify(merged), {
+    path: '/',
+    maxAge: ATTRIB_COOKIE_MAX_AGE,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  return response;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -70,11 +98,11 @@ export async function middleware(request: NextRequest) {
 
   // N400 public pages (e.g. /n400app/login) skip auth entirely.
   if (isN400Public) {
-    return NextResponse.next();
+    return captureAttribution(request, NextResponse.next());
   }
 
   if (!isAdminPath && !isPortalPath && !isN400Path) {
-    return NextResponse.next();
+    return captureAttribution(request, NextResponse.next());
   }
 
   const locale = pathname.split('/')[1];
@@ -159,7 +187,7 @@ export async function middleware(request: NextRequest) {
   }
 
   supabaseResponse.headers.set('x-user-role', role ?? '');
-  return supabaseResponse;
+  return captureAttribution(request, supabaseResponse);
 }
 
 export const config = {
