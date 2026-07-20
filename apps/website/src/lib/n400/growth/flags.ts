@@ -10,7 +10,7 @@ export type FeatureFlag = {
 };
 
 // FNV-1a 32-bit — tiny, dependency-free, stable across platforms.
-function fnv1a(str: string): number {
+export function fnv1a(str: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i);
