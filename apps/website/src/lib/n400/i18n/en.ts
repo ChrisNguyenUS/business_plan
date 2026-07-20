@@ -240,7 +240,21 @@ export const en: N400Dict = {
         title: 'Continue learning Civics',
         subtitle: '{remaining} more questions to complete {civicsTotal} civics questions.',
       },
+      interviewMode: {
+        title: '🔥 Interview prep mode',
+        titleWithDays: '{days} days until your interview',
+        subtitle: "Today's priority: Mock Test, Speaking and Writing.",
+        secondary: 'Practice Speaking',
+      },
     },
+  },
+  growth: {
+    oneQuickQuestion: 'One quick question',
+    personalizeTitle: 'Help us personalize your journey',
+    skip: 'Skip',
+    dismiss: 'Hide this question',
+    thanks: 'Thank you! Your journey has been updated.',
+    saveDate: 'Save',
   },
   modules: {
     tip: {

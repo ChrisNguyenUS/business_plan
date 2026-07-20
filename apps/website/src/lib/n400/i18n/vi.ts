@@ -240,7 +240,21 @@ export const vi = {
         title: 'Tiếp tục học Civics',
         subtitle: 'Còn {remaining} câu nữa để hoàn thành {civicsTotal} câu hỏi công dân.',
       },
+      interviewMode: {
+        title: '🔥 Chế độ luyện phỏng vấn',
+        titleWithDays: 'Còn {days} ngày đến phỏng vấn',
+        subtitle: 'Ưu tiên hôm nay: Thi thử, Speaking và Viết.',
+        secondary: 'Luyện Speaking',
+      },
     },
+  },
+  growth: {
+    oneQuickQuestion: 'Một câu hỏi nhỏ',
+    personalizeTitle: 'Giúp chúng tôi cá nhân hoá lộ trình của bạn',
+    skip: 'Bỏ qua',
+    dismiss: 'Ẩn câu hỏi này',
+    thanks: 'Cảm ơn bạn! Lộ trình của bạn đã được cập nhật.',
+    saveDate: 'Lưu',
   },
   modules: {
     tip: {
