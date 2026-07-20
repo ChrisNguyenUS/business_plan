@@ -5,10 +5,8 @@
 // the RLS INSERT policy on n400_growth_events enforces the same whitelist, so
 // a forged request cannot write scoring-relevant server events either way.
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-
 import { EVENT_VERSION, isClientEventType } from './events';
+import { getAuthedServerClient } from './server-client';
 
 const PAYLOAD_MAX_BYTES = 2048;
 
@@ -23,25 +21,7 @@ export async function ingestClientEvent(
     return { ok: false, error: 'payload_too_large' };
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {
-          // Read-only usage; session refresh happens in middleware.
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedServerClient();
   if (!user) return { ok: false, error: 'unauthorized' };
 
   const { error } = await supabase.from('n400_growth_events').insert({
