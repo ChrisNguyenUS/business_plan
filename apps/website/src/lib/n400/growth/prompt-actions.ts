@@ -62,6 +62,11 @@ async function profilingEnabled(supabase: SupabaseClient, userId: string): Promi
 }
 
 async function loadInputs(supabase: SupabaseClient, user: User): Promise<ProfilingInputs> {
+  // Every per-user table is filtered on user_id EXPLICITLY — RLS alone is not a
+  // scope: n400_15 grants admins SELECT on all rows of lead_profiles /
+  // profile_prompts / growth_events, so an admin session would otherwise read
+  // the whole table (maybeSingle() errors on >1 row, prompt state collides
+  // across users, and event counts come out inflated).
   const [defsRes, statesRes, leadRes, eventsRes] = await Promise.all([
     supabase
       .from('n400_prompt_definitions')
@@ -69,16 +74,19 @@ async function loadInputs(supabase: SupabaseClient, user: User): Promise<Profili
       .eq('enabled', true),
     supabase
       .from('n400_profile_prompts')
-      .select('question_key, answered_at, skipped_at, snooze_until'),
+      .select('question_key, answered_at, skipped_at, snooze_until')
+      .eq('user_id', user.id),
     supabase
       .from('n400_lead_profiles')
       .select('n400_filed, filing_timeline, interview_scheduled, interview_date, wants_guidance')
+      .eq('user_id', user.id)
       .maybeSingle(),
     // TODO(scale): per-answer envelope events grow with usage; switch to a
     // count RPC if this fetch gets heavy.
     supabase
       .from('n400_growth_events')
       .select('event_type, created_at')
+      .eq('user_id', user.id)
       .in('event_type', ['practice_completed', 'mock_completed']),
   ]);
   return {

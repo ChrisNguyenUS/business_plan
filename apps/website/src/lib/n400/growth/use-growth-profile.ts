@@ -34,9 +34,13 @@ export function useGrowthProfile(): GrowthProfile {
           .select('flag_key, enabled, rollout_pct')
           .eq('flag_key', 'growth_engine')
           .maybeSingle(),
+        // Explicit user_id filter — RLS is not a scope here: n400_15 lets
+        // admins read every lead_profiles row, and maybeSingle() errors on
+        // more than one, silently blanking the journey stage.
         supabase
           .from('n400_lead_profiles')
           .select('journey_stage, interview_date')
+          .eq('user_id', user.id)
           .maybeSingle(),
       ]);
       if (cancelled) return;
