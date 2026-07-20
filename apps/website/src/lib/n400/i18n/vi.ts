@@ -250,7 +250,7 @@ export const vi = {
   },
   growth: {
     oneQuickQuestion: 'Một câu hỏi nhỏ',
-    personalizeTitle: 'Giúp chúng tôi cá nhân hoá lộ trình của bạn',
+    personalizeTitle: 'Giúp chúng tôi cá nhân hóa lộ trình của bạn',
     skip: 'Bỏ qua',
     dismiss: 'Ẩn câu hỏi này',
     thanks: 'Cảm ơn bạn! Lộ trình của bạn đã được cập nhật.',
