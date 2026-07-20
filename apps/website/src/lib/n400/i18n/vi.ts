@@ -255,6 +255,8 @@ export const vi = {
     dismiss: 'Ẩn câu hỏi này',
     thanks: 'Cảm ơn bạn! Lộ trình của bạn đã được cập nhật.',
     saveDate: 'Lưu',
+    ctaEyebrow: 'Dành cho bạn',
+    ctaDismiss: 'Ẩn gợi ý này',
   },
   modules: {
     tip: {

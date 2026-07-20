@@ -255,6 +255,8 @@ export const en: N400Dict = {
     dismiss: 'Hide this question',
     thanks: 'Thank you! Your journey has been updated.',
     saveDate: 'Save',
+    ctaEyebrow: 'For you',
+    ctaDismiss: 'Hide this suggestion',
   },
   modules: {
     tip: {
