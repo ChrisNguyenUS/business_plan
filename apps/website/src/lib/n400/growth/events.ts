@@ -4,13 +4,10 @@
 //
 // SERVER_EVENT_TYPES are emitted by DB triggers or SECURITY DEFINER RPCs only;
 // the RLS INSERT policy on n400_growth_events rejects them from clients.
-// CLIENT_EVENT_TYPES may be inserted by the signed-in user for themself (UI
-// telemetry; the only ones that influence scoring are the cta_* group).
+// CLIENT_EVENT_TYPES may be inserted by the signed-in user for themself —
+// pure UI telemetry that touches neither score nor funnel (see n400_24).
 
 export const CLIENT_EVENT_TYPES = [
-  'cta_shown',
-  'cta_dismissed',
-  'cta_clicked',
   'checklist_viewed',
   'consultation_form_opened',
 ] as const;
@@ -26,6 +23,12 @@ export const SERVER_EVENT_TYPES = [
   'prompt_shown',
   'prompt_answered',
   'prompt_skipped',
+  // RPC-only since n400_24 (mark_cta_shown / dismiss_cta / click_cta):
+  // cta_dismissed feeds the dismissed_consultation_cta_3 scoring penalty and
+  // all three feed G4's funnel view, so none may be client-forgeable.
+  'cta_shown',
+  'cta_dismissed',
+  'cta_clicked',
   // reserved, not emitted in G1:
   'section_completed',
   'readiness_snapshot',

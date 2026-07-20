@@ -23,8 +23,8 @@ describe('isUserInRollout', () => {
 
 describe('isClientEventType', () => {
   it('accepts whitelisted client events', () => {
-    expect(isClientEventType('cta_dismissed')).toBe(true);
     expect(isClientEventType('checklist_viewed')).toBe(true);
+    expect(isClientEventType('consultation_form_opened')).toBe(true);
   });
 
   it('rejects server-authoritative and unknown types', () => {
@@ -40,5 +40,13 @@ describe('isClientEventType', () => {
     expect(isClientEventType('prompt_shown')).toBe(false);
     expect(isClientEventType('prompt_answered')).toBe(false);
     expect(isClientEventType('prompt_skipped')).toBe(false);
+  });
+
+  // Same reasoning for the CTA funnel (n400_24) — plus cta_dismissed is the
+  // one client-facing event that actually moves the lead score.
+  it('rejects the whole CTA funnel', () => {
+    expect(isClientEventType('cta_shown')).toBe(false);
+    expect(isClientEventType('cta_dismissed')).toBe(false);
+    expect(isClientEventType('cta_clicked')).toBe(false);
   });
 });
