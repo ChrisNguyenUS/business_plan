@@ -2,10 +2,10 @@
 // Growth event taxonomy (spec §1.5). event_version bumps when a type's payload
 // shape changes — consumers read by version.
 //
-// SERVER_EVENT_TYPES are emitted by DB triggers only; the RLS INSERT policy on
-// n400_growth_events rejects them from clients. CLIENT_EVENT_TYPES may be
-// inserted by the signed-in user for themself (UI telemetry; the only ones that
-// influence scoring are the cta_* group).
+// SERVER_EVENT_TYPES are emitted by DB triggers or SECURITY DEFINER RPCs only;
+// the RLS INSERT policy on n400_growth_events rejects them from clients.
+// CLIENT_EVENT_TYPES may be inserted by the signed-in user for themself (UI
+// telemetry; the only ones that influence scoring are the cta_* group).
 
 export const CLIENT_EVENT_TYPES = [
   'cta_shown',
@@ -23,6 +23,7 @@ export const SERVER_EVENT_TYPES = [
   'address_entered',
   'practice_completed',
   'mock_completed',
+  'prompt_shown',
   // reserved, not emitted in G1:
   'section_completed',
   'readiness_snapshot',
