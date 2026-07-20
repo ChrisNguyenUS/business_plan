@@ -65,13 +65,30 @@ All CTA writes go through SECURITY DEFINER RPCs (`n400_mark_cta_shown` / `n400_d
 -- 7-day global cap reads n400_lead_profiles.last_growth_prompt_at, which has
 -- existed since n400_15.
 
--- ── impression: stamps the 7-day cap, logs the decision, emits the event ────
+-- ── evaluation: log every run, shown or not (spec §1.5b) ───────────────────
+-- Deliberately SEPARATE from the impression RPC below. The whole point of
+-- this table is answering "why did this user see nothing?", so it must be
+-- written when the answer is "nothing" — which is precisely when no
+-- impression happens. Coupling the two would make the log record only the
+-- cases that need no explaining.
+CREATE OR REPLACE FUNCTION public.n400_log_cta_decision(
+  p_eligible_ctas text[] DEFAULT '{}',
+  p_selected_cta  text   DEFAULT NULL,
+  p_reason        text   DEFAULT NULL
+) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_user uuid := auth.uid();
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
+  INSERT INTO n400_cta_decision_log (user_id, eligible_ctas, selected_cta, reason)
+  VALUES (v_user, p_eligible_ctas, p_selected_cta, p_reason);
+END; $$;
+
+-- ── impression: stamps the 7-day cap and emits the event ───────────────────
 CREATE OR REPLACE FUNCTION public.n400_mark_cta_shown(
   p_cta_id        text,
   p_variant       text DEFAULT 'a',
-  p_surface       text DEFAULT NULL,   -- 'results' | 'dashboard'
-  p_eligible_ctas text[] DEFAULT '{}',
-  p_reason        text DEFAULT NULL
+  p_surface       text DEFAULT NULL    -- 'results' | 'dashboard'
 ) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -89,16 +106,17 @@ BEGIN
     RAISE EXCEPTION 'unknown cta %/%', p_cta_id, p_variant;
   END IF;
 
-  -- The 7-day cap (spec §4.1 rule 1) counts IMPRESSIONS, not evaluations —
-  -- a CTA the user never saw must not burn the week.
+  -- The 7-day cap (spec §4.1 rule 1) is stamped ONLY here, on a real
+  -- impression. The evaluator selecting a CTA is not enough: a decision the
+  -- user never actually saw — tab closed mid-load, card unmounted before
+  -- paint, flag flipped between decision and render — must not consume the
+  -- week. Callers must invoke this from the rendered card, never from the
+  -- evaluation path.
   INSERT INTO n400_lead_profiles (user_id) VALUES (v_user)
   ON CONFLICT (user_id) DO NOTHING;
   UPDATE n400_lead_profiles
   SET last_growth_prompt_at = now(), updated_at = now()
   WHERE user_id = v_user;
-
-  INSERT INTO n400_cta_decision_log (user_id, eligible_ctas, selected_cta, reason)
-  VALUES (v_user, p_eligible_ctas, p_cta_id, p_reason);
 
   -- group_key rides in the payload because the scoring rule
   -- dismissed_consultation_cta_3 already reads payload->>'group', and the G4
@@ -194,10 +212,12 @@ CREATE POLICY "n400 growth events own insert client types" ON public.n400_growth
     AND event_type IN ('checklist_viewed','consultation_form_opened')
   );
 
-REVOKE EXECUTE ON FUNCTION public.n400_mark_cta_shown(text, text, text, text[], text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.n400_log_cta_decision(text[], text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.n400_mark_cta_shown(text, text, text) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.n400_dismiss_cta(text, text, text) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.n400_click_cta(text, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.n400_mark_cta_shown(text, text, text, text[], text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.n400_log_cta_decision(text[], text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.n400_mark_cta_shown(text, text, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.n400_dismiss_cta(text, text, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.n400_click_cta(text, text, text) TO authenticated;
 ```
@@ -218,11 +238,26 @@ BEGIN
   PERFORM set_config('request.jwt.claims',
     json_build_object('sub', v_user, 'role', 'authenticated')::text, true);
 
-  -- ① mark_shown: stamps the cap, logs the decision, emits with group_key
-  PERFORM n400_mark_cta_shown('s7_civics_done', 'a', 'dashboard',
-                              ARRAY['s7_civics_done'], 'priority_s7_civics_done');
+  -- ① the log records a NO-SHOW run. This is the case the table exists for,
+  --    and the one an impression-coupled log would silently miss.
+  PERFORM n400_log_cta_decision(ARRAY['s9_final_review'], NULL, 'cap_7d_active');
+  IF NOT EXISTS (SELECT 1 FROM n400_cta_decision_log
+                 WHERE user_id = v_user AND selected_cta IS NULL
+                   AND reason = 'cap_7d_active'
+                   AND 's9_final_review' = ANY(eligible_ctas)) THEN
+    RAISE EXCEPTION 'TEST_FAIL: no-show decision not logged';
+  END IF;
+
+  -- ①b logging must NOT stamp the cap — only a real impression does.
   SELECT last_growth_prompt_at INTO v_stamp FROM n400_lead_profiles WHERE user_id = v_user;
-  IF v_stamp IS NULL THEN RAISE EXCEPTION 'TEST_FAIL: cap not stamped'; END IF;
+  IF v_stamp IS NOT NULL THEN
+    RAISE EXCEPTION 'TEST_FAIL: logging a decision consumed the 7-day cap';
+  END IF;
+
+  -- ② mark_shown: stamps the cap and emits with group_key
+  PERFORM n400_mark_cta_shown('s7_civics_done', 'a', 'dashboard');
+  SELECT last_growth_prompt_at INTO v_stamp FROM n400_lead_profiles WHERE user_id = v_user;
+  IF v_stamp IS NULL THEN RAISE EXCEPTION 'TEST_FAIL: cap not stamped on impression'; END IF;
 
   SELECT count(*) INTO v_n FROM n400_growth_events
   WHERE user_id = v_user AND event_type = 'cta_shown'
@@ -231,13 +266,7 @@ BEGIN
     AND payload->>'surface' = 'dashboard';
   IF v_n <> 1 THEN RAISE EXCEPTION 'TEST_FAIL: % cta_shown events', v_n; END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM n400_cta_decision_log
-                 WHERE user_id = v_user AND selected_cta = 's7_civics_done'
-                   AND 's7_civics_done' = ANY(eligible_ctas)) THEN
-    RAISE EXCEPTION 'TEST_FAIL: decision not logged';
-  END IF;
-
-  -- ② dismiss + click emit with the group the scoring rule reads
+  -- ③ dismiss + click emit with the group the scoring rule reads
   PERFORM n400_dismiss_cta('s1_mock_ready', 'a', 'results');
   IF NOT EXISTS (SELECT 1 FROM n400_growth_events
                  WHERE user_id = v_user AND event_type = 'cta_dismissed'
@@ -250,9 +279,9 @@ BEGIN
     RAISE EXCEPTION 'TEST_FAIL: no cta_clicked event';
   END IF;
 
-  -- ③ unknown cta must raise
+  -- ④ unknown cta must raise
   BEGIN
-    PERFORM n400_mark_cta_shown('does_not_exist', 'a', 'dashboard', '{}', NULL);
+    PERFORM n400_mark_cta_shown('does_not_exist', 'a', 'dashboard');
   EXCEPTION WHEN others THEN v_blocked := true;
   END;
   IF NOT v_blocked THEN RAISE EXCEPTION 'TEST_FAIL: unknown cta accepted'; END IF;
@@ -1209,9 +1238,6 @@ export interface ActiveCta {
   bodyEn: string;  bodyVi: string;
   labelEn: string; labelVi: string;
   action: CtaAction;
-  /** Everything the impression RPC needs to log the decision. */
-  eligible: string[];
-  reason: string;
 }
 
 export async function loadCtaState(
@@ -1251,6 +1277,18 @@ export async function loadCtaState(
     now: ctx.now,
   });
 
+  // Spec §1.5b: log EVERY evaluation, including the ones that show nothing —
+  // "why did this user see nothing?" is the question this table exists to
+  // answer, so the no-show runs are the valuable rows. Awaited rather than
+  // fired-and-forgotten: a serverless function can freeze the moment the
+  // response is returned, and a debug trail with holes in it is worse than
+  // none. One insert; the n400_24 GC trigger keeps the table bounded.
+  await supabase.rpc('n400_log_cta_decision', {
+    p_eligible_ctas: decision.eligible,
+    p_selected_cta: decision.def?.cta_id ?? null,
+    p_reason: decision.reason,
+  });
+
   if (!decision.def) return null;
   const d = decision.def;
   return {
@@ -1260,8 +1298,6 @@ export async function loadCtaState(
     bodyEn: d.body_en,  bodyVi: d.body_vi,
     labelEn: d.cta_label_en, labelVi: d.cta_label_vi,
     action: d.action,
-    eligible: decision.eligible,
-    reason: decision.reason,
   };
 }
 ```
@@ -1422,12 +1458,16 @@ git commit -m "feat(n400-growth): split the growth read path into shared context
 import { getAuthedServerClient } from './server-client';
 import type { PromptSurface } from './profiling';
 
+/**
+ * Call ONLY from a rendered card. This stamps the 7-day cap, so invoking it
+ * from the evaluation path would let a CTA the user never saw consume the
+ * week. The decision itself was already logged at evaluation time by
+ * loadCtaState — this records the impression, not the decision.
+ */
 export async function markCtaShown(
   ctaId: string,
   variant: string,
   surface: PromptSurface,
-  eligible: string[],
-  reason: string,
 ): Promise<void> {
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return;
@@ -1435,8 +1475,6 @@ export async function markCtaShown(
     p_cta_id: ctaId,
     p_variant: variant,
     p_surface: surface,
-    p_eligible_ctas: eligible,
-    p_reason: reason,
   });
 }
 
@@ -1540,15 +1578,17 @@ export function GrowthCtaCard({ cta, onDone }: { cta: ActiveCta; onDone: () => v
   const [busy, setBusy] = useState(false);
   const shownFor = useRef<string | null>(null);
 
-  // One impression per CTA. This is also what stamps the 7-day cap, so it must
-  // fire when the card actually renders — never at decision time.
+  // One impression per CTA, fired from the mounted card — this is the moment
+  // the 7-day cap gets stamped, so it must happen here and nowhere earlier.
+  // A CTA the evaluator picked but the user never actually saw leaves the cap
+  // untouched and simply gets picked again next time.
   useEffect(() => {
     if (shownFor.current === cta.ctaId) return;
     shownFor.current = cta.ctaId;
-    void markCtaShown(cta.ctaId, cta.variant, cta.surface, cta.eligible, cta.reason).catch(() => {
+    void markCtaShown(cta.ctaId, cta.variant, cta.surface).catch(() => {
       // Best-effort funnel logging — never break a learning screen over it.
     });
-  }, [cta.ctaId, cta.variant, cta.surface, cta.eligible, cta.reason]);
+  }, [cta.ctaId, cta.variant, cta.surface]);
 
   const title = lang === 'en' ? cta.titleEn : cta.titleVi;
   const body = lang === 'en' ? cta.bodyEn : cta.bodyVi;
@@ -1716,9 +1756,9 @@ Per [[n400-visual-verification-recipe]]: run the real app, auth never hydrates o
 
 Run `cd apps/website && npm run dev`, sign in with a **non-admin** test account (the admin read policies broaden RLS — see the G2 post-review fix), then check:
 
-1. Dashboard with `cta_engine` on and no eligible scenario → **nothing renders**, layout unchanged. `n400_cta_decision_log` gets a row only on impression, so an empty dashboard writes nothing.
+1. Dashboard with `cta_engine` on and no eligible scenario → **nothing renders**, layout unchanged — but `n400_cta_decision_log` still gets a row with `selected_cta IS NULL` and `reason = 'no_eligible'`. Confirm that row exists; a silent no-show is the failure mode this table is meant to prevent. Confirm `last_growth_prompt_at` is still NULL: evaluating must never consume the cap.
 2. Force S7 eligible (a test account that has seen all civics) → the CTA card appears under the hero with "Chúc mừng bạn!" and a "Bắt đầu Phỏng vấn thử" button; clicking navigates to the mock test and writes one `cta_clicked`.
-3. `n400_lead_profiles.last_growth_prompt_at` is stamped **only after the card rendered**, not on page load without a card.
+3. `n400_lead_profiles.last_growth_prompt_at` is stamped **only after the card actually rendered**, never on a page load where the evaluator picked a CTA but nothing reached the screen. Cross-check against the decision log: a run logged with a non-null `selected_cta` whose card never mounted must leave the timestamp untouched.
 4. Dismiss the card → it disappears; a `cta_dismissed` event exists with `payload->>'group' = 'education'`; reloading does not bring it back (cooldown).
 5. With both `profiling` and `cta_engine` on and a question due → the **question** renders, not the CTA (one ask per screen).
 6. Turn `cta_engine` off → CTA gone, profiling card unaffected.
@@ -1764,8 +1804,8 @@ git commit -m "docs: mark growth engine G3a shipped in roadmap"
 ## Self-review notes (already applied)
 
 - **Spec coverage:** §4.1 rules 1–7 → Task 4 (rule 6's escalation ladder is the seeded `priority` column plus per-scenario conditions, not separate code — called out in the evaluator header so no one adds a second ordering mechanism); §4.2 scenarios S1–S7+S9 → Task 4 conditions + Task 2 signals; §1.5b decision log → Task 1 (write + retention) and Task 4 (`eligible`/`reason` are evaluator outputs, so the log is never a second source of truth); §1.6 config-driven copy → Tasks 5–7 read `n400_cta_definitions`, dict carries chrome only; §1.7 one endpoint → Task 5. **Deferred by scope guard:** §4.3 checklist page (G3c), §5 booking (G3b), §6–7 internal_app + funnel view (G4).
-- **Type consistency:** `CtaDefinition`/`CtaEvent`/`CtaInputs`/`CtaDecision`/`CtaAction`/`CtaGroup` defined once in Task 4 and imported everywhere; `LearningSignals` defined in Task 2 and consumed by Tasks 4–5; `GrowthContext` defined in Task 5 Step 1 and consumed by both loaders; `ActiveCta` lives in `cta-state.ts` and is imported by Task 7's card; `GrowthState`/`assembleGrowthState` live in `growth-state-shape.ts` so the `'use server'` module can export only async functions; RPC arg names `p_cta_id/p_variant/p_surface/p_eligible_ctas/p_reason` match between Task 1 SQL and Task 6 `.rpc()` calls; `PromptSurface`/`GradedEvent`/`PromptState`/`LeadProfileAnswers` reused from G2 rather than redeclared.
+- **Type consistency:** `CtaDefinition`/`CtaEvent`/`CtaInputs`/`CtaDecision`/`CtaAction`/`CtaGroup` defined once in Task 4 and imported everywhere; `LearningSignals` defined in Task 2 and consumed by Tasks 4–5; `GrowthContext` defined in Task 5 Step 1 and consumed by both loaders; `ActiveCta` lives in `cta-state.ts` and is imported by Task 7's card; `GrowthState`/`assembleGrowthState` live in `growth-state-shape.ts` so the `'use server'` module can export only async functions; RPC arg names match their call sites — `p_eligible_ctas/p_selected_cta/p_reason` on `n400_log_cta_decision` (Task 1 SQL ↔ Task 5 `cta-state.ts`), and `p_cta_id/p_variant/p_surface` on the three funnel RPCs (Task 1 SQL ↔ Task 6 `cta-actions.ts`); `ActiveCta` deliberately carries **no** `eligible`/`reason`, since the decision is logged server-side at evaluation time and the card only reports an impression; `PromptSurface`/`GradedEvent`/`PromptState`/`LeadProfileAnswers` reused from G2 rather than redeclared.
 - **Decomposition (added after review, 2026-07-20):** the read path is four modules — `growth-context.ts` (shared rows, fetched once), `prompt-state.ts`, `cta-state.ts`, `growth-state.ts` (orchestration only). This was originally one file, and writing it that way hid a real defect: `loadProfilingInputs` and `loadLearningSignals` each fetched `n400_growth_events`, and both halves fetched `n400_lead_profiles`, so the "one load, two decisions" claim was false. The context layer makes it true and gives G3b/G3c/G4 a place to add loaders without growing the orchestrator. Guard rail: **if `growth-state.ts` ever contains a `.from(...)` call again, the decomposition has been undone.**
-- **Known judgment calls (locked here, don't re-litigate mid-execution):** the CTA decision is **server-side** and never trusts client signals (spec §1.7) — the cost is Task 2's loader, and the drift risk that buys is contained by Task 3's test; group mute is a **rolling 30-day window** rather than a permanent flag, so it self-heals without a state table; the 7-day cap is stamped on **impression**, not on decision, so a CTA the user never saw does not burn the week; when both a question and a CTA are available the **question wins**, because a profiling answer improves every later CTA decision.
+- **Known judgment calls (locked here, don't re-litigate mid-execution):** the CTA decision is **server-side** and never trusts client signals (spec §1.7) — the cost is Task 2's loader, and the drift risk that buys is contained by Task 3's test; group mute is a **rolling 30-day window** rather than a permanent flag, so it self-heals without a state table; the 7-day cap is stamped **only after a CTA is actually rendered (impression), never when the evaluator merely selects it**, so a decision that never reaches the user's screen does not consume the cooldown — and, kept deliberately separate from that, `n400_cta_decision_log` is written on **every** evaluation including the no-shows, because "why did this user see nothing?" is the question that table exists to answer and an impression-coupled log would record only the cases needing no explanation; when both a question and a CTA are available the **question wins**, because a profiling answer improves every later CTA decision.
 - **Two hazards flagged inline rather than assumed away:** Task 2 must import the app's existing totals/constants rather than inventing numbers, and must verify column names against the live schema; Task 7 must verify the three route hrefs and reconsider passing the whole dict across the server boundary.
 - **Carried debt this plan pays down:** G2's double fetch of the graded-event log (Task 5 loads once for both evaluators), and the last client-writable scoring-relevant event type, `cta_dismissed` (Task 1 finishes what `n400_23` started).
