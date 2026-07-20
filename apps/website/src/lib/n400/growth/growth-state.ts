@@ -17,7 +17,7 @@ import { loadCtaState } from './cta-state';
 import { assembleGrowthState, type GrowthState } from './growth-state-shape';
 import type { CtaAction } from './cta';
 import type { PromptSurface } from './profiling';
-import type { N400Dict } from '../i18n/vi';
+import { vi } from '../i18n/vi';
 
 export type { GrowthState } from './growth-state-shape';
 
@@ -32,10 +32,13 @@ function availableActions(flags: Map<string, FeatureFlag>, userId: string): Set<
   return actions;
 }
 
-export async function getGrowthState(
-  surface: PromptSurface,
-  dict: N400Dict,
-): Promise<GrowthState> {
+// The server always sources its own dict (Vietnamese) here rather than taking
+// one from the caller: vi.ts is ~48KB, and passing it from a client component
+// into this 'use server' action would serialize the whole dict over the wire
+// on every mount. deriveReadiness only uses dict for criterion label strings,
+// none of which this path renders (only readiness.ready is consumed) — so a
+// language-fixed dict here is safe, not a hidden i18n regression.
+export async function getGrowthState(surface: PromptSurface): Promise<GrowthState> {
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return EMPTY;
 
@@ -54,7 +57,7 @@ export async function getGrowthState(
   const [prompt, cta] = await Promise.all([
     profilingOn ? loadPromptState(supabase, ctx, surface) : Promise.resolve(null),
     ctaOn
-      ? loadCtaState(supabase, ctx, surface, availableActions(flags, user.id), dict)
+      ? loadCtaState(supabase, ctx, surface, availableActions(flags, user.id), vi)
       : Promise.resolve(null),
   ]);
 

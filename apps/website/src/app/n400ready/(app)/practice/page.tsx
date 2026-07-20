@@ -40,7 +40,7 @@ import { pendingMockReviewIds } from '@/lib/n400/hero-recommendation';
 import { useRouter } from 'next/navigation';
 import { PracticeSessionSummary } from '@/components/n400/PracticeSessionSummary';
 import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNotice';
-import { GrowthPromptSlot } from '@/components/n400/GrowthPromptSlot';
+import { GrowthSlot } from '@/components/n400/GrowthSlot';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
 
@@ -491,7 +491,7 @@ export default function PracticePage() {
           elapsedSec={elapsedSec}
           topCategory={topCategory ? N400_CATEGORY_LABELS[topCategory] : null}
           sessionsToday={{ done: sessionsToday, goal: DAILY_SESSIONS_GOAL }}
-          footer={<GrowthPromptSlot surface="results" />}
+          footer={<GrowthSlot surface="results" />}
         />
       </div>
     );

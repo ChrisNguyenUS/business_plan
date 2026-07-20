@@ -32,7 +32,7 @@ import {
   Target,
 } from 'lucide-react';
 import { Card } from '@/components/n400/ui';
-import { GrowthPromptSlot } from '@/components/n400/GrowthPromptSlot';
+import { GrowthSlot } from '@/components/n400/GrowthSlot';
 import { useGrowthProfile } from '@/lib/n400/growth/use-growth-profile';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getShortName } from '@/lib/profile-utils';
@@ -363,7 +363,7 @@ export default function DashboardPage() {
 
       {/* 1b. Growth soft card (Level 1) — only appears for a skipped question
           whose snooze expired; flags off → renders nothing. */}
-      <GrowthPromptSlot surface="dashboard" />
+      <GrowthSlot surface="dashboard" />
 
       {/* 2. TODAY'S GOALS + SUGGESTION FOR YOU */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-5 xl:tall:gap-5">
