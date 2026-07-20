@@ -46,6 +46,7 @@ Migrations mới đặt tại `apps/website/supabase/migrations/` theo pattern `
 ```sql
 id uuid pk, user_id uuid → auth.users,
 event_type text,          -- taxonomy §1.5
+event_version int default 1,  -- bump khi đổi shape payload của event_type đó; consumer đọc theo version, không phá compatibility
 payload jsonb default '{}',
 created_at timestamptz default now()
 ```
@@ -64,6 +65,7 @@ filing_timeline text,      -- 30d | 3m | 6m | exploring
 interview_scheduled boolean,
 interview_date date,
 wants_guidance text,       -- yes | maybe | no
+service_interest text[] default '{}',  -- future-ready, hiện để trống; values: n400 | passport | family_petition | tax | insurance | business
 lead_score int default 0,  -- computed, không cho client update
 lead_status text,          -- cold | warm | hot | sales_ready (derived, denorm để query)
 consultation_requested_at timestamptz,
@@ -101,10 +103,14 @@ name text, phone text,
 preferred_time text,      -- khung giờ user chọn
 topic text,               -- n400_review | interview_prep | writing | speaking | other
 source_cta text,          -- CTA nào dẫn tới booking (attribution)
-status text default 'new',-- new → contacted → booked → done | no_show | cancelled
+status text default 'new',-- pipeline: new → contacted → booked → done | no_show | cancelled
+outcome text,             -- kết quả kinh doanh, set sau khi done: won | lost | follow_up
+outcome_note text,        -- staff ghi chú kết quả
 note text,                -- staff ghi chú
 created_at, updated_at
 ```
+
+`status` và `outcome` tách riêng có chủ đích: status trả lời "buổi tư vấn diễn ra chưa", outcome trả lời "có thành khách không". Conversion thật = `outcome = won` / tổng request — không đếm bằng `done`. `won` → mở flow Convert to Client (§6); `follow_up` → hiện trong inbox với reminder.
 
 RLS: user insert + đọc request của mình; staff đọc/update tất cả.
 
@@ -115,6 +121,20 @@ RLS: user insert + đọc request của mình; staff đọc/update tất cả.
 **Client-ghi:** `cta_shown`, `cta_dismissed`, `cta_clicked` (payload: cta_id), `prompt_answered`, `prompt_skipped` (payload: question_key), `checklist_viewed`, `consultation_form_opened`.
 
 **Giữ chỗ (chưa emit):** `app_shared`, `review_left`, `friend_invited`, `push_disabled`.
+
+### 1.5b `n400_cta_decision_log` (debug, không phải analytics)
+
+Mỗi lần engine chạy `evaluateCta` ghi 1 dòng:
+
+```sql
+id uuid pk, user_id uuid,
+evaluated_at timestamptz default now(),
+eligible_ctas text[],     -- các CTA thỏa điều kiện tại thời điểm đó
+selected_cta text,        -- CTA thắng (null nếu không hiện gì)
+reason text               -- vd 'cap_7d_active', 'group_muted', 'priority_S4', 'no_eligible'
+```
+
+Trả lời câu "tại sao user này không thấy CTA?" trong 1 query. Đây là **debug data**: volume cao (1 dòng/lần load Dashboard), retention 30 ngày (scheduled cleanup hoặc xóa lúc ghi theo xác suất) — analytics dài hạn đã có `cta_shown/clicked` events lo. RLS: chỉ staff đọc.
 
 ### 1.6 Config tables (marketing chỉnh không cần deploy)
 
@@ -147,7 +167,15 @@ n400_prompt_definitions    -- câu hỏi profiling
   snooze_days int default 6, snooze_sessions int default 3,
   sort_order int, enabled boolean default true,
   updated_at
+
+n400_feature_flags         -- kill switch + rollout, có từ G1
+  flag_key text pk,        -- growth_engine | cta_engine | profiling | filing_checklist | booking_form
+  enabled boolean default false,
+  rollout_pct int default 100,  -- 0–100; user thuộc rollout nếu hash(user_id, flag_key) % 100 < rollout_pct
+  note text, updated_at
 ```
+
+Engine check flags ở đầu `getGrowthState` và `processEvent`: flag tắt → feature đó im lặng hoàn toàn (events học tập vẫn ghi bình thường — chỉ tắt phần growth UI/CTA). Rollout theo % cho phép bật dần theo user, deterministic nên user không bị bật/tắt chập chờn.
 
 RLS: mọi user đọc (client cần render copy); chỉ staff ghi. Editing surface: giai đoạn đầu chỉnh qua Supabase dashboard; editor UI trong internal_app thuộc G4.
 
@@ -163,7 +191,7 @@ Trách nhiệm (5 nhiệm vụ, 1 pipeline):
 growth-engine/
   ingest.ts      -- ingestEvent(): validate + append n400_growth_events
   scoring.ts     -- recomputeScore(): đọc events + growth_rules → lead_score
-  cta.ts         -- evaluateCta(): đọc events/profile + cta_definitions → CTA nào hiện (hoặc null)
+  cta.ts         -- evaluateCta(): đọc events/profile + cta_definitions → CTA nào hiện (hoặc null); ghi n400_cta_decision_log mỗi lần chạy
   profiling.ts   -- evaluatePrompt(): đọc prompts state + definitions → câu hỏi active (hoặc null)
   notify.ts      -- staff notifications (Resend): Sales Ready, consultation request
   index.ts       -- processEvent() = ingest → recompute → notify nếu vượt ngưỡng
@@ -313,8 +341,8 @@ Mỗi lần hiện/tắt ghi `cta_shown` / `cta_dismissed` / `cta_clicked` với
 Trang mới trong internal_app (staff-only):
 
 - **Lead list** từ `n400_leads_view`: tên, email, effective score, lead_status (Cold/Warm/Hot/Sales Ready), journey_stage, weak areas, last active, ngày interview (nếu có). Sort mặc định: score giảm dần. Filter theo status.
-- **Lead detail**: timeline events chính + lịch sử CTA + câu trả lời profiling.
-- **Consultation Requests inbox**: pipeline status, staff note, một click đổi status.
+- **Lead detail = Timeline dọc** (sales nhìn 30 giây là hiểu khách): render từ `n400_growth_events` theo thời gian — Signup → Address → Practice → Mock (kèm điểm) → Prompt answered (kèm câu trả lời) → CTA shown/clicked → Consultation request → Outcome. Kèm panel tóm tắt: stage, status, score, weak areas, attribution (first/last touch).
+- **Consultation Requests inbox**: pipeline status + outcome (won/lost/follow_up), staff note, một click đổi status; follow_up có reminder; won mở Convert to Client.
 - **Convert to Client**: nút link lead → bảng `clients` sẵn có (client↔user link đã có từ migration `004_client_user_link.sql`).
 - **Email notify staff** (Resend): khi lead vượt ngưỡng Sales Ready (chỉ bắn 1 lần/lead) và khi có consultation request mới.
 
@@ -331,7 +359,7 @@ Toàn bộ KPI tính từ `n400_growth_events` + các bảng lead — **không t
 
 Chạy song song Website Phase 4. Mỗi phase 1 branch, ship độc lập:
 
-- **G1 — Nền data + engine core**: migrations (7 bảng: 4 data + 3 config, seed rules/definitions, views, functions), attribution capture (cookie → first/last touch), growth-engine module (ingest + scoring), mở rộng finalize RPCs để emit events, backfill điểm cơ bản cho user hiện có (account/onboarding/address/practice/mock từ data lịch sử), RLS. Không có UI. *Ship xong là data + attribution tích lũy ngay.*
+- **G1 — Nền data + engine core**: migrations (9 bảng: 5 data + 4 config, gồm `feature_flags` seed enabled=false → ship an toàn, bật dần), attribution capture (cookie → first/last touch), growth-engine module (ingest + scoring), mở rộng finalize RPCs để emit events (kèm `event_version`), backfill điểm cơ bản cho user hiện có (account/onboarding/address/practice/mock từ data lịch sử), RLS. Không có UI. *Ship xong là data + attribution tích lũy ngay.*
 - **G2 — Conversation model**: `evaluatePrompt` trong engine + Level 2 card (màn kết quả) + Level 1 soft card (Home) + Level 3 Dashboard reaction (hero-recommendation tầng intent) + RPC `answer_profile_prompt`. Copy/trigger đọc từ `n400_prompt_definitions`.
 - **G3 — CTA engine + booking**: `evaluateCta` trong engine (đọc `n400_cta_definitions`, A/B variant assignment), endpoint `getGrowthState`, 8 scenarios seed, N-400 Filing Checklist page, form booking + confirm + Calendly link + Resend notify + CAPI `Lead`.
 - **G4 — internal_app Leads + analytics + rules editor**: trang Leads (ma trận stage × status), consultation inbox, convert-to-client, staff email notify, section thống kê funnel (gồm `n400_cta_funnel` per variant + UTM breakdown), editor UI cho `growth_rules`/`cta_definitions`/`prompt_definitions` để marketing chỉnh không cần Supabase dashboard.
