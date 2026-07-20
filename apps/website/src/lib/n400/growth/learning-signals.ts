@@ -116,7 +116,7 @@ export async function loadLearningSignals(
       .eq('user_id', userId),
   ]);
 
-  const quizzes = (quizzesRes.data ?? []) as unknown as DbQuiz[];
+  const quizzes = (quizzesRes.data ?? []) as DbQuiz[];
   const quizModeById = new Map(quizzes.map((q) => [q.id, q.mode as QuizMode]));
 
   // Chronological order matters: masteredQuestionIds is last-attempt-wins, so
