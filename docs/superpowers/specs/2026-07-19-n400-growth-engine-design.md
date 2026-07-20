@@ -54,6 +54,8 @@ created_at timestamptz default now()
 - **Server-ghi** (đáng tin, dùng cho scoring): mở rộng các finalize RPCs sẵn có (`finalize_mock_attempt`, finalize practice/section/streak) để insert event trong cùng transaction. Client không thể tự ghi các event loại này.
 - **Client-ghi** (UI telemetry, không cộng điểm trực tiếp trừ nhóm CTA/prompt): `cta_shown`, `cta_dismissed`, `cta_clicked`, `prompt_answered`, `prompt_skipped`, `checklist_viewed`.
 - RLS: user insert được event thuộc whitelist client-side cho chính mình; user đọc event của mình; staff (`is_admin()`-style helper, tránh recursion) đọc tất cả. Không ai update/delete.
+- **Idempotency:** nhóm event one-shot (`account_created`, `onboarding_completed`, `address_entered`) có partial unique index trên `(user_id, event_type)` — chống duplicate ở tầng storage bất kể trigger re-fire, migration replay, hay profiles bị re-create/sync.
+- **Scale note (chưa làm, chỉ ghi nhớ):** khi bảng vượt ~10M rows → partition theo tháng trên `created_at`. Recompute score hiện là full-recompute mỗi event — đủ dùng; khi có thêm nguồn event (email/website/messenger/tax/insurance) → chuyển incremental scoring hoặc background queue (đã đánh dấu TODO(scale) trong function).
 
 ### 1.2 `n400_lead_profiles` (1 dòng/user)
 

@@ -42,6 +42,12 @@ CREATE INDEX IF NOT EXISTS idx_n400_growth_events_user_type
   ON public.n400_growth_events (user_id, event_type);
 CREATE INDEX IF NOT EXISTS idx_n400_growth_events_created
   ON public.n400_growth_events (created_at);
+-- One-shot lifecycle events must never duplicate — not if profiles gets
+-- re-created/synced from auth, not on trigger re-fire, not on migration
+-- replay. Enforced at the storage layer, not just in emitter code.
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_n400_growth_events_once
+  ON public.n400_growth_events (user_id, event_type)
+  WHERE event_type IN ('account_created','onboarding_completed','address_entered');
 
 -- ── n400_lead_profiles (1 row/user) ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.n400_lead_profiles (
@@ -389,6 +395,10 @@ RETURNS int LANGUAGE sql STABLE SET search_path = public AS
 $$ SELECT COALESCE((SELECT (params->>p_param)::int FROM n400_growth_rules WHERE rule_key = p_key AND enabled), p_default) $$;
 
 -- ── recompute ────────────────────────────────────────────────────────────────
+-- TODO(scale): full recompute per event is O(events-per-user) and fine at
+-- current volume. If event sources multiply (email, website, messenger,
+-- insurance, tax), switch to incremental scoring or a background queue
+-- before this becomes the hot path.
 CREATE OR REPLACE FUNCTION public.recompute_n400_lead_score(p_user_id uuid)
 RETURNS void
 LANGUAGE plpgsql
@@ -599,17 +609,25 @@ git commit -m "feat(n400-growth): config-driven lead scoring, leads view with re
 
 CREATE OR REPLACE FUNCTION public.n400_emit_growth_event(
   p_user uuid, p_type text, p_payload jsonb DEFAULT '{}'::jsonb,
-  p_version int DEFAULT 1, p_at timestamptz DEFAULT now()
-) RETURNS void LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  p_version int DEFAULT 1, p_at timestamptz DEFAULT now(),
+  p_once boolean DEFAULT false
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
   INSERT INTO n400_growth_events (user_id, event_type, event_version, payload, created_at)
   VALUES (p_user, p_type, p_version, p_payload, p_at);
+EXCEPTION WHEN unique_violation THEN
+  -- One-shot types (uniq_n400_growth_events_once) dedupe silently when the
+  -- caller declares the intent; anything else re-raises — a surprise
+  -- collision must be heard, not swallowed.
+  IF NOT p_once THEN RAISE; END IF;
+END;
 $$;
 
 -- account_created: any new identity in the shared profiles table
 CREATE OR REPLACE FUNCTION public.n400_trg_account_created()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  PERFORM n400_emit_growth_event(NEW.id, 'account_created');
+  PERFORM n400_emit_growth_event(NEW.id, 'account_created', p_once => true);
   RETURN NEW;
 END; $$;
 CREATE TRIGGER trg_n400_growth_account_created
@@ -622,14 +640,14 @@ CREATE OR REPLACE FUNCTION public.n400_trg_user_profile_events()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    PERFORM n400_emit_growth_event(NEW.user_id, 'onboarding_completed');
+    PERFORM n400_emit_growth_event(NEW.user_id, 'onboarding_completed', p_once => true);
     IF NEW.state_code IS NOT NULL THEN
       PERFORM n400_emit_growth_event(NEW.user_id, 'address_entered',
-        jsonb_build_object('state', NEW.state_code, 'city', NEW.city));
+        jsonb_build_object('state', NEW.state_code, 'city', NEW.city), p_once => true);
     END IF;
   ELSIF TG_OP = 'UPDATE' AND OLD.state_code IS NULL AND NEW.state_code IS NOT NULL THEN
     PERFORM n400_emit_growth_event(NEW.user_id, 'address_entered',
-      jsonb_build_object('state', NEW.state_code, 'city', NEW.city));
+      jsonb_build_object('state', NEW.state_code, 'city', NEW.city), p_once => true);
   END IF;
   RETURN NEW;
 END; $$;
@@ -696,14 +714,16 @@ INSERT INTO public.n400_growth_events (user_id, event_type, created_at)
 SELECT p.id, 'account_created', p.created_at
 FROM public.profiles p
 WHERE NOT EXISTS (SELECT 1 FROM public.n400_growth_events e
-                  WHERE e.user_id = p.id AND e.event_type = 'account_created');
+                  WHERE e.user_id = p.id AND e.event_type = 'account_created')
+ON CONFLICT DO NOTHING;
 
 -- onboarding_completed + address_entered from n400_user_profile
 INSERT INTO public.n400_growth_events (user_id, event_type, created_at)
 SELECT up.user_id, 'onboarding_completed', up.created_at
 FROM public.n400_user_profile up
 WHERE NOT EXISTS (SELECT 1 FROM public.n400_growth_events e
-                  WHERE e.user_id = up.user_id AND e.event_type = 'onboarding_completed');
+                  WHERE e.user_id = up.user_id AND e.event_type = 'onboarding_completed')
+ON CONFLICT DO NOTHING;
 
 INSERT INTO public.n400_growth_events (user_id, event_type, payload, created_at)
 SELECT up.user_id, 'address_entered',
@@ -711,7 +731,8 @@ SELECT up.user_id, 'address_entered',
 FROM public.n400_user_profile up
 WHERE up.state_code IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM public.n400_growth_events e
-                  WHERE e.user_id = up.user_id AND e.event_type = 'address_entered');
+                  WHERE e.user_id = up.user_id AND e.event_type = 'address_entered')
+ON CONFLICT DO NOTHING;
 
 -- graded attempts (practice + mock; flashcard excluded)
 INSERT INTO public.n400_growth_events (user_id, event_type, payload, created_at)
@@ -1304,3 +1325,5 @@ git commit -m "docs: mark growth engine G1 shipped in roadmap"
 - **Deviation from spec wording:** events are emitted by triggers, not by editing finalize RPC bodies — same guarantees (server-side, transactional), zero risk of drifting the streak/badge logic that lives in those functions.
 - **Type consistency:** `TouchData`/`AttributionCookie` used identically in Tasks 7–8; `isClientEventType` defined in Task 6, used in Task 9; RLS whitelist (Task 1) matches `CLIENT_EVENT_TYPES` (Task 6).
 - **Score write path:** only `recompute_n400_lead_score` (definer) updates `lead_score`; no user-facing UPDATE policy exists on `n400_lead_profiles`.
+- **Idempotency (review round 2):** one-shot events (`account_created`, `onboarding_completed`, `address_entered`) are deduped by partial unique index `uniq_n400_growth_events_once` + `p_once` in the emitter — safe against profiles re-create/sync, trigger re-fire, and migration replay. Attempt events are naturally guarded by the `completed_at NULL→NOT NULL` transition + `attempt_id` NOT EXISTS in backfill.
+- **Scale notes (deliberately deferred):** full recompute per event → TODO(scale) comment in `recompute_n400_lead_score` (incremental scoring / background queue when event sources multiply). `n400_growth_events` partitioning → documented in spec §1.1: partition by month when the table passes ~10M rows. No code now (YAGNI).
