@@ -63,11 +63,18 @@ export async function loadCtaState(
   // fired-and-forgotten: a serverless function can freeze the moment the
   // response is returned, and a debug trail with holes in it is worse than
   // none. One insert; the n400_24 GC trigger keeps the table bounded.
-  await supabase.rpc('n400_log_cta_decision', {
-    p_eligible_ctas: decision.eligible,
-    p_selected_cta: decision.def?.cta_id ?? null,
-    p_reason: decision.reason,
-  });
+  // Caught: a debug-log write failing (e.g. a network blip) must never take
+  // down the actual CTA decision alongside it, or the prompt half running in
+  // the same Promise.all in getGrowthState.
+  try {
+    await supabase.rpc('n400_log_cta_decision', {
+      p_eligible_ctas: decision.eligible,
+      p_selected_cta: decision.def?.cta_id ?? null,
+      p_reason: decision.reason,
+    });
+  } catch {
+    // Best-effort debug trail — never break a learning screen over it.
+  }
 
   if (!decision.def) return null;
   const d = decision.def;

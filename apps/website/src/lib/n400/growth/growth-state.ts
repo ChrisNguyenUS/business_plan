@@ -10,7 +10,7 @@
 // undone — put the query in a loader.
 
 import { getAuthedServerClient } from './server-client';
-import { isFeatureOn, type FeatureFlag } from './flags';
+import { isFeatureOn, loadFeatureFlags, type FeatureFlag } from './flags';
 import { loadGrowthContext } from './growth-context';
 import { loadPromptState } from './prompt-state';
 import { loadCtaState } from './cta-state';
@@ -39,11 +39,9 @@ export async function getGrowthState(
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return EMPTY;
 
-  const { data: flagRows } = await supabase
-    .from('n400_feature_flags')
-    .select('flag_key, enabled, rollout_pct')
-    .in('flag_key', ['growth_engine', 'profiling', 'cta_engine', 'booking_form', 'filing_checklist']);
-  const flags = new Map((flagRows ?? []).map((f: FeatureFlag) => [f.flag_key, f]));
+  const flags = await loadFeatureFlags(supabase, [
+    'growth_engine', 'profiling', 'cta_engine', 'booking_form', 'filing_checklist',
+  ]);
 
   if (!isFeatureOn(flags.get('growth_engine'), user.id)) return EMPTY;
   const profilingOn = isFeatureOn(flags.get('profiling'), user.id);
