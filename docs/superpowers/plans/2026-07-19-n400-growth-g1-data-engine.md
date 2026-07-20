@@ -623,7 +623,14 @@ EXCEPTION WHEN unique_violation THEN
 END;
 $$;
 
--- account_created: any new identity in the shared profiles table
+-- account_created: any new identity in the shared profiles table.
+-- Deliberately on profiles, NOT auth.users: profiles is created 1-1 in the
+-- same transaction (on_auth_user_created → handle_new_user_v2), so semantics
+-- and timestamp are identical, while a second app trigger directly on the
+-- Supabase-managed auth schema would add a failure point to the signup path.
+-- Duplicates from any future profiles re-create/sync are blocked by
+-- uniq_n400_growth_events_once. REVISIT only if profiles ever stops being
+-- trigger-created 1-1 (e.g. batch import/sync) — then move this to auth.users.
 CREATE OR REPLACE FUNCTION public.n400_trg_account_created()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
