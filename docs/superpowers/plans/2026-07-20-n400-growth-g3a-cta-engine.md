@@ -4,7 +4,23 @@
 
 **Goal:** Ship the behavior-driven CTA engine — a pure `selectActiveCta()` evaluator over the 8 scenarios already seeded in G1, the 7 hard rules (7-day cap, per-CTA cooldown, dismiss→snooze, 3-dismiss→30-day group mute, converted→consultation off forever, escalation ladder, priority), the `n400_cta_decision_log` debug trail, and a single `getGrowthState()` endpoint that serves both the CTA and the G2 prompt in one round trip — all gated behind the `cta_engine` + `growth_engine` flags (currently OFF).
 
-**Architecture:** Mirrors the G2 profiling shape exactly. A **pure evaluator** `src/lib/n400/growth/cta.ts` takes fully-loaded inputs and returns `{ def, reason, eligible }` or `null` with a reason — no I/O, fully unit-tested. A server action `growth-state.ts` loads the inputs and calls **both** evaluators (`selectActivePrompt` from G2 + `selectActiveCta`), returning `{ prompt, cta }`; this replaces `getActivePrompt` as the one read the UI makes, which also retires the G2 perf debt of fetching the event log twice. All CTA writes go through SECURITY DEFINER RPCs (`n400_mark_cta_shown` / `n400_dismiss_cta` / `n400_click_cta`), and the same migration moves the `cta_*` event types off the client RLS whitelist — the same treatment `prompt_*` got in `n400_23`. **No new tables:** dismiss counts, group mutes and cooldowns are all derived from the `cta_*` events already in `n400_growth_events`; the 7-day cap reads `n400_lead_profiles.last_growth_prompt_at`, which already exists.
+**Architecture:** Mirrors the G2 profiling shape exactly. A **pure evaluator** `src/lib/n400/growth/cta.ts` takes fully-loaded inputs and returns `{ def, reason, eligible }` or `null` with a reason — no I/O, fully unit-tested.
+
+The read path is deliberately split four ways so `getGrowthState` stays an **orchestrator, not a God Service** — G3b (booking), G3c (checklist) and G4 (recommendation, lead status) all add loaders here, and a single file accumulating them would be unmaintainable within two phases:
+
+```
+growth-context.ts  loadGrowthContext()  → the rows BOTH halves need, fetched ONCE
+       │                                  (lead profile, growth events, prompt states)
+       ├── prompt-state.ts  loadPromptState(ctx)  → ActivePrompt | null
+       ├── cta-state.ts     loadCtaState(ctx)     → ActiveCta | null
+       ▼
+growth-state.ts    getGrowthState() = flags → context → both loaders in parallel
+                                      → assembleGrowthState() (pure, unit-tested)
+```
+
+The shared context layer is what actually retires the G2 perf debt: `n400_lead_profiles` and the graded `n400_growth_events` log are each read **once per page**, not once per evaluator. Precedence between a question and a CTA lives in the pure `assembleGrowthState()` rather than buried in a return statement, so it is testable. Each new phase adds one loader file and one line in the orchestrator.
+
+All CTA writes go through SECURITY DEFINER RPCs (`n400_mark_cta_shown` / `n400_dismiss_cta` / `n400_click_cta`), and the same migration moves the `cta_*` event types off the client RLS whitelist — the same treatment `prompt_*` got in `n400_23`. **No new tables:** dismiss counts, group mutes and cooldowns are all derived from the `cta_*` events already in `n400_growth_events`; the 7-day cap reads `n400_lead_profiles.last_growth_prompt_at`, which already exists.
 
 **Tech Stack:** Next.js 16 App Router (⚠️ read `node_modules/next/dist/docs/` per `apps/website/AGENTS.md` before writing route/server-action code), Supabase (Postgres + RLS), vitest (pure modules only — no component test rig). Monorepo isolation: **all edits confined to `apps/website/`** (+ this docs folder + `docs/ROADMAP.md`). Migrations applied to remote project `ffsrlmtqzlidnuitkdvw` via `mcp__supabase__apply_migration`. Branch: `feat/n400-growth-g3a` (one branch per phase, per spec §8).
 
@@ -373,6 +389,7 @@ import { deriveReadiness, type ReadinessSignals } from '../readiness';
 import { deriveSectionGradedTally, deriveSectionMastered, type SectionAttempt, type SectionKey } from '../section-progress';
 import type { MockResult, SectionMockResult } from '../storage';
 import type { N400Dict } from '../i18n/vi';
+import type { GradedEvent } from './profiling';
 
 export interface LearningSignals {
   /** readiness.ready — the S9 condition. */
@@ -389,12 +406,19 @@ export interface LearningSignals {
   allCivicsSectionsDone: boolean;
 }
 
+/**
+ * `gradedEvents` comes from the shared growth context — this module must NOT
+ * re-read n400_growth_events. Both halves of the growth state need that log,
+ * and reading it per-evaluator is exactly the duplication the context layer
+ * exists to remove.
+ */
 export async function loadLearningSignals(
   supabase: SupabaseClient,
   userId: string,
   dict: N400Dict,
+  gradedEvents: readonly GradedEvent[],
 ): Promise<LearningSignals> {
-  const [profileRes, attemptsRes, sectionRes, sectionMockRes, eventsRes] = await Promise.all([
+  const [profileRes, attemptsRes, sectionRes, sectionMockRes] = await Promise.all([
     supabase
       .from('n400_user_profile')
       .select('mastered_question_ids, seen_question_ids')
@@ -414,11 +438,6 @@ export async function loadLearningSignals(
       .from('n400_section_mock_results')
       .select('section, score, total, passed, completed_at')
       .eq('user_id', userId),
-    supabase
-      .from('n400_growth_events')
-      .select('created_at')
-      .eq('user_id', userId)
-      .in('event_type', ['practice_completed', 'mock_completed']),
   ]);
 
   const sectionAttempts = (sectionRes.data ?? []) as SectionAttempt[];
@@ -460,9 +479,8 @@ export async function loadLearningSignals(
     }
   }
 
-  const practiceDays = new Set(
-    ((eventsRes.data ?? []) as { created_at: string }[]).map((e) => e.created_at.slice(0, 10)),
-  ).size;
+  // UTC day, the same currency G2's evaluator and the SQL scoring both use.
+  const practiceDays = new Set(gradedEvents.map((e) => e.at.slice(0, 10))).size;
 
   return {
     readinessReady: readiness.ready,
@@ -1006,41 +1024,187 @@ git commit -m "feat(n400-growth): pure CTA evaluator with the seven hard rules a
 
 ---
 
-### Task 5: `getGrowthState` — one endpoint for prompt + CTA
+### Task 5: The read path — shared context, two loaders, one orchestrator
 
 **Files:**
+- Create: `apps/website/src/lib/n400/growth/growth-context.ts`
+- Create: `apps/website/src/lib/n400/growth/profiling-inputs.ts`
+- Create: `apps/website/src/lib/n400/growth/prompt-state.ts`
+- Create: `apps/website/src/lib/n400/growth/cta-state.ts`
 - Create: `apps/website/src/lib/n400/growth/growth-state.ts`
+- Test: `apps/website/src/lib/n400/growth/growth-state.test.ts`
 - Modify: `apps/website/src/lib/n400/growth/prompt-actions.ts`
 
-Spec §1.7: "Dashboard/result screen gọi 1 endpoint duy nhất (`getGrowthState`)". Folding the G2 `getActivePrompt` into it also retires that phase's known perf debt — the graded-event log is fetched once per page instead of once per evaluator.
+Spec §1.7: "Dashboard/result screen gọi 1 endpoint duy nhất (`getGrowthState`)". One endpoint, but **not** one function — the loaders are separate modules so G3b/G3c/G4 add files instead of growing this one. `getGrowthState` only orchestrates: flags → context → loaders → assemble.
 
-- [ ] **Step 1: Write `growth-state.ts`**
+The shared context is what makes the "one read" claim true. Without it, `loadProfilingInputs` and `loadLearningSignals` each fetch `n400_growth_events`, and both halves fetch `n400_lead_profiles` — the exact duplication this phase is supposed to remove.
+
+- [ ] **Step 1: Write `growth-context.ts` — the rows both halves need**
 
 ```ts
-'use server';
-
-// The one growth read the UI makes (spec §1.7). Loads everything both
-// evaluators need in a single pass, runs them, and returns what to render.
-// Flags off → both halves come back null and the UI renders nothing.
+// Shared read layer for the growth state. Every table BOTH the prompt half and
+// the CTA half touch is fetched here, exactly once per page.
 //
-// This supersedes getActivePrompt(): the graded-event log used to be fetched
-// once per evaluator, which was the G2 perf note. One load, two decisions.
+// Adding a phase means adding a loader that consumes this context — not
+// another round of the same queries. If a new loader needs a table nothing
+// else reads, it fetches that table itself; only genuinely shared rows belong
+// here.
 
-import { getAuthedServerClient } from './server-client';
-import { isFeatureOn, type FeatureFlag } from './flags';
-import { loadLearningSignals } from './learning-signals';
-import { selectActiveCta, type CtaAction, type CtaDefinition } from './cta';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { GradedEvent, PromptState } from './profiling';
 import type { CtaEvent } from './cta';
+import type { LeadProfileAnswers } from './profiling';
+
+export interface GrowthContext {
+  userId: string;
+  /** The profiling answer columns + the CTA gating columns, one row, one read. */
+  leadProfile:
+    | (LeadProfileAnswers & {
+        journey_stage: string | null;
+        last_growth_prompt_at: string | null;
+        consultation_booked_at: string | null;
+      })
+    | null;
+  /** practice_completed / mock_completed — prompt triggers AND S2 practice days. */
+  gradedEvents: GradedEvent[];
+  /** cta_shown / cta_dismissed / cta_clicked — cooldowns, mutes, funnel. */
+  ctaEvents: CtaEvent[];
+  /** Per-question prompt state; also carries S3's "journey last confirmed" clock. */
+  promptStates: PromptState[];
+  now: Date;
+}
+
+export async function loadGrowthContext(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<GrowthContext> {
+  // Explicit user_id filters everywhere — RLS is not a scope on these tables:
+  // admins can read every row, which silently breaks maybeSingle() and
+  // inflates event counts. (Learned the hard way in the G2 post-review fix.)
+  const [leadRes, eventsRes, statesRes] = await Promise.all([
+    supabase
+      .from('n400_lead_profiles')
+      .select('n400_filed, filing_timeline, interview_scheduled, interview_date, wants_guidance, journey_stage, last_growth_prompt_at, consultation_booked_at')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('n400_growth_events')
+      .select('event_type, payload, created_at')
+      .eq('user_id', userId)
+      .in('event_type', [
+        'practice_completed', 'mock_completed',
+        'cta_shown', 'cta_dismissed', 'cta_clicked',
+      ]),
+    supabase
+      .from('n400_profile_prompts')
+      .select('question_key, answered_at, skipped_at, snooze_until')
+      .eq('user_id', userId),
+  ]);
+
+  const rows = (eventsRes.data ?? []) as {
+    event_type: string;
+    payload: { cta_id?: string; group?: string } | null;
+    created_at: string;
+  }[];
+
+  const gradedEvents: GradedEvent[] = rows
+    .filter((e) => e.event_type === 'practice_completed' || e.event_type === 'mock_completed')
+    .map((e) => ({ type: e.event_type as GradedEvent['type'], at: e.created_at }));
+
+  const ctaEvents: CtaEvent[] = rows
+    .filter((e) => e.event_type.startsWith('cta_'))
+    .map((e) => ({
+      type: e.event_type as CtaEvent['type'],
+      ctaId: e.payload?.cta_id ?? '',
+      group: (e.payload?.group ?? 'consultation') as CtaEvent['group'],
+      at: e.created_at,
+    }));
+
+  return {
+    userId,
+    leadProfile: (leadRes.data ?? null) as GrowthContext['leadProfile'],
+    gradedEvents,
+    ctaEvents,
+    promptStates: (statesRes.data ?? []) as PromptState[],
+    now: new Date(),
+  };
+}
+```
+
+- [ ] **Step 2: Extract `profiling-inputs.ts` out of `prompt-actions.ts`**
+
+`prompt-actions.ts` currently keeps `loadInputs` and `toActive` private, and it starts with `'use server'` — which means **every export must be an async function**, so the synchronous `toActive` cannot simply be exported from there. Move both into a new non-`'use server'` module `profiling-inputs.ts`:
+
+- move `loadInputs` → export it as `loadProfilingInputs`, but change its signature to build from the context instead of re-querying:
+
+```ts
+export async function loadProfilingInputs(
+  supabase: SupabaseClient,
+  ctx: GrowthContext,
+): Promise<ProfilingInputs> {
+  const { data } = await supabase
+    .from('n400_prompt_definitions')
+    .select('question_key, variant, text_en, text_vi, options, trigger, depends_on, snooze_days, snooze_sessions, sort_order')
+    .eq('enabled', true);
+  return {
+    userId: ctx.userId,
+    definitions: (data ?? []) as PromptDefinition[],
+    states: ctx.promptStates,
+    answers: answersFromLeadProfile(ctx.leadProfile),
+    gradedEvents: ctx.gradedEvents,
+    now: ctx.now,
+  };
+}
+```
+
+- move `toActive` → export it as `toActivePrompt` (unchanged body)
+- move the `ActivePrompt` interface here too
+- in `prompt-actions.ts`, import both from `./profiling-inputs`, update the call sites in `answerProfilePrompt` (which must now call `loadGrowthContext` first), and re-export the type so existing importers keep compiling:
+
+```ts
+export type { ActivePrompt } from './profiling-inputs';
+```
+
+- [ ] **Step 3: Write `prompt-state.ts`**
+
+```ts
+// Prompt half of the growth state. Owns exactly one decision: which profiling
+// question, if any, this surface should show.
+
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { selectActivePrompt, type PromptSurface } from './profiling';
+import { loadProfilingInputs, toActivePrompt, type ActivePrompt } from './profiling-inputs';
+import type { GrowthContext } from './growth-context';
+
+export async function loadPromptState(
+  supabase: SupabaseClient,
+  ctx: GrowthContext,
+  surface: PromptSurface,
+): Promise<ActivePrompt | null> {
+  const decision = selectActivePrompt(await loadProfilingInputs(supabase, ctx), surface);
+  return decision ? toActivePrompt(decision, surface) : null;
+}
+```
+
+- [ ] **Step 4: Write `cta-state.ts`**
+
+```ts
+// CTA half of the growth state. Owns exactly one decision: which CTA, if any,
+// this surface should show — and carries the decision trail the impression RPC
+// needs for n400_cta_decision_log.
+
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { selectActiveCta, type CtaAction, type CtaDefinition, type CtaGroup } from './cta';
+import { loadLearningSignals } from './learning-signals';
 import type { PromptSurface } from './profiling';
-import { loadProfilingInputs, toActivePrompt, type ActivePrompt } from './prompt-actions';
-import { selectActivePrompt } from './profiling';
+import type { GrowthContext } from './growth-context';
 import type { N400Dict } from '../i18n/vi';
 
 export interface ActiveCta {
   ctaId: string;
   variant: string;
   surface: PromptSurface;
-  groupKey: 'consultation' | 'education';
+  groupKey: CtaGroup;
   titleEn: string; titleVi: string;
   bodyEn: string;  bodyVi: string;
   labelEn: string; labelVi: string;
@@ -1049,6 +1213,82 @@ export interface ActiveCta {
   eligible: string[];
   reason: string;
 }
+
+export async function loadCtaState(
+  supabase: SupabaseClient,
+  ctx: GrowthContext,
+  surface: PromptSurface,
+  availableActions: Set<CtaAction>,
+  dict: N400Dict,
+): Promise<ActiveCta | null> {
+  const [defsRes, signals] = await Promise.all([
+    supabase
+      .from('n400_cta_definitions')
+      .select('cta_id, variant, group_key, title_en, title_vi, body_en, body_vi, cta_label_en, cta_label_vi, action, conditions, priority, cooldown_days')
+      .eq('enabled', true),
+    loadLearningSignals(supabase, ctx.userId, dict, ctx.gradedEvents),
+  ]);
+
+  // S3 asks "how long has this stage been stale?" — the newest profiling
+  // answer is when the user last confirmed anything about their journey.
+  const journeyConfirmedAt = ctx.promptStates
+    .map((s) => s.answered_at)
+    .filter((a): a is string => Boolean(a))
+    .sort()
+    .pop() ?? null;
+
+  const decision = selectActiveCta({
+    userId: ctx.userId,
+    definitions: (defsRes.data ?? []) as CtaDefinition[],
+    signals,
+    events: ctx.ctaEvents,
+    journeyStage: ctx.leadProfile?.journey_stage ?? null,
+    interviewDate: ctx.leadProfile?.interview_date ?? null,
+    journeyConfirmedAt,
+    lastGrowthPromptAt: ctx.leadProfile?.last_growth_prompt_at ?? null,
+    consultationBookedAt: ctx.leadProfile?.consultation_booked_at ?? null,
+    availableActions,
+    now: ctx.now,
+  });
+
+  if (!decision.def) return null;
+  const d = decision.def;
+  return {
+    ctaId: d.cta_id, variant: d.variant, surface,
+    groupKey: d.group_key,
+    titleEn: d.title_en, titleVi: d.title_vi,
+    bodyEn: d.body_en,  bodyVi: d.body_vi,
+    labelEn: d.cta_label_en, labelVi: d.cta_label_vi,
+    action: d.action,
+    eligible: decision.eligible,
+    reason: decision.reason,
+  };
+}
+```
+
+- [ ] **Step 5: Write `growth-state.ts` — orchestration only**
+
+```ts
+'use server';
+
+// The one growth read the UI makes (spec §1.7) — and nothing more. This file
+// orchestrates: check flags, load the shared context, run each half's loader,
+// assemble. It must NOT grow query logic.
+//
+// Adding a phase = adding a loader module + one line here. G3b (booking),
+// G3c (checklist) and G4 (recommendation, lead status) all land this way. If
+// this file starts holding .from(...) calls again, the decomposition has been
+// undone — put the query in a loader.
+
+import { getAuthedServerClient } from './server-client';
+import { isFeatureOn, type FeatureFlag } from './flags';
+import { loadGrowthContext } from './growth-context';
+import { loadPromptState } from './prompt-state';
+import { loadCtaState, type ActiveCta } from './cta-state';
+import type { CtaAction } from './cta';
+import type { PromptSurface } from './profiling';
+import type { ActivePrompt } from './profiling-inputs';
+import type { N400Dict } from '../i18n/vi';
 
 export interface GrowthState {
   prompt: ActivePrompt | null;
@@ -1066,6 +1306,22 @@ function availableActions(flags: Map<string, FeatureFlag>, userId: string): Set<
   return actions;
 }
 
+/**
+ * One question OR one CTA, never both (spec §4.1 rule 2 in spirit: one ask per
+ * screen). The question wins — a profiling answer makes every later CTA
+ * decision better, so asking first compounds.
+ *
+ * Pure on purpose: this is the precedence rule, and it is the thing most
+ * likely to change when G3b/G3c add surfaces. Keeping it out of the I/O path
+ * is what makes it testable.
+ */
+export function assembleGrowthState(
+  prompt: ActivePrompt | null,
+  cta: ActiveCta | null,
+): GrowthState {
+  return prompt ? { prompt, cta: null } : { prompt: null, cta };
+}
+
 export async function getGrowthState(
   surface: PromptSurface,
   dict: N400Dict,
@@ -1080,120 +1336,70 @@ export async function getGrowthState(
   const flags = new Map((flagRows ?? []).map((f: FeatureFlag) => [f.flag_key, f]));
 
   if (!isFeatureOn(flags.get('growth_engine'), user.id)) return EMPTY;
-
   const profilingOn = isFeatureOn(flags.get('profiling'), user.id);
   const ctaOn = isFeatureOn(flags.get('cta_engine'), user.id);
   if (!profilingOn && !ctaOn) return EMPTY;
 
-  const profilingInputs = await loadProfilingInputs(supabase, user);
+  const ctx = await loadGrowthContext(supabase, user.id);
 
-  let prompt: ActivePrompt | null = null;
-  if (profilingOn) {
-    const decision = selectActivePrompt(profilingInputs, surface);
-    prompt = decision ? toActivePrompt(decision, surface) : null;
-  }
+  // The two halves are independent once the context exists — run them together.
+  const [prompt, cta] = await Promise.all([
+    profilingOn ? loadPromptState(supabase, ctx, surface) : Promise.resolve(null),
+    ctaOn
+      ? loadCtaState(supabase, ctx, surface, availableActions(flags, user.id), dict)
+      : Promise.resolve(null),
+  ]);
 
-  let cta: ActiveCta | null = null;
-  if (ctaOn) {
-    const [defsRes, leadRes, ctaEventsRes, promptStateRes, signals] = await Promise.all([
-      supabase
-        .from('n400_cta_definitions')
-        .select('cta_id, variant, group_key, title_en, title_vi, body_en, body_vi, cta_label_en, cta_label_vi, action, conditions, priority, cooldown_days')
-        .eq('enabled', true),
-      supabase
-        .from('n400_lead_profiles')
-        .select('journey_stage, interview_date, last_growth_prompt_at, consultation_booked_at')
-        .eq('user_id', user.id)
-        .maybeSingle(),
-      supabase
-        .from('n400_growth_events')
-        .select('event_type, payload, created_at')
-        .eq('user_id', user.id)
-        .in('event_type', ['cta_shown', 'cta_dismissed', 'cta_clicked']),
-      supabase
-        .from('n400_profile_prompts')
-        .select('answered_at')
-        .eq('user_id', user.id)
-        .order('answered_at', { ascending: false })
-        .limit(1),
-      loadLearningSignals(supabase, user.id, dict),
-    ]);
-
-    const events: CtaEvent[] = ((ctaEventsRes.data ?? []) as {
-      event_type: string; payload: { cta_id?: string; group?: string }; created_at: string;
-    }[]).map((e) => ({
-      type: e.event_type as CtaEvent['type'],
-      ctaId: e.payload?.cta_id ?? '',
-      group: (e.payload?.group ?? 'consultation') as CtaEvent['group'],
-      at: e.created_at,
-    }));
-
-    const decision = selectActiveCta({
-      userId: user.id,
-      definitions: (defsRes.data ?? []) as CtaDefinition[],
-      signals,
-      events,
-      journeyStage: leadRes.data?.journey_stage ?? null,
-      interviewDate: leadRes.data?.interview_date ?? null,
-      // S3 asks "how long has this stage been stale?" — the newest profiling
-      // answer is when the user last confirmed anything about their journey.
-      journeyConfirmedAt: promptStateRes.data?.[0]?.answered_at ?? null,
-      lastGrowthPromptAt: leadRes.data?.last_growth_prompt_at ?? null,
-      consultationBookedAt: leadRes.data?.consultation_booked_at ?? null,
-      availableActions: availableActions(flags, user.id),
-      now: new Date(),
-    });
-
-    if (decision.def) {
-      const d = decision.def;
-      cta = {
-        ctaId: d.cta_id, variant: d.variant, surface,
-        groupKey: d.group_key,
-        titleEn: d.title_en, titleVi: d.title_vi,
-        bodyEn: d.body_en,  bodyVi: d.body_vi,
-        labelEn: d.cta_label_en, labelVi: d.cta_label_vi,
-        action: d.action,
-        eligible: decision.eligible,
-        reason: decision.reason,
-      };
-    }
-  }
-
-  // One question OR one CTA, never both at once (spec §4.1 rule 2 in spirit:
-  // one ask per screen). The prompt wins — a profiling answer makes the next
-  // CTA decision better, so asking first compounds.
-  return prompt ? { prompt, cta: null } : { prompt: null, cta };
+  return assembleGrowthState(prompt, cta);
 }
 ```
 
-- [ ] **Step 2: Export the two helpers `growth-state.ts` needs from `prompt-actions.ts`**
+⚠️ `'use server'` requires **every export to be an async function**. `assembleGrowthState` is synchronous, so if this file keeps the `'use server'` directive the export will fail to compile. Two ways out — pick the first: move `assembleGrowthState` (and `GrowthState`) into `growth-context.ts` or a small `growth-state-shape.ts` and re-export the *type* only, keeping `growth-state.ts` as a pure action module. Whichever you choose, the pure function must live somewhere importable by the test in Step 6.
 
-`prompt-actions.ts` currently keeps `loadInputs` and `toActive` private. Rename and export them so there is exactly one loader:
+- [ ] **Step 6: Test the precedence rule**
 
-- rename `loadInputs` → `loadProfilingInputs` and add `export`
-- rename `toActive` → `toActivePrompt` and add `export`
-- update the three internal call sites (`getActivePrompt`, `answerProfilePrompt`) to the new names
-
-⚠️ `prompt-actions.ts` starts with `'use server'`, which means **every export must be an async function**. `toActivePrompt` is synchronous, so it cannot be exported from that file. Move both helpers into a new non-`'use server'` module `apps/website/src/lib/n400/growth/profiling-inputs.ts` instead, and have `prompt-actions.ts` and `growth-state.ts` both import from there. Move the `ActivePrompt` interface with them; re-export the type from `prompt-actions.ts` so existing importers (`GrowthPromptCard`, `GrowthPromptSlot`) keep compiling:
+`growth-state.test.ts`:
 
 ```ts
-export type { ActivePrompt } from './profiling-inputs';
+import { describe, expect, it } from 'vitest';
+import { assembleGrowthState } from './growth-state-shape';
+import type { ActivePrompt } from './profiling-inputs';
+import type { ActiveCta } from './cta-state';
+
+const PROMPT = { questionKey: 'filed', variant: 'a', surface: 'results' } as ActivePrompt;
+const CTA = { ctaId: 's7_civics_done', variant: 'a', surface: 'results' } as ActiveCta;
+
+describe('assembleGrowthState', () => {
+  it('shows the question when both are available — asking first compounds', () => {
+    expect(assembleGrowthState(PROMPT, CTA)).toEqual({ prompt: PROMPT, cta: null });
+  });
+
+  it('falls through to the CTA when there is no question', () => {
+    expect(assembleGrowthState(null, CTA)).toEqual({ prompt: null, cta: CTA });
+  });
+
+  it('renders nothing when neither half has anything', () => {
+    expect(assembleGrowthState(null, null)).toEqual({ prompt: null, cta: null });
+  });
+});
 ```
 
-- [ ] **Step 3: Delete `getActivePrompt`**
+⚠️ Import `assembleGrowthState` from wherever Step 5's `'use server'` note put it. The `as ActivePrompt` / `as ActiveCta` casts are deliberate — this function only ever passes the objects through, so the test should not have to construct full fixtures.
+
+- [ ] **Step 7: Delete `getActivePrompt`**
 
 It is superseded by `getGrowthState`. Task 7 updates its only caller (`GrowthPromptSlot`). Removing it now keeps the "one growth read" invariant real rather than aspirational.
 
-- [ ] **Step 4: Typecheck**
+- [ ] **Step 8: Typecheck + run the new test**
 
-Run: `cd apps/website && npx tsc --noEmit`
-Expected: one error in `GrowthPromptSlot.tsx` (it still imports `getActivePrompt`). That is Task 7's job — leave it. Everything else must be clean.
+Run: `cd apps/website && npx tsc --noEmit && npx vitest run src/lib/n400/growth/growth-state.test.ts`
+Expected: the new test passes, and typecheck reports **exactly one** error — `GrowthPromptSlot.tsx` still importing `getActivePrompt`. That is Task 7's job; leave it. Any other error means the decomposition is wired wrong.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add apps/website/src/lib/n400/growth/growth-state.ts apps/website/src/lib/n400/growth/profiling-inputs.ts apps/website/src/lib/n400/growth/prompt-actions.ts
-git commit -m "feat(n400-growth): getGrowthState serves prompt and CTA from one load"
+git add apps/website/src/lib/n400/growth/growth-context.ts apps/website/src/lib/n400/growth/profiling-inputs.ts apps/website/src/lib/n400/growth/prompt-state.ts apps/website/src/lib/n400/growth/cta-state.ts apps/website/src/lib/n400/growth/growth-state.ts apps/website/src/lib/n400/growth/growth-state-shape.ts apps/website/src/lib/n400/growth/growth-state.test.ts apps/website/src/lib/n400/growth/prompt-actions.ts
+git commit -m "feat(n400-growth): split the growth read path into shared context, two loaders and an orchestrator"
 ```
 
 ---
@@ -1318,7 +1524,7 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { clickCta, dismissCta, markCtaShown } from '@/lib/n400/growth/cta-actions';
-import type { ActiveCta } from '@/lib/n400/growth/growth-state';
+import type { ActiveCta } from '@/lib/n400/growth/cta-state';
 
 const ACTION_HREF: Record<ActiveCta['action'], string> = {
   // G3b replaces this with the real booking route; until booking_form is on,
@@ -1415,7 +1621,8 @@ export function GrowthCtaCard({ cta, onDone }: { cta: ActiveCta; onDone: () => v
 
 import { useEffect, useState } from 'react';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
-import { getGrowthState, type GrowthState } from '@/lib/n400/growth/growth-state';
+import { getGrowthState } from '@/lib/n400/growth/growth-state';
+import type { GrowthState } from '@/lib/n400/growth/growth-state-shape';
 import type { PromptSurface } from '@/lib/n400/growth/profiling';
 import { GrowthPromptCard } from './GrowthPromptCard';
 import { GrowthCtaCard } from './GrowthCtaCard';
@@ -1557,7 +1764,8 @@ git commit -m "docs: mark growth engine G3a shipped in roadmap"
 ## Self-review notes (already applied)
 
 - **Spec coverage:** §4.1 rules 1–7 → Task 4 (rule 6's escalation ladder is the seeded `priority` column plus per-scenario conditions, not separate code — called out in the evaluator header so no one adds a second ordering mechanism); §4.2 scenarios S1–S7+S9 → Task 4 conditions + Task 2 signals; §1.5b decision log → Task 1 (write + retention) and Task 4 (`eligible`/`reason` are evaluator outputs, so the log is never a second source of truth); §1.6 config-driven copy → Tasks 5–7 read `n400_cta_definitions`, dict carries chrome only; §1.7 one endpoint → Task 5. **Deferred by scope guard:** §4.3 checklist page (G3c), §5 booking (G3b), §6–7 internal_app + funnel view (G4).
-- **Type consistency:** `CtaDefinition`/`CtaEvent`/`CtaInputs`/`CtaDecision`/`CtaAction` defined once in Task 4 and imported everywhere; `LearningSignals` defined in Task 2 and consumed by Tasks 4–5; `ActiveCta` defined in Task 5 and consumed by Task 7; RPC arg names `p_cta_id/p_variant/p_surface/p_eligible_ctas/p_reason` match between Task 1 SQL and Task 6 `.rpc()` calls; `PromptSurface` reused from G2 rather than redeclared.
+- **Type consistency:** `CtaDefinition`/`CtaEvent`/`CtaInputs`/`CtaDecision`/`CtaAction`/`CtaGroup` defined once in Task 4 and imported everywhere; `LearningSignals` defined in Task 2 and consumed by Tasks 4–5; `GrowthContext` defined in Task 5 Step 1 and consumed by both loaders; `ActiveCta` lives in `cta-state.ts` and is imported by Task 7's card; `GrowthState`/`assembleGrowthState` live in `growth-state-shape.ts` so the `'use server'` module can export only async functions; RPC arg names `p_cta_id/p_variant/p_surface/p_eligible_ctas/p_reason` match between Task 1 SQL and Task 6 `.rpc()` calls; `PromptSurface`/`GradedEvent`/`PromptState`/`LeadProfileAnswers` reused from G2 rather than redeclared.
+- **Decomposition (added after review, 2026-07-20):** the read path is four modules — `growth-context.ts` (shared rows, fetched once), `prompt-state.ts`, `cta-state.ts`, `growth-state.ts` (orchestration only). This was originally one file, and writing it that way hid a real defect: `loadProfilingInputs` and `loadLearningSignals` each fetched `n400_growth_events`, and both halves fetched `n400_lead_profiles`, so the "one load, two decisions" claim was false. The context layer makes it true and gives G3b/G3c/G4 a place to add loaders without growing the orchestrator. Guard rail: **if `growth-state.ts` ever contains a `.from(...)` call again, the decomposition has been undone.**
 - **Known judgment calls (locked here, don't re-litigate mid-execution):** the CTA decision is **server-side** and never trusts client signals (spec §1.7) — the cost is Task 2's loader, and the drift risk that buys is contained by Task 3's test; group mute is a **rolling 30-day window** rather than a permanent flag, so it self-heals without a state table; the 7-day cap is stamped on **impression**, not on decision, so a CTA the user never saw does not burn the week; when both a question and a CTA are available the **question wins**, because a profiling answer improves every later CTA decision.
 - **Two hazards flagged inline rather than assumed away:** Task 2 must import the app's existing totals/constants rather than inventing numbers, and must verify column names against the live schema; Task 7 must verify the three route hrefs and reconsider passing the whole dict across the server boundary.
 - **Carried debt this plan pays down:** G2's double fetch of the graded-event log (Task 5 loads once for both evaluators), and the last client-writable scoring-relevant event type, `cta_dismissed` (Task 1 finishes what `n400_23` started).
