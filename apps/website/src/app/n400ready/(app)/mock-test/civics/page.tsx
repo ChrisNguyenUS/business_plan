@@ -40,6 +40,7 @@ import { MockResultScreen, type MockResultRow } from '@/components/n400/MockResu
 import { MockExamProgress, MockExamPanel, MockExamRulesCard } from '@/components/n400/mock-test-chrome';
 import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
+import { GrowthPromptSlot } from '@/components/n400/GrowthPromptSlot';
 import { useN400UserState, type MockResult } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
@@ -865,6 +866,8 @@ function Result({
         reviewHref={`/n400ready/practice?start=review`}
         hubHref={`/n400ready/mock-test`}
       />
+
+      <GrowthPromptSlot surface="results" />
     </div>
   );
 }

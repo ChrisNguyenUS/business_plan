@@ -1,0 +1,59 @@
+'use client';
+
+// Journey data for the dashboard hero intent tier (Level 3). Reads the user's
+// own n400_lead_profiles row + the growth_engine flag (both readable under
+// RLS). enabled=false → callers must leave the behavior ladder untouched.
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { isFeatureOn, type FeatureFlag } from './flags';
+
+export interface GrowthProfile {
+  enabled: boolean;
+  journeyStage: 'exploring' | 'preparing' | 'filed' | 'waiting_interview' | 'interview_scheduled' | null;
+  interviewDate: string | null;
+}
+
+const OFF: GrowthProfile = { enabled: false, journeyStage: null, interviewDate: null };
+
+export function useGrowthProfile(): GrowthProfile {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<GrowthProfile>(OFF);
+
+  useEffect(() => {
+    if (!user) {
+      setProfile(OFF);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [flagRes, leadRes] = await Promise.all([
+        supabase
+          .from('n400_feature_flags')
+          .select('flag_key, enabled, rollout_pct')
+          .eq('flag_key', 'growth_engine')
+          .maybeSingle(),
+        supabase
+          .from('n400_lead_profiles')
+          .select('journey_stage, interview_date')
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      if (!isFeatureOn((flagRes.data ?? null) as FeatureFlag | null, user.id)) {
+        setProfile(OFF);
+        return;
+      }
+      setProfile({
+        enabled: true,
+        journeyStage: (leadRes.data?.journey_stage ?? null) as GrowthProfile['journeyStage'],
+        interviewDate: leadRes.data?.interview_date ?? null,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  return profile;
+}

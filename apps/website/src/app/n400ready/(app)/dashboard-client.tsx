@@ -32,6 +32,8 @@ import {
   Target,
 } from 'lucide-react';
 import { Card } from '@/components/n400/ui';
+import { GrowthPromptSlot } from '@/components/n400/GrowthPromptSlot';
+import { useGrowthProfile } from '@/lib/n400/growth/use-growth-profile';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getShortName } from '@/lib/profile-utils';
 import { useN400UserState } from '@/lib/n400/user-state';
@@ -49,6 +51,7 @@ export default function DashboardPage() {
   const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const { profile } = useAuth();
+  const growth = useGrowthProfile();
   const badges = useN400Badges();
   const search = useSearchParams();
   const router = useRouter();
@@ -157,6 +160,8 @@ export default function DashboardPage() {
       sectionAttempts: state.sectionAttempts,
       goalsDone,
       goalsTotal: goals.length,
+      journeyStage: growth.enabled ? growth.journeyStage : null,
+      interviewDate: growth.enabled ? growth.interviewDate : null,
     },
     dict,
   );
@@ -351,6 +356,10 @@ export default function DashboardPage() {
 
         </Card>
       </div>
+
+      {/* 1b. Growth soft card (Level 1) — only appears for a skipped question
+          whose snooze expired; flags off → renders nothing. */}
+      <GrowthPromptSlot surface="dashboard" />
 
       {/* 2. TODAY'S GOALS + SUGGESTION FOR YOU */}
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-5 xl:tall:gap-5">

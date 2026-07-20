@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -68,6 +68,7 @@ export function PracticeSessionSummary({
   elapsedSec,
   topCategory,
   sessionsToday,
+  footer,
 }: {
   correct: number;
   total: number;
@@ -85,6 +86,12 @@ export function PracticeSessionSummary({
   topCategory?: { en: string; vi: string } | null;
   /** Sessions finished today — the progress card renders only when provided. */
   sessionsToday?: { done: number; goal: number } | null;
+  /**
+   * Optional extra content rendered as the last child inside the scrollable
+   * column (e.g. a growth prompt card). Must stay inside this component's
+   * own scroll region, not after it.
+   */
+  footer?: ReactNode;
 }) {
   const { dict, lang } = useN400Lang();
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
@@ -305,6 +312,8 @@ export function PracticeSessionSummary({
             </div>
           </section>
         ) : null}
+
+        {footer}
       </div>
     </div>
   );
