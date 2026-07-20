@@ -20,6 +20,7 @@ import type { N400Dict } from './i18n/vi';
 import { tFormat } from './i18n/format';
 
 export type HeroIntent =
+  | 'interview_mode'
   | 'start_civics'
   | 'review_mistakes'
   | 'goal_complete'
@@ -51,6 +52,12 @@ export interface HeroSignals {
   sectionAttempts: readonly SectionAttempt[];
   goalsDone: number;
   goalsTotal: number;
+  /** G2 growth intent tier — journey stage from profiling answers. Pass only
+      when the growth_engine flag is on for this user; undefined/null leaves
+      the behavior ladder untouched. */
+  journeyStage?: 'exploring' | 'preparing' | 'filed' | 'waiting_interview' | 'interview_scheduled' | null;
+  /** ISO date (yyyy-mm-dd) when known. */
+  interviewDate?: string | null;
 }
 
 export const MOCK_REVIEW_WINDOW_HOURS = 72;
@@ -153,7 +160,62 @@ function findStalestSection(
   return best;
 }
 
+/**
+ * Growth intent tier (spec §3.4) — sits ABOVE the behavior ladder: what the
+ * user TOLD us about their journey outranks what their practice data implies.
+ * Ordered by `priority` descending, first match wins. Lazy by construction:
+ * `match` runs only until one returns non-null.
+ *
+ * Priority scale is shared with n400_cta_definitions.priority (100 = final
+ * review, 90 = interview imminent, 80 = mock-ready…). G3 appends rows here —
+ * do not reintroduce inline if-branches.
+ */
+export interface GrowthIntentTier {
+  priority: number;
+  match: (
+    signals: HeroSignals,
+    dict: N400Dict,
+  ) => HeroRecommendation | null;
+}
+
+export const GROWTH_INTENT_TIERS: GrowthIntentTier[] = [
+  {
+    // 90 — the user told us the interview is scheduled. The dashboard flips to
+    // interview-priority mode immediately: this is the visible reward for
+    // answering the profiling question.
+    priority: 90,
+    match: (signals: HeroSignals, dict: N400Dict): HeroRecommendation | null => {
+      if (signals.journeyStage !== 'interview_scheduled') return null;
+      const t = dict.heroRec;
+      const days = signals.interviewDate
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(signals.interviewDate).getTime() - signals.now.getTime()) / DAY_MS,
+            ),
+          )
+        : null;
+      return {
+        intent: 'interview_mode',
+        emoji: '🔥',
+        title:
+          days !== null
+            ? tFormat(t.intent.interviewMode.titleWithDays, { days })
+            : t.intent.interviewMode.title,
+        subtitle: t.intent.interviewMode.subtitle,
+        cta: { label: t.cta.takeMockTest, href: '/mock-test' },
+        secondary: { label: t.intent.interviewMode.secondary, href: '/speaking/yes-no' },
+      };
+    },
+  },
+].sort((a, b) => b.priority - a.priority);
+
 export function recommendDailyHero(signals: HeroSignals, dict: N400Dict): HeroRecommendation {
+  for (const tier of GROWTH_INTENT_TIERS) {
+    const hit = tier.match(signals, dict);
+    if (hit) return hit;
+  }
+
   const {
     now,
     civicsSeen,

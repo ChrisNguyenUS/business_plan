@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   recommendDailyHero,
   pendingMockReviewIds,
+  GROWTH_INTENT_TIERS,
   type HeroSignals,
 } from './hero-recommendation';
 import type { QuestionAttempt, MockResult } from './storage';
@@ -194,5 +195,52 @@ describe('recommendDailyHero — priority ladder', () => {
     expect(rec.intent).toBe('continue_civics');
     expect(rec.title).toContain('Ôn lại');
     expect(rec.cta.href).toBe('/flashcards');
+  });
+});
+
+describe('interview_mode intent tier (G2 growth)', () => {
+  const baseSignals = {
+    now: new Date('2026-07-19T12:00:00Z'),
+    civicsSeen: 40,
+    civicsTotal: 128,
+    attempts: [
+      { questionId: 1, wasCorrect: true, mode: 'practice' as const, at: '2026-07-18T10:00:00Z' },
+    ],
+    mockResults: [],
+    sectionAttempts: [],
+    goalsDone: 0,
+    goalsTotal: 4,
+  };
+
+  it('overrides the behavior ladder when journey_stage is interview_scheduled', () => {
+    const got = recommendDailyHero(
+      { ...baseSignals, journeyStage: 'interview_scheduled', interviewDate: null },
+      vi,
+    );
+    expect(got.intent).toBe('interview_mode');
+    expect(got.cta.href).toBe('/mock-test');
+  });
+
+  it('shows a countdown when interview_date is known', () => {
+    const got = recommendDailyHero(
+      { ...baseSignals, journeyStage: 'interview_scheduled', interviewDate: '2026-07-29' },
+      vi,
+    );
+    expect(got.intent).toBe('interview_mode');
+    expect(got.title).toContain('10');
+  });
+
+  it('leaves the ladder unchanged for other stages and when absent', () => {
+    expect(recommendDailyHero({ ...baseSignals, journeyStage: 'preparing' }, vi).intent).not.toBe(
+      'interview_mode',
+    );
+    expect(recommendDailyHero(baseSignals, vi).intent).not.toBe('interview_mode');
+  });
+
+  // Locks the contract G3 depends on: adding a tier means appending a row,
+  // and evaluation order is priority-descending regardless of array order.
+  it('keeps the growth intent tiers ordered by descending priority', () => {
+    const priorities = GROWTH_INTENT_TIERS.map((t) => t.priority);
+    expect(priorities).toEqual([...priorities].sort((a, b) => b - a));
   });
 });
