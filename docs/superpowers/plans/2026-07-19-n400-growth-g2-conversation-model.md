@@ -4,7 +4,7 @@
 
 **Goal:** Ship the 3-level progressive-profiling conversation — Level 2 card under Practice/Mock results, Level 1 soft card on the Dashboard, Level 3 immediate Dashboard reaction (hero intent tier) — plus the `n400_answer_profile_prompt` RPC family, all gated behind the `profiling` + `growth_engine` feature flags (currently OFF).
 
-**Architecture:** Copy/triggers/snooze params live in `n400_prompt_definitions` (seeded in G1). A **pure evaluator** `selectActivePrompt()` in `src/lib/n400/growth/profiling.ts` decides which single question is active for a surface (`results` | `dashboard`); server actions in `prompt-actions.ts` load inputs and call it. All writes to `n400_lead_profiles` / `n400_profile_prompts` go through SECURITY DEFINER RPCs (the tables have no user write policies — G1 design). Answering fires a `prompt_answered` event whose AFTER INSERT trigger recomputes the lead score, so the RPC updates profile columns **before** inserting the event. The dashboard hero gets a new top "intent tier" (`journey_stage = 'interview_scheduled'` → interview mode) layered above the existing behavior ladder in `hero-recommendation.ts`.
+**Architecture:** Copy/triggers/snooze params live in `n400_prompt_definitions` (seeded in G1). A **pure evaluator** `selectActivePrompt()` in `src/lib/n400/growth/profiling.ts` returns the one active question for a surface (`results` | `dashboard`) **plus the `reason` it won**; server actions in `prompt-actions.ts` load inputs and call it. All writes to `n400_lead_profiles` / `n400_profile_prompts` go through SECURITY DEFINER RPCs (the tables have no user write policies — G1 design). Answering fires a `prompt_answered` event whose AFTER INSERT trigger recomputes the lead score, so the RPC updates profile columns **before** inserting the event. Every funnel event (`prompt_shown` → `prompt_answered` / `prompt_skipped`) carries `question_key`, `variant` and `surface`, so per-level and per-variant conversion is a single query on `n400_growth_events`. The dashboard hero gets a **priority-ordered growth intent tier** (`GROWTH_INTENT_TIERS`, one row today: `interview_scheduled` → interview mode) sitting above the existing behavior ladder in `hero-recommendation.ts` — G3 appends rows instead of editing control flow.
 
 **Tech Stack:** Next.js 16 App Router (⚠️ read `node_modules/next/dist/docs/` per `apps/website/AGENTS.md` before writing route/server-action code), Supabase (Postgres + RLS), vitest (pure modules only — no component test rig). Monorepo isolation: **all edits confined to `apps/website/`** (+ this docs folder + `docs/ROADMAP.md`). Migrations applied to remote project `ffsrlmtqzlidnuitkdvw` via `mcp__supabase__apply_migration`. Branch: `feat/n400-growth-g2` (one branch per phase, per spec §8).
 
@@ -125,7 +125,9 @@ git commit -m "fix(n400-growth): emit practice/mock events on the insert path, s
 CREATE OR REPLACE FUNCTION public.n400_answer_profile_prompt(
   p_question_key text,
   p_answer       text,
-  p_variant      text DEFAULT 'a'
+  p_variant      text DEFAULT 'a',
+  p_surface      text DEFAULT NULL   -- 'results' (L2) | 'dashboard' (L1); in every
+                                     -- event payload so per-level conversion is one query
 ) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -134,6 +136,9 @@ DECLARE
   v_date date;
 BEGIN
   IF v_user IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
+  IF p_surface IS NOT NULL AND p_surface NOT IN ('results','dashboard') THEN
+    RAISE EXCEPTION 'invalid surface %', p_surface;
+  END IF;
 
   SELECT * INTO v_def FROM n400_prompt_definitions
   WHERE question_key = p_question_key AND variant = p_variant AND enabled;
@@ -188,12 +193,13 @@ BEGIN
   -- written above.
   PERFORM n400_emit_growth_event(v_user, 'prompt_answered',
     jsonb_build_object('question_key', p_question_key, 'answer', p_answer,
-                       'variant', p_variant));
+                       'variant', p_variant, 'surface', p_surface));
 END; $$;
 
 CREATE OR REPLACE FUNCTION public.n400_skip_profile_prompt(
   p_question_key text,
-  p_variant      text DEFAULT 'a'
+  p_variant      text DEFAULT 'a',
+  p_surface      text DEFAULT NULL
 ) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -201,6 +207,9 @@ DECLARE
   v_days int;
 BEGIN
   IF v_user IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
+  IF p_surface IS NOT NULL AND p_surface NOT IN ('results','dashboard') THEN
+    RAISE EXCEPTION 'invalid surface %', p_surface;
+  END IF;
 
   SELECT snooze_days INTO v_days FROM n400_prompt_definitions
   WHERE question_key = p_question_key AND variant = p_variant AND enabled;
@@ -214,29 +223,43 @@ BEGIN
   SET skipped_at = now(), snooze_until = now() + make_interval(days => v_days);
 
   PERFORM n400_emit_growth_event(v_user, 'prompt_skipped',
-    jsonb_build_object('question_key', p_question_key, 'variant', p_variant));
+    jsonb_build_object('question_key', p_question_key, 'variant', p_variant,
+                       'surface', p_surface));
 END; $$;
 
 CREATE OR REPLACE FUNCTION public.n400_mark_prompt_shown(
-  p_question_key text
+  p_question_key text,
+  p_variant      text DEFAULT 'a',
+  p_surface      text DEFAULT NULL
 ) RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_user uuid := auth.uid();
 BEGIN
   IF v_user IS NULL THEN RAISE EXCEPTION 'unauthorized'; END IF;
+  IF p_surface IS NOT NULL AND p_surface NOT IN ('results','dashboard') THEN
+    RAISE EXCEPTION 'invalid surface %', p_surface;
+  END IF;
   INSERT INTO n400_profile_prompts (user_id, question_key, shown_count, last_shown_at)
   VALUES (v_user, p_question_key, 1, now())
   ON CONFLICT (user_id, question_key) DO UPDATE
   SET shown_count = n400_profile_prompts.shown_count + 1, last_shown_at = now();
+
+  -- Impression event: the funnel shown → answered / skipped reads from ONE
+  -- table, per question × variant × surface (spec §7 wants answer rate per
+  -- variant — shown_count alone carries neither variant nor surface).
+  -- shown_count stays as cheap per-question resume state.
+  PERFORM n400_emit_growth_event(v_user, 'prompt_shown',
+    jsonb_build_object('question_key', p_question_key, 'variant', p_variant,
+                       'surface', p_surface));
 END; $$;
 
-REVOKE EXECUTE ON FUNCTION public.n400_answer_profile_prompt(text, text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.n400_skip_profile_prompt(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.n400_mark_prompt_shown(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.n400_answer_profile_prompt(text, text, text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.n400_skip_profile_prompt(text, text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.n400_mark_prompt_shown(text) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.n400_answer_profile_prompt(text, text, text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.n400_skip_profile_prompt(text, text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.n400_mark_prompt_shown(text, text, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.n400_answer_profile_prompt(text, text, text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.n400_skip_profile_prompt(text, text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.n400_mark_prompt_shown(text, text, text) TO authenticated;
 ```
 
 - [ ] **Step 2: Apply the migration**
@@ -255,16 +278,25 @@ BEGIN
   PERFORM set_config('request.jwt.claims',
     json_build_object('sub', v_user, 'role', 'authenticated')::text, true);
 
-  -- ① answer filed=yes → column + stage + prompt state + event + no error
-  PERFORM n400_answer_profile_prompt('filed', 'yes');
+  -- ① answer filed=yes → column + stage + prompt state + event (with surface)
+  PERFORM n400_answer_profile_prompt('filed', 'yes', 'a', 'results');
   SELECT * INTO v_lp FROM n400_lead_profiles WHERE user_id = v_user;
   IF v_lp.n400_filed IS NOT TRUE OR v_lp.journey_stage <> 'filed' THEN
     RAISE EXCEPTION 'TEST_FAIL: filed=% stage=%', v_lp.n400_filed, v_lp.journey_stage;
   END IF;
   SELECT count(*) INTO v_n FROM n400_growth_events
   WHERE user_id = v_user AND event_type = 'prompt_answered'
-    AND payload->>'question_key' = 'filed';
+    AND payload->>'question_key' = 'filed' AND payload->>'surface' = 'results';
   IF v_n <> 1 THEN RAISE EXCEPTION 'TEST_FAIL: % prompt_answered events', v_n; END IF;
+
+  -- ①b impression funnel: mark-shown emits prompt_shown with variant + surface
+  PERFORM n400_mark_prompt_shown('wants_guidance', 'a', 'dashboard');
+  IF NOT EXISTS (SELECT 1 FROM n400_growth_events
+                 WHERE user_id = v_user AND event_type = 'prompt_shown'
+                   AND payload->>'question_key' = 'wants_guidance'
+                   AND payload->>'surface' = 'dashboard') THEN
+    RAISE EXCEPTION 'TEST_FAIL: no prompt_shown event';
+  END IF;
 
   -- ② interview_notice=yes flips stage + the +60 scoring input
   PERFORM n400_answer_profile_prompt('interview_notice', 'yes');
@@ -303,11 +335,15 @@ END $$;
 
 Expected: error `invalid answer banana for filed`.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Add `prompt_shown` to the event taxonomy**
+
+In `apps/website/src/lib/n400/growth/events.ts`, add `'prompt_shown'` to `SERVER_EVENT_TYPES` (it is emitted only by the SECURITY DEFINER RPC — clients cannot insert it; the RLS whitelist is untouched), and update the header comment's first line to read "SERVER_EVENT_TYPES are emitted by DB triggers or SECURITY DEFINER RPCs only".
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add apps/website/supabase/migrations/n400_21_growth_profiling_rpcs.sql
-git commit -m "feat(n400-growth): answer/skip/mark-shown profiling RPCs with journey-stage derivation"
+git add apps/website/supabase/migrations/n400_21_growth_profiling_rpcs.sql apps/website/src/lib/n400/growth/events.ts
+git commit -m "feat(n400-growth): answer/skip/mark-shown profiling RPCs with journey-stage derivation and surface-tagged funnel events"
 ```
 
 ---
@@ -400,9 +436,10 @@ describe('selectActivePrompt', () => {
     expect(selectActivePrompt(inputs(), 'results')).toBeNull();
   });
 
-  it('offers filed on the results surface after the first practice event', () => {
+  it('offers filed on the results surface after the first practice event, with a debug reason', () => {
     const got = selectActivePrompt(inputs({ gradedEvents: [practiceOn('2026-07-19')] }), 'results');
-    expect(got?.question_key).toBe('filed');
+    expect(got?.def.question_key).toBe('filed');
+    expect(got?.reason).toBe('practice_completed>=1');
   });
 
   it('never re-offers an answered question', () => {
@@ -410,16 +447,16 @@ describe('selectActivePrompt', () => {
       inputs({ answers: { filed: 'yes' }, gradedEvents: [practiceOn('2026-07-19')] }),
       'results',
     );
-    expect(got?.question_key).not.toBe('filed');
+    expect(got?.def.question_key).not.toBe('filed');
   });
 
   it('hides filing_timeline when filed=yes, shows it when filed=not_yet after a mock', () => {
     const events: GradedEvent[] = [practiceOn('2026-07-19'), { type: 'mock_completed', at: '2026-07-19T11:00:00Z' }];
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: events }), 'results')?.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: events }), 'results')?.def.question_key,
     ).not.toBe('filing_timeline');
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'not_yet' }, gradedEvents: events }), 'results')?.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'not_yet' }, gradedEvents: events }), 'results')?.def.question_key,
     ).toBe('filing_timeline');
   });
 
@@ -430,7 +467,7 @@ describe('selectActivePrompt', () => {
       selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: twoDays }), 'results'),
     ).toBeNull();
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: threeDays }), 'results')?.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: threeDays }), 'results')?.def.question_key,
     ).toBe('interview_notice');
   });
 
@@ -439,7 +476,7 @@ describe('selectActivePrompt', () => {
       inputs({ answers: { filed: 'yes', interview_notice: 'yes' }, gradedEvents: [practiceOn('2026-07-19')] }),
       'results',
     );
-    expect(got?.question_key).toBe('interview_date');
+    expect(got?.def.question_key).toBe('interview_date');
   });
 
   it('routes a skipped question off results and onto dashboard only after snooze', () => {
@@ -454,7 +491,7 @@ describe('selectActivePrompt', () => {
     expect(selectActivePrompt(base, 'dashboard')).toBeNull(); // snooze not over, 1 active day since skip
     // 6 days later the snooze expired:
     expect(
-      selectActivePrompt({ ...base, now: new Date('2026-07-25T00:00:00Z') }, 'dashboard')?.question_key,
+      selectActivePrompt({ ...base, now: new Date('2026-07-25T00:00:00Z') }, 'dashboard')?.def.question_key,
     ).toBe('filed');
   });
 
@@ -472,13 +509,13 @@ describe('selectActivePrompt', () => {
       }),
       'dashboard',
     );
-    expect(got?.question_key).toBe('filed');
+    expect(got?.def.question_key).toBe('filed');
   });
 
   it('returns a single question — lowest sort_order wins', () => {
     const manyDays = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'].map(practiceOn);
     // filed and wants_guidance are both eligible; filed (sort 1) wins.
-    expect(selectActivePrompt(inputs({ gradedEvents: manyDays }), 'results')?.question_key).toBe('filed');
+    expect(selectActivePrompt(inputs({ gradedEvents: manyDays }), 'results')?.def.question_key).toBe('filed');
   });
 });
 
@@ -615,10 +652,17 @@ function utcDay(iso: string): string {
   return iso.slice(0, 10);
 }
 
+export interface ActivePromptDecision {
+  def: PromptDefinition;
+  /** Which conditions the winner satisfied — for logs/debug (the profiling
+      cousin of the G3 CTA decision log; nothing persists it in G2). */
+  reason: string;
+}
+
 export function selectActivePrompt(
   inputs: ProfilingInputs,
   surface: PromptSurface,
-): PromptDefinition | null {
+): ActivePromptDecision | null {
   const { userId, definitions, states, answers, gradedEvents, now } = inputs;
   const stateByKey = new Map(states.map((s) => [s.question_key, s]));
 
@@ -652,6 +696,11 @@ export function selectActivePrompt(
     if (trg.distinct_practice_days && distinctDays < trg.distinct_practice_days) continue;
     if (trg.immediately_after && answers[trg.immediately_after] === undefined) continue;
 
+    const reasons: string[] = [];
+    if (trg.after_event) reasons.push(`${trg.after_event}>=${trg.min_count ?? 1}`);
+    if (trg.distinct_practice_days) reasons.push(`distinct_practice_days>=${trg.distinct_practice_days}`);
+    if (trg.immediately_after) reasons.push(`immediately_after:${trg.immediately_after}`);
+
     const skipped = Boolean(st?.skipped_at);
     if (surface === 'results') {
       if (skipped) continue;
@@ -666,8 +715,9 @@ export function selectActivePrompt(
           .map((e) => utcDay(e.at)),
       ).size;
       if (!snoozeOver && activeDaysSinceSkip < def.snooze_sessions) continue;
+      reasons.push(snoozeOver ? 'snooze_expired' : `active_days_since_skip>=${def.snooze_sessions}`);
     }
-    return def;
+    return { def, reason: reasons.join('+') || 'unconditional' };
   }
   return null;
 }
@@ -682,7 +732,7 @@ Expected: PASS (all tests). Also run the full suite to catch the `fnv1a` export 
 
 ```bash
 git add apps/website/src/lib/n400/growth/profiling.ts apps/website/src/lib/n400/growth/profiling.test.ts apps/website/src/lib/n400/growth/flags.ts
-git commit -m "feat(n400-growth): pure profiling evaluator with surface routing, snooze, deterministic variants"
+git commit -m "feat(n400-growth): pure profiling evaluator with surface routing, snooze, deterministic variants, debug reason"
 ```
 
 ---
@@ -758,6 +808,7 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import {
   answersFromLeadProfile,
   selectActivePrompt,
+  type ActivePromptDecision,
   type GradedEvent,
   type LeadProfileAnswers,
   type ProfilingInputs,
@@ -770,21 +821,29 @@ import {
 export interface ActivePrompt {
   questionKey: string;
   variant: string;
+  /** The surface this question was selected for — echoed back on answer/skip
+      so every funnel event is tagged without the card re-stating it. */
+  surface: PromptSurface;
   textEn: string;
   textVi: string;
   options: PromptOption[];
   /** interview_date renders a date input instead of option pills. */
   isDate: boolean;
+  /** Why this question won — debug only, never rendered. */
+  reason: string;
 }
 
-function toActive(def: PromptDefinition): ActivePrompt {
+function toActive(decision: ActivePromptDecision, surface: PromptSurface): ActivePrompt {
+  const { def, reason } = decision;
   return {
     questionKey: def.question_key,
     variant: def.variant,
+    surface,
     textEn: def.text_en,
     textVi: def.text_vi,
     options: def.options,
     isDate: def.question_key === 'interview_date',
+    reason,
   };
 }
 
@@ -836,14 +895,15 @@ export async function getActivePrompt(surface: PromptSurface): Promise<ActivePro
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return null;
   if (!(await profilingEnabled(supabase, user.id))) return null;
-  const def = selectActivePrompt(await loadInputs(supabase, user), surface);
-  return def ? toActive(def) : null;
+  const decision = selectActivePrompt(await loadInputs(supabase, user), surface);
+  return decision ? toActive(decision, surface) : null;
 }
 
 export async function answerProfilePrompt(
   questionKey: string,
   variant: string,
   answer: string,
+  surface: PromptSurface,
 ): Promise<{ ok: boolean; next: ActivePrompt | null }> {
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return { ok: false, next: null };
@@ -851,32 +911,47 @@ export async function answerProfilePrompt(
     p_question_key: questionKey,
     p_answer: answer,
     p_variant: variant,
+    p_surface: surface,
   });
   if (error) return { ok: false, next: null };
   // Chain ONLY the spec's "ask ④ right after ③ = yes" case — one question at
-  // a time everywhere else (conversation, not interrogation).
-  const def = selectActivePrompt(await loadInputs(supabase, user), 'results');
-  const next = def && def.trigger.immediately_after === questionKey ? toActive(def) : null;
+  // a time everywhere else (conversation, not interrogation). The follow-up
+  // inherits the surface the user is standing on.
+  const decision = selectActivePrompt(await loadInputs(supabase, user), surface);
+  const next =
+    decision && decision.def.trigger.immediately_after === questionKey
+      ? toActive(decision, surface)
+      : null;
   return { ok: true, next };
 }
 
 export async function skipProfilePrompt(
   questionKey: string,
   variant: string,
+  surface: PromptSurface,
 ): Promise<{ ok: boolean }> {
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return { ok: false };
   const { error } = await supabase.rpc('n400_skip_profile_prompt', {
     p_question_key: questionKey,
     p_variant: variant,
+    p_surface: surface,
   });
   return { ok: !error };
 }
 
-export async function markPromptShown(questionKey: string): Promise<void> {
+export async function markPromptShown(
+  questionKey: string,
+  variant: string,
+  surface: PromptSurface,
+): Promise<void> {
   const { supabase, user } = await getAuthedServerClient();
   if (!user) return;
-  await supabase.rpc('n400_mark_prompt_shown', { p_question_key: questionKey });
+  await supabase.rpc('n400_mark_prompt_shown', {
+    p_question_key: questionKey,
+    p_variant: variant,
+    p_surface: surface,
+  });
 }
 ```
 
@@ -1013,8 +1088,17 @@ describe('interview_mode intent tier (G2 growth)', () => {
     expect(recommendDailyHero({ ...baseSignals, journeyStage: 'preparing' }, viDict).intent).not.toBe('interview_mode');
     expect(recommendDailyHero(baseSignals, viDict).intent).not.toBe('interview_mode');
   });
+
+  // Locks the contract G3 depends on: adding a tier means appending a row,
+  // and evaluation order is priority-descending regardless of array order.
+  it('keeps the growth intent tiers ordered by descending priority', () => {
+    const priorities = GROWTH_INTENT_TIERS.map((t) => t.priority);
+    expect(priorities).toEqual([...priorities].sort((a, b) => b - a));
+  });
 });
 ```
+
+Add `GROWTH_INTENT_TIERS` to the file's existing import from `./hero-recommendation`.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -1050,31 +1134,72 @@ export type HeroIntent =
   interviewDate?: string | null;
 ```
 
-3. At the top of `recommendDailyHero` (before the ladder comment for step 1 — the intent tier sits ABOVE all behavior tiers, spec §3.4):
+3. Add the growth intent tier as an **explicitly ordered table**, above the behavior ladder. G3 adds consultation / filing-checklist / passport intents by appending a row — never by editing control flow. Priority numbers mirror the `n400_cta_definitions.priority` scale already seeded in G1 (S9=100, S4=90, S1=80…) so the two systems rank the same way; when G3 makes these DB-driven, the numbers move over unchanged.
+
+Place this above `recommendDailyHero`:
 
 ```ts
-  // 0. Intent tier (G2 growth): the user told us their interview is scheduled —
-  // the dashboard flips to interview-priority mode immediately. This is the
-  // visible reward for answering (spec §3.4).
-  if (signals.journeyStage === 'interview_scheduled') {
-    const days = signals.interviewDate
-      ? Math.max(0, Math.ceil((new Date(signals.interviewDate).getTime() - now.getTime()) / DAY_MS))
-      : null;
-    return {
-      intent: 'interview_mode',
-      emoji: '🔥',
-      title:
-        days !== null
-          ? tFormat(t.intent.interviewMode.titleWithDays, { days })
-          : t.intent.interviewMode.title,
-      subtitle: t.intent.interviewMode.subtitle,
-      cta: { label: t.cta.takeMockTest, href: '/mock-test' },
-      secondary: { label: t.intent.interviewMode.secondary, href: '/speaking/yes-no' },
-    };
+/**
+ * Growth intent tier (spec §3.4) — sits ABOVE the behavior ladder: what the
+ * user TOLD us about their journey outranks what their practice data implies.
+ * Ordered by `priority` descending, first match wins. Lazy by construction:
+ * `match` runs only until one returns non-null.
+ *
+ * Priority scale is shared with n400_cta_definitions.priority (100 = final
+ * review, 90 = interview imminent, 80 = mock-ready…). G3 appends rows here —
+ * do not reintroduce inline if-branches.
+ */
+export interface GrowthIntentTier {
+  priority: number;
+  match: (
+    signals: HeroSignals,
+    dict: N400Dict,
+  ) => HeroRecommendation | null;
+}
+
+export const GROWTH_INTENT_TIERS: GrowthIntentTier[] = [
+  {
+    // 90 — the user told us the interview is scheduled. The dashboard flips to
+    // interview-priority mode immediately: this is the visible reward for
+    // answering the profiling question.
+    priority: 90,
+    match: (signals, dict) => {
+      if (signals.journeyStage !== 'interview_scheduled') return null;
+      const t = dict.heroRec;
+      const days = signals.interviewDate
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(signals.interviewDate).getTime() - signals.now.getTime()) / DAY_MS,
+            ),
+          )
+        : null;
+      return {
+        intent: 'interview_mode',
+        emoji: '🔥',
+        title:
+          days !== null
+            ? tFormat(t.intent.interviewMode.titleWithDays, { days })
+            : t.intent.interviewMode.title,
+        subtitle: t.intent.interviewMode.subtitle,
+        cta: { label: t.cta.takeMockTest, href: '/mock-test' },
+        secondary: { label: t.intent.interviewMode.secondary, href: '/speaking/yes-no' },
+      };
+    },
+  },
+].sort((a, b) => b.priority - a.priority);
+```
+
+Then, as the first statement inside `recommendDailyHero` (before the existing destructuring and the step-1 ladder comment):
+
+```ts
+  for (const tier of GROWTH_INTENT_TIERS) {
+    const hit = tier.match(signals, dict);
+    if (hit) return hit;
   }
 ```
 
-(Note: `now` is destructured below this point in the current file — move the `const { now, ... } = signals;` destructuring above the new block so `now` is in scope.)
+(No destructuring changes needed — each `match` reads `signals` directly, so `now` staying where it is in the current file is fine.)
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -1120,35 +1245,38 @@ import {
 
 const THANKS_MS = 2500;
 
+// `surface` rides on the prompt itself (set by the evaluator), so there is one
+// source of truth for it — the card cannot disagree with what got logged.
 export function GrowthPromptCard({
   prompt: initial,
-  surface,
   onDone,
 }: {
   prompt: ActivePrompt;
-  surface: 'results' | 'dashboard';
   onDone: () => void;
 }) {
   const { dict, lang } = useN400Lang();
   const [prompt, setPrompt] = useState(initial);
+  const surface = prompt.surface;
   const [phase, setPhase] = useState<'asking' | 'thanks'>('asking');
   const [dateValue, setDateValue] = useState('');
   const [busy, setBusy] = useState(false);
   const shownFor = useRef<string | null>(null);
 
-  // One impression per question shown, even across re-renders.
+  // One impression per question shown, even across re-renders. This is the
+  // top of the funnel (prompt_shown → prompt_answered / prompt_skipped, all
+  // tagged with variant + surface).
   useEffect(() => {
     if (shownFor.current === prompt.questionKey) return;
     shownFor.current = prompt.questionKey;
-    void markPromptShown(prompt.questionKey);
-  }, [prompt.questionKey]);
+    void markPromptShown(prompt.questionKey, prompt.variant, prompt.surface);
+  }, [prompt.questionKey, prompt.variant, prompt.surface]);
 
   const text = lang === 'en' ? prompt.textEn : prompt.textVi;
 
   const submit = async (answer: string) => {
     if (busy) return;
     setBusy(true);
-    const res = await answerProfilePrompt(prompt.questionKey, prompt.variant, answer);
+    const res = await answerProfilePrompt(prompt.questionKey, prompt.variant, answer, prompt.surface);
     setBusy(false);
     if (!res.ok) {
       onDone();
@@ -1170,7 +1298,7 @@ export function GrowthPromptCard({
   const skip = async () => {
     if (busy) return;
     setBusy(true);
-    await skipProfilePrompt(prompt.questionKey, prompt.variant);
+    await skipProfilePrompt(prompt.questionKey, prompt.variant, prompt.surface);
     setBusy(false);
     onDone();
   };
@@ -1260,9 +1388,10 @@ export function GrowthPromptCard({
 
 import { useEffect, useState } from 'react';
 import { getActivePrompt, type ActivePrompt } from '@/lib/n400/growth/prompt-actions';
+import type { PromptSurface } from '@/lib/n400/growth/profiling';
 import { GrowthPromptCard } from './GrowthPromptCard';
 
-export function GrowthPromptSlot({ surface }: { surface: 'results' | 'dashboard' }) {
+export function GrowthPromptSlot({ surface }: { surface: PromptSurface }) {
   const [prompt, setPrompt] = useState<ActivePrompt | null>(null);
 
   useEffect(() => {
@@ -1280,7 +1409,7 @@ export function GrowthPromptSlot({ surface }: { surface: 'results' | 'dashboard'
   }, [surface]);
 
   if (!prompt) return null;
-  return <GrowthPromptCard prompt={prompt} surface={surface} onDone={() => setPrompt(null)} />;
+  return <GrowthPromptCard prompt={prompt} onDone={() => setPrompt(null)} />;
 }
 ```
 
@@ -1479,6 +1608,21 @@ Run: `cd apps/website && npm run dev`, sign in with a test account, then check:
 3. Take a mock, then answer `interview_notice` = "Rồi" → the **interview_date question chains immediately**; the Dashboard hero flips to 🔥 interview mode on next load.
 4. Skip a question on a results screen → it does NOT reappear on results; `n400_profile_prompts.snooze_until` ≈ +6 days. (Snooze release itself is covered by unit tests — don't wait 6 days.)
 5. Turn `profiling` off in the DB → all cards disappear; learning screens unaffected.
+6. Funnel sanity check — the per-level conversion query works end to end:
+
+```sql
+SELECT payload->>'question_key' AS question,
+       payload->>'surface'      AS surface,
+       payload->>'variant'      AS variant,
+       count(*) FILTER (WHERE event_type = 'prompt_shown')    AS shown,
+       count(*) FILTER (WHERE event_type = 'prompt_answered') AS answered,
+       count(*) FILTER (WHERE event_type = 'prompt_skipped')  AS skipped
+FROM n400_growth_events
+WHERE event_type IN ('prompt_shown','prompt_answered','prompt_skipped')
+GROUP BY 1, 2, 3 ORDER BY 1, 2;
+```
+
+Expected: rows for the questions you exercised, with `surface = 'results'` for the ones answered on a result screen — i.e. Level 2 vs Level 1 conversion is readable from this one table.
 
 - [ ] **Step 3: Decide flag end-state with the user**
 
@@ -1496,7 +1640,7 @@ Keep ON (G2 is live) or revert to OFF until G3 — user's call. Record the decis
 Insert directly after the G1 `[x]` line, matching its format:
 
 ```markdown
-- [x] **Website Phase 3E — N400 Growth Engine G2 (conversation model)** — Progressive profiling live behind `profiling`+`growth_engine` flags: pure evaluator (`growth/profiling.ts`, surface routing + snooze-as-active-days + deterministic variants), answer/skip/mark-shown SECURITY DEFINER RPCs with journey-stage derivation (n400_21), insert-path event emitter fix (n400_20), Level 2 card under Practice/Mock results, Level 1 dashboard soft card, Level 3 interview-mode hero intent tier. Spec §3. G3 (CTA+booking), G4 (internal_app Leads) pending.
+- [x] **Website Phase 3E — N400 Growth Engine G2 (conversation model)** — Progressive profiling live behind `profiling`+`growth_engine` flags: pure evaluator (`growth/profiling.ts`, surface routing + snooze-as-active-days + deterministic variants + debug reason), answer/skip/mark-shown SECURITY DEFINER RPCs with journey-stage derivation (n400_21), insert-path event emitter fix (n400_20), full `prompt_shown → answered/skipped` funnel tagged by question × variant × surface, Level 2 card under Practice/Mock results, Level 1 dashboard soft card, Level 3 interview-mode hero intent via the priority-ordered `GROWTH_INTENT_TIERS` table. Spec §3. G3 (CTA+booking), G4 (internal_app Leads) pending.
 ```
 
 Remove the trailing "G2 (conversation model), " from the G1 line's pending list so it reads "G3 (CTA+booking), G4 (internal_app Leads) pending."
@@ -1513,5 +1657,7 @@ git commit -m "docs: mark growth engine G2 shipped in roadmap"
 ## Self-review notes (already applied)
 
 - **Spec §3 coverage:** §3.1 queue + conditional opens → seeds (G1) + `depends_on`/trigger evaluation (Task 3) + reseeded ⑤ (Task 1); §3.2 Level 2 card → Tasks 7–8; §3.3 skip → snooze 6d/3-sessions-as-active-days → Tasks 2–3, soft card Task 8; §3.4 Level 3 → Task 6 (interview mode) with checklist/guidance reactions explicitly deferred to G3 (scope guards); RPC `answer_profile_prompt` → Task 2; copy/trigger from `n400_prompt_definitions` → Tasks 3–4 read the DB rows, dict carries chrome only.
-- **Type consistency:** `ActivePrompt`/`PromptSurface`/`PromptDefinition` defined once (Tasks 3–4) and imported everywhere; RPC arg names `p_question_key/p_answer/p_variant` match between Task 2 SQL and Task 4 `.rpc()` calls; `footer` prop name consistent between Tasks 8's two steps.
+- **Type consistency:** `ActivePrompt`/`ActivePromptDecision`/`PromptSurface`/`PromptDefinition` defined once (Tasks 3–4) and imported everywhere; RPC arg names `p_question_key/p_answer/p_variant/p_surface` match between Task 2 SQL and Task 4 `.rpc()` calls; `footer` prop name consistent between Tasks 8's two steps; `selectActivePrompt` returns a decision (`{ def, reason }`) — every call site reads `.def`.
 - **Known judgment calls (locked here, don't re-litigate mid-execution):** session ≡ active day (pace-engine precedent); dashboard dismiss = re-skip (re-snooze); answered-question chaining only for `immediately_after`; UTC dates for day-distinctness (matches SQL scoring).
+- **Review round 2 (user, 2026-07-19) — applied:** `surface` on every prompt event (`prompt_answered`/`prompt_skipped`), so Level 2 vs Level 1 conversion is one query; new `prompt_shown` event from `n400_mark_prompt_shown` carrying variant + surface (`shown_count` alone carries neither) so the whole shown→answered→skipped funnel lives in `n400_growth_events`; evaluator returns a `reason` string for debugging; hero growth intents are a priority-ordered table (`GROWTH_INTENT_TIERS`) rather than an if-branch.
+- **Review round 2 — scoped down deliberately:** the priority table covers the **growth intent tier only**. The 7-tier behavior ladder keeps its implicit code-order priority: converting it to numeric priorities means wrapping each tier in a thunk (they compute different things — stale-section lookup, mock-review ids) for zero behavior change on shipped, tested code, which is speculative generality. G3 grows the growth tier, not the behavior ladder, and its CTA priorities already live in `n400_cta_definitions.priority`.
