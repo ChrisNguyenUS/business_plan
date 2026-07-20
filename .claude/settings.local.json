@@ -96,7 +96,9 @@
       "Bash(curl -s -H \"Cookie: n400_lang=en\" http://localhost:3105/n400ready/login)",
       "Bash(awk '/^  badges: \\\\{/,/^  \\\\},/' src/lib/n400/i18n/vi.ts)",
       "Bash(awk '/^  badges: \\\\{/,/^  \\\\},/' src/lib/n400/i18n/en.ts)",
-      "Bash(perl -pi -e \"s{saveForReview: 'Lưu lại',\\\\n}{}\" src/lib/n400/i18n/vi.ts)"
+      "Bash(perl -pi -e \"s{saveForReview: 'Lưu lại',\\\\n}{}\" src/lib/n400/i18n/vi.ts)",
+      "Bash(sed -n '/CREATE TABLE IF NOT EXISTS public.n400_quiz_attempts/,/\\);/p' supabase/migrations/n400_01_tables.sql)",
+      "Bash(sed -n '/CREATE TABLE/,/\\);/p' supabase/migrations/n400_12_section_attempts.sql)"
     ]
   },
   "enableAllProjectMcpServers": true,
