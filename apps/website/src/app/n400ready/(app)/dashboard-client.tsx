@@ -51,6 +51,10 @@ export default function DashboardPage() {
   const { dict, lang } = useN400Lang();
   const { state, hydrated, stats } = useN400UserState();
   const { profile } = useAuth();
+  // Async/effect-driven: on first paint growth.enabled is false, so an
+  // interview_scheduled user briefly sees the default hero before this
+  // resolves and the interview-mode tier takes over. Accepted tradeoff — the
+  // fetch is a fast, RLS-scoped single-row read; not worth a skeleton state.
   const growth = useGrowthProfile();
   const badges = useN400Badges();
   const search = useSearchParams();
