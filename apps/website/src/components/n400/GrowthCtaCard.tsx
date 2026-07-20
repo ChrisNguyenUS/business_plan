@@ -48,6 +48,10 @@ export function GrowthCtaCard({ cta, onDone }: { cta: ActiveCta; onDone: () => v
       await clickCta(cta.ctaId, cta.variant, cta.surface);
     } catch {
       // Navigate regardless — a lost click event must not cost the user the CTA.
+    } finally {
+      // Reset even though navigation is about to unmount this card — a stalled
+      // or intercepted router.push must not leave the button stuck disabled.
+      setBusy(false);
     }
     router.push(ACTION_HREF[cta.action]);
   };
