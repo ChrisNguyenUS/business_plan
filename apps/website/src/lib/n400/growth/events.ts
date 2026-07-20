@@ -11,8 +11,6 @@ export const CLIENT_EVENT_TYPES = [
   'cta_shown',
   'cta_dismissed',
   'cta_clicked',
-  'prompt_answered',
-  'prompt_skipped',
   'checklist_viewed',
   'consultation_form_opened',
 ] as const;
@@ -23,7 +21,11 @@ export const SERVER_EVENT_TYPES = [
   'address_entered',
   'practice_completed',
   'mock_completed',
+  // The whole prompt funnel is RPC-only (n400_21 / n400_22), so the G3
+  // conversion analytics built on it cannot be forged — see n400_23.
   'prompt_shown',
+  'prompt_answered',
+  'prompt_skipped',
   // reserved, not emitted in G1:
   'section_completed',
   'readiness_snapshot',

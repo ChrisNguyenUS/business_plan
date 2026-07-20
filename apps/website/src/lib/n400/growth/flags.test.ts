@@ -24,12 +24,21 @@ describe('isUserInRollout', () => {
 describe('isClientEventType', () => {
   it('accepts whitelisted client events', () => {
     expect(isClientEventType('cta_dismissed')).toBe(true);
-    expect(isClientEventType('prompt_answered')).toBe(true);
+    expect(isClientEventType('checklist_viewed')).toBe(true);
   });
 
   it('rejects server-authoritative and unknown types', () => {
     expect(isClientEventType('mock_completed')).toBe(false);
     expect(isClientEventType('practice_completed')).toBe(false);
     expect(isClientEventType('drop table')).toBe(false);
+  });
+
+  // The prompt funnel is RPC-only (n400_21/n400_22) and the RLS whitelist was
+  // narrowed to match (n400_23) — G3 reads conversion rates off these events,
+  // so a client must never be able to forge them.
+  it('rejects the whole prompt funnel', () => {
+    expect(isClientEventType('prompt_shown')).toBe(false);
+    expect(isClientEventType('prompt_answered')).toBe(false);
+    expect(isClientEventType('prompt_skipped')).toBe(false);
   });
 });
