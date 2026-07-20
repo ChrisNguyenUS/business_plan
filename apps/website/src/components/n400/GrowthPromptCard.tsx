@@ -40,7 +40,9 @@ export function GrowthPromptCard({
   useEffect(() => {
     if (shownFor.current === prompt.questionKey) return;
     shownFor.current = prompt.questionKey;
-    void markPromptShown(prompt.questionKey, prompt.variant, prompt.surface);
+    void markPromptShown(prompt.questionKey, prompt.variant, prompt.surface).catch(() => {
+      // Best-effort impression log — never break the card over it.
+    });
   }, [prompt.questionKey, prompt.variant, prompt.surface]);
 
   const text = lang === 'en' ? prompt.textEn : prompt.textVi;
@@ -48,7 +50,13 @@ export function GrowthPromptCard({
   const submit = async (answer: string) => {
     if (busy) return;
     setBusy(true);
-    const res = await answerProfilePrompt(prompt.questionKey, prompt.variant, answer, prompt.surface);
+    let res: { ok: boolean; next: ActivePrompt | null };
+    try {
+      res = await answerProfilePrompt(prompt.questionKey, prompt.variant, answer, prompt.surface);
+    } catch {
+      // Growth UI is best-effort — a thrown error is treated like ok: false.
+      res = { ok: false, next: null };
+    }
     setBusy(false);
     if (!res.ok) {
       onDone();
@@ -70,7 +78,11 @@ export function GrowthPromptCard({
   const skip = async () => {
     if (busy) return;
     setBusy(true);
-    await skipProfilePrompt(prompt.questionKey, prompt.variant, prompt.surface);
+    try {
+      await skipProfilePrompt(prompt.questionKey, prompt.variant, prompt.surface);
+    } catch {
+      // Growth UI is best-effort — still fall through to onDone() below.
+    }
     setBusy(false);
     onDone();
   };
