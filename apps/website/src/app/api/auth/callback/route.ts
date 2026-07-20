@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
+import { ATTRIB_COOKIE, parseAttributionCookie } from '@/lib/n400/growth/attribution';
 
 // OAuth callback: exchanges the provider code for a session cookie,
 // then bootstraps the avatar on first login. The profile row itself is
@@ -93,6 +94,21 @@ export async function GET(request: NextRequest) {
   // just leaves avatar_path NULL and the UI renders initials instead.
   try {
     await bootstrapAvatar(supabase, data.user);
+  } catch {
+    // Swallow intentionally; auth already succeeded.
+  }
+
+  // Growth attribution: copy the first-party touch cookie into the lead
+  // profile. First touch is written once (RPC keeps existing non-null value);
+  // last touch always updates. Must never block authentication.
+  try {
+    const attrib = parseAttributionCookie(request.cookies.get(ATTRIB_COOKIE)?.value);
+    if (attrib) {
+      await supabase.rpc('n400_set_attribution', {
+        p_first: attrib.first,
+        p_last: attrib.last,
+      });
+    }
   } catch {
     // Swallow intentionally; auth already succeeded.
   }
