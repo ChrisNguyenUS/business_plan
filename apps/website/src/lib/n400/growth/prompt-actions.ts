@@ -1,113 +1,16 @@
 'use server';
 
-// Profiling server actions (spec §3): getActivePrompt is the ONE read the UI
-// calls; answers/skips go through the SECURITY DEFINER RPCs (n400_21). Flags
-// off → getActivePrompt returns null and the whole conversation is silent.
+// Profiling server actions (spec §3): getGrowthState (growth-state.ts) is now
+// the ONE read the UI calls; answers/skips here go through the SECURITY
+// DEFINER RPCs (n400_21). Flags off → getGrowthState returns null and the
+// whole conversation is silent.
 
 import { getAuthedServerClient } from './server-client';
-import { isFeatureOn, type FeatureFlag } from './flags';
-import type { SupabaseClient, User } from '@supabase/supabase-js';
-import {
-  answersFromLeadProfile,
-  selectActivePrompt,
-  type ActivePromptDecision,
-  type GradedEvent,
-  type LeadProfileAnswers,
-  type ProfilingInputs,
-  type PromptDefinition,
-  type PromptOption,
-  type PromptState,
-  type PromptSurface,
-} from './profiling';
+import { selectActivePrompt, type PromptSurface } from './profiling';
+import { loadGrowthContext } from './growth-context';
+import { loadProfilingInputs, toActivePrompt, type ActivePrompt } from './profiling-inputs';
 
-export interface ActivePrompt {
-  questionKey: string;
-  variant: string;
-  /** The surface this question was selected for — echoed back on answer/skip
-      so every funnel event is tagged without the card re-stating it. */
-  surface: PromptSurface;
-  textEn: string;
-  textVi: string;
-  options: PromptOption[];
-  /** interview_date renders a date input instead of option pills. */
-  isDate: boolean;
-  /** Why this question won — debug only, never rendered. */
-  reason: string;
-}
-
-function toActive(decision: ActivePromptDecision, surface: PromptSurface): ActivePrompt {
-  const { def, reason } = decision;
-  return {
-    questionKey: def.question_key,
-    variant: def.variant,
-    surface,
-    textEn: def.text_en,
-    textVi: def.text_vi,
-    options: def.options,
-    isDate: def.question_key === 'interview_date',
-    reason,
-  };
-}
-
-async function profilingEnabled(supabase: SupabaseClient, userId: string): Promise<boolean> {
-  const { data } = await supabase
-    .from('n400_feature_flags')
-    .select('flag_key, enabled, rollout_pct')
-    .in('flag_key', ['growth_engine', 'profiling']);
-  const flags = new Map((data ?? []).map((f: FeatureFlag) => [f.flag_key, f]));
-  return (
-    isFeatureOn(flags.get('growth_engine'), userId) &&
-    isFeatureOn(flags.get('profiling'), userId)
-  );
-}
-
-async function loadInputs(supabase: SupabaseClient, user: User): Promise<ProfilingInputs> {
-  // Every per-user table is filtered on user_id EXPLICITLY — RLS alone is not a
-  // scope: n400_15 grants admins SELECT on all rows of lead_profiles /
-  // profile_prompts / growth_events, so an admin session would otherwise read
-  // the whole table (maybeSingle() errors on >1 row, prompt state collides
-  // across users, and event counts come out inflated).
-  const [defsRes, statesRes, leadRes, eventsRes] = await Promise.all([
-    supabase
-      .from('n400_prompt_definitions')
-      .select('question_key, variant, text_en, text_vi, options, trigger, depends_on, snooze_days, snooze_sessions, sort_order')
-      .eq('enabled', true),
-    supabase
-      .from('n400_profile_prompts')
-      .select('question_key, answered_at, skipped_at, snooze_until')
-      .eq('user_id', user.id),
-    supabase
-      .from('n400_lead_profiles')
-      .select('n400_filed, filing_timeline, interview_scheduled, interview_date, wants_guidance')
-      .eq('user_id', user.id)
-      .maybeSingle(),
-    // TODO(scale): per-answer envelope events grow with usage; switch to a
-    // count RPC if this fetch gets heavy.
-    supabase
-      .from('n400_growth_events')
-      .select('event_type, created_at')
-      .eq('user_id', user.id)
-      .in('event_type', ['practice_completed', 'mock_completed']),
-  ]);
-  return {
-    userId: user.id,
-    definitions: (defsRes.data ?? []) as PromptDefinition[],
-    states: (statesRes.data ?? []) as PromptState[],
-    answers: answersFromLeadProfile((leadRes.data ?? null) as LeadProfileAnswers | null),
-    gradedEvents: ((eventsRes.data ?? []) as { event_type: string; created_at: string }[]).map(
-      (e) => ({ type: e.event_type as GradedEvent['type'], at: e.created_at }),
-    ),
-    now: new Date(),
-  };
-}
-
-export async function getActivePrompt(surface: PromptSurface): Promise<ActivePrompt | null> {
-  const { supabase, user } = await getAuthedServerClient();
-  if (!user) return null;
-  if (!(await profilingEnabled(supabase, user.id))) return null;
-  const decision = selectActivePrompt(await loadInputs(supabase, user), surface);
-  return decision ? toActive(decision, surface) : null;
-}
+export type { ActivePrompt } from './profiling-inputs';
 
 export async function answerProfilePrompt(
   questionKey: string,
@@ -126,11 +29,13 @@ export async function answerProfilePrompt(
   if (error) return { ok: false, next: null };
   // Chain ONLY the spec's "ask ④ right after ③ = yes" case — one question at
   // a time everywhere else (conversation, not interrogation). The follow-up
-  // inherits the surface the user is standing on.
-  const decision = selectActivePrompt(await loadInputs(supabase, user), surface);
+  // inherits the surface the user is standing on. The RPC just wrote the
+  // answer, so the context must be re-read from scratch to see it.
+  const ctx = await loadGrowthContext(supabase, user.id);
+  const decision = selectActivePrompt(await loadProfilingInputs(supabase, ctx), surface);
   const next =
     decision && decision.def.trigger.immediately_after === questionKey
-      ? toActive(decision, surface)
+      ? toActivePrompt(decision, surface)
       : null;
   return { ok: true, next };
 }
