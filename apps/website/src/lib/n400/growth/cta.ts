@@ -111,7 +111,7 @@ function meetsConditions(def: CtaDefinition, i: CtaInputs): boolean {
   }
 
   if (c.min_mocks !== undefined && s.mockCount < c.min_mocks) return false;
-  if (c.min_avg_pct !== undefined && (s.mockAvgPct === null || s.mockAvgPct <= c.min_avg_pct)) return false;
+  if (c.min_avg_pct !== undefined && (s.mockAvgPct === null || s.mockAvgPct < c.min_avg_pct)) return false;
 
   if (c.weakest_section !== undefined) {
     if (!s.weakestSection || !sectionMatches(c.weakest_section, s.weakestSection)) return false;

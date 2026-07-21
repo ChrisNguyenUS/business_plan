@@ -98,6 +98,11 @@ describe('selectActiveCta — eligibility', () => {
     expect(selectActiveCta(inputs({ signals: threeGood })).def?.cta_id).toBe('s1_mock_ready');
   });
 
+  it('S1 fires when the mock average equals min_avg_pct exactly', () => {
+    const atThreshold = { ...NO_SIGNALS, mockCount: 3, mockAvgPct: 90 };
+    expect(selectActiveCta(inputs({ signals: atThreshold })).def?.cta_id).toBe('s1_mock_ready');
+  });
+
   it('maps the speaking sections onto the S6 weakest_section condition', () => {
     const yesno = { ...NO_SIGNALS, weakestSection: 'yesno' as const, weakestSectionAttempts: 12 };
     const writing = { ...NO_SIGNALS, weakestSection: 'writing' as const, weakestSectionAttempts: 12 };
