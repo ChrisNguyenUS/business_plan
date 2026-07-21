@@ -98,7 +98,19 @@
       "Bash(awk '/^  badges: \\\\{/,/^  \\\\},/' src/lib/n400/i18n/en.ts)",
       "Bash(perl -pi -e \"s{saveForReview: 'Lưu lại',\\\\n}{}\" src/lib/n400/i18n/vi.ts)",
       "Bash(sed -n '/CREATE TABLE IF NOT EXISTS public.n400_quiz_attempts/,/\\);/p' supabase/migrations/n400_01_tables.sql)",
-      "Bash(sed -n '/CREATE TABLE/,/\\);/p' supabase/migrations/n400_12_section_attempts.sql)"
+      "Bash(sed -n '/CREATE TABLE/,/\\);/p' supabase/migrations/n400_12_section_attempts.sql)",
+      "Bash(sed -i '' 's/recommendDailyHero\\(\\\\n { ...baseSignals/XX/; ' /dev/null)",
+      "Bash(perl -0pi -e 's/, interviewDate: null \\\\},\\\\n vi,\\\\n \\\\\\);/, interviewDate: null },\\\\n viDict,\\\\n \\);/; s/, interviewDate: '\\\\''2026-07-29'\\\\'' \\\\},\\\\n vi,\\\\n \\\\\\);/, interviewDate: '\\\\''2026-07-29'\\\\'' },\\\\n viDict,\\\\n \\);/; s/journeyStage: '\\\\''preparing'\\\\'' \\\\}, vi\\\\\\)/journeyStage: '\\\\''preparing'\\\\'' }, viDict\\)/; s/recommendDailyHero\\\\\\(baseSignals, vi\\\\\\)/recommendDailyHero\\(baseSignals, viDict\\)/' \"docs/superpowers/plans/2026-07-19-n400-growth-g2-conversation-model.md\")",
+      "mcp__supabase__list_migrations",
+      "Bash(cp src/lib/n400/hero-recommendation.ts /tmp/hero-recommendation.ts.bak)",
+      "Bash(cp \"src/lib/n400/hero-recommendation.ts\" \"/private/tmp/claude-501/-Users-anhnguyen-Obsidian-Business-planning/ad7f7173-0f1b-4ad2-9f84-0ba5d63bd328/scratchpad/hero-recommendation.ts.orig\")",
+      "Bash(mkdir -p /tmp/redstate_check)",
+      "Bash(cp src/lib/n400/hero-recommendation.ts /tmp/redstate_check/hero-recommendation.ts.new)",
+      "Bash(cp src/lib/n400/hero-recommendation.ts /tmp/redstate_check/hero-recommendation.ts.current_backup)",
+      "Bash(cp /tmp/redstate_check/hero-recommendation.ts.old src/lib/n400/hero-recommendation.ts)",
+      "mcp__supabase__get_advisors",
+      "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning\" log --oneline -15)",
+      "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning\" status --short)"
     ]
   },
   "enableAllProjectMcpServers": true,
