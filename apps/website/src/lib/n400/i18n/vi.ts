@@ -204,6 +204,7 @@ export const vi = {
       continueCivics: 'Tiếp tục học Civics',
       pickCategory: 'Chọn chủ đề khác',
       takeMockTest: 'Thi thử ngay',
+      openChecklist: 'Xem checklist',
     },
     intent: {
       startCivics: {
@@ -245,6 +246,10 @@ export const vi = {
         titleWithDays: 'Còn {days} ngày đến phỏng vấn',
         subtitle: 'Ưu tiên hôm nay: Thi thử, Speaking và Viết.',
         secondary: 'Luyện Speaking',
+      },
+      checklist: {
+        title: 'Chuẩn bị hồ sơ N-400',
+        subtitle: 'Checklist các bước và giấy tờ — chỉ mất 3 phút.',
       },
     },
   },

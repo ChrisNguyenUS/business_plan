@@ -204,6 +204,7 @@ export const en: N400Dict = {
       continueCivics: 'Continue learning Civics',
       pickCategory: 'Choose another topic',
       takeMockTest: 'Take a mock test',
+      openChecklist: 'Open checklist',
     },
     intent: {
       startCivics: {
@@ -245,6 +246,10 @@ export const en: N400Dict = {
         titleWithDays: '{days} days until your interview',
         subtitle: "Today's priority: Mock Test, Speaking and Writing.",
         secondary: 'Practice Speaking',
+      },
+      checklist: {
+        title: 'Prepare your N-400 filing',
+        subtitle: 'A checklist of steps and documents — just 3 minutes.',
       },
     },
   },

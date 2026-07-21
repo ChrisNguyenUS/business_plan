@@ -198,19 +198,20 @@ describe('recommendDailyHero — priority ladder', () => {
   });
 });
 
+const baseSignals = {
+  now: new Date('2026-07-19T12:00:00Z'),
+  civicsSeen: 40,
+  civicsTotal: 128,
+  attempts: [
+    { questionId: 1, wasCorrect: true, mode: 'practice' as const, at: '2026-07-18T10:00:00Z' },
+  ],
+  mockResults: [],
+  sectionAttempts: [],
+  goalsDone: 0,
+  goalsTotal: 4,
+};
+
 describe('interview_mode intent tier (G2 growth)', () => {
-  const baseSignals = {
-    now: new Date('2026-07-19T12:00:00Z'),
-    civicsSeen: 40,
-    civicsTotal: 128,
-    attempts: [
-      { questionId: 1, wasCorrect: true, mode: 'practice' as const, at: '2026-07-18T10:00:00Z' },
-    ],
-    mockResults: [],
-    sectionAttempts: [],
-    goalsDone: 0,
-    goalsTotal: 4,
-  };
 
   it('overrides the behavior ladder when journey_stage is interview_scheduled', () => {
     const got = recommendDailyHero(
@@ -242,5 +243,37 @@ describe('interview_mode intent tier (G2 growth)', () => {
   it('keeps the growth intent tiers ordered by descending priority', () => {
     const priorities = GROWTH_INTENT_TIERS.map((t) => t.priority);
     expect(priorities).toEqual([...priorities].sort((a, b) => b - a));
+  });
+});
+
+describe('filing_checklist intent tier', () => {
+  it('recommends the checklist when journey says preparing and the route is live', () => {
+    const rec = recommendDailyHero(
+      { ...baseSignals, journeyStage: 'preparing', checklistEnabled: true },
+      vi,
+    );
+    expect(rec.intent).toBe('filing_checklist');
+    expect(rec.cta.href).toBe('/filing-checklist');
+  });
+
+  it('stands down when the filing_checklist flag is off (route dark)', () => {
+    const rec = recommendDailyHero({ ...baseSignals, journeyStage: 'preparing' }, vi);
+    expect(rec.intent).not.toBe('filing_checklist');
+  });
+
+  it('stands down once every item is ticked on this device', () => {
+    const rec = recommendDailyHero(
+      { ...baseSignals, journeyStage: 'preparing', checklistEnabled: true, checklistDone: true },
+      vi,
+    );
+    expect(rec.intent).not.toBe('filing_checklist');
+  });
+
+  it('loses to interview_mode when both could match', () => {
+    const rec = recommendDailyHero(
+      { ...baseSignals, journeyStage: 'interview_scheduled', checklistEnabled: true },
+      vi,
+    );
+    expect(rec.intent).toBe('interview_mode');
   });
 });
