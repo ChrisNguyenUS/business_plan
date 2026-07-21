@@ -1,59 +1,163 @@
 // Drift-lock test for the CTA engine's server-side learning signals.
 //
-// This does NOT hit the network. It feeds one fixture through the client's
-// pure derivation functions (the same ones learning-signals.ts calls) and
-// asserts the two things the CTA engine must never get wrong:
-//   1. Readiness/mastery reads GRADED attempts only — flashcard self-grades
-//      never count. See [[n400-known-metric-asymmetry]]: deriveSectionKnown
-//      (deck state) and deriveSectionMastered (mastery) answer different
-//      questions and a prior bug class silently swapped them.
-//   2. A learner with no mastery and no mocks is never "ready".
+// Mastery/coverage/section-tally derivation moved out of TS and into SQL
+// (n400_learning_rollup(), n400_25 migration) — the "mastered ≠ deck state"
+// rule (last GRADED attempt correct, never a flashcard self-grade) now lives
+// there, with its own drift-lock comment pointing back at the TS functions it
+// mirrors (quiz-engine.ts's masteredQuestionIds, section-progress.ts's
+// deriveSectionMastered / deriveSectionGradedTally — see
+// section-progress.test.ts for those functions' own drift-lock coverage).
+//
+// This file instead drift-locks the TS side of the contract: that
+// loadLearningSignals (1) feeds the RPC's `mastered` counts — not graded
+// accuracy or volume — into readiness, and (2) computes weakest-section from
+// graded accuracy independently, with a stable tie-break order.
 
-import { describe, expect, it } from 'vitest';
-import { deriveReadiness, type ReadinessSignals } from '../readiness';
-import { deriveSectionGradedTally, deriveSectionMastered, deriveSectionKnown } from '../section-progress';
-import type { SectionAttempt } from '../section-progress';
+import { describe, expect, it, vi } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { loadLearningSignals } from './learning-signals';
 import { vi as viDict } from '../i18n/vi';
+import { N400_QUESTIONS } from '../questions-data';
+import { WHATMEAN_QUESTIONS } from '../whatmean-data';
+import { YESNO_QUESTIONS } from '../yesno-data';
+import type { GradedDay } from './profiling';
 
-// A learner who self-graded everything on flashcards but has poor GRADED
-// accuracy. If the CTA engine ever swaps mastery for deck state, this learner
-// reads as ready — the exact bug [[n400-known-metric-asymmetry]] warns about.
-const attempts: SectionAttempt[] = [
-  { section: 'writing', mode: 'flashcard', itemId: 'wr-1', wasCorrect: true, at: '2026-07-01T10:00:00Z' },
-  { section: 'writing', mode: 'flashcard', itemId: 'wr-2', wasCorrect: true, at: '2026-07-01T10:01:00Z' },
-  { section: 'writing', mode: 'practice', itemId: 'wr-1', wasCorrect: false, at: '2026-07-02T10:00:00Z' },
-  { section: 'yesno', mode: 'practice', itemId: 'yn-1', wasCorrect: true, at: '2026-07-02T10:05:00Z' },
-];
+// Minimal fake of the Supabase query-builder chain loadLearningSignals uses:
+// select/eq/not/order/limit all return `this`, and the object is a thenable
+// so `Promise.all([...])` can await it directly, same as the real builder.
+class FakeQuery<T> {
+  constructor(private readonly data: T) {}
+  select() { return this; }
+  eq() { return this; }
+  not() { return this; }
+  order() { return this; }
+  limit() { return this; }
+  then<TResult1 = { data: T; error: null }>(
+    onfulfilled?: ((value: { data: T; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
+  ) {
+    return Promise.resolve({ data: this.data, error: null }).then(onfulfilled ?? undefined);
+  }
+}
 
-describe('learning-signals derivations', () => {
-  it('uses mastery, never deck state, for readiness inputs', () => {
-    const mastered = deriveSectionMastered(attempts);
-    const known = deriveSectionKnown(attempts);
-    // Both `deriveSectionMastered` and `deriveSectionKnown` return
-    // Record<SectionKey, string[]> — arrays, not Sets — so compare lengths.
-    // The two genuinely disagree for this learner — that is the point.
-    expect(known.writing.length).toBeGreaterThan(mastered.writing.length);
-    expect(mastered.writing.length).toBe(0); // last graded attempt on wr-1 was wrong
+interface RollupSection {
+  mastered: number;
+  graded_correct: number;
+  graded_total: number;
+}
+
+interface Rollup {
+  civics_seen: number;
+  civics_mastered: number;
+  sections: Partial<Record<'whatmean' | 'yesno' | 'writing', RollupSection>>;
+}
+
+function fakeSupabase(opts: {
+  rollup: Rollup;
+  mocks?: unknown[];
+  sectionMocks?: unknown[];
+}): SupabaseClient {
+  const rpc = vi.fn().mockResolvedValue({ data: opts.rollup, error: null });
+  const from = vi.fn((table: string) => {
+    if (table === 'n400_quiz_attempts') return new FakeQuery(opts.mocks ?? []);
+    if (table === 'n400_section_mock_results') return new FakeQuery(opts.sectionMocks ?? []);
+    throw new Error(`unexpected table in test fake: ${table}`);
+  });
+  return { rpc, from } as unknown as SupabaseClient;
+}
+
+const noGradedDays: readonly GradedDay[] = [];
+
+describe('loadLearningSignals', () => {
+  it('feeds SQL-computed mastery — not graded accuracy/volume — into readiness', async () => {
+    // Writing has real graded practice (3/4 correct = 75%, "looks fine") but
+    // its LATEST graded attempt per item never lands as mastered, so the
+    // rollup reports mastered: 0. If loadLearningSignals ever substituted
+    // graded_correct/graded_total (or seen) for mastered here, this learner
+    // would misread as ready — the exact bug class the old flashcard-vs-
+    // graded drift-lock warned about, now expressed as a rollup input.
+    const supabase = fakeSupabase({
+      rollup: {
+        civics_seen: N400_QUESTIONS.length,
+        civics_mastered: N400_QUESTIONS.length,
+        sections: {
+          whatmean: { mastered: WHATMEAN_QUESTIONS.length, graded_correct: 5, graded_total: 5 },
+          yesno: { mastered: YESNO_QUESTIONS.length, graded_correct: 5, graded_total: 5 },
+          writing: { mastered: 0, graded_correct: 3, graded_total: 4 },
+        },
+      },
+      sectionMocks: [
+        { id: 'sm-1', section: 'writing', score: 3, total: 3, passed: true, completed_at: '2026-07-01T00:00:00Z' },
+        { id: 'sm-2', section: 'speaking', score: 3, total: 3, passed: true, completed_at: '2026-07-01T00:00:00Z' },
+      ],
+    });
+
+    const result = await loadLearningSignals(supabase, 'user-1', viDict, noGradedDays);
+
+    expect(result.readinessReady).toBe(false);
   });
 
-  it('excludes flashcard self-grades from the weakest-section tally', () => {
-    const tally = deriveSectionGradedTally(attempts);
-    expect(tally.writing).toEqual({ total: 1, correct: 0 });
-    expect(tally.yesno).toEqual({ total: 1, correct: 1 });
-    // Writing is weakest on graded evidence, despite looking perfect on the deck.
-    expect(tally.writing.correct / tally.writing.total)
-      .toBeLessThan(tally.yesno.correct / tally.yesno.total);
+  it('computes weakest section from graded accuracy, breaking ties in SECTION_KEYS order', async () => {
+    // yesno and writing tie at 50% graded accuracy; whatmean is stronger.
+    // SECTION_KEYS = ['whatmean', 'yesno', 'writing'], and the scan uses a
+    // strict `<`, so the FIRST section reached at the lowest rate wins ties.
+    const supabase = fakeSupabase({
+      rollup: {
+        civics_seen: 0,
+        civics_mastered: 0,
+        sections: {
+          whatmean: { mastered: 0, graded_correct: 9, graded_total: 10 },
+          yesno: { mastered: 0, graded_correct: 1, graded_total: 2 },
+          writing: { mastered: 0, graded_correct: 2, graded_total: 4 },
+        },
+      },
+    });
+
+    const result = await loadLearningSignals(supabase, 'user-1', viDict, noGradedDays);
+
+    expect(result.weakestSection).toBe('yesno');
+    expect(result.weakestSectionAttempts).toBe(2);
   });
 
-  it('readiness is not ready for a learner with no mastery and no mocks', () => {
-    const signals: ReadinessSignals = {
-      civicsKnown: 0, civicsTotal: 128,
-      whatmeanKnown: 0, whatmeanTotal: 10,
-      yesnoKnown: 0, yesnoTotal: 10,
-      writingKnown: 0, writingTotal: 10,
-      mockResults: [],
-      sectionMockResults: [],
-    };
-    expect(deriveReadiness(signals, viDict).ready).toBe(false);
+  it('skips sections with no graded attempts when picking the weakest', async () => {
+    const supabase = fakeSupabase({
+      rollup: {
+        civics_seen: 0,
+        civics_mastered: 0,
+        sections: {
+          writing: { mastered: 0, graded_correct: 1, graded_total: 3 },
+        },
+      },
+    });
+
+    const result = await loadLearningSignals(supabase, 'user-1', viDict, noGradedDays);
+
+    expect(result.weakestSection).toBe('writing');
+  });
+
+  it('allCivicsSectionsDone is true only at civics_seen === N400_QUESTIONS.length', async () => {
+    const atBoundary = fakeSupabase({
+      rollup: { civics_seen: N400_QUESTIONS.length, civics_mastered: 0, sections: {} },
+    });
+    const belowBoundary = fakeSupabase({
+      rollup: { civics_seen: N400_QUESTIONS.length - 1, civics_mastered: 0, sections: {} },
+    });
+
+    const atResult = await loadLearningSignals(atBoundary, 'user-1', viDict, noGradedDays);
+    const belowResult = await loadLearningSignals(belowBoundary, 'user-1', viDict, noGradedDays);
+
+    expect(atResult.allCivicsSectionsDone).toBe(true);
+    expect(belowResult.allCivicsSectionsDone).toBe(false);
+  });
+
+  it('readiness is not ready for a learner with no mastery and no mocks', async () => {
+    const supabase = fakeSupabase({
+      rollup: { civics_seen: 0, civics_mastered: 0, sections: {} },
+    });
+
+    const result = await loadLearningSignals(supabase, 'user-1', viDict, noGradedDays);
+
+    expect(result.readinessReady).toBe(false);
+    expect(result.mockCount).toBe(0);
+    expect(result.mockAvgPct).toBeNull();
   });
 });

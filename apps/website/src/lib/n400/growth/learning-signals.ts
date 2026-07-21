@@ -6,25 +6,19 @@
 // user's own Tiến độ screen — S9 firing for someone the app tells "chưa sẵn
 // sàng" is the exact failure this module exists to prevent.
 //
-// Deliberate deviation from the plan's sketch: `n400_user_profile` has no
-// `mastered_question_ids` / `seen_question_ids` columns (verified against the
-// live schema) — civics mastery has never been denormalized there. The
-// client derives it from the SAME quiz-attempts join this module now reads:
-// `masteredQuestionIds` (quiz-engine.ts) over the full n400_quiz_attempts +
-// n400_question_attempts history, exactly like user-state.tsx's `loadAll`
-// and its `stats.mastered` / `stats.coverage` memo.
+// Mastery/coverage/section tallies now come from n400_learning_rollup() (SQL,
+// n400_25 migration) instead of a full n400_quiz_attempts + n400_section_attempts
+// read: PostgREST silently caps a response at 1000 rows with no defined order,
+// so the most active users were getting truncated, arbitrary subsets of their
+// own history. The "mastered ≠ deck state" rule (last GRADED attempt correct,
+// never a flashcard self-grade) now lives in that SQL — see the migration's
+// comment for the drift-lock — mirroring quiz-engine.ts's masteredQuestionIds
+// and section-progress.ts's deriveSectionMastered / deriveSectionGradedTally.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { deriveReadiness, type ReadinessSignals } from '../readiness';
-import {
-  deriveSectionGradedTally,
-  deriveSectionMastered,
-  SECTION_KEYS,
-  type SectionAttempt,
-  type SectionKey,
-} from '../section-progress';
-import { masteredQuestionIds } from '../quiz-engine';
-import type { MockResult, SectionMockResult, QuestionAttempt, QuizMode } from '../storage';
+import { SECTION_KEYS, type SectionKey } from '../section-progress';
+import type { MockResult, SectionMockResult } from '../storage';
 import type { N400Dict } from '../i18n/vi';
 import type { GradedDay } from './profiling';
 import { N400_QUESTIONS } from '../questions-data';
@@ -51,27 +45,16 @@ export interface LearningSignals {
 interface DbQuestionAttemptRow {
   question_id: number;
   was_correct: boolean;
-  answered_at: string;
-  attempt_id: string;
 }
 
-interface DbQuiz {
+interface DbMockQuiz {
   id: string;
-  mode: string;
   score: number;
   total_questions: number;
   passed: boolean | null;
   started_at: string;
-  completed_at: string | null;
+  completed_at: string;
   n400_question_attempts: DbQuestionAttemptRow[] | null;
-}
-
-interface DbSectionAttempt {
-  section: SectionKey;
-  item_id: string;
-  mode: QuizMode;
-  was_correct: boolean;
-  answered_at: string;
 }
 
 interface DbSectionMock {
@@ -81,6 +64,21 @@ interface DbSectionMock {
   total: number;
   passed: boolean;
   completed_at: string;
+}
+
+interface LearningRollup {
+  civics_seen: number;
+  civics_mastered: number;
+  sections: Partial<
+    Record<
+      SectionKey,
+      {
+        mastered: number;
+        graded_correct: number;
+        graded_total: number;
+      }
+    >
+  >;
 }
 
 /**
@@ -95,7 +93,8 @@ export async function loadLearningSignals(
   dict: N400Dict,
   gradedDays: readonly GradedDay[],
 ): Promise<LearningSignals> {
-  const [quizzesRes, sectionRes, sectionMockRes] = await Promise.all([
+  const [rollupRes, mocksRes, sectionMockRes] = await Promise.all([
+    supabase.rpc('n400_learning_rollup'),
     supabase
       .from('n400_quiz_attempts')
       .select(
@@ -104,41 +103,28 @@ export async function loadLearningSignals(
         n400_question_attempts ( question_id, was_correct, answered_at, attempt_id )
       `,
       )
-      .eq('user_id', userId),
-    supabase
-      .from('n400_section_attempts')
-      .select('section, item_id, mode, was_correct, answered_at')
       .eq('user_id', userId)
-      .order('answered_at', { ascending: true }),
+      .eq('mode', 'mock_test')
+      .not('completed_at', 'is', null)
+      .order('started_at', { ascending: false })
+      .limit(100),
     supabase
       .from('n400_section_mock_results')
       .select('id, section, score, total, passed, completed_at')
-      .eq('user_id', userId),
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
+      .limit(100),
   ]);
 
-  const quizzes = (quizzesRes.data ?? []) as DbQuiz[];
-  const quizModeById = new Map(quizzes.map((q) => [q.id, q.mode as QuizMode]));
+  const rollup = (rollupRes.data ?? { civics_seen: 0, civics_mastered: 0, sections: {} }) as LearningRollup;
 
-  // Chronological order matters: masteredQuestionIds is last-attempt-wins, so
-  // out-of-order rows would silently pick the wrong answer as "current". The
-  // nested join has no per-parent ordering guarantee, so sort explicitly —
-  // the same fix user-state.tsx's loadAll applies to this exact join.
-  const civicsAttempts: QuestionAttempt[] = quizzes
-    .flatMap((q) => q.n400_question_attempts ?? [])
-    .filter((r) => quizModeById.has(r.attempt_id))
-    .sort((a, b) => new Date(a.answered_at).getTime() - new Date(b.answered_at).getTime())
-    .map((r) => ({
-      questionId: r.question_id,
-      wasCorrect: r.was_correct,
-      mode: quizModeById.get(r.attempt_id)!,
-      at: r.answered_at,
-    }));
-
-  const civicsSeen = new Set(civicsAttempts.map((a) => a.questionId));
-  const civicsMasteredCount = masteredQuestionIds(civicsAttempts).length;
-
-  const mockResults: MockResult[] = quizzes
-    .filter((q): q is DbQuiz & { completed_at: string } => q.mode === 'mock_test' && q.completed_at !== null)
+  // Fetched `desc` so `.limit(100)` keeps the RECENT rows for an active user;
+  // reverse back to ascending here so downstream sees the same chronological
+  // shape the old insertion-order fetch produced (deriveReadiness's gần-nhất
+  // rules depend on that order, not on any resorting of theirs).
+  const mockResults: MockResult[] = ((mocksRes.data ?? []) as DbMockQuiz[])
+    .slice()
+    .reverse()
     .map((q) => ({
       id: q.id,
       startedAt: q.started_at,
@@ -152,35 +138,28 @@ export async function loadLearningSignals(
       })),
     }));
 
-  const sectionAttempts: SectionAttempt[] = ((sectionRes.data ?? []) as DbSectionAttempt[]).map((r) => ({
-    section: r.section,
-    itemId: r.item_id,
-    wasCorrect: r.was_correct,
-    mode: r.mode,
-    at: r.answered_at,
-  }));
+  const sectionMockResults: SectionMockResult[] = ((sectionMockRes.data ?? []) as DbSectionMock[])
+    .slice()
+    .reverse()
+    .map((r) => ({
+      id: r.id,
+      section: r.section,
+      passed: r.passed,
+      score: r.score,
+      total: r.total,
+      completedAt: r.completed_at,
+    }));
 
-  const sectionMockResults: SectionMockResult[] = ((sectionMockRes.data ?? []) as DbSectionMock[]).map((r) => ({
-    id: r.id,
-    section: r.section,
-    passed: r.passed,
-    score: r.score,
-    total: r.total,
-    completedAt: r.completed_at,
-  }));
+  const sec = (k: SectionKey) => rollup.sections[k] ?? { mastered: 0, graded_correct: 0, graded_total: 0 };
 
-  // "Thuộc" = last GRADED attempt correct (deriveSectionMastered), never the
-  // flashcard deck's marked-state (deriveSectionKnown) — swapping these would
-  // let S9 fire for a user whose own Tiến độ screen says they're not ready.
-  const mastered = deriveSectionMastered(sectionAttempts);
   const signals: ReadinessSignals = {
-    civicsKnown: civicsMasteredCount,
+    civicsKnown: rollup.civics_mastered,
     civicsTotal: N400_QUESTIONS.length,
-    whatmeanKnown: mastered.whatmean.length,
+    whatmeanKnown: sec('whatmean').mastered,
     whatmeanTotal: WHATMEAN_QUESTIONS.length,
-    yesnoKnown: mastered.yesno.length,
+    yesnoKnown: sec('yesno').mastered,
     yesnoTotal: YESNO_QUESTIONS.length,
-    writingKnown: mastered.writing.length,
+    writingKnown: sec('writing').mastered,
     writingTotal: WRITING_SENTENCES.length,
     mockResults,
     sectionMockResults,
@@ -190,32 +169,27 @@ export async function loadLearningSignals(
   const pcts = mockResults.filter((m) => m.total > 0).map((m) => (m.score / m.total) * 100);
   const mockAvgPct = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : null;
 
-  // Weakest = lowest graded accuracy among sections that have graded attempts.
-  // Ties break in SECTION_KEYS order, matching the Study/Progress pages.
-  const tally = deriveSectionGradedTally(sectionAttempts);
+  // Weakest = lowest graded accuracy among sections with graded attempts;
+  // ties break in SECTION_KEYS order (strict <), matching Study/Progress.
   let weakestSection: SectionKey | null = null;
   let weakestRate = Infinity;
   for (const key of SECTION_KEYS) {
-    const t = tally[key];
-    if (t.total === 0) continue;
-    const rate = t.correct / t.total;
+    const t = sec(key);
+    if (t.graded_total === 0) continue;
+    const rate = t.graded_correct / t.graded_total;
     if (rate < weakestRate) {
       weakestRate = rate;
       weakestSection = key;
     }
   }
 
-  // gradedDays is already one row per distinct UTC day (n400_graded_day_rollup),
-  // the same currency G2's evaluator and the SQL scoring both use.
-  const practiceDays = gradedDays.length;
-
   return {
     readinessReady: readiness.ready,
     mockCount: mockResults.length,
     mockAvgPct,
     weakestSection,
-    weakestSectionAttempts: weakestSection ? tally[weakestSection].total : 0,
-    practiceDays,
-    allCivicsSectionsDone: civicsSeen.size >= N400_QUESTIONS.length,
+    weakestSectionAttempts: weakestSection ? sec(weakestSection).graded_total : 0,
+    practiceDays: gradedDays.length,
+    allCivicsSectionsDone: rollup.civics_seen >= N400_QUESTIONS.length,
   };
 }
