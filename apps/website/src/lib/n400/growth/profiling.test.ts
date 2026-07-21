@@ -3,7 +3,7 @@ import {
   answersFromLeadProfile,
   assignVariant,
   selectActivePrompt,
-  type GradedEvent,
+  type GradedDay,
   type ProfilingInputs,
   type PromptDefinition,
   type PromptState,
@@ -51,9 +51,12 @@ const SEEDS: PromptDefinition[] = [
 
 const NOW = new Date('2026-07-19T12:00:00Z');
 
-function practiceOn(day: string): GradedEvent {
-  return { type: 'practice_completed', at: `${day}T10:00:00Z` };
-}
+const gDay = (
+  day: string,
+  practice = 1,
+  mock = 0,
+  lastAt = `${day}T12:00:00Z`,
+): GradedDay => ({ day, practiceCount: practice, mockCount: mock, lastAt });
 
 function inputs(partial: Partial<ProfilingInputs> = {}): ProfilingInputs {
   return {
@@ -61,7 +64,7 @@ function inputs(partial: Partial<ProfilingInputs> = {}): ProfilingInputs {
     definitions: SEEDS,
     states: [],
     answers: {},
-    gradedEvents: [],
+    gradedDays: [],
     now: NOW,
     ...partial,
   };
@@ -73,43 +76,45 @@ describe('selectActivePrompt', () => {
   });
 
   it('offers filed on the results surface after the first practice event, with a debug reason', () => {
-    const got = selectActivePrompt(inputs({ gradedEvents: [practiceOn('2026-07-19')] }), 'results');
+    const got = selectActivePrompt(inputs({ gradedDays: [gDay('2026-07-19')] }), 'results');
     expect(got?.def.question_key).toBe('filed');
     expect(got?.reason).toBe('practice_completed>=1');
   });
 
   it('never re-offers an answered question', () => {
     const got = selectActivePrompt(
-      inputs({ answers: { filed: 'yes' }, gradedEvents: [practiceOn('2026-07-19')] }),
+      inputs({ answers: { filed: 'yes' }, gradedDays: [gDay('2026-07-19')] }),
       'results',
     );
     expect(got?.def.question_key).not.toBe('filed');
   });
 
   it('hides filing_timeline when filed=yes, shows it when filed=not_yet after a mock', () => {
-    const events: GradedEvent[] = [practiceOn('2026-07-19'), { type: 'mock_completed', at: '2026-07-19T11:00:00Z' }];
+    // Same day, one practice + one mock event — the rollup collapses both
+    // into a single GradedDay row with lastAt set to the newer timestamp.
+    const days: GradedDay[] = [gDay('2026-07-19', 1, 1, '2026-07-19T11:00:00Z')];
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: events }), 'results')?.def.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedDays: days }), 'results')?.def.question_key,
     ).not.toBe('filing_timeline');
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'not_yet' }, gradedEvents: events }), 'results')?.def.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'not_yet' }, gradedDays: days }), 'results')?.def.question_key,
     ).toBe('filing_timeline');
   });
 
   it('gates interview_notice behind 3 distinct practice days', () => {
-    const twoDays = [practiceOn('2026-07-17'), practiceOn('2026-07-18')];
-    const threeDays = [...twoDays, practiceOn('2026-07-19')];
+    const twoDays = [gDay('2026-07-17'), gDay('2026-07-18')];
+    const threeDays = [...twoDays, gDay('2026-07-19')];
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: twoDays }), 'results'),
+      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedDays: twoDays }), 'results'),
     ).toBeNull();
     expect(
-      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedEvents: threeDays }), 'results')?.def.question_key,
+      selectActivePrompt(inputs({ answers: { filed: 'yes' }, gradedDays: threeDays }), 'results')?.def.question_key,
     ).toBe('interview_notice');
   });
 
   it('offers interview_date immediately after interview_notice=yes', () => {
     const got = selectActivePrompt(
-      inputs({ answers: { filed: 'yes', interview_notice: 'yes' }, gradedEvents: [practiceOn('2026-07-19')] }),
+      inputs({ answers: { filed: 'yes', interview_notice: 'yes' }, gradedDays: [gDay('2026-07-19')] }),
       'results',
     );
     expect(got?.def.question_key).toBe('interview_date');
@@ -122,7 +127,7 @@ describe('selectActivePrompt', () => {
       skipped_at: '2026-07-18T00:00:00Z',
       snooze_until: '2026-07-24T00:00:00Z',
     }];
-    const base = inputs({ states: skipped, gradedEvents: [practiceOn('2026-07-19')] });
+    const base = inputs({ states: skipped, gradedDays: [gDay('2026-07-19')] });
     expect(selectActivePrompt(base, 'results')).toBeNull();
     expect(selectActivePrompt(base, 'dashboard')).toBeNull(); // snooze not over, 1 active day since skip
     // 6 days later the snooze expired:
@@ -141,7 +146,7 @@ describe('selectActivePrompt', () => {
     const got = selectActivePrompt(
       inputs({
         states: skipped,
-        gradedEvents: [practiceOn('2026-07-17'), practiceOn('2026-07-18'), practiceOn('2026-07-19')],
+        gradedDays: [gDay('2026-07-17'), gDay('2026-07-18'), gDay('2026-07-19')],
       }),
       'dashboard',
     );
@@ -149,9 +154,9 @@ describe('selectActivePrompt', () => {
   });
 
   it('returns a single question — lowest sort_order wins', () => {
-    const manyDays = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'].map(practiceOn);
+    const manyDays = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'].map((d) => gDay(d));
     // filed and wants_guidance are both eligible; filed (sort 1) wins.
-    expect(selectActivePrompt(inputs({ gradedEvents: manyDays }), 'results')?.def.question_key).toBe('filed');
+    expect(selectActivePrompt(inputs({ gradedDays: manyDays }), 'results')?.def.question_key).toBe('filed');
   });
 });
 

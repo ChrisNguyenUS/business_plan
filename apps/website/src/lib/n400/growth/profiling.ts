@@ -44,9 +44,15 @@ export interface PromptState {
   snooze_until: string | null;
 }
 
-export interface GradedEvent {
-  type: 'practice_completed' | 'mock_completed';
-  at: string;
+/** One row per UTC day with graded activity — the n400_graded_day_rollup()
+ *  shape, bounded by distinct study days instead of raw event count. */
+export interface GradedDay {
+  /** 'yyyy-mm-dd' (UTC). */
+  day: string;
+  practiceCount: number;
+  mockCount: number;
+  /** ISO timestamp of the newest graded event that day. */
+  lastAt: string;
 }
 
 export interface ProfilingInputs {
@@ -55,7 +61,7 @@ export interface ProfilingInputs {
   states: PromptState[];
   /** question_key → answered value, reconstructed from n400_lead_profiles. */
   answers: Record<string, string>;
-  gradedEvents: GradedEvent[];
+  gradedDays: GradedDay[];
   now: Date;
 }
 
@@ -86,12 +92,6 @@ export function assignVariant(userId: string, questionKey: string, variants: str
   return sorted[fnv1a(`${questionKey}:${userId}`) % sorted.length];
 }
 
-// Events carry UTC timestamps; "active day" uses the UTC date, matching the
-// created_at::date grouping the SQL scoring already uses.
-function utcDay(iso: string): string {
-  return iso.slice(0, 10);
-}
-
 export interface ActivePromptDecision {
   def: PromptDefinition;
   /** Which conditions the winner satisfied — for logs/debug (the profiling
@@ -103,7 +103,7 @@ export function selectActivePrompt(
   inputs: ProfilingInputs,
   surface: PromptSurface,
 ): ActivePromptDecision | null {
-  const { userId, definitions, states, answers, gradedEvents, now } = inputs;
+  const { userId, definitions, states, answers, gradedDays, now } = inputs;
   const stateByKey = new Map(states.map((s) => [s.question_key, s]));
 
   // One deterministic variant per (user, question); other variants invisible.
@@ -121,8 +121,9 @@ export function selectActivePrompt(
   }
   candidates.sort((a, b) => a.sort_order - b.sort_order);
 
-  const eventCount = (type: string) => gradedEvents.filter((e) => e.type === type).length;
-  const distinctDays = new Set(gradedEvents.map((e) => utcDay(e.at))).size;
+  const eventCount = (type: 'practice_completed' | 'mock_completed') =>
+    gradedDays.reduce((n, d) => n + (type === 'practice_completed' ? d.practiceCount : d.mockCount), 0);
+  const distinctDays = gradedDays.length;
 
   for (const def of candidates) {
     if (answers[def.question_key] !== undefined) continue;
@@ -149,11 +150,11 @@ export function selectActivePrompt(
       const snoozeOver =
         !st?.snooze_until || new Date(st.snooze_until).getTime() <= now.getTime();
       const skippedAtMs = new Date(st!.skipped_at!).getTime();
-      const activeDaysSinceSkip = new Set(
-        gradedEvents
-          .filter((e) => new Date(e.at).getTime() > skippedAtMs)
-          .map((e) => utcDay(e.at)),
-      ).size;
+      // max(created_at) that day > skip time ⇔ some graded event that day
+      // after the skip — exactly what the old per-event filter computed.
+      const activeDaysSinceSkip = gradedDays.filter(
+        (d) => new Date(d.lastAt).getTime() > skippedAtMs,
+      ).length;
       if (!snoozeOver && activeDaysSinceSkip < def.snooze_sessions) continue;
       reasons.push(snoozeOver ? 'snooze_expired' : `active_days_since_skip>=${def.snooze_sessions}`);
     }

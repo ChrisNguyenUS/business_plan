@@ -42,7 +42,7 @@ export async function loadProfilingInputs(
     definitions: (data ?? []) as PromptDefinition[],
     states: ctx.promptStates,
     answers: answersFromLeadProfile(ctx.leadProfile),
-    gradedEvents: ctx.gradedEvents,
+    gradedDays: ctx.gradedDays,
     now: ctx.now,
   };
 }

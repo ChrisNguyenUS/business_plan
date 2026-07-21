@@ -32,7 +32,7 @@ export async function loadCtaState(
       .from('n400_cta_definitions')
       .select('cta_id, variant, group_key, title_en, title_vi, body_en, body_vi, cta_label_en, cta_label_vi, action, conditions, priority, cooldown_days')
       .eq('enabled', true),
-    loadLearningSignals(supabase, ctx.userId, dict, ctx.gradedEvents),
+    loadLearningSignals(supabase, ctx.userId, dict, ctx.gradedDays),
   ]);
 
   // S3 asks "how long has this stage been stale?" — the newest profiling

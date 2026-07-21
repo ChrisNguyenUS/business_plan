@@ -26,7 +26,7 @@ import {
 import { masteredQuestionIds } from '../quiz-engine';
 import type { MockResult, SectionMockResult, QuestionAttempt, QuizMode } from '../storage';
 import type { N400Dict } from '../i18n/vi';
-import type { GradedEvent } from './profiling';
+import type { GradedDay } from './profiling';
 import { N400_QUESTIONS } from '../questions-data';
 import { WHATMEAN_QUESTIONS } from '../whatmean-data';
 import { YESNO_QUESTIONS } from '../yesno-data';
@@ -84,16 +84,16 @@ interface DbSectionMock {
 }
 
 /**
- * `gradedEvents` comes from the shared growth context — this module must NOT
- * re-read n400_growth_events. Both halves of the growth state need that log,
- * and reading it per-evaluator is exactly the duplication the context layer
- * exists to remove.
+ * `gradedDays` comes from the shared growth context (n400_graded_day_rollup())
+ * — this module must NOT re-read n400_growth_events. Both halves of the
+ * growth state need that log, and reading it per-evaluator is exactly the
+ * duplication the context layer exists to remove.
  */
 export async function loadLearningSignals(
   supabase: SupabaseClient,
   userId: string,
   dict: N400Dict,
-  gradedEvents: readonly GradedEvent[],
+  gradedDays: readonly GradedDay[],
 ): Promise<LearningSignals> {
   const [quizzesRes, sectionRes, sectionMockRes] = await Promise.all([
     supabase
@@ -205,8 +205,9 @@ export async function loadLearningSignals(
     }
   }
 
-  // UTC day, the same currency G2's evaluator and the SQL scoring both use.
-  const practiceDays = new Set(gradedEvents.map((e) => e.at.slice(0, 10))).size;
+  // gradedDays is already one row per distinct UTC day (n400_graded_day_rollup),
+  // the same currency G2's evaluator and the SQL scoring both use.
+  const practiceDays = gradedDays.length;
 
   return {
     readinessReady: readiness.ready,
