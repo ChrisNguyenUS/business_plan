@@ -62,6 +62,8 @@ export async function getBookingContext(): Promise<BookingContext> {
       .select('first_name, middle_name, last_name, preferred_name, name_suffix, full_name')
       .eq('id', user.id)
       .maybeSingle(),
+    // Re-read at submit time too (see below) — the source CTA can legitimately
+    // change between form load and submit, so this isn't a duplicate call to collapse.
     latestClickedCta(supabase, user.id),
   ]);
 
@@ -90,6 +92,11 @@ export async function submitConsultationRequest(raw: {
 
   // Server-side dedupe: one open request per user. Idempotent success —
   // a double-submit or a second tab should land on the confirm screen, not an error.
+  // NOTE: this is a check-then-insert race, not atomic — a true concurrent double-submit
+  // (two requests landing within the same round-trip) could still create two rows. Accepted
+  // tradeoff for a lead-capture form (worst case: a duplicate lead record + duplicate staff
+  // email), not worth a DB constraint for this volume/stakes. Revisit with a partial unique
+  // index on (user_id) WHERE status IN ('new','contacted') if this ever becomes a real problem.
   const open = await supabase
     .from('n400_consultation_requests')
     .select('id')
@@ -100,6 +107,9 @@ export async function submitConsultationRequest(raw: {
 
   const [touchRes, sourceCta] = await Promise.all([
     supabase.from('n400_lead_profiles').select('first_touch, last_touch').eq('user_id', user.id).maybeSingle(),
+    // Deliberate second read (getBookingContext already reads this once at form-load
+    // time): the user may have clicked a different CTA since then, so the attribution
+    // stamped on the insert must reflect the freshest click, not the load-time value.
     latestClickedCta(supabase, user.id),
   ]);
 
@@ -117,7 +127,10 @@ export async function submitConsultationRequest(raw: {
     })
     .select('id')
     .single();
-  if (error || !inserted) return { ok: false, error: 'insert_failed' };
+  if (error || !inserted) {
+    console.error('Consultation insert error:', error);
+    return { ok: false, error: 'insert_failed' };
+  }
 
   // Best-effort side effects — both helpers catch internally and never throw.
   await Promise.all([
