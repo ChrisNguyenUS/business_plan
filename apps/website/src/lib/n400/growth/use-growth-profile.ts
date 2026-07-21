@@ -25,6 +25,7 @@ export function useGrowthProfile(): GrowthProfile {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfile(OFF);
       return;
     }
