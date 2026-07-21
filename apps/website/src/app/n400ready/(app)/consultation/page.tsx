@@ -49,11 +49,11 @@ export default function ConsultationPage() {
           void ingestClientEvent('consultation_form_opened', { source_cta: c.sourceCta ?? 'none' });
         }
       })
-      .catch(() => { router.replace('/n400ready'); });
+      .catch(() => { if (cancelled) return; router.replace('/n400ready'); });
     return () => { cancelled = true; };
   }, [router]);
 
-  if (!ctx) return null;
+  if (!ctx) return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
 
   if (submitted || ctx.alreadyRequested) {
     return (
@@ -153,7 +153,7 @@ export default function ConsultationPage() {
             </select>
           </label>
 
-          {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+          {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
 
           <button
             type="submit" disabled={submitting}
