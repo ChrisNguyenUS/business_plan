@@ -288,6 +288,18 @@ export const en: N400Dict = {
       alreadyBody: 'The Manna team will reach out soon. Need a specific time? Pick a slot below.',
       backToDashboard: 'Back to dashboard',
     },
+    checklist: {
+      eyebrow: 'Free resource',
+      title: 'N-400 Filing Checklist',
+      subtitle: 'The steps and documents to prepare — about a 3-minute read.',
+      progress: '{done}/{total} items prepared',
+      disclosure:
+        'Manna One Solution is not a law firm and does not provide legal advice. This information is general reference only.',
+      consultTitle: 'Still have questions?',
+      consultBody: 'Book a free consultation — the Manna team will review your application with you.',
+      consultCta: 'Book a free consultation',
+      backToDashboard: 'Back to dashboard',
+    },
   },
   modules: {
     tip: {

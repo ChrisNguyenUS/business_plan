@@ -288,6 +288,18 @@ export const vi = {
       alreadyBody: 'Đội ngũ Manna sẽ sớm liên hệ với bạn. Cần đổi giờ? Chọn lịch trực tiếp bên dưới.',
       backToDashboard: 'Về trang chính',
     },
+    checklist: {
+      eyebrow: 'Tài liệu miễn phí',
+      title: 'Checklist chuẩn bị hồ sơ N-400',
+      subtitle: 'Các bước và giấy tờ cần chuẩn bị — đọc khoảng 3 phút.',
+      progress: 'Đã chuẩn bị {done}/{total} mục',
+      disclosure:
+        'Manna One Solution không phải là công ty luật và không cung cấp tư vấn pháp lý. Thông tin này chỉ mang tính tham khảo chung.',
+      consultTitle: 'Vẫn còn câu hỏi?',
+      consultBody: 'Đặt buổi tư vấn miễn phí — đội ngũ Manna sẽ cùng bạn rà soát hồ sơ.',
+      consultCta: 'Đặt tư vấn miễn phí',
+      backToDashboard: 'Về trang chính',
+    },
   },
   modules: {
     tip: {
