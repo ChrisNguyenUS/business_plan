@@ -27,12 +27,21 @@ export async function loadCtaState(
   availableActions: Set<CtaAction>,
   dict: N400Dict,
 ): Promise<ActiveCta | null> {
-  const [defsRes, signals] = await Promise.all([
+  const [defsRes, signals, pendingRes] = await Promise.all([
     supabase
       .from('n400_cta_definitions')
       .select('cta_id, variant, group_key, title_en, title_vi, body_en, body_vi, cta_label_en, cta_label_vi, action, conditions, priority, cooldown_days')
       .eq('enabled', true),
     loadLearningSignals(supabase, ctx.userId, dict, ctx.gradedDays),
+    // Consultation half only — per the growth-context guard rail this read
+    // does not belong in loadGrowthContext. An open (new/contacted) request
+    // parks the consultation group without burning its cooldown.
+    supabase
+      .from('n400_consultation_requests')
+      .select('id')
+      .eq('user_id', ctx.userId)
+      .in('status', ['new', 'contacted'])
+      .limit(1),
   ]);
 
   // S3 asks "how long has this stage been stale?" — the newest profiling
@@ -53,6 +62,7 @@ export async function loadCtaState(
     journeyConfirmedAt,
     lastGrowthPromptAt: ctx.leadProfile?.last_growth_prompt_at ?? null,
     consultationBookedAt: ctx.leadProfile?.consultation_booked_at ?? null,
+    consultationPending: (pendingRes.data ?? []).length > 0,
     availableActions,
     now: ctx.now,
   });

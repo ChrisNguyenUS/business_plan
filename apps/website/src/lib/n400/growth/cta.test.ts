@@ -58,6 +58,7 @@ function inputs(partial: Partial<CtaInputs> = {}): CtaInputs {
     journeyConfirmedAt: null,
     lastGrowthPromptAt: null,
     consultationBookedAt: null,
+    consultationPending: false,
     availableActions: new Set(['book_consultation', 'start_mock', 'open_checklist']),
     now: NOW,
     ...partial,
@@ -180,6 +181,33 @@ describe('selectActiveCta — hard rules (spec §4.1)', () => {
     // S9 is gone despite being eligible and highest priority; education remains.
     expect(converted.def?.cta_id).toBe('s7_civics_done');
     expect(converted.eligible).not.toContain('s9_final_review');
+  });
+
+  it('suppresses consultation CTAs while a request is pending, with reason consultation_pending', () => {
+    const got = selectActiveCta(inputs({
+      signals: { ...NO_SIGNALS, readinessReady: true },
+      consultationPending: true,
+    }));
+    expect(got.def).toBeNull();
+    expect(got.reason).toBe('consultation_pending');
+  });
+
+  it('reports converted (not no_eligible) when only booking retirement removed the CTAs', () => {
+    const got = selectActiveCta(inputs({
+      signals: { ...NO_SIGNALS, readinessReady: true },
+      consultationBookedAt: '2026-07-01T00:00:00Z',
+    }));
+    expect(got.def).toBeNull();
+    expect(got.reason).toBe('converted');
+  });
+
+  it('still shows education CTAs while a consultation request is pending', () => {
+    const got = selectActiveCta(inputs({
+      signals: { ...NO_SIGNALS, allCivicsSectionsDone: true },
+      consultationPending: true,
+    }));
+    expect(got.def?.cta_id).toBe('s7_civics_done');
+    expect(got.def?.group_key).toBe('education');
   });
 
   it('rule 7: highest priority wins when several scenarios match', () => {

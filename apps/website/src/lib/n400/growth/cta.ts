@@ -64,6 +64,10 @@ export interface CtaInputs {
   journeyConfirmedAt: string | null;
   lastGrowthPromptAt: string | null;
   consultationBookedAt: string | null;
+  /** An open request — status new/contacted — parks the consultation group
+      without burning cooldowns. Unlike `consultationBookedAt`, this is not
+      permanent: cancelled/no_show requests let the group return. */
+  consultationPending: boolean;
   /** Actions with a destination that exists in this build. G3a ships only
       `start_mock`; G3b adds `book_consultation`, G3c adds `open_checklist`. */
   availableActions: Set<CtaAction>;
@@ -138,6 +142,10 @@ export function selectActiveCta(inputs: CtaInputs): CtaDecision {
 
   // §4.1 rule 5 — a converted lead never sees a consultation CTA again.
   const consultationRetired = Boolean(inputs.consultationBookedAt);
+  // A pending (new/contacted) request parks the group too — showing "book a
+  // free consultation" to someone whose request is already sitting in the
+  // inbox is spam — but it is not permanent: cancelled/no_show lets it return.
+  const consultationParked = consultationRetired || inputs.consultationPending;
 
   // §4.1 rule 4b — group mute. Counted over the mute window, so the mute
   // eventually lifts on its own rather than being permanent.
@@ -152,14 +160,27 @@ export function selectActiveCta(inputs: CtaInputs): CtaDecision {
   const eligible: CtaDefinition[] = [];
   for (const def of definitions) {
     if (!inputs.availableActions.has(def.action)) continue;
-    if (consultationRetired && def.group_key === 'consultation') continue;
+    if (consultationParked && def.group_key === 'consultation') continue;
     if (!meetsConditions(def, inputs)) continue;
     eligible.push(def);
   }
   eligible.sort((a, b) => b.priority - a.priority);
   const eligibleIds = eligible.map((d) => d.cta_id);
 
-  if (eligible.length === 0) return { def: null, reason: 'no_eligible', eligible: [] };
+  if (eligible.length === 0) {
+    // If the ONLY thing that removed consultation CTAs was conversion or a
+    // pending request, say so — 'no_eligible' here would mislead the §1.5b
+    // "why does this user see nothing?" query.
+    const suppressed = consultationParked && definitions.some(
+      (d) => d.group_key === 'consultation'
+        && inputs.availableActions.has(d.action)
+        && meetsConditions(d, inputs),
+    );
+    const reason = !suppressed ? 'no_eligible'
+      : consultationRetired ? 'converted'
+      : 'consultation_pending';
+    return { def: null, reason, eligible: [] };
+  }
 
   // §4.1 rule 1 — the global cap. Checked AFTER eligibility so the log can say
   // "these were ready, the cap held them".
