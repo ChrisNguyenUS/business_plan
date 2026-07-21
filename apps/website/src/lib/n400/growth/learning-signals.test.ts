@@ -20,6 +20,7 @@ import { vi as viDict } from '../i18n/vi';
 import { N400_QUESTIONS } from '../questions-data';
 import { WHATMEAN_QUESTIONS } from '../whatmean-data';
 import { YESNO_QUESTIONS } from '../yesno-data';
+import { WRITING_SENTENCES } from '../writing-data';
 import type { GradedDay } from './profiling';
 
 // Minimal fake of the Supabase query-builder chain loadLearningSignals uses:
@@ -69,12 +70,24 @@ const noGradedDays: readonly GradedDay[] = [];
 
 describe('loadLearningSignals', () => {
   it('feeds SQL-computed mastery — not graded accuracy/volume — into readiness', async () => {
-    // Writing has real graded practice (3/4 correct = 75%, "looks fine") but
-    // its LATEST graded attempt per item never lands as mastered, so the
-    // rollup reports mastered: 0. If loadLearningSignals ever substituted
-    // graded_correct/graded_total (or seen) for mastered here, this learner
-    // would misread as ready — the exact bug class the old flashcard-vs-
-    // graded drift-lock warned about, now expressed as a rollup input.
+    // Every criterion EXCEPT writing_known is deliberately fully satisfied
+    // (full civics/whatmean/yesno mastery, two passing mocks, latest writing
+    // and speaking mocks passed) so writing_known is the ONLY thing that can
+    // swing `readinessReady`. That isolation is the point: an earlier version
+    // of this test asserted `readinessReady === false` from a fixture that
+    // omitted mocks entirely, so civics_mock was already unmet regardless of
+    // how writing mastery was wired — the assertion passed even under a bug.
+    //
+    // Writing has strong graded ACCURACY (40/45 correct = 89%, well past the
+    // 80% bar) but its LATEST graded attempt per item never lands as
+    // mastered, so the rollup reports mastered: 0. Target for writing_known
+    // is ceil(0.8 * 45) = 36:
+    //   - correct wiring (writingKnown = mastered = 0)            → unmet → readinessReady false
+    //   - swapped wiring (writingKnown = graded_correct = 40 ≥ 36) → met   → readinessReady TRUE
+    // so this test fails if loadLearningSignals ever substitutes
+    // graded_correct/graded_total (or seen) for mastered in the section
+    // wiring — the exact bug class the old flashcard-vs-graded drift-lock
+    // warned about, now expressed as a rollup input.
     const supabase = fakeSupabase({
       rollup: {
         civics_seen: N400_QUESTIONS.length,
@@ -82,9 +95,21 @@ describe('loadLearningSignals', () => {
         sections: {
           whatmean: { mastered: WHATMEAN_QUESTIONS.length, graded_correct: 5, graded_total: 5 },
           yesno: { mastered: YESNO_QUESTIONS.length, graded_correct: 5, graded_total: 5 },
-          writing: { mastered: 0, graded_correct: 3, graded_total: 4 },
+          writing: { mastered: 0, graded_correct: 40, graded_total: WRITING_SENTENCES.length },
         },
       },
+      mocks: [
+        {
+          id: 'mock-1', score: 128, total_questions: 128, passed: true,
+          started_at: '2026-06-01T00:00:00Z', completed_at: '2026-06-01T00:10:00Z',
+          n400_question_attempts: [],
+        },
+        {
+          id: 'mock-2', score: 128, total_questions: 128, passed: true,
+          started_at: '2026-06-02T00:00:00Z', completed_at: '2026-06-02T00:10:00Z',
+          n400_question_attempts: [],
+        },
+      ],
       sectionMocks: [
         { id: 'sm-1', section: 'writing', score: 3, total: 3, passed: true, completed_at: '2026-07-01T00:00:00Z' },
         { id: 'sm-2', section: 'speaking', score: 3, total: 3, passed: true, completed_at: '2026-07-01T00:00:00Z' },
@@ -92,6 +117,12 @@ describe('loadLearningSignals', () => {
     });
 
     const result = await loadLearningSignals(supabase, 'user-1', viDict, noGradedDays);
+
+    // Sanity-check the "everything else is satisfied" premise itself, so a
+    // broken mocks/sectionMocks pipeline can't silently make this pass for
+    // the wrong reason (e.g. civics_mock failing instead of writing_known).
+    expect(result.mockCount).toBe(2);
+    expect(result.mockAvgPct).toBe(100);
 
     expect(result.readinessReady).toBe(false);
   });
