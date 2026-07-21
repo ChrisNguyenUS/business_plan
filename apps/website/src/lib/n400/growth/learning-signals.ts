@@ -99,8 +99,8 @@ export async function loadLearningSignals(
       .from('n400_quiz_attempts')
       .select(
         `
-        id, mode, score, total_questions, passed, started_at, completed_at,
-        n400_question_attempts ( question_id, was_correct, answered_at, attempt_id )
+        id, score, total_questions, passed, started_at, completed_at,
+        n400_question_attempts ( question_id, was_correct )
       `,
       )
       .eq('user_id', userId)
@@ -115,6 +115,11 @@ export async function loadLearningSignals(
       .order('completed_at', { ascending: false })
       .limit(100),
   ]);
+
+  // A failed rollup must not be silent: the ?? fallback below degrades every
+  // signal to zero, which reads as "user did nothing" — S2/S9 would just stop
+  // firing with no trace. Log it; the fallback still keeps the page alive.
+  if (rollupRes.error) console.error('n400_learning_rollup error:', rollupRes.error);
 
   const rollup = (rollupRes.data ?? { civics_seen: 0, civics_mastered: 0, sections: {} }) as LearningRollup;
 

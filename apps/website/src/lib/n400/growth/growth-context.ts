@@ -57,6 +57,8 @@ export async function loadGrowthContext(
     supabase.rpc('n400_graded_day_rollup'),
   ]);
 
+  if (rollupRes.error) console.error('n400_graded_day_rollup error:', rollupRes.error);
+
   const rows = (eventsRes.data ?? []) as {
     event_type: string;
     payload: { cta_id?: string; group?: string } | null;
