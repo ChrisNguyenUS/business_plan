@@ -22,7 +22,6 @@ import {
   BarChart2,
   Settings,
   LogOut,
-  Moon,
   ChevronRight,
   ClipboardCheck,
   GraduationCap,
@@ -144,7 +143,6 @@ function NavItem({ item, base, pathname }: { item: MenuItem; base: string; pathn
 
 export function Sidebar() {
   const { base, pathname } = useN400Navigation();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const { signOut } = useAuth();
   const { dict } = useN400Lang();
   const desktopMenu = buildDesktopMenu(dict);
@@ -182,21 +180,6 @@ export function Sidebar() {
 
       {/* Bottom utilities */}
       <div className="p-4 border-t border-gray-100 space-y-4">
-        <div className="flex items-center justify-between px-2 text-sm text-gray-500">
-          <span className="flex items-center gap-2">
-            <Moon size={16} /> {dict.header.darkMode}
-          </span>
-          <button
-            type="button"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            aria-label="Toggle dark mode"
-            className={`w-10 h-5 rounded-full p-0.5 flex items-center transition-colors ${
-              isDarkMode ? 'bg-teal-600 justify-end' : 'bg-gray-200 justify-start'
-            }`}
-          >
-            <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
-          </button>
-        </div>
         <div className="flex items-center justify-between px-2 text-sm text-gray-500 pb-2">
           <Link
             href={`${base}/profile`}

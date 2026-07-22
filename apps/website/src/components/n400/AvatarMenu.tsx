@@ -16,7 +16,6 @@ import {
   User,
   BarChart2,
   Settings,
-  Moon,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -25,7 +24,6 @@ import { useN400Lang } from '@/lib/n400/i18n/provider';
 
 export function AvatarMenu() {
   const [open, setOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const base = '/n400ready';
@@ -182,31 +180,6 @@ export function AvatarMenu() {
             <Settings size={16} className="text-gray-400" />
             {dict.header.settings}
           </Link>
-
-          <div
-            role="menuitem"
-            tabIndex={-1}
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setIsDarkMode(!isDarkMode);
-              }
-            }}
-            className={`${menuItemClass} cursor-pointer justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <Moon size={16} className="text-gray-400" />
-              {dict.header.darkMode}
-            </span>
-            <div
-              className={`w-9 h-5 rounded-full p-0.5 flex items-center transition-colors ${
-                isDarkMode ? 'bg-teal-600 justify-end' : 'bg-gray-200 justify-start'
-              }`}
-            >
-              <div className="w-4 h-4 bg-white rounded-full shadow-sm" />
-            </div>
-          </div>
 
           <div className="mx-3 my-1.5 border-t border-gray-100" />
 
