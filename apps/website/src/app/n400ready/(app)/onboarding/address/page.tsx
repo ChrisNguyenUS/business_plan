@@ -90,16 +90,16 @@ export default function OnboardingAddressPage() {
   }, [finishStep, router]);
 
   return (
-    <div className="flex min-h-full items-start justify-center pt-2 sm:pt-6 lg:pt-8">
-      <div className="w-full max-w-[580px] rounded-[20px] border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
+    <div className="flex min-h-full items-start justify-center pt-1 sm:pt-4 pb-4">
+      <div className="w-full max-w-[640px] rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
         <div className="text-center">
-          <span className="inline-flex items-center rounded-full bg-teal-600/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-teal-700">
+          <span className="inline-flex items-center rounded-full bg-teal-600/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-teal-700 sm:text-[11px]">
             {t.step2Badge}
           </span>
-          <h1 className="mt-4 text-2xl font-extrabold text-slate-900 sm:text-[28px]">
+          <h1 className="mt-2 text-xl font-extrabold text-slate-900 sm:text-2xl">
             {t.addrTitle}
           </h1>
-          <p className="mx-auto mt-2 max-w-[460px] text-[15px] leading-relaxed text-slate-500">
+          <p className="mx-auto mt-1.5 max-w-[600px] text-xs leading-relaxed text-slate-500 sm:text-sm">
             {t.addrSubtitle1}
             <br />
             {t.addrSubtitle2}
@@ -113,23 +113,23 @@ export default function OnboardingAddressPage() {
           />
         ) : (
           <>
-            <div className="mt-6 border-t border-slate-100 pt-6">
-              <p className="mb-2 text-sm font-semibold text-slate-700">
+            <div className="mt-3.5 border-t border-slate-100 pt-3.5">
+              <p className="mb-1 text-xs font-semibold text-slate-700">
                 {t.addrLabel} <span className="text-red-500">*</span>
               </p>
 
               {resolved ? (
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                  <MapPin size={18} className="shrink-0 text-teal-600" />
-                  <span className="min-w-0 flex-1 truncate text-[15px] text-slate-800">
+                <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5">
+                  <MapPin size={16} className="shrink-0 text-teal-600" />
+                  <span className="min-w-0 flex-1 truncate text-sm text-slate-800">
                     {resolved.formattedAddress}
                   </span>
                   <button
                     type="button"
                     onClick={startOver}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-semibold text-teal-700 transition hover:border-teal-400 hover:bg-teal-50"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-teal-700 transition hover:border-teal-400 hover:bg-teal-50"
                   >
-                    <Pencil size={14} />
+                    <Pencil size={13} />
                     {t.addrEdit}
                   </button>
                 </div>
@@ -141,14 +141,14 @@ export default function OnboardingAddressPage() {
                     placeholder={t.addrPlaceholder}
                     required={false}
                   />
-                  <p className="mt-2 text-xs text-slate-400">{t.addrHint}</p>
+                  <p className="mt-1 text-xs text-slate-400">{t.addrHint}</p>
                 </>
               )}
             </div>
 
             {pending && (
-              <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-slate-50 px-4 py-6 text-sm font-medium text-slate-500">
-                <Loader2 size={16} className="animate-spin text-teal-600" />
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-4 text-xs font-medium text-slate-500">
+                <Loader2 size={15} className="animate-spin text-teal-600" />
                 {t.resolving}
               </div>
             )}
@@ -156,7 +156,7 @@ export default function OnboardingAddressPage() {
             {result && !result.ok && (
               <p
                 role="alert"
-                className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-700"
               >
                 {result.error}
               </p>
@@ -164,12 +164,11 @@ export default function OnboardingAddressPage() {
 
             {resolved && <PersonalizationSummary result={resolved} t={t} />}
 
-            <div className="mt-4 flex items-start gap-3 rounded-2xl bg-teal-50/70 px-4 py-3.5">
-              <Info size={18} className="mt-0.5 shrink-0 text-teal-600" />
-              <p className="text-[13px] leading-relaxed text-slate-600">
-                <span className="font-semibold text-slate-700">{t.privacy1}</span>
-                <br />
-                {t.privacy2}
+            <div className="mt-3 flex items-start gap-2.5 rounded-xl bg-teal-50/70 px-3.5 py-2.5">
+              <Info size={16} className="mt-0.5 shrink-0 text-teal-600" />
+              <p className="text-xs leading-normal text-slate-600">
+                <span className="font-semibold text-slate-700">{t.privacy1}</span>{' '}
+                <span>{t.privacy2}</span>
               </p>
             </div>
 
@@ -177,18 +176,18 @@ export default function OnboardingAddressPage() {
               type="button"
               onClick={finish}
               disabled={!resolved}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-4 py-4 text-lg font-semibold text-white transition-colors hover:bg-teal-700 active:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 active:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t.startLearning}
-              <ArrowRight size={20} />
+              <ArrowRight size={18} />
             </button>
 
             <button
               type="button"
               onClick={() => router.push('/n400ready/onboarding')}
-              className="mt-3 flex w-full items-center justify-center gap-2 py-1 text-sm font-semibold text-teal-700 transition hover:text-teal-800"
+              className="mt-1.5 flex w-full items-center justify-center gap-1 py-0.5 text-xs font-semibold text-teal-700 transition hover:text-teal-800"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} />
               {t.back}
             </button>
           </>
@@ -232,38 +231,38 @@ function PersonalizationSummary({
   }
 
   return (
-    <div className="mt-4 rounded-2xl bg-teal-50/70 p-5">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600">
-          <Check size={20} className="text-white" strokeWidth={3} />
+    <div className="mt-3 rounded-xl bg-teal-50/70 p-3.5 sm:p-4">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-600">
+          <Check size={16} className="text-white" strokeWidth={3} />
         </span>
         <div className="min-w-0">
-          <p className="text-base font-bold text-slate-900">{t.summaryTitle}</p>
-          <p className="text-sm text-slate-500">{t.summarySubtitle}</p>
+          <p className="text-sm font-bold text-slate-900">{t.summaryTitle}</p>
+          <p className="text-xs text-slate-500">{t.summarySubtitle}</p>
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-3">
+      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
         {facts.map((f) => (
-          <div key={f.label} className="flex items-start gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
-              <f.icon size={17} className="text-teal-700" />
+          <div key={f.label} className="flex items-start gap-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white">
+              <f.icon size={14} className="text-teal-700" />
             </span>
             <div className="min-w-0">
-              <p className="text-xs text-slate-500">{f.label}</p>
+              <p className="text-[11px] text-slate-500">{f.label}</p>
               {f.value.split('\n').map((line) => (
-                <p key={line} className="text-[15px] font-bold leading-snug text-slate-900">
+                <p key={line} className="text-xs sm:text-sm font-bold leading-snug text-slate-900">
                   {line}
                 </p>
               ))}
-              {f.sub && <p className="text-xs text-slate-400">{f.sub}</p>}
+              {f.sub && <p className="text-[11px] text-slate-400">{f.sub}</p>}
             </div>
           </div>
         ))}
       </div>
 
       {!p.representative && (
-        <p className="mt-4 text-xs leading-relaxed text-slate-500">{t.repUnresolved}</p>
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">{t.repUnresolved}</p>
       )}
     </div>
   );
