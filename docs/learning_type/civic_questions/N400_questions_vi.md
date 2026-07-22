@@ -165,10 +165,10 @@
 * Tòa án Tối cao
 
 **53. Tòa án Tối cao có bao nhiêu ghế?**
-* 9
+* Chín (9)
 
 **54. Thông thường cần bao nhiêu thẩm phán Tòa án Tối cao để quyết định một vụ án?**
-* 5
+* Năm (5)
 
 **55. Các thẩm phán Tòa án Tối cao phục vụ trong bao lâu?**
 * Trọn đời

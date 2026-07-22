@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../../..');
-const EN_PATH = resolve(ROOT, 'docs/N400_questions_en.md');
-const VI_PATH = resolve(ROOT, 'docs/N400_questions_vi.md');
+const EN_PATH = resolve(ROOT, 'docs/learning_type/civic_questions/N400_questions_en.md');
+const VI_PATH = resolve(ROOT, 'docs/learning_type/civic_questions/N400_questions_vi.md');
 const OUT_PATH = resolve(__dirname, '../src/lib/n400/questions-data.ts');
 
 const LOCATION_BASED_IDS = new Set([23, 29, 61, 62]);

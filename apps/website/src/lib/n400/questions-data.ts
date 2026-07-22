@@ -495,8 +495,8 @@ export const N400_QUESTIONS: N400Question[] = [
     category: "system",
     questionEn: "How many seats are on the Supreme Court?",
     questionVi: "Tòa án Tối cao có bao nhiêu ghế?",
-    answersEn: ["9"],
-    answersVi: ["9"],
+    answersEn: ["Nine (9)"],
+    answersVi: ["Chín (9)"],
     isLocationBased: false,
   },
   {
@@ -504,8 +504,8 @@ export const N400_QUESTIONS: N400Question[] = [
     category: "system",
     questionEn: "How many Supreme Court justices are usually needed to decide a case?",
     questionVi: "Thông thường cần bao nhiêu thẩm phán Tòa án Tối cao để quyết định một vụ án?",
-    answersEn: ["5"],
-    answersVi: ["5"],
+    answersEn: ["Five (5)"],
+    answersVi: ["Năm (5)"],
     isLocationBased: false,
   },
   {
