@@ -284,6 +284,7 @@ export default function PracticePage() {
   };
 
   const startSession = (p: PracticePreset, category: N400CategoryKey | null) => {
+    reseed();
     window.sessionStorage.setItem(PRESET_STORAGE_KEY, p.id);
     if (category !== null) window.sessionStorage.setItem(CATEGORY_STORAGE_KEY, category);
     else window.sessionStorage.removeItem(CATEGORY_STORAGE_KEY);
@@ -302,8 +303,6 @@ export default function PracticePage() {
 
   const onPracticeRecommendation = (rec: PracticeRecommendation) => {
     const quick = presets.find((p) => p.id === 'quick')!;
-    // Fresh shuffle so the review set changes between recommendations.
-    reseed();
     startSession(quick, rec.category);
   };
 
@@ -325,6 +324,7 @@ export default function PracticePage() {
   // Same reset choreography as onReviewWrong; used by the ?start=review deep
   // link from the dashboard hero.
   const startReviewSession = (ids: number[]) => {
+    reseed();
     window.sessionStorage.removeItem(PROGRESS_STORAGE_KEY);
     setPreset(presets.find((p) => p.id === 'quick')!);
     setReviewIds(ids);
