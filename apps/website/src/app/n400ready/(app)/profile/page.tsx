@@ -21,12 +21,14 @@ import { STATES } from '@/lib/n400/state-data';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getAvatarUrl, getDisplayName, getInitials } from '@/lib/profile-utils';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { EditAddressModal } from './EditAddressModal';
 
 export default function ProfilePage() {
   const { dict } = useN400Lang();
   const { state, hydrated, stats, updateSettings, resetAll, reloadAddress } = useN400UserState();
   const badges = useN400Badges();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const { user, profile } = useAuth();
 
   // Returning from a setup save (?updated=1): the setup form wrote the new
@@ -37,6 +39,7 @@ export default function ProfilePage() {
     if (!user) return;
     if (new URLSearchParams(window.location.search).get('updated') !== '1') return;
     reloadAddress();
+    setIsAddressModalOpen(false);
     window.history.replaceState(null, '', '/n400ready/profile');
   }, [user, reloadAddress]);
 
@@ -132,20 +135,13 @@ export default function ProfilePage() {
             <h3 className="font-bold text-gray-800">{dict.profile.addressSectionTitle}</h3>
             <p className="text-xs text-gray-500 mt-1">{dict.profile.addressSectionHint}</p>
           </div>
-          <Link
-            href={{
-              pathname: `/n400ready/setup`,
-              query: {
-                from: 'profile',
-                ...(state.address.city ? { city: state.address.city } : {}),
-                ...(state.address.stateCode ? { state: state.address.stateCode } : {}),
-                ...(state.address.zipcode ? { zip: state.address.zipcode } : {}),
-              },
-            }}
+          <button
+            type="button"
+            onClick={() => setIsAddressModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-teal-50 text-teal-700 text-sm font-semibold hover:bg-teal-100"
           >
             <Pencil size={14} /> {dict.profile.editButton}
-          </Link>
+          </button>
         </div>
 
         {state.address.districtNumber === null ? (
@@ -242,6 +238,21 @@ export default function ProfilePage() {
           )}
         </div>
       </Card>
+      
+      <EditAddressModal
+        isOpen={isAddressModalOpen}
+        onOpenChange={setIsAddressModalOpen}
+        prefillCity={state.address.city ?? ''}
+        prefillState={state.address.stateCode ?? ''}
+        prefillZip={state.address.zipcode ?? ''}
+        districtDisplay={
+          state.address.districtNumber === null
+            ? ''
+            : state.address.districtNumber === 0
+            ? dict.profile.districtAtLarge
+            : `${state.address.stateCode ?? ''}-${state.address.districtNumber}`
+        }
+      />
     </div>
   );
 }
