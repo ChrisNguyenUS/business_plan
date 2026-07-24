@@ -20,11 +20,21 @@ const DAY_MS = 86_400_000;
 export const GATE_IGNORE_ACTIVE_DAYS = 3;
 export const LEAF_IGNORE_ACTIVE_DAYS = 10;
 /** After this many impressions a gate stops being eager and uses the leaf
- *  cadence, so a chronic ignorer is not asked forever on the short window. */
+ *  cadence, so a chronic ignorer is not asked forever on the short window.
+ *
+ *  INVARIANT: shown_count counts impressions on BOTH surfaces, but only
+ *  results-surface impressions can ever reach this check — a dashboard
+ *  impression implies skipped_at is set, and the results arm `continue`s on
+ *  skip before getting here. If a future feature ever CLEARS skipped_at
+ *  (admin reset, "re-ask after a long snooze"), a question's accumulated
+ *  dashboard impressions would make it instantly chronic; that feature must
+ *  split the counter per surface (n400_growth_events.prompt_shown carries
+ *  the surface) rather than lean on this column. */
 export const CHRONIC_IGNORE_LIMIT = 4;
-/** Absolute revisit ceiling: an inactive user is re-asked after this many
- *  calendar days regardless of active-day count — the situation may have moved. */
-export const LEAF_IGNORE_CALENDAR_DAYS = 30;
+/** Absolute revisit ceiling for BOTH tiers: an inactive user is re-asked after
+ *  this many calendar days regardless of active-day count — the situation may
+ *  have moved on even though they never studied. */
+export const IGNORE_CALENDAR_DAYS = 30;
 
 export type PromptSurface = 'results' | 'dashboard';
 
@@ -188,7 +198,7 @@ export function selectActivePrompt(
           : LEAF_IGNORE_ACTIVE_DAYS;
         const activeReached = activeDaysSinceShown >= needDays;
         const calendarReached =
-          (now.getTime() - lastShownMs) / DAY_MS >= LEAF_IGNORE_CALENDAR_DAYS;
+          (now.getTime() - lastShownMs) / DAY_MS >= IGNORE_CALENDAR_DAYS;
         if (!activeReached && !calendarReached) continue;
         reasons.push(activeReached ? `ignore_revisit_active>=${needDays}` : 'ignore_revisit_calendar');
       }
