@@ -279,6 +279,29 @@ describe('selectActivePrompt', () => {
       );
       expect(got).toBeNull();
     });
+
+    it('lets an explicit skip take precedence over ignore state', () => {
+      // Question was shown twice AND then explicitly skipped. On results it must
+      // be suppressed by the skip (not surface via the ignore path); on
+      // dashboard it returns only after the skip snooze, per existing rules.
+      const state: PromptState[] = [{
+        question_key: 'g',
+        answered_at: null,
+        skipped_at: '2026-07-16T00:00:00Z',
+        snooze_until: '2026-07-22T00:00:00Z',
+        shown_count: 2,
+        last_shown_at: '2026-07-16T00:00:00Z',
+      }];
+      const base = inputs({
+        definitions: [gate, child, leaf],
+        states: state,
+        gradedDays: [gDay('2026-07-17'), gDay('2026-07-18'), gDay('2026-07-19')],
+      });
+      // Results: g is skipped -> not g; child gated off -> leaf.
+      expect(selectActivePrompt(base, 'results')?.def.question_key).toBe('l');
+      // Dashboard: released early after 3 active days since skip (existing rule).
+      expect(selectActivePrompt(base, 'dashboard')?.def.question_key).toBe('g');
+    });
   });
 });
 
