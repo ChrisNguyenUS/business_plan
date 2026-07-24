@@ -14,6 +14,10 @@ import { fnv1a } from './flags';
 /** Milliseconds in a day — for calendar-based ignore revisit. */
 const DAY_MS = 86_400_000;
 
+/** 'yyyy-mm-dd' in UTC — the same day currency GradedDay.day and the pace
+ *  engine already use, so "one ask per day" cannot disagree with "one buổi". */
+const utcDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+
 /** Ignore-cooldown windows, measured in distinct active study days ("buổi")
  *  since the question was last shown. A gate (a question others depend_on)
  *  is re-offered sooner because ignoring it freezes its whole subtree. */
@@ -154,6 +158,27 @@ export function selectActivePrompt(
   // A question is a "gate" if any other definition depends on it.
   const gateKeys = new Set<string>();
   for (const d of definitions) if (d.depends_on) gateKeys.add(d.depends_on.question_key);
+
+  // At most one profiling ask per day — conversation, not interrogation.
+  // Profiling has no global cap of its own (last_growth_prompt_at is the CTA's),
+  // and the ignore cooldown below yields to the NEXT candidate the moment a
+  // question has been shown, so without this a user with several sessions in one
+  // day would be walked through the whole survey back to back.
+  // Only an ignored impression (unanswered AND unskipped) spends the day's ask:
+  // an answer is engagement — the interview_notice → interview_date follow-up
+  // re-evaluates this surface seconds later and must still chain — and a skipped
+  // question's impressions belong to the dashboard surface.
+  if (surface === 'results') {
+    const today = utcDay(now.getTime());
+    const askedToday = states.some(
+      (s) =>
+        s.last_shown_at &&
+        !s.answered_at &&
+        !s.skipped_at &&
+        utcDay(new Date(s.last_shown_at).getTime()) === today,
+    );
+    if (askedToday) return null;
+  }
 
   const eventCount = (type: 'practice_completed' | 'mock_completed') =>
     gradedDays.reduce((n, d) => n + (type === 'practice_completed' ? d.practiceCount : d.mockCount), 0);

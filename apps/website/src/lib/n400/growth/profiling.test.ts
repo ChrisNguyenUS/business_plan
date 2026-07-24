@@ -302,6 +302,65 @@ describe('selectActivePrompt', () => {
       // Dashboard: released early after 3 active days since skip (existing rule).
       expect(selectActivePrompt(base, 'dashboard')?.def.question_key).toBe('g');
     });
+
+    it('asks nothing else on results once a question was shown today', () => {
+      // g shown earlier today and ignored. Without a daily cap the ignore
+      // cooldown would hand the slot straight to the leaf, so a user with two
+      // practice sessions in one day gets walked through the survey.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [shownState('g', '2026-07-19T08:00:00Z')],
+          gradedDays: [gDay('2026-07-19', 2, 0, '2026-07-19T11:00:00Z')],
+        }),
+        'results',
+      );
+      expect(got).toBeNull();
+    });
+
+    it('still chains the follow-up when today\'s question was answered', () => {
+      // An answered question is engagement, not an ignore: the daily cap must
+      // not swallow the interview_notice -> interview_date follow-up, which
+      // re-evaluates on the same surface moments after the answer lands.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [{
+            question_key: 'g',
+            answered_at: '2026-07-19T08:05:00Z',
+            skipped_at: null,
+            snooze_until: null,
+            shown_count: 1,
+            last_shown_at: '2026-07-19T08:00:00Z',
+          }],
+          answers: { g: 'yes' },
+          gradedDays: [gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('c');
+    });
+
+    it('does not let a dashboard impression today silence results', () => {
+      // A skipped question shown on the dashboard today is the dashboard's
+      // business; it must not consume the results surface's daily ask.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [{
+            question_key: 'g',
+            answered_at: null,
+            skipped_at: '2026-07-10T00:00:00Z',
+            snooze_until: '2026-07-16T00:00:00Z',
+            shown_count: 3,
+            last_shown_at: '2026-07-19T08:00:00Z',
+          }],
+          gradedDays: [gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('l');
+    });
   });
 });
 
