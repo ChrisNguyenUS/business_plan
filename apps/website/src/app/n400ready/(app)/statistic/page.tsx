@@ -246,56 +246,44 @@ export default function StatisticPage() {
           </div>
         </div>
 
-        {(
-          [
-            { key: 'study', label: dict.progress.readiness.groupStudy, criteria: readiness.criteria.filter((c) => !isMockCriterion(c.id)) },
-            { key: 'mock', label: dict.progress.readiness.groupMock, criteria: readiness.criteria.filter((c) => isMockCriterion(c.id)) },
-          ] as const
-        ).map((group) => (
-          <div key={group.key}>
-            <p className="mb-1 mt-3 px-1 text-[11px] font-bold uppercase tracking-wide text-gray-400 first:mt-0">
-              {group.label}
-            </p>
-            <ul className="space-y-0.5">
-              {group.criteria.map((c: ReadinessCriterion) => {
-                const style = CRITERION_STYLE[c.id];
-                const Icon = style.Icon;
-                const isMock = isMockCriterion(c.id);
-                const pct = Math.round(c.progress * 100);
-                return (
-                  <li key={c.id} className="rounded-xl px-1 py-2 transition-colors hover:bg-slate-50/70 sm:px-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${style.iconBg}`}>
-                        <Icon size={16} className={style.iconText} />
-                      </div>
-                      <StatusRing progress={c.progress} met={c.met} />
-                      <span className={`min-w-0 flex-1 truncate text-sm font-bold ${c.met ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
-                        {c.label}
-                      </span>
-                      <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-600">{c.detail}</span>
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 pl-10">
-                      <div className="min-w-0 flex-1">
-                        <ProgressBar progress={pct} colorClass="bg-teal-500" heightClass="h-1" />
-                      </div>
-                      {isMock ? null : (
-                        <span className="w-8 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">{pct}%</span>
-                      )}
-                      {c.met ? null : (
-                        <Link
-                          href={`${base}${c.cta.href}`}
-                          className="ml-1 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-teal-600 hover:text-teal-700"
-                        >
-                          {c.cta.label} <ArrowRight size={11} />
-                        </Link>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+        <ul className="mt-2 space-y-0.5">
+          {readiness.criteria.map((c: ReadinessCriterion) => {
+            const style = CRITERION_STYLE[c.id];
+            const Icon = style.Icon;
+            const isMock = isMockCriterion(c.id);
+            const pct = Math.round(c.progress * 100);
+            return (
+              <li key={c.id} className="rounded-xl px-1 py-2 transition-colors hover:bg-slate-50/70 sm:px-2">
+                <div className="flex items-center gap-2">
+                  <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${style.iconBg}`}>
+                    <Icon size={16} className={style.iconText} />
+                  </div>
+                  <StatusRing progress={c.progress} met={c.met} />
+                  <span className={`min-w-0 flex-1 truncate text-sm font-bold ${c.met ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                    {c.label}
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-600">{c.detail}</span>
+                </div>
+                <div className="mt-1 flex items-center gap-2 pl-10">
+                  <div className="min-w-0 flex-1">
+                    <ProgressBar progress={pct} colorClass="bg-teal-500" heightClass="h-1" />
+                  </div>
+                  {isMock ? null : (
+                    <span className="w-8 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">{pct}%</span>
+                  )}
+                  {c.met ? null : (
+                    <Link
+                      href={`${base}${c.cta.href}`}
+                      className="ml-1 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-teal-600 hover:text-teal-700"
+                    >
+                      {c.cta.label} <ArrowRight size={11} />
+                    </Link>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </Card>
 
       {/* 2. Mock tests — all three kinds in one place. */}
