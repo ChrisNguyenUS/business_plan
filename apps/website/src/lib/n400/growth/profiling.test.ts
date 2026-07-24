@@ -126,6 +126,8 @@ describe('selectActivePrompt', () => {
       answered_at: null,
       skipped_at: '2026-07-18T00:00:00Z',
       snooze_until: '2026-07-24T00:00:00Z',
+      shown_count: 1,
+      last_shown_at: '2026-07-18T00:00:00Z',
     }];
     const base = inputs({ states: skipped, gradedDays: [gDay('2026-07-19')] });
     expect(selectActivePrompt(base, 'results')).toBeNull();
@@ -142,6 +144,8 @@ describe('selectActivePrompt', () => {
       answered_at: null,
       skipped_at: '2026-07-16T00:00:00Z',
       snooze_until: '2026-07-22T00:00:00Z',
+      shown_count: 1,
+      last_shown_at: '2026-07-16T00:00:00Z',
     }];
     const got = selectActivePrompt(
       inputs({

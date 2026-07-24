@@ -52,7 +52,7 @@ export async function loadGrowthContext(
       .in('event_type', ['cta_shown', 'cta_dismissed', 'cta_clicked']),
     supabase
       .from('n400_profile_prompts')
-      .select('question_key, answered_at, skipped_at, snooze_until')
+      .select('question_key, answered_at, skipped_at, snooze_until, shown_count, last_shown_at')
       .eq('user_id', userId),
     supabase.rpc('n400_graded_day_rollup'),
   ]);

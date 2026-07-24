@@ -42,6 +42,11 @@ export interface PromptState {
   answered_at: string | null;
   skipped_at: string | null;
   snooze_until: string | null;
+  /** Impression counter — incremented once per time the card is shown
+      (n400_mark_prompt_shown). Proxy for "how many times ignored". */
+  shown_count: number;
+  /** ISO timestamp of the most recent impression, or null if never shown. */
+  last_shown_at: string | null;
 }
 
 /** One row per UTC day with graded activity — the n400_graded_day_rollup()
