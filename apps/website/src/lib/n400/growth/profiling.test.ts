@@ -253,6 +253,21 @@ describe('selectActivePrompt', () => {
       expect(got?.def.question_key).toBe('l');
     });
 
+    it('keeps the eager gate cadence one impression below the chronic limit', () => {
+      // shown_count 3 (CHRONIC_IGNORE_LIMIT - 1) is still eager: 3 active days
+      // re-offers g. The paired test above proves 4 backs off to the leaf
+      // cadence — together they pin the boundary.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [shownState('g', '2026-07-16T00:00:00Z', 3)],
+          gradedDays: [gDay('2026-07-17'), gDay('2026-07-18'), gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('g');
+    });
+
     it('re-offers an ignored question after 30 calendar days even with no active days', () => {
       const got = selectActivePrompt(
         inputs({
