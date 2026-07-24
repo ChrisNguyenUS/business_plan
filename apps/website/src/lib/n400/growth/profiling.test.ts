@@ -162,6 +162,83 @@ describe('selectActivePrompt', () => {
     // filed and wants_guidance are both eligible; filed (sort 1) wins.
     expect(selectActivePrompt(inputs({ gradedDays: manyDays }), 'results')?.def.question_key).toBe('filed');
   });
+
+  describe('ignore cooldown', () => {
+    // g is a gate (child depends on it); l is a leaf. Empty trigger => always eligible.
+    const gate = def({ question_key: 'g', sort_order: 1, trigger: {} });
+    const child = def({
+      question_key: 'c', sort_order: 2, trigger: {},
+      depends_on: { question_key: 'g', answer: 'yes' },
+    });
+    const leaf = def({ question_key: 'l', sort_order: 3, trigger: {} });
+    const DEFS = [gate, child, leaf];
+
+    const shownState = (key: string, lastShownAt: string, shownCount = 1): PromptState => ({
+      question_key: key,
+      answered_at: null,
+      skipped_at: null,
+      snooze_until: null,
+      shown_count: shownCount,
+      last_shown_at: lastShownAt,
+    });
+
+    it('yields an ignored gate to the next candidate before 3 active days', () => {
+      // g shown on the 17th; two active days since (18th, 19th) — under the gate window.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [shownState('g', '2026-07-17T00:00:00Z')],
+          gradedDays: [gDay('2026-07-18'), gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      // child gated off (g unanswered) -> falls through to the leaf.
+      expect(got?.def.question_key).toBe('l');
+    });
+
+    it('re-offers an ignored gate after 3 active days', () => {
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [shownState('g', '2026-07-16T00:00:00Z')],
+          gradedDays: [gDay('2026-07-17'), gDay('2026-07-18'), gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('g');
+      expect(got?.reason).toContain('ignore_revisit_active>=3');
+    });
+
+    it('holds an ignored leaf until 10 active days', () => {
+      const nineDays = Array.from({ length: 9 }, (_, i) =>
+        gDay(`2026-07-${String(10 + i).padStart(2, '0')}`));
+      const got = selectActivePrompt(
+        inputs({
+          definitions: [leaf],
+          states: [shownState('l', '2026-07-09T00:00:00Z')],
+          gradedDays: nineDays,
+          now: new Date('2026-07-19T12:00:00Z'),
+        }),
+        'results',
+      );
+      expect(got).toBeNull();
+    });
+
+    it('re-offers an ignored leaf after 10 active days', () => {
+      const tenDays = Array.from({ length: 10 }, (_, i) =>
+        gDay(`2026-07-${String(10 + i).padStart(2, '0')}`));
+      const got = selectActivePrompt(
+        inputs({
+          definitions: [leaf],
+          states: [shownState('l', '2026-07-09T00:00:00Z')],
+          gradedDays: tenDays,
+          now: new Date('2026-07-20T12:00:00Z'),
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('l');
+    });
+  });
 });
 
 describe('assignVariant', () => {

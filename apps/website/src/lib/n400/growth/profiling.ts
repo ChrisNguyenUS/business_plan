@@ -11,6 +11,15 @@
 
 import { fnv1a } from './flags';
 
+/** Milliseconds in a day — for calendar-based ignore revisit. */
+const DAY_MS = 86_400_000;
+
+/** Ignore-cooldown windows, measured in distinct active study days ("buổi")
+ *  since the question was last shown. A gate (a question others depend_on)
+ *  is re-offered sooner because ignoring it freezes its whole subtree. */
+export const GATE_IGNORE_ACTIVE_DAYS = 3;
+export const LEAF_IGNORE_ACTIVE_DAYS = 10;
+
 export type PromptSurface = 'results' | 'dashboard';
 
 export interface PromptOption {
@@ -126,6 +135,10 @@ export function selectActivePrompt(
   }
   candidates.sort((a, b) => a.sort_order - b.sort_order);
 
+  // A question is a "gate" if any other definition depends on it.
+  const gateKeys = new Set<string>();
+  for (const d of definitions) if (d.depends_on) gateKeys.add(d.depends_on.question_key);
+
   const eventCount = (type: 'practice_completed' | 'mock_completed') =>
     gradedDays.reduce((n, d) => n + (type === 'practice_completed' ? d.practiceCount : d.mockCount), 0);
   const distinctDays = gradedDays.length;
@@ -150,6 +163,19 @@ export function selectActivePrompt(
     const skipped = Boolean(st?.skipped_at);
     if (surface === 'results') {
       if (skipped) continue;
+      // Ignored (shown, never answered/skipped): yield to the next candidate
+      // until the tier's revisit window elapses. Explicit skip above wins first.
+      if (st?.last_shown_at) {
+        const lastShownMs = new Date(st.last_shown_at).getTime();
+        const activeDaysSinceShown = gradedDays.filter(
+          (d) => new Date(d.lastAt).getTime() > lastShownMs,
+        ).length;
+        const needDays = gateKeys.has(def.question_key)
+          ? GATE_IGNORE_ACTIVE_DAYS
+          : LEAF_IGNORE_ACTIVE_DAYS;
+        if (activeDaysSinceShown < needDays) continue;
+        reasons.push(`ignore_revisit_active>=${needDays}`);
+      }
     } else {
       if (!skipped) continue;
       const snoozeOver =
