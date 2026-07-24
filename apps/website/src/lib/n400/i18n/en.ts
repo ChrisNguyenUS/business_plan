@@ -962,6 +962,8 @@ export const en: N400Dict = {
       leadIn: 'Complete the conditions below to be ready for your naturalization interview.',
       summaryLabel: 'Interview Readiness',
       milestonesCompleted: 'milestones completed',
+      groupStudy: '📚 Study',
+      groupMock: '🎤 Mock Tests',
       itemDesc: {
         civics_known: 'Learn at least 80% of the Civics questions.',
         whatmean_known: 'Learn at least 80% of the What Mean questions.',

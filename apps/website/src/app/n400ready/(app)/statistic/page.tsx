@@ -30,9 +30,9 @@ import { Card, ProgressBar } from '@/components/n400/ui';
 import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
-  CIVICS_MOCK_PASS_STREAK,
   deriveReadiness,
   isMockCriterion,
+  type ReadinessCriterion,
   type ReadinessCriterionId,
 } from '@/lib/n400/readiness';
 import { tFormat } from '@/lib/n400/i18n/format';
@@ -80,19 +80,19 @@ const CRITERION_STYLE: Record<ReadinessCriterionId, { Icon: LucideIcon; iconBg: 
 function StatusRing({ progress, met }: { progress: number; met: boolean }) {
   if (met) {
     return (
-      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
-        <Check size={12} strokeWidth={3} />
+      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
+        <Check size={10} strokeWidth={3} />
       </span>
     );
   }
   if (progress <= 0) {
-    return <span className="block size-5 shrink-0 rounded-full border-2 border-slate-200" />;
+    return <span className="block size-4 shrink-0 rounded-full border-2 border-slate-200" />;
   }
   const radius = 8;
   const circumference = 2 * Math.PI * radius;
   const dash = Math.max(0.06, Math.min(progress, 1)) * circumference;
   return (
-    <svg viewBox="0 0 20 20" className="size-5 shrink-0 -rotate-90" aria-hidden>
+    <svg viewBox="0 0 20 20" className="size-4 shrink-0 -rotate-90" aria-hidden>
       <circle cx="10" cy="10" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="3" />
       <circle
         cx="10"
@@ -223,95 +223,87 @@ export default function StatisticPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-[1100px] flex-col gap-4 animate-in fade-in duration-300 sm:gap-6">
+    <div className="mx-auto flex max-w-[1100px] flex-col gap-3 animate-in fade-in duration-300 sm:gap-4">
       <ProgressTabs />
 
       {/* 1. The full readiness checklist — the hero on /progress shows only the next item. */}
-      <Card className="p-5 sm:p-6">
-        {/* Compact summary — the visual entry point of the card. */}
-        <div className="mb-6 flex flex-col gap-4 border-b border-slate-100 pb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-          <div className="min-w-0">
-            <h3 className="text-base font-bold text-gray-800">{dict.progress.readiness.title}</h3>
-            <p className="mt-1 max-w-md text-xs leading-relaxed text-gray-400">{dict.progress.readiness.leadIn}</p>
+      <Card className="p-4 sm:p-5">
+        {/* Compact status widget — title, milestone count, and bar in one row. */}
+        <div className="mb-3 flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
+            <ClipboardCheck size={18} />
           </div>
-          <div className="flex shrink-0 items-center gap-4 rounded-2xl bg-slate-50 p-4 sm:min-w-[380px]">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
-              <ClipboardCheck size={24} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="truncate text-sm font-bold text-gray-800">{dict.progress.readiness.summaryLabel}</h3>
+              <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-500">
+                {readiness.metCount}/{readiness.totalCount} {dict.progress.readiness.milestonesCompleted}
+              </span>
             </div>
-            <div className="shrink-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-600">
-                {dict.progress.readiness.summaryLabel}
-              </p>
-              <p className="text-xl font-extrabold leading-tight tabular-nums text-gray-800">
-                {readiness.metCount} <span className="font-bold text-gray-300">/</span> {readiness.totalCount}
-              </p>
-              <p className="text-[11px] text-gray-400">{dict.progress.readiness.milestonesCompleted}</p>
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <div className="min-w-0 flex-1">
-                <ProgressBar progress={readiness.percent} colorClass="bg-teal-500" heightClass="h-2" />
-              </div>
-              <span className="shrink-0 text-xs font-bold tabular-nums text-gray-500">{readiness.percent}%</span>
+            <div className="mt-1.5">
+              <ProgressBar progress={readiness.percent} colorClass="bg-teal-500" heightClass="h-1.5" />
             </div>
           </div>
         </div>
 
-        <ul className="space-y-1">
-          {readiness.criteria.map((c) => {
-            const style = CRITERION_STYLE[c.id];
-            const Icon = style.Icon;
-            const isMock = isMockCriterion(c.id);
-            const pct = Math.round(c.progress * 100);
-            const desc = tFormat(dict.progress.readiness.itemDesc[c.id], {
-              streak: CIVICS_MOCK_PASS_STREAK,
-            });
-            return (
-              <li key={c.id} className="rounded-2xl px-2 py-3.5 transition-colors hover:bg-slate-50/70 sm:px-3">
-                <div className="flex items-start gap-3">
-                  <div className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${style.iconBg}`}>
-                    <Icon size={20} className={style.iconText} />
-                  </div>
-                  <div className="min-w-0 flex-1">
+        {(
+          [
+            { key: 'study', label: dict.progress.readiness.groupStudy, criteria: readiness.criteria.filter((c) => !isMockCriterion(c.id)) },
+            { key: 'mock', label: dict.progress.readiness.groupMock, criteria: readiness.criteria.filter((c) => isMockCriterion(c.id)) },
+          ] as const
+        ).map((group) => (
+          <div key={group.key}>
+            <p className="mb-1 mt-3 px-1 text-[11px] font-bold uppercase tracking-wide text-gray-400 first:mt-0">
+              {group.label}
+            </p>
+            <ul className="space-y-0.5">
+              {group.criteria.map((c: ReadinessCriterion) => {
+                const style = CRITERION_STYLE[c.id];
+                const Icon = style.Icon;
+                const isMock = isMockCriterion(c.id);
+                const pct = Math.round(c.progress * 100);
+                return (
+                  <li key={c.id} className="rounded-xl px-1 py-2 transition-colors hover:bg-slate-50/70 sm:px-2">
                     <div className="flex items-center gap-2">
+                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${style.iconBg}`}>
+                        <Icon size={16} className={style.iconText} />
+                      </div>
                       <StatusRing progress={c.progress} met={c.met} />
-                      <span className={`truncate text-sm font-bold ${c.met ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                      <span className={`min-w-0 flex-1 truncate text-sm font-bold ${c.met ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                         {c.label}
                       </span>
+                      <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-600">{c.detail}</span>
                     </div>
-                    <p className="mt-0.5 pl-7 text-xs leading-relaxed text-gray-400">{desc}</p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1 text-right">
-                    <span className="text-sm font-semibold tabular-nums text-gray-700">{c.detail}</span>
-                    {c.met ? null : (
-                      <Link
-                        href={`${base}${c.cta.href}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700"
-                      >
-                        {c.cta.label} <ArrowRight size={13} />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-2.5 flex items-center gap-3 pl-14">
-                  <div className="min-w-0 flex-1">
-                    <ProgressBar progress={pct} colorClass="bg-teal-500" heightClass="h-1.5" />
-                  </div>
-                  {isMock ? null : (
-                    <span className="w-9 shrink-0 text-right text-[11px] font-bold tabular-nums text-gray-400">{pct}%</span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                    <div className="mt-1 flex items-center gap-2 pl-10">
+                      <div className="min-w-0 flex-1">
+                        <ProgressBar progress={pct} colorClass="bg-teal-500" heightClass="h-1" />
+                      </div>
+                      {isMock ? null : (
+                        <span className="w-8 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">{pct}%</span>
+                      )}
+                      {c.met ? null : (
+                        <Link
+                          href={`${base}${c.cta.href}`}
+                          className="ml-1 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-teal-600 hover:text-teal-700"
+                        >
+                          {c.cta.label} <ArrowRight size={11} />
+                        </Link>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </Card>
 
       {/* 2. Mock tests — all three kinds in one place. */}
-      <Card className="p-5 sm:p-6">
+      <Card className="p-4 sm:p-5">
         {/* When there are no civics mocks the header lives inside the friendly
             empty state, so we don't stack two titles. */}
         {mockTrend.length > 0 && (
-          <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="mb-3 flex items-start justify-between gap-4">
             <div>
               <h3 className="font-bold text-gray-800">{dict.progress.mock.title}</h3>
               <p className="mt-1 text-xs text-gray-400">{dict.progress.mock.subtitle}</p>
@@ -320,8 +312,8 @@ export default function StatisticPage() {
         )}
 
         {mockTrend.length === 0 ? (
-          <div className="flex flex-col items-center gap-6 py-2 text-center sm:flex-row sm:items-center sm:gap-10 sm:py-6 sm:text-left">
-            <div className="w-44 shrink-0 sm:w-56">
+          <div className="flex flex-col items-center gap-3 py-1 text-center sm:flex-row sm:items-center sm:gap-6 sm:py-2 sm:text-left">
+            <div className="w-32 shrink-0 sm:w-40">
               <Image
                 src="/images/n400/no_test_yet.png"
                 alt=""
@@ -331,19 +323,19 @@ export default function StatisticPage() {
               />
             </div>
             <div className="max-w-md">
-              <div className="mb-3 flex items-center justify-center gap-2 text-teal-600 sm:justify-start">
-                <ClipboardCheck size={18} />
+              <div className="mb-1.5 flex items-center justify-center gap-2 text-teal-600 sm:justify-start">
+                <ClipboardCheck size={16} />
                 <span className="text-sm font-bold">{dict.progress.mock.title}</span>
               </div>
-              <h4 className="text-xl font-extrabold text-gray-800 sm:text-2xl">{dict.progress.mock.emptyTitle}</h4>
-              <p className="mt-2 text-sm leading-relaxed text-gray-500">{dict.progress.mock.emptyDesc}</p>
+              <h4 className="text-lg font-extrabold text-gray-800 sm:text-xl">{dict.progress.mock.emptyTitle}</h4>
+              <p className="mt-1 text-sm leading-relaxed text-gray-500">{dict.progress.mock.emptyDesc}</p>
               <Link
                 href={`${base}/mock-test`}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-teal-700"
+                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-teal-700"
               >
                 {dict.mockTest.intro.startButtonFirst} <ArrowRight size={16} />
               </Link>
-              <p className="mt-4 text-xs text-gray-300">{dict.progress.mock.emptyFootnote}</p>
+              <p className="mt-2 text-xs text-gray-300">{dict.progress.mock.emptyFootnote}</p>
             </div>
           </div>
         ) : (
@@ -402,7 +394,7 @@ export default function StatisticPage() {
         {/* Hide the Viết/Speaking quick-links only when there is nothing at all
             to show — the empty state above already invites the first test. */}
         {(mockTrend.length > 0 || lastWritingMock || lastSpeakingMock) && (
-        <div className="mt-8 grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-2.5 border-t border-gray-100 pt-3 sm:grid-cols-2">
           {[
             { label: dict.progress.mock.writing, result: lastWritingMock, href: `${base}/mock-test/viet` },
             { label: dict.progress.mock.speaking, result: lastSpeakingMock, href: `${base}/mock-test/speaking` },
@@ -430,17 +422,17 @@ export default function StatisticPage() {
       </Card>
 
       {/* 3. Where am I weak? */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-6">
-        <Card className="p-5">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:gap-4">
+        <Card className="p-4">
           <h3 className="font-bold text-gray-800">{dict.progress.accuracy.byCategory}</h3>
           <p className="mt-1 text-xs text-gray-400">{dict.progress.accuracy.byTopic}</p>
-          <div className="mt-6 space-y-4">
+          <div className="mt-3 space-y-3">
             {(Object.keys(N400_CATEGORY_LABELS) as N400CategoryKey[]).map((key) => {
               const a = categoryAccuracy[key];
               const percent = a.total === 0 ? 0 : Math.round((a.correct / a.total) * 100);
               return (
                 <div key={key}>
-                  <div className="mb-1.5 flex items-start justify-between gap-3 text-sm">
+                  <div className="mb-1 flex items-start justify-between gap-3 text-sm">
                     <span className="font-medium text-gray-700">{N400_CATEGORY_LABELS[key][lang === 'en' ? 'en' : 'vi']}</span>
                     <span className="shrink-0 font-bold text-gray-800">
                       {percent}% <span className="text-xs font-normal text-gray-400">({a.correct}/{a.total})</span>
@@ -453,15 +445,15 @@ export default function StatisticPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-4">
           <h3 className="font-bold text-gray-800">{dict.progress.debt.title}</h3>
           <p className="mt-1 text-xs text-gray-400">{dict.progress.debt.subtitle}</p>
           {debts.length === 0 ? (
-            <p className="mt-6 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-gray-500">
               {dict.progress.debt.cleared}
             </p>
           ) : (
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-2">
               {debts.map((d) => (
                 // The whole row is the tap target — no separate "Luyện ngay"
                 // button; the count + chevron already read as "go review".
@@ -488,8 +480,8 @@ export default function StatisticPage() {
       </div>
 
       {/* 4. Am I making progress? */}
-      <Card className="p-5">
-        <h3 className="mb-6 font-bold text-gray-800">{dict.progress.activity.title}</h3>
+      <Card className="p-4">
+        <h3 className="mb-3 font-bold text-gray-800">{dict.progress.activity.title}</h3>
         <div className="mb-2 flex pl-12 text-[10px] text-gray-400">
           {heatWeekdays(dict).map((d) => (
             <div key={d} className="flex-1 text-center">

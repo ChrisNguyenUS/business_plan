@@ -961,6 +961,8 @@ export const vi = {
       leadIn: 'Hoàn thành các điều kiện bên dưới để sẵn sàng cho buổi phỏng vấn nhập tịch.',
       summaryLabel: 'Mức sẵn sàng',
       milestonesCompleted: 'mốc đã hoàn thành',
+      groupStudy: '📚 Học tập',
+      groupMock: '🎤 Thi thử',
       itemDesc: {
         civics_known: 'Học thuộc ít nhất 80% câu hỏi Civics.',
         whatmean_known: 'Học thuộc ít nhất 80% câu What Mean.',
