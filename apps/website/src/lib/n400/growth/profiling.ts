@@ -19,6 +19,12 @@ const DAY_MS = 86_400_000;
  *  is re-offered sooner because ignoring it freezes its whole subtree. */
 export const GATE_IGNORE_ACTIVE_DAYS = 3;
 export const LEAF_IGNORE_ACTIVE_DAYS = 10;
+/** After this many impressions a gate stops being eager and uses the leaf
+ *  cadence, so a chronic ignorer is not asked forever on the short window. */
+export const CHRONIC_IGNORE_LIMIT = 4;
+/** Absolute revisit ceiling: an inactive user is re-asked after this many
+ *  calendar days regardless of active-day count — the situation may have moved. */
+export const LEAF_IGNORE_CALENDAR_DAYS = 30;
 
 export type PromptSurface = 'results' | 'dashboard';
 
@@ -170,11 +176,15 @@ export function selectActivePrompt(
         const activeDaysSinceShown = gradedDays.filter(
           (d) => new Date(d.lastAt).getTime() > lastShownMs,
         ).length;
-        const needDays = gateKeys.has(def.question_key)
+        const chronic = (st.shown_count ?? 0) >= CHRONIC_IGNORE_LIMIT;
+        const needDays = gateKeys.has(def.question_key) && !chronic
           ? GATE_IGNORE_ACTIVE_DAYS
           : LEAF_IGNORE_ACTIVE_DAYS;
-        if (activeDaysSinceShown < needDays) continue;
-        reasons.push(`ignore_revisit_active>=${needDays}`);
+        const activeReached = activeDaysSinceShown >= needDays;
+        const calendarReached =
+          (now.getTime() - lastShownMs) / DAY_MS >= LEAF_IGNORE_CALENDAR_DAYS;
+        if (!activeReached && !calendarReached) continue;
+        reasons.push(activeReached ? `ignore_revisit_active>=${needDays}` : 'ignore_revisit_calendar');
       }
     } else {
       if (!skipped) continue;

@@ -238,6 +238,47 @@ describe('selectActivePrompt', () => {
       );
       expect(got?.def.question_key).toBe('l');
     });
+
+    it('backs a chronically-ignored gate off to the leaf cadence after 4 impressions', () => {
+      // 3 active days would satisfy the gate window, but shown_count=4 forces
+      // the longer leaf window, so g stays suppressed and the leaf wins.
+      const got = selectActivePrompt(
+        inputs({
+          definitions: DEFS,
+          states: [shownState('g', '2026-07-16T00:00:00Z', 4)],
+          gradedDays: [gDay('2026-07-17'), gDay('2026-07-18'), gDay('2026-07-19')],
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('l');
+    });
+
+    it('re-offers an ignored question after 30 calendar days even with no active days', () => {
+      const got = selectActivePrompt(
+        inputs({
+          definitions: [leaf],
+          states: [shownState('l', '2026-06-01T00:00:00Z')],
+          gradedDays: [], // user was inactive the whole time
+          now: new Date('2026-07-02T12:00:00Z'), // 31 days later
+        }),
+        'results',
+      );
+      expect(got?.def.question_key).toBe('l');
+      expect(got?.reason).toContain('ignore_revisit_calendar');
+    });
+
+    it('does not re-offer before 30 calendar days when inactive', () => {
+      const got = selectActivePrompt(
+        inputs({
+          definitions: [leaf],
+          states: [shownState('l', '2026-06-01T00:00:00Z')],
+          gradedDays: [],
+          now: new Date('2026-06-20T12:00:00Z'), // 19 days later
+        }),
+        'results',
+      );
+      expect(got).toBeNull();
+    });
   });
 });
 
