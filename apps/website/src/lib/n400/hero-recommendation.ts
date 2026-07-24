@@ -20,7 +20,7 @@ import type { N400Dict } from './i18n/vi';
 import { tFormat } from './i18n/format';
 
 export type HeroIntent =
-  | 'filing_checklist'
+  | 'document_prep'
   | 'interview_mode'
   | 'start_civics'
   | 'review_mistakes'
@@ -59,13 +59,6 @@ export interface HeroSignals {
   journeyStage?: 'exploring' | 'preparing' | 'filed' | 'waiting_interview' | 'interview_scheduled' | null;
   /** ISO date (yyyy-mm-dd) when known. */
   interviewDate?: string | null;
-  /** G3c — filing_checklist flag is on for this user (the route is live).
-      The tier must stand down when the destination would bounce. */
-  checklistEnabled?: boolean;
-  /** G3c — every checklist item ticked on this device (checklist-storage).
-      Device-local is fine for a hero: worst case the nudge reappears on a
-      second device, and it is one tap to stand down again. */
-  checklistDone?: boolean;
 }
 
 export const MOCK_REVIEW_WINDOW_HOURS = 72;
@@ -218,19 +211,21 @@ export const GROWTH_INTENT_TIERS: GrowthIntentTier[] = [
   },
   {
     // 70 — the user told us they haven't filed yet (journey_stage 'preparing').
-    // The immediate L3 reward (spec §3.4 filed=not_yet) is the checklist
-    // recommendation; the capped, dismissible S10 CTA covers later visits.
+    // The immediate L3 reward (spec §3.4 filed=not_yet) is an offer to book a
+    // free document-prep support call — a consultation with a distinct topic.
+    // booking_form is on globally, so no per-user flag gate is needed; if it
+    // were ever off the /consultation route bounces on its own deep-link guard.
+    // The capped, dismissible S10 CTA covers later visits.
     priority: 70,
     match: (signals: HeroSignals, dict: N400Dict): HeroRecommendation | null => {
-      if (!signals.checklistEnabled || signals.checklistDone) return null;
       if (signals.journeyStage !== 'preparing') return null;
       const t = dict.heroRec;
       return {
-        intent: 'filing_checklist',
-        emoji: '📋',
-        title: t.intent.checklist.title,
-        subtitle: t.intent.checklist.subtitle,
-        cta: { label: t.cta.openChecklist, href: '/filing-checklist' },
+        intent: 'document_prep',
+        emoji: '📄',
+        title: t.intent.documentPrep.title,
+        subtitle: t.intent.documentPrep.subtitle,
+        cta: { label: t.cta.bookSupportCall, href: '/consultation' },
         secondary: { label: t.cta.continueCivics, href: '/flashcards?filter=unknown' },
       };
     },

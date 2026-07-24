@@ -11,13 +11,11 @@ import { isFeatureOn, type FeatureFlag } from './flags';
 
 export interface GrowthProfile {
   enabled: boolean;
-  /** filing_checklist flag on for this user — G3c hero tier gate. */
-  checklistEnabled: boolean;
   journeyStage: 'exploring' | 'preparing' | 'filed' | 'waiting_interview' | 'interview_scheduled' | null;
   interviewDate: string | null;
 }
 
-const OFF: GrowthProfile = { enabled: false, checklistEnabled: false, journeyStage: null, interviewDate: null };
+const OFF: GrowthProfile = { enabled: false, journeyStage: null, interviewDate: null };
 
 export function useGrowthProfile(): GrowthProfile {
   const { user } = useAuth();
@@ -35,7 +33,7 @@ export function useGrowthProfile(): GrowthProfile {
         supabase
           .from('n400_feature_flags')
           .select('flag_key, enabled, rollout_pct')
-          .in('flag_key', ['growth_engine', 'filing_checklist']),
+          .in('flag_key', ['growth_engine']),
         // Explicit user_id filter — RLS is not a scope here: n400_15 lets
         // admins read every lead_profiles row, and maybeSingle() errors on
         // more than one, silently blanking the journey stage.
@@ -54,7 +52,6 @@ export function useGrowthProfile(): GrowthProfile {
       }
       setProfile({
         enabled: true,
-        checklistEnabled: isFeatureOn(flag('filing_checklist'), user.id),
         journeyStage: (leadRes.data?.journey_stage ?? null) as GrowthProfile['journeyStage'],
         interviewDate: leadRes.data?.interview_date ?? null,
       });

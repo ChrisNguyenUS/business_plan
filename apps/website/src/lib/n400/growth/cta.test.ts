@@ -59,7 +59,7 @@ function inputs(partial: Partial<CtaInputs> = {}): CtaInputs {
     lastGrowthPromptAt: null,
     consultationBookedAt: null,
     consultationPending: false,
-    availableActions: new Set(['book_consultation', 'start_mock', 'open_checklist']),
+    availableActions: new Set(['book_consultation', 'start_mock']),
     now: NOW,
     ...partial,
   };

@@ -42,7 +42,6 @@ import { trackSignupComplete } from '@/lib/n400/analytics';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS } from '@/lib/n400/questions-data';
 import { recommendWeakCategory } from '@/lib/n400/quiz-engine';
 import { recommendDailyHero } from '@/lib/n400/hero-recommendation';
-import { loadTicks, isChecklistComplete } from '@/lib/n400/checklist-storage';
 import { deriveHubProgress } from '@/lib/n400/hub-progress';
 import type { SectionKey } from '@/lib/n400/section-progress';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
@@ -167,8 +166,6 @@ export default function DashboardPage() {
       goalsTotal: goals.length,
       journeyStage: growth.enabled ? growth.journeyStage : null,
       interviewDate: growth.enabled ? growth.interviewDate : null,
-      checklistEnabled: growth.enabled ? growth.checklistEnabled : false,
-      checklistDone: profile && growth.enabled ? isChecklistComplete(loadTicks(profile.id)) : false,
     },
     dict,
   );

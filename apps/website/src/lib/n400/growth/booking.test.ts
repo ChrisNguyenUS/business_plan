@@ -6,6 +6,9 @@ describe('topicForCta', () => {
     expect(topicForCta('s5_writing_help')).toBe('writing');
     expect(topicForCta('s6_speaking_help')).toBe('speaking');
   });
+  it('maps the haven\'t-filed-yet support call to document_prep', () => {
+    expect(topicForCta('s10_document_prep')).toBe('document_prep');
+  });
   it('maps filing-stalled to n400_review and readiness/mock CTAs to interview_prep', () => {
     expect(topicForCta('s3_filing_stalled')).toBe('n400_review');
     expect(topicForCta('s1_mock_ready')).toBe('interview_prep');

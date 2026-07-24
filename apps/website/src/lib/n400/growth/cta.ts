@@ -17,7 +17,7 @@
 import type { LearningSignals } from './learning-signals';
 import type { SectionKey } from '../section-progress';
 
-export type CtaAction = 'book_consultation' | 'open_checklist' | 'start_mock';
+export type CtaAction = 'book_consultation' | 'start_mock';
 export type CtaGroup = 'consultation' | 'education';
 
 export interface CtaDefinition {
@@ -69,7 +69,8 @@ export interface CtaInputs {
       permanent: cancelled/no_show requests let the group return. */
   consultationPending: boolean;
   /** Actions with a destination that exists in this build. G3a ships only
-      `start_mock`; G3b adds `book_consultation`, G3c adds `open_checklist`. */
+      `start_mock`; G3b adds `book_consultation` (also serves the document-prep
+      support call — a consultation with a distinct topic, not a new action). */
   availableActions: Set<CtaAction>;
   now: Date;
 }

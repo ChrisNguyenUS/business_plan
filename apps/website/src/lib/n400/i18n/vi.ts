@@ -204,7 +204,7 @@ export const vi = {
       continueCivics: 'Tiếp tục học Civics',
       pickCategory: 'Chọn chủ đề khác',
       takeMockTest: 'Thi thử ngay',
-      openChecklist: 'Xem checklist',
+      bookSupportCall: 'Đặt lịch hẹn hỗ trợ miễn phí',
     },
     intent: {
       startCivics: {
@@ -247,9 +247,9 @@ export const vi = {
         subtitle: 'Ưu tiên hôm nay: Thi thử, Speaking và Viết.',
         secondary: 'Luyện Speaking',
       },
-      checklist: {
-        title: 'Chuẩn bị hồ sơ N-400',
-        subtitle: 'Checklist các bước và giấy tờ — chỉ mất 3 phút.',
+      documentPrep: {
+        title: 'Bạn cần giúp đỡ chuẩn bị hồ sơ N-400?',
+        subtitle: 'Đặt buổi hỗ trợ miễn phí — đội ngũ Manna sẽ cùng bạn chuẩn bị giấy tờ.',
       },
     },
   },
@@ -276,6 +276,7 @@ export const vi = {
       },
       topicLabel: 'Bạn muốn trao đổi về',
       topics: {
+        document_prep: 'Hỗ trợ chuẩn bị hồ sơ',
         n400_review: 'Rà soát hồ sơ N-400',
         interview_prep: 'Chuẩn bị phỏng vấn',
         writing: 'Luyện Viết',
@@ -291,18 +292,6 @@ export const vi = {
       calendlyCta: 'Tự chọn lịch trên Calendly',
       alreadyTitle: 'Bạn đã có một yêu cầu đang chờ',
       alreadyBody: 'Đội ngũ Manna sẽ sớm liên hệ với bạn. Cần đổi giờ? Chọn lịch trực tiếp bên dưới.',
-      backToDashboard: 'Về trang chính',
-    },
-    checklist: {
-      eyebrow: 'Tài liệu miễn phí',
-      title: 'Checklist chuẩn bị hồ sơ N-400',
-      subtitle: 'Các bước và giấy tờ cần chuẩn bị — đọc khoảng 3 phút.',
-      progress: 'Đã chuẩn bị {done}/{total} mục',
-      disclosure:
-        'Manna One Solution không phải là công ty luật và không cung cấp tư vấn pháp lý. Thông tin này chỉ mang tính tham khảo chung.',
-      consultTitle: 'Vẫn còn câu hỏi?',
-      consultBody: 'Đặt buổi tư vấn miễn phí — đội ngũ Manna sẽ cùng bạn rà soát hồ sơ.',
-      consultCta: 'Đặt tư vấn miễn phí',
       backToDashboard: 'Về trang chính',
     },
   },
@@ -969,6 +958,18 @@ export const vi = {
     readiness: {
       title: 'Điều kiện sẵn sàng phỏng vấn',
       subtitle: 'Đạt {metCount}/{totalCount} điều kiện',
+      leadIn: 'Hoàn thành các điều kiện bên dưới để sẵn sàng cho buổi phỏng vấn nhập tịch.',
+      summaryLabel: 'Mức sẵn sàng',
+      milestonesCompleted: 'mốc đã hoàn thành',
+      itemDesc: {
+        civics_known: 'Học thuộc ít nhất 80% câu hỏi Civics.',
+        whatmean_known: 'Học thuộc ít nhất 80% câu What Mean.',
+        yesno_known: 'Học thuộc ít nhất 80% câu Yes/No.',
+        writing_known: 'Hoàn thành ít nhất 80% bài viết.',
+        writing_mock: 'Hoàn thành bài thi thử Viết với điểm đạt.',
+        speaking_mock: 'Hoàn thành bài thi thử Speaking với điểm đạt.',
+        civics_mock: 'Vượt qua {streak} bài thi thử Civics gần nhất.',
+      },
     },
     mock: {
       title: 'Kết quả thi thử',
@@ -980,6 +981,9 @@ export const vi = {
       passed: 'Đạt · {score}/{total}',
       failed: 'Chưa đạt · {score}/{total}',
       notAttempted: 'Chưa thi →',
+      emptyTitle: 'Bạn chưa có kết quả thi thử',
+      emptyDesc: 'Hãy hoàn thành bài thi đầu tiên để theo dõi mức độ sẵn sàng cho buổi phỏng vấn.',
+      emptyFootnote: 'Kết quả thi Civics, Viết và Speaking sẽ hiển thị tại đây.',
     },
     accuracy: {
       byCategory: 'Độ chính xác theo danh mục',

@@ -1,6 +1,6 @@
 // Pure booking logic (spec §5). No IO here — the server action calls these.
 
-export const CONSULTATION_TOPICS = ['n400_review', 'interview_prep', 'writing', 'speaking', 'other'] as const;
+export const CONSULTATION_TOPICS = ['document_prep', 'n400_review', 'interview_prep', 'writing', 'speaking', 'other'] as const;
 export type ConsultationTopic = (typeof CONSULTATION_TOPICS)[number];
 
 export const PREFERRED_TIMES = ['weekday_day', 'weekday_evening', 'weekend'] as const;
@@ -9,6 +9,7 @@ export type PreferredTime = (typeof PREFERRED_TIMES)[number];
 /** Prefill the form topic from the CTA that brought the user here (spec §5.1). */
 export function topicForCta(sourceCta: string | null): ConsultationTopic {
   if (!sourceCta) return 'n400_review';
+  if (sourceCta.startsWith('s10_')) return 'document_prep'; // haven't-filed-yet → document prep support call
   if (sourceCta.startsWith('s5_')) return 'writing';
   if (sourceCta.startsWith('s6_')) return 'speaking';
   if (sourceCta.startsWith('s3_')) return 'n400_review';

@@ -4,10 +4,10 @@
 // orchestrates: check flags, load the shared context, run each half's loader,
 // assemble. It must NOT grow query logic.
 //
-// Adding a phase = adding a loader module + one line here. G3b (booking),
-// G3c (checklist) and G4 (recommendation, lead status) all land this way. If
-// this file starts holding .from(...) calls again, the decomposition has been
-// undone — put the query in a loader.
+// Adding a phase = adding a loader module + one line here. G3b (booking) and
+// G4 (recommendation, lead status) all land this way. If this file starts
+// holding .from(...) calls again, the decomposition has been undone — put the
+// query in a loader.
 
 import { getAuthedServerClient } from './server-client';
 import { isFeatureOn, loadFeatureFlags, type FeatureFlag } from './flags';
@@ -24,11 +24,10 @@ export type { GrowthState } from './growth-state-shape';
 const EMPTY: GrowthState = { prompt: null, cta: null };
 
 /** Actions with a real destination in this build. G3b appends
-    'book_consultation', G3c appends 'open_checklist'. */
+    'book_consultation' (which also carries the document-prep support call). */
 function availableActions(flags: Map<string, FeatureFlag>, userId: string): Set<CtaAction> {
   const actions = new Set<CtaAction>(['start_mock']);
   if (isFeatureOn(flags.get('booking_form'), userId)) actions.add('book_consultation');
-  if (isFeatureOn(flags.get('filing_checklist'), userId)) actions.add('open_checklist');
   return actions;
 }
 
@@ -43,7 +42,7 @@ export async function getGrowthState(surface: PromptSurface): Promise<GrowthStat
   if (!user) return EMPTY;
 
   const flags = await loadFeatureFlags(supabase, [
-    'growth_engine', 'profiling', 'cta_engine', 'booking_form', 'filing_checklist',
+    'growth_engine', 'profiling', 'cta_engine', 'booking_form',
   ]);
 
   if (!isFeatureOn(flags.get('growth_engine'), user.id)) return EMPTY;

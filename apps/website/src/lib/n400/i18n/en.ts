@@ -204,7 +204,7 @@ export const en: N400Dict = {
       continueCivics: 'Continue learning Civics',
       pickCategory: 'Choose another topic',
       takeMockTest: 'Take a mock test',
-      openChecklist: 'Open checklist',
+      bookSupportCall: 'Book Free Support Call',
     },
     intent: {
       startCivics: {
@@ -247,9 +247,9 @@ export const en: N400Dict = {
         subtitle: "Today's priority: Mock Test, Speaking and Writing.",
         secondary: 'Practice Speaking',
       },
-      checklist: {
-        title: 'Prepare your N-400 filing',
-        subtitle: 'A checklist of steps and documents — just 3 minutes.',
+      documentPrep: {
+        title: 'Need help preparing your N-400?',
+        subtitle: 'Book a free support call — the Manna team will help you prepare your documents.',
       },
     },
   },
@@ -276,6 +276,7 @@ export const en: N400Dict = {
       },
       topicLabel: 'What would you like to discuss?',
       topics: {
+        document_prep: 'Document preparation',
         n400_review: 'N-400 application review',
         interview_prep: 'Interview preparation',
         writing: 'Writing coaching',
@@ -291,18 +292,6 @@ export const en: N400Dict = {
       calendlyCta: 'Pick a slot on Calendly',
       alreadyTitle: 'You already have a pending request',
       alreadyBody: 'The Manna team will reach out soon. Need a specific time? Pick a slot below.',
-      backToDashboard: 'Back to dashboard',
-    },
-    checklist: {
-      eyebrow: 'Free resource',
-      title: 'N-400 Filing Checklist',
-      subtitle: 'The steps and documents to prepare — about a 3-minute read.',
-      progress: '{done}/{total} items prepared',
-      disclosure:
-        'Manna One Solution is not a law firm and does not provide legal advice. This information is general reference only.',
-      consultTitle: 'Still have questions?',
-      consultBody: 'Book a free consultation — the Manna team will review your application with you.',
-      consultCta: 'Book a free consultation',
       backToDashboard: 'Back to dashboard',
     },
   },
@@ -970,6 +959,18 @@ export const en: N400Dict = {
     readiness: {
       title: 'Interview Readiness Conditions',
       subtitle: 'Met {metCount}/{totalCount} conditions',
+      leadIn: 'Complete the conditions below to be ready for your naturalization interview.',
+      summaryLabel: 'Interview Readiness',
+      milestonesCompleted: 'milestones completed',
+      itemDesc: {
+        civics_known: 'Learn at least 80% of the Civics questions.',
+        whatmean_known: 'Learn at least 80% of the What Mean questions.',
+        yesno_known: 'Learn at least 80% of the Yes/No questions.',
+        writing_known: 'Complete at least 80% of the writing sentences.',
+        writing_mock: 'Pass a Writing mock test.',
+        speaking_mock: 'Pass a Speaking mock test.',
+        civics_mock: 'Pass the last {streak} Civics mock tests.',
+      },
     },
     mock: {
       title: 'Mock Test Results',
@@ -981,6 +982,9 @@ export const en: N400Dict = {
       passed: 'Passed · {score}/{total}',
       failed: 'Failed · {score}/{total}',
       notAttempted: 'Not attempted →',
+      emptyTitle: "You don't have any mock test results yet",
+      emptyDesc: 'Complete your first test to track how ready you are for the interview.',
+      emptyFootnote: 'Civics, Writing and Speaking results will appear here.',
     },
     accuracy: {
       byCategory: 'Accuracy by Category',

@@ -8,7 +8,6 @@
 // pure UI telemetry that touches neither score nor funnel (see n400_24).
 
 export const CLIENT_EVENT_TYPES = [
-  'checklist_viewed',
   'consultation_form_opened',
 ] as const;
 

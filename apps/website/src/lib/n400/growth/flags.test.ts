@@ -23,7 +23,6 @@ describe('isUserInRollout', () => {
 
 describe('isClientEventType', () => {
   it('accepts whitelisted client events', () => {
-    expect(isClientEventType('checklist_viewed')).toBe(true);
     expect(isClientEventType('consultation_form_opened')).toBe(true);
   });
 

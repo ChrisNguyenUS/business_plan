@@ -12,10 +12,10 @@ import { clickCta, dismissCta, markCtaShown } from '@/lib/n400/growth/cta-action
 import type { ActiveCta } from '@/lib/n400/growth/cta-state';
 
 const ACTION_HREF: Record<ActiveCta['action'], string> = {
-  // G3b replaces this with the real booking route; until booking_form is on,
-  // the evaluator never returns a book_consultation CTA, so this is unreachable.
+  // The consultation route also serves the document-prep support call — the
+  // form prefills its topic from the source CTA (topicForCta), so no separate
+  // destination is needed.
   book_consultation: '/n400ready/consultation',
-  open_checklist: '/n400ready/filing-checklist',
   start_mock: '/n400ready/mock-test',
 };
 

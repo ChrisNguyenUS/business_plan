@@ -246,32 +246,25 @@ describe('interview_mode intent tier (G2 growth)', () => {
   });
 });
 
-describe('filing_checklist intent tier', () => {
-  it('recommends the checklist when journey says preparing and the route is live', () => {
-    const rec = recommendDailyHero(
-      { ...baseSignals, journeyStage: 'preparing', checklistEnabled: true },
-      vi,
-    );
-    expect(rec.intent).toBe('filing_checklist');
-    expect(rec.cta.href).toBe('/filing-checklist');
-  });
-
-  it('stands down when the filing_checklist flag is off (route dark)', () => {
+describe('document_prep intent tier', () => {
+  it('recommends the free support call when journey says preparing', () => {
     const rec = recommendDailyHero({ ...baseSignals, journeyStage: 'preparing' }, vi);
-    expect(rec.intent).not.toBe('filing_checklist');
+    expect(rec.intent).toBe('document_prep');
+    expect(rec.cta.href).toBe('/consultation');
   });
 
-  it('stands down once every item is ticked on this device', () => {
-    const rec = recommendDailyHero(
-      { ...baseSignals, journeyStage: 'preparing', checklistEnabled: true, checklistDone: true },
-      vi,
+  it('stands down for any other stage', () => {
+    expect(recommendDailyHero({ ...baseSignals, journeyStage: 'filed' }, vi).intent).not.toBe(
+      'document_prep',
     );
-    expect(rec.intent).not.toBe('filing_checklist');
+    expect(recommendDailyHero({ ...baseSignals, journeyStage: null }, vi).intent).not.toBe(
+      'document_prep',
+    );
   });
 
-  it('loses to interview_mode when both could match', () => {
+  it('loses to interview_mode when a higher-priority stage would also fire', () => {
     const rec = recommendDailyHero(
-      { ...baseSignals, journeyStage: 'interview_scheduled', checklistEnabled: true },
+      { ...baseSignals, journeyStage: 'interview_scheduled' },
       vi,
     );
     expect(rec.intent).toBe('interview_mode');
