@@ -149,6 +149,14 @@ export function selectActivePrompt(
     gradedDays.reduce((n, d) => n + (type === 'practice_completed' ? d.practiceCount : d.mockCount), 0);
   const distinctDays = gradedDays.length;
 
+  // Parse each graded day's newest-event timestamp ONCE. Both per-candidate
+  // scans below (ignore cooldown, skip snooze) walk this list, and the rollup
+  // is unbounded — it returns every day the user has ever studied.
+  const gradedAtMs = gradedDays.map((d) => new Date(d.lastAt).getTime());
+  /** Distinct active study days ("buổi") whose newest graded event is after
+   *  `sinceMs` — the currency both cooldowns are measured in. */
+  const activeDaysSince = (sinceMs: number) => gradedAtMs.filter((t) => t > sinceMs).length;
+
   for (const def of candidates) {
     if (answers[def.question_key] !== undefined) continue;
     const st = stateByKey.get(def.question_key);
@@ -173,9 +181,7 @@ export function selectActivePrompt(
       // until the tier's revisit window elapses. Explicit skip above wins first.
       if (st?.last_shown_at) {
         const lastShownMs = new Date(st.last_shown_at).getTime();
-        const activeDaysSinceShown = gradedDays.filter(
-          (d) => new Date(d.lastAt).getTime() > lastShownMs,
-        ).length;
+        const activeDaysSinceShown = activeDaysSince(lastShownMs);
         const chronic = (st.shown_count ?? 0) >= CHRONIC_IGNORE_LIMIT;
         const needDays = gateKeys.has(def.question_key) && !chronic
           ? GATE_IGNORE_ACTIVE_DAYS
@@ -193,9 +199,7 @@ export function selectActivePrompt(
       const skippedAtMs = new Date(st!.skipped_at!).getTime();
       // max(created_at) that day > skip time ⇔ some graded event that day
       // after the skip — exactly what the old per-event filter computed.
-      const activeDaysSinceSkip = gradedDays.filter(
-        (d) => new Date(d.lastAt).getTime() > skippedAtMs,
-      ).length;
+      const activeDaysSinceSkip = activeDaysSince(skippedAtMs);
       if (!snoozeOver && activeDaysSinceSkip < def.snooze_sessions) continue;
       reasons.push(snoozeOver ? 'snooze_expired' : `active_days_since_skip>=${def.snooze_sessions}`);
     }
