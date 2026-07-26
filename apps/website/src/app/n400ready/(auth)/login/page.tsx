@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { LangToggle } from './LangToggle';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 import styles from './login.module.css';
 
 /* ─── SVG Icons ─── */
@@ -77,16 +78,30 @@ const PROVIDERS: { id: OAuthId; name: string; Icon: () => React.ReactElement }[]
    PAGE COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function N400LoginPage() {
+  // useSearchParams needs a Suspense boundary to keep this route prerenderable.
+  return (
+    <Suspense fallback={null}>
+      <N400LoginScreen />
+    </Suspense>
+  );
+}
+
+function N400LoginScreen() {
   const router = useRouter();
   const { signIn, signInWithOAuth } = useAuth();
   const { lang, dict } = useN400Lang();
   const t = dict.login;
 
+  // ?reset=success is set by the reset-password page after a successful update.
+  const resetDone = useSearchParams().get('reset') === 'success';
+
   const [loadingProvider, setLoadingProvider] = useState<OAuthId | 'email' | null>(null);
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  // Land straight on the email form when the user has just reset their password.
+  const [showEmailForm, setShowEmailForm] = useState(resetDone);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
 
   async function handleOAuth(provider: OAuthId) {
     setError(null);
@@ -247,6 +262,11 @@ export default function N400LoginPage() {
             {t.cardSubtitle}
           </p>
 
+          {/* Password just reset */}
+          {resetDone && (
+            <div className={styles.successBox} role="status">{t.resetSuccess}</div>
+          )}
+
           {/* Error */}
           {error && (
             <div className={styles.errorBox}>{error}</div>
@@ -327,9 +347,13 @@ export default function N400LoginPage() {
               </button>
 
               <div className={styles.formLinks}>
-                <Link href={`/${lang}/forgot-password`} className={styles.link}>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  className={styles.linkBtn}
+                >
                   {t.forgotPassword}
-                </Link>
+                </button>
                 <Link href={`/${lang}/signup`} className={styles.linkBold}>
                   {t.createAccount}
                 </Link>
@@ -350,6 +374,8 @@ export default function N400LoginPage() {
         </div>
       </div>
       </div>
+
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
     </div>
   );
 }

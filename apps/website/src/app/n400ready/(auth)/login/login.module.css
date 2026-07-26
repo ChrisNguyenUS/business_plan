@@ -559,6 +559,19 @@
   text-align: center;
 }
 
+/* ─── Success box (e.g. after a password reset) ─── */
+.successBox {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #F0FAF9;
+  border: 1px solid rgba(22, 163, 148, 0.28);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0F766E;
+  text-align: center;
+}
+
 /* ─── OAuth Buttons ───
    Height increased to 60px on mobile
    Lighter borders, more horizontal padding
@@ -792,6 +805,29 @@
 
 .link:hover {
   text-decoration: underline;
+}
+
+/* Same look as .link, but it opens the forgot-password dialog instead of
+   navigating — so it must be a real <button> for keyboard/AT users. */
+.linkBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #16A394;
+  cursor: pointer;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.linkBtn:focus-visible {
+  outline: 2px solid #16A394;
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .linkBold {

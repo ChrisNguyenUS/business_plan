@@ -21,7 +21,9 @@ const N400_PUBLIC_RE = /^\/n400ready\/login(\/|$)/;
 // Routes that signed-in users can hit before completing onboarding. /onboarding
 // itself would loop without this exemption; /setup is the Profile edit-address
 // form; /help is informational and can render without a profile row.
-const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(onboarding|setup|help|login)(\/|$)/;
+// /reset-password runs on a recovery session and must never be diverted into
+// onboarding — the user has to finish setting the new password first.
+const N400_NO_PROFILE_GATE_RE = /^\/n400ready\/(onboarding|setup|help|login|reset-password)(\/|$)/;
 // Old bookmarked URLs from the /{locale}/n400app era.
 const N400_LEGACY_RE = /^\/(?:en|vi)\/n400app(\/.*)?$/;
 
