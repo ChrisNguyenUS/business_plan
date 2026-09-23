@@ -83,7 +83,7 @@ Event `SERVER_EVENT_TYPES` đánh dấu *reserved, not emitted in G1* (`section_
 - Thêm `transpilePackages: ['@mannaos/n400-growth']` vào `next.config` của **cả hai** app.
 - `apps/website/src/lib/n400/growth/events.ts` → re-export từ package. Giữ nguyên ~10 import call-site hiện có, để diff G4 không lẫn vào code đã ship.
 
-## 3. Migration — `n400_28_growth_staff_read.sql`
+## 3. Migration — `n400_29_growth_staff_read.sql`
 
 Đặt ở `apps/website/supabase/migrations/` (6/7 policy là bảng growth định nghĩa ở đó; để chung một file cho atomic, dù policy `profiles` gốc nằm ở `apps/internal_app/supabase/migrations/006`).
 
@@ -196,7 +196,7 @@ Giảm thiểu: comment trỏ chéo hai chiều giữa hai file + quy tắc ghi 
 ## 7. Thứ tự triển khai
 
 1. `packages/n400-growth` + wiring cả hai app + re-export ở website → `pnpm build` cả hai app còn xanh
-2. `n400_28_growth_staff_read.sql` (helper + policy + view) → verify bằng tài khoản staff thật
+2. `n400_29_growth_staff_read.sql` (helper + policy + view) → verify bằng tài khoản staff thật
 3. `n400_weak_section_for` RPC
 4. `actions/leads.ts` + `lib/n400/timeline.ts` + jest test
 5. List page + nav
@@ -213,9 +213,9 @@ Mỗi bước một commit atomic.
 - [ ] `pnpm build` + `pnpm lint` + jest (internal_app) + vitest (website) đều xanh
 - [ ] Không có thay đổi hành vi nào ở `apps/website/` ngoài việc `events.ts` thành re-export
 
-## 9. Phát hiện ngoài phạm vi — G3c hỏng trên production
+## 9. Phát hiện ngoài phạm vi — G3c hỏng trên production ✅ ĐÃ FIX
 
-Tìm thấy trong lúc self-review spec này. **Không phải việc của G4**, ghi lại để không mất.
+Tìm thấy trong lúc self-review spec này. **Đã sửa riêng ngày 2026-09-23** bằng migration `n400_28_consultation_topic_document_prep.sql` (applied lên remote, verify bằng `pg_get_constraintdef` + probe insert rolled-back). Giữ lại phần mô tả dưới đây làm hồ sơ.
 
 `apps/website/src/lib/n400/growth/booking.ts:3` khai:
 
@@ -235,4 +235,6 @@ CHECK (topic = ANY (ARRAY['n400_review','interview_prep','writing','speaking','o
 
 **Hậu quả:** user `journey_stage='preparing'` bấm CTA document-prep → submit form → INSERT bị chặn (SQLSTATE 23514) → `booking-actions.ts:130` trả `insert_failed` → user thấy lỗi chung. Không đặt được lịch. Toàn bộ mục đích của G3c chết ở bước cuối.
 
-**Fix:** một migration drop + recreate constraint với 6 giá trị (khớp `booking.ts`). Nên làm **trước** G4 và commit riêng — G4 v1 read-only không phụ thuộc vào nó, nhưng mỗi ngày trôi qua là mất lead thật.
+**Mức độ:** tiềm ẩn, chưa gây thiệt hại. Đo lúc 2026-09-23: `n400_consultation_requests` có **0** row, `s10_document_prep` có **0** impression và **0** click, `journey_stage='preparing'` có **0** lead. Nó sẽ hỏng ở đúng user preparing đầu tiên.
+
+**Fix đã áp:** `n400_28_consultation_topic_document_prep.sql` — drop + recreate constraint với 6 giá trị khớp `booking.ts:3` (superset của bộ cũ nên không row nào fail revalidation). Commit riêng, không nằm trong G4.
