@@ -31,6 +31,7 @@ export interface LeadDetail extends LeadRow {
   first_touch: Record<string, unknown> | null
   last_touch: Record<string, unknown> | null
   created_at: string
+  account_created_at: string | null
 }
 
 export interface TimelineRow {

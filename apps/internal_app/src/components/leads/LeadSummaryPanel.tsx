@@ -1,7 +1,12 @@
 import LeadStatusBadge from '@/components/leads/LeadStatusBadge'
 import type { LeadDetail, WeakSection } from '@/lib/n400/leads-shape'
+import type { SectionKey } from '@mannaos/n400-growth'
 
-const SECTION_LABELS: Record<string, string> = {
+// Record<SectionKey, ...> ties this map to the union: adding a member to
+// SectionKey without adding it here fails to compile. weakSection.section is
+// a plain `text` RPC column though, so the lookup still casts and falls back
+// to the raw value for an off-union surprise from the database.
+const SECTION_LABELS: Record<SectionKey, string> = {
   whatmean: 'Speaking — What does this mean',
   yesno: 'Speaking — Yes/No questions',
   writing: 'Writing',
@@ -88,7 +93,7 @@ export default function LeadSummaryPanel({
           label="Weakest area"
           value={
             weakSection
-              ? `${SECTION_LABELS[weakSection.section] ?? weakSection.section} · ${weakSection.correct_pct}% of ${weakSection.graded_total}`
+              ? `${SECTION_LABELS[weakSection.section as SectionKey] ?? weakSection.section} · ${weakSection.correct_pct}% of ${weakSection.graded_total}`
               : 'No graded attempts'
           }
         />
@@ -102,7 +107,11 @@ export default function LeadSummaryPanel({
       <Card title="Attribution">
         <Row label="First touch" value={touchLine(lead.first_touch)} />
         <Row label="Last touch" value={touchLine(lead.last_touch)} />
-        <Row label="Joined" value={formatDate(lead.created_at)} />
+        <Row label="Joined" value={formatDate(lead.account_created_at)} />
+        {/* lead.created_at is n400_lead_profiles.created_at, not the signup
+            date — G1 backfilled it in bulk, so most leads share one
+            timestamp. Labelled distinctly so it never reads as "Joined". */}
+        <Row label="Lead since" value={formatDate(lead.created_at)} />
       </Card>
     </div>
   )

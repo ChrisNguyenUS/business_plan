@@ -2,15 +2,26 @@ import Link from 'next/link'
 import { getLeads } from '@/actions/leads'
 import { LEADS_PAGE_SIZE } from '@/lib/n400/leads-shape'
 import LeadStatusBadge from '@/components/leads/LeadStatusBadge'
+import type { LeadStatus } from '@mannaos/n400-growth'
 
 export const dynamic = 'force-dynamic'
 
-const STATUS_FILTERS: { value: string; label: string }[] = [
+// Record<LeadStatus, ...> ties this map to the union: adding a fifth status
+// without adding it here fails to compile, instead of silently missing a
+// filter chip. '' ("All") is not part of LeadStatus, so it's added separately.
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  sales_ready: 'Sales Ready',
+  hot: 'Hot',
+  warm: 'Warm',
+  cold: 'Cold',
+}
+
+const STATUS_FILTERS: { value: LeadStatus | ''; label: string }[] = [
   { value: '', label: 'All' },
-  { value: 'sales_ready', label: 'Sales Ready' },
-  { value: 'hot', label: 'Hot' },
-  { value: 'warm', label: 'Warm' },
-  { value: 'cold', label: 'Cold' },
+  ...(Object.keys(STATUS_LABELS) as LeadStatus[]).map((value) => ({
+    value,
+    label: STATUS_LABELS[value],
+  })),
 ]
 
 function initialsOf(name: string | null, email: string | null): string {
