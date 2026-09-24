@@ -16,6 +16,12 @@
 </head>
 <body>
   <h1>Voice spike</h1>
+  <div class="row">Mode: <b id="mode"></b> ·
+    <a href="?mode=new" target="_blank">new</a> ·
+    <a href="?mode=reuse" target="_blank">reuse</a> ·
+    <a href="?mode=abort" target="_blank">abort</a> ·
+    <a href="?mode=gum" target="_blank">gum</a>
+    <span style="font-size:12px">(each link opens a fresh tab)</span></div>
   <div class="row">API: <span id="api"></span></div>
   <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
   <div class="row">State: <span id="state">idle</span> · Answers with transcript: <span id="ok">0</span> / <span id="tries">0</span></div>
@@ -24,58 +30,90 @@
   <button id="start">🎤 Speak</button>
   <button id="stop" class="secondary">Stop</button>
   <button id="copy" class="secondary">Copy results</button>
-  <div id="log"></div>
+  <textarea id="out" readonly style="width:100%;height:30vh;font:12px/1.35 ui-monospace,monospace;font-size:16px"></textarea>
 <script>
+  // Gate 0 probe, v2: compares ways of driving iOS Safari's recognizer after
+  // "works once per tab" was seen in production. ?mode=
+  //   new   — a new recognizer per answer (what the app does)
+  //   reuse — one recognizer for the page, start() again each answer
+  //   abort — new per answer + explicit abort() after each end
+  //   gum   — new per answer + getUserMedia open/close after each end
+  const MODE = new URLSearchParams(location.search).get('mode') || 'new';
   const PROMPTS = ['The Constitution', 'Twenty-seven', 'Checks and balances', 'Congress, president, and the courts', 'Freedom of speech'];
   const $ = (id) => document.getElementById(id);
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec = null, tries = 0, ok = 0, gotText = false, t0 = 0;
+  let rec = null, shared = null, running = false, tries = 0, ok = 0, gotText = false, t0 = performance.now();
   const lines = [];
   function log(msg) {
-    const line = `${((performance.now() - t0) / 1000).toFixed(2)}s ${msg}`;
-    lines.push(line); $('log').textContent = lines.join('\n'); $('log').scrollTop = 1e9;
+    lines.push(`${((performance.now() - t0) / 1000).toFixed(2)}s ${msg}`);
+    $('out').value = `mode=${MODE}\nUA: ${navigator.userAgent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
+    $('out').scrollTop = 1e9;
   }
   function setState(s) { $('state').textContent = s; log('state=' + s); }
+  $('mode').textContent = MODE;
   $('api').textContent = Rec ? (window.SpeechRecognition ? 'SpeechRecognition' : 'webkitSpeechRecognition') : 'MISSING';
   $('ua').textContent = navigator.userAgent;
   $('prompt').textContent = PROMPTS[0];
   document.addEventListener('visibilitychange', () => {
     log('visibility=' + document.visibilityState);
-    if (document.visibilityState === 'hidden' && rec) { rec.abort(); log('aborted on hide'); }
+    if (document.visibilityState === 'hidden' && running && rec) { rec.abort(); log('aborted on hide'); }
   });
+
+  async function releaseViaGum() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+      log('gum open+close ok');
+    } catch (e) { log('gum failed ' + e.name + ' ' + e.message); }
+  }
+
+  function wire(r) {
+    r.lang = 'en-US'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+    r.onstart = () => setState('listening');
+    r.onaudiostart = () => log('audiostart');
+    r.onspeechstart = () => log('speechstart');
+    r.onspeechend = () => setState('processing');
+    r.onresult = (e) => {
+      const res = e.results[e.results.length - 1];
+      const text = res[0].transcript;
+      $('heard').textContent = text;
+      log(`result final=${res.isFinal} "${text}"`);
+      if (text.trim()) gotText = true;
+    };
+    r.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
+    r.onend = () => {
+      log('end gotText=' + gotText);
+      running = false;
+      if (gotText) { ok++; $('ok').textContent = ok; $('prompt').textContent = PROMPTS[ok % PROMPTS.length]; }
+      if (MODE === 'abort') { try { r.abort(); log('abort() after end'); } catch (e) { log('abort threw ' + e.name); } }
+      if (MODE === 'gum') void releaseViaGum();
+      setState('idle');
+    };
+  }
+
   $('start').onclick = () => {
     if (!Rec) { log('no API'); return; }
-    if (rec) { log('already running — ignored'); return; }
-    if (!t0) t0 = performance.now();
+    if (running) { log('already running — ignored'); return; }
     tries++; $('tries').textContent = tries; gotText = false; $('heard').textContent = '';
-    rec = new Rec();
-    rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
-    rec.onstart = () => setState('listening');
-    rec.onaudiostart = () => log('audiostart');
-    rec.onspeechstart = () => log('speechstart');
-    rec.onspeechend = () => setState('processing');
-    rec.onresult = (e) => {
-      const r = e.results[e.results.length - 1];
-      const text = r[0].transcript;
-      $('heard').textContent = text;
-      log(`result final=${r.isFinal} conf=${r[0].confidence} "${text}"`);
-      if (r.isFinal && text.trim()) gotText = true;
-    };
-    rec.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
-    rec.onend = () => {
-      log('end gotText=' + gotText);
-      if (gotText) { ok++; $('ok').textContent = ok; $('prompt').textContent = PROMPTS[ok % PROMPTS.length]; }
-      rec = null; setState('idle');
-    };
-    try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); rec = null; }
-    const mine = rec;
-    setTimeout(() => { if (rec && rec === mine) { log('15s hard stop'); rec.stop(); } }, 15000);
+    if (MODE === 'reuse') {
+      if (!shared) { shared = new Rec(); wire(shared); log('created shared recognizer'); }
+      rec = shared;
+    } else {
+      rec = new Rec(); wire(rec);
+    }
+    running = true;
+    try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); running = false; }
+    const mine = tries;
+    setTimeout(() => { if (running && tries === mine) { log('15s hard stop'); rec.stop(); } }, 15000);
   };
-  $('stop').onclick = () => { if (rec) { rec.stop(); log('stop pressed'); } };
+  $('stop').onclick = () => { if (running && rec) { rec.stop(); log('stop pressed'); } };
   $('copy').onclick = async () => {
-    const text = `UA: ${navigator.userAgent}\nAPI: ${$('api').textContent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
-    try { await navigator.clipboard.writeText(text); log('copied'); } catch { log('clipboard blocked — screenshot the log instead'); }
+    const text = $('out').value;
+    try { await navigator.clipboard.writeText(text); log('copied'); return; } catch {}
+    const o = $('out'); o.focus(); o.setSelectionRange(0, o.value.length);
+    log(document.execCommand('copy') ? 'copied (fallback)' : 'copy blocked — select the text box and copy');
   };
+  log('ready');
 </script>
 </body>
 </html>
