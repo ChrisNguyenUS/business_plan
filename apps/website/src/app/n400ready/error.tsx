@@ -1,12 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
+import { oralDebugEnabled, oralDebugLog } from '@/lib/n400/oral/oral-debug';
+
 /**
  * Error boundary for the whole /n400ready segment (it has its own root
  * layout, so without this a thrown error falls back to Next's generic
  * unstyled error screen). Bilingual — language context may not be available
  * in a crashed tree.
  */
-export default function N400Error({ reset }: { error: Error; reset: () => void }) {
+export default function N400Error({ error, reset }: { error: Error; reset: () => void }) {
+  // Field diagnosis (?oraldebug=1): record crashes that remount the page.
+  useEffect(() => {
+    if (oralDebugEnabled()) oralDebugLog(`error boundary: ${error.message}`);
+  }, [error]);
+
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-slate-50 p-6 text-center">
       <h2 className="text-lg font-bold text-gray-800">

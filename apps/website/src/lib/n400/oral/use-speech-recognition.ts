@@ -81,6 +81,27 @@ export function useSpeechRecognition(): SpeechApi {
     () => SERVER_SNAPSHOT,
   );
 
+  // Field diagnosis only (?oraldebug=1): why does the page remount / the mic die?
+  useEffect(() => {
+    if (!oralDebugEnabled()) return;
+    oralDebugLog(`mount ${window.location.pathname}${window.location.search}`);
+    const onError = (e: ErrorEvent) => oralDebugLog(`window error: ${e.message}`);
+    const onRejection = (e: PromiseRejectionEvent) => oralDebugLog(`unhandledrejection: ${String(e.reason)}`);
+    const onPageHide = (e: PageTransitionEvent) => oralDebugLog(`pagehide persisted=${e.persisted}`);
+    const onPageShow = (e: PageTransitionEvent) => oralDebugLog(`pageshow persisted=${e.persisted}`);
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onRejection);
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      oralDebugLog('unmount');
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, []);
+
   useEffect(() => {
     if (!controller) return;
     const onVisibility = () => {
