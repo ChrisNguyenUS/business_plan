@@ -1,19 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
+  // useSearchParams needs a Suspense boundary to keep this route prerenderable.
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const params = useParams();
   const locale = params.locale as string;
-  const router = useRouter();
   const { signIn } = useAuth();
+  // ?reset=success is set by the reset-password page after a successful update.
+  const resetDone = useSearchParams().get("reset") === "success";
+  const [showForgot, setShowForgot] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,6 +104,13 @@ export default function LoginPage() {
           Sign in to continue
         </p>
 
+        {/* Password just reset */}
+        {resetDone && !error && (
+          <div role="status" className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-sm text-emerald-700">
+            Your password has been updated. Please sign in with your new password.
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">
@@ -167,12 +186,13 @@ export default function LoginPage() {
 
         {/* Bottom Links */}
         <div className="mt-6 flex items-center justify-between text-sm">
-          <Link
-            href={`/${locale}/forgot-password`}
+          <button
+            type="button"
+            onClick={() => setShowForgot(true)}
             className="text-primary font-medium hover:underline"
           >
             Forgot password?
-          </Link>
+          </button>
           <span className="text-muted-foreground">
             Need an account?{" "}
             <Link
@@ -184,6 +204,8 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
+
+      <ForgotPasswordModal open={showForgot} onOpenChange={setShowForgot} locale={locale} />
     </div>
   );
 }

@@ -110,7 +110,10 @@
       "Bash(cp /tmp/redstate_check/hero-recommendation.ts.old src/lib/n400/hero-recommendation.ts)",
       "mcp__supabase__get_advisors",
       "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning\" log --oneline -15)",
-      "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning\" status --short)"
+      "Bash(git -C \"/Users/anhnguyen/Obsidian/Business planning\" status --short)",
+      "Bash(timeout 400 pnpm --filter internal_app type-check)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(pnpm --filter internal_app lint)"
     ]
   },
   "enableAllProjectMcpServers": true,
