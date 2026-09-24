@@ -57,9 +57,11 @@ const ERROR_MAP: Readonly<Record<string, MicError>> = {
 };
 
 function joinResults(results: ArrayLike<ArrayLike<{ transcript: string }>>): string {
-  let out = '';
-  for (let i = 0; i < results.length; i++) out += results[i]?.[0]?.transcript ?? '';
-  return out.replace(/\s+/g, ' ').trim();
+  // Joined with spaces: Chrome's segments carry a leading space, but nothing
+  // guarantees it, and "Congress"+"president" must not fuse into one word.
+  const parts: string[] = [];
+  for (let i = 0; i < results.length; i++) parts.push(results[i]?.[0]?.transcript ?? '');
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
 export class SpeechController {

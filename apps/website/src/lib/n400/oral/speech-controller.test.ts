@@ -137,6 +137,14 @@ describe('SpeechController — happy path', () => {
     expect(h.s().transcript).toBe('Congress president and the courts');
   });
 
+  it('separates segments that arrive without leading spaces', () => {
+    const h = harness();
+    live(h);
+    h.rec().result('Congress', 'president', ' and the courts');
+    h.rec().onend?.();
+    expect(h.s().transcript).toBe('Congress president and the courts');
+  });
+
   it('onend without text is no-speech, never a grade (D9)', () => {
     const h = harness();
     live(h);
