@@ -46,6 +46,7 @@ import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
 import {
   buildOptions,
+  correctAnswersFor,
   selectMockTestQuestions,
   questionAudioUrl,
   isPass,
@@ -57,8 +58,17 @@ import { N400_QUESTIONS_BY_ID, type N400Question } from '@/lib/n400/questions-da
 import {
   startMockAttempt,
   finalizeMockAttempt,
+  finalizeVoiceMockAttempt,
 } from './actions';
-import type { PublicSlide, FinalizeMockAttemptResult } from './types';
+import type { PublicSlide, FinalizeMockAttemptResult, FinalizeVoiceMockAttemptResult } from './types';
+import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
+import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
+import { getOralAnswerConfig } from '@/lib/n400/oral/get-oral-config';
+import { canAdvance, micLostFrom, mockItemInput, toVoiceMockAnswers, type VoiceItem } from '@/lib/n400/oral/mock-voice-items';
+import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
+import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
+import { voiceInputFor } from '@/lib/n400/oral/voice-support';
+import type { StateCode } from '@/lib/n400/state-data';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
 
@@ -72,6 +82,16 @@ interface PickState {
 // Legacy key from the removed resume feature — cleared on mount so old
 // in-flight attempts don't linger in localStorage forever.
 const LEGACY_STORAGE_KEY = 'n400.mock.inflight';
+const MOCK_MODE_KEY = 'n400.mock.answerMode';
+
+function readStoredMockMode(): PracticeAnswerMode {
+  if (typeof window === 'undefined') return 'choice';
+  try {
+    return window.localStorage.getItem(MOCK_MODE_KEY) === 'voice' ? 'voice' : 'choice';
+  } catch {
+    return 'choice';
+  }
+}
 
 // mm:ss for the average-time stat.
 function formatDuration(ms: number): string {
@@ -135,6 +155,40 @@ function MockTestPageInner() {
   const [result, setResult] = useState<FinalizeMockAttemptResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>(() => readStoredMockMode());
+  // The mode of the attempt in progress, latched at start (flags can't flip it mid-test).
+  const [runMode, setRunMode] = useState<PracticeAnswerMode>('choice');
+  const [voiceItems, setVoiceItems] = useState<(VoiceItem | null)[]>([]);
+  const [micLost, setMicLost] = useState(false);
+  const [voiceAnswers, setVoiceAnswers] = useState<FinalizeVoiceMockAttemptResult['answers'] | null>(null);
+  const mic = useSpeechRecognition();
+  const voiceFlags = useVoiceFlags();
+  const { reset: resetMic } = mic;
+  const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+  const voiceInput = voiceInputFor({
+    ua,
+    apiPresent: mic.supported,
+    enabled: voiceFlags.mockOn,
+    androidOn: voiceFlags.androidOn,
+  });
+  const voiceState: 'off' | 'unsupported' | 'available' = !voiceFlags.mockOn
+    ? 'off'
+    : voiceInput === 'none'
+      ? 'unsupported'
+      : 'available';
+  const location = { stateCode: state.settings.stateCode, districtNumber: state.address.districtNumber };
+
+  // Latch "mic lost" for the rest of the attempt (render-phase update, same
+  // pattern as the practice page's index reset).
+  if (stage === 'taking' && runMode === 'voice' && !micLost && micLostFrom(mic.error, mic.supported) && voiceInput !== 'typed') {
+    setMicLost(true);
+  }
+
+  // A new item never inherits the previous item's mic session.
+  useEffect(() => {
+    resetMic();
+  }, [index, resetMic]);
+
   const startedRef = useRef(false);
   // Background registration of the attempt row: startNew fires the server
   // action without awaiting it so the first question renders instantly.
@@ -153,10 +207,10 @@ function MockTestPageInner() {
 
   // Auto-start when arriving from the picker card (?start=1).
   useEffect(() => {
-    if (!hydrated || !autoStart) return;
+    if (!hydrated || !autoStart || !voiceFlags.loaded) return;
     startNew();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, autoStart]);
+  }, [hydrated, autoStart, voiceFlags.loaded]);
 
   const startNew = () => {
     if (startedRef.current) return;
@@ -190,6 +244,11 @@ function MockTestPageInner() {
     setIndex(0);
     setResult(null);
     setStage('taking');
+    setRunMode(answerMode === 'voice' && voiceState === 'available' ? 'voice' : 'choice');
+    setVoiceItems(built.map(() => null));
+    setMicLost(false);
+    setVoiceAnswers(null);
+    resetMic();
 
     // Register the attempt row in the background; finish() awaits it.
     const args = { seed, stateCode, districtNumber };
@@ -202,7 +261,7 @@ function MockTestPageInner() {
     attemptIdPromise.current = p;
   };
 
-  const finish = async (finalPicks: PickState[]) => {
+  const finish = async (finalPicks: PickState[], finalItems: (VoiceItem | null)[]) => {
     setSubmitting(true);
     setError(null);
     try {
@@ -217,12 +276,26 @@ function MockTestPageInner() {
         setAttemptId(id);
       }
       if (!id) throw new Error(dict.mockTest.intro.submitError);
-      const r = await finalizeMockAttempt(
-        id,
-        finalPicks
-          .filter((p): p is PickState & { pickedId: QuizOption['id'] } => p.pickedId !== null)
-          .map((p) => ({ questionId: p.questionId, selectedOption: p.pickedId })),
-      );
+      let r: FinalizeMockAttemptResult;
+      if (runMode === 'voice') {
+        const v = await finalizeVoiceMockAttempt(
+          id,
+          toVoiceMockAnswers(
+            slides.map((s) => s.questionId),
+            finalItems,
+            finalPicks.map((p) => p.pickedId),
+          ),
+        );
+        setVoiceAnswers(v.answers);
+        r = v;
+      } else {
+        r = await finalizeMockAttempt(
+          id,
+          finalPicks
+            .filter((p): p is PickState & { pickedId: QuizOption['id'] } => p.pickedId !== null)
+            .map((p) => ({ questionId: p.questionId, selectedOption: p.pickedId })),
+        );
+      }
       setResult(r);
       setStage('result');
       startedRef.current = false; // allow "Thi lại" to roll a fresh attempt
@@ -244,13 +317,38 @@ function MockTestPageInner() {
     });
   };
 
+  const onVoiceConfirm = (text: string, input: 'mic' | 'typed') => {
+    setVoiceItems((prev) => {
+      const next = [...prev];
+      next[index] = { transcript: text, retried: prev[index]?.retried ?? false, input, confirmed: true };
+      return next;
+    });
+  };
+
+  const onVoiceRetry = (input: 'mic' | 'typed') => {
+    setVoiceItems((prev) => {
+      const next = [...prev];
+      next[index] = { transcript: '', retried: true, input, confirmed: false };
+      return next;
+    });
+  };
+
+  const onMockModeChange = (m: PracticeAnswerMode) => {
+    setAnswerMode(m);
+    try {
+      window.localStorage.setItem(MOCK_MODE_KEY, m);
+    } catch {
+      // Private mode — the choice lasts for this page only.
+    }
+  };
+
   const onNext = () => {
     if (index < slides.length - 1) {
       setIndex((i) => i + 1);
     } else {
       // Read latest picks via the setter callback (avoids a stale closure).
       setPicks((prev) => {
-        void finish(prev);
+        void finish(prev, voiceItems);
         return prev;
       });
     }
@@ -276,6 +374,9 @@ function MockTestPageInner() {
       <Intro
         onStart={startNew}
         starting={submitting}
+        mode={answerMode}
+        onModeChange={onMockModeChange}
+        voiceState={voiceState}
         error={error}
         stats={mockStats}
         results={state.mockResults}
@@ -284,7 +385,16 @@ function MockTestPageInner() {
   }
 
   if (stage === 'result' && result) {
-    return <Result result={result} slides={slides} picks={picks} onRetake={startNew} />;
+    return (
+      <Result
+        result={result}
+        slides={slides}
+        picks={picks}
+        onRetake={startNew}
+        voiceAnswers={runMode === 'voice' ? voiceAnswers : null}
+        location={location}
+      />
+    );
   }
 
   const slide = slides[index];
@@ -293,6 +403,11 @@ function MockTestPageInner() {
   const question = N400_QUESTIONS_BY_ID.get(slide.questionId);
   if (!question) return null;
   const isLast = index === slides.length - 1;
+  const itemConfig = runMode === 'voice' ? getOralAnswerConfig(slide.questionId, location) : null;
+  const isVoiceItem = itemConfig !== null;
+  const itemInput = mockItemInput(voiceInput, micLost);
+  const item = voiceItems[index] ?? null;
+  const ready = canAdvance(isVoiceItem, item, pick.pickedId);
 
   return (
     <div
@@ -330,37 +445,53 @@ function MockTestPageInner() {
             </div>
 
             {/* Answer Options — calm stacked column, chip + EN/VI, radio on the right */}
-            <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
-              {slide.options.map((opt) => {
-                const isPicked = pick.pickedId === opt.id;
-                // Selected-but-ungraded: teal highlight with a filled radio — no
-                // ✓/✗ so nothing hints at correctness before the test is over.
-                const style = isPicked
-                  ? 'border-teal-600 bg-teal-50'
-                  : 'border-gray-200 hover:border-teal-300 bg-white';
-                const mark = isPicked ? (
-                  <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />
-                ) : (
-                  <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
-                );
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => onPick(opt.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 font-bold text-gray-700" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
-                      {opt.id}
-                    </div>
-                    <div className="flex-1 text-gray-800 font-medium">
-                      <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                    </div>
-                    {mark}
-                  </button>
-                );
-              })}
-            </div>
+            {isVoiceItem ? (
+              <MicAnswerPanel
+                key={slide.questionId}
+                variant="mock"
+                input={itemInput}
+                mic={mic}
+                locked={item?.confirmed === true}
+                nearAnswer={null}
+                canRetry={!item?.retried}
+                onRetry={() => onVoiceRetry(itemInput)}
+                onSubmit={(text) => onVoiceConfirm(text, itemInput)}
+                onNearAnswer={() => {}}
+                notice={micLost ? dict.oral.micLostTyped : undefined}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
+                {slide.options.map((opt) => {
+                  const isPicked = pick.pickedId === opt.id;
+                  // Selected-but-ungraded: teal highlight with a filled radio — no
+                  // ✓/✗ so nothing hints at correctness before the test is over.
+                  const style = isPicked
+                    ? 'border-teal-600 bg-teal-50'
+                    : 'border-gray-200 hover:border-teal-300 bg-white';
+                  const mark = isPicked ? (
+                    <span className="w-6 h-6 rounded-full border-[7px] border-teal-600 bg-white shrink-0" />
+                  ) : (
+                    <span className="w-6 h-6 rounded-full border-2 border-gray-200 shrink-0" />
+                  );
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => onPick(opt.id)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 font-bold text-gray-700" style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>
+                        {opt.id}
+                      </div>
+                      <div className="flex-1 text-gray-800 font-medium">
+                        <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
+                      </div>
+                      {mark}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Mobile Exam Rules (desktop shows it in the right rail) */}
             <div className="mt-[clamp(0.75rem,2vh,1.25rem)] lg:hidden">
@@ -382,9 +513,9 @@ function MockTestPageInner() {
             <button
               type="button"
               onClick={onNext}
-              disabled={pick.pickedId === null || submitting}
+              disabled={!ready || submitting}
               className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
-                pick.pickedId === null || submitting
+                !ready || submitting
                   ? 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
                   : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
               }`}
@@ -409,9 +540,15 @@ function Intro({
   error,
   stats,
   results,
+  mode,
+  onModeChange,
+  voiceState,
 }: {
   onStart: () => void;
   starting: boolean;
+  mode: PracticeAnswerMode;
+  onModeChange: (m: PracticeAnswerMode) => void;
+  voiceState: 'off' | 'unsupported' | 'available';
   error: string | null;
   stats: MockStats | null;
   results: MockResult[];
@@ -520,6 +657,19 @@ function Intro({
               </div>
             ) : null}
 
+            {voiceState !== 'off' ? (
+              <div className="mt-7">
+                <p className="mb-2 text-sm font-semibold text-gray-700">{dict.oral.mockModeLabel}</p>
+                <AnswerModeToggle
+                  mode={voiceState === 'available' ? mode : 'choice'}
+                  onChange={onModeChange}
+                  labels={{ choice: dict.oral.modeChoice, voice: dict.oral.mockModeVoice }}
+                  disabled={voiceState === 'unsupported'}
+                />
+                {voiceState === 'unsupported' ? <VoiceUnsupportedNote /> : null}
+              </div>
+            ) : null}
+
             <button
               type="button"
               onClick={onStart}
@@ -565,6 +715,27 @@ function Intro({
       {/* RIGHT — unified exam overview */}
       <ExamOverview stats={stats} />
     </div>
+  );
+}
+
+function VoiceUnsupportedNote() {
+  const { dict } = useN400Lang();
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+    } catch {
+      // Clipboard blocked (in-app browsers) — the learner can copy from the address bar.
+    }
+  };
+  return (
+    <p className="mt-2 text-sm text-gray-500">
+      {dict.oral.mockUnsupported}{' '}
+      <button type="button" onClick={copy} className="font-semibold text-teal-700">
+        {copied ? dict.oral.linkCopied : dict.oral.copyLink}
+      </button>
+    </p>
   );
 }
 
@@ -814,14 +985,19 @@ function Result({
   slides,
   picks,
   onRetake,
+  voiceAnswers,
+  location,
 }: {
   result: FinalizeMockAttemptResult;
   slides: PublicSlide[];
   picks: PickState[];
   onRetake: () => void;
+  voiceAnswers: FinalizeVoiceMockAttemptResult['answers'] | null;
+  location: { stateCode: StateCode; districtNumber: number | null };
 }) {
   const { dict } = useN400Lang();
   const correctById = new Map(result.manifest.map((m) => [m.qid, m.correct] as const));
+  const voiceById = new Map((voiceAnswers ?? []).map((a) => [a.qid, a] as const));
   const badges = useN400Badges();
   const catalogMap = Object.fromEntries(badges.catalog.map((b) => [b.slug, b]));
 
@@ -831,6 +1007,24 @@ function Result({
     const correctId = correctById.get(slide.questionId);
     const picked = slide.options.find((o) => o.id === picks[i]?.pickedId);
     const correct = slide.options.find((o) => o.id === correctId);
+    const spoken = voiceById.get(q.id);
+    if (spoken && spoken.transcript !== null) {
+      const taught = correctAnswersFor(q, location.stateCode, location.districtNumber)[0];
+      return [
+        {
+          key: String(q.id),
+          badge: tFormat(dict.mockTest.civicsMock.badge, { index: i + 1, id: q.id }),
+          prompt: q.questionEn,
+          promptVi: q.questionVi,
+          userAnswer: spoken.transcript,
+          correctAnswer: taught?.en ?? '—',
+          correctAnswerVi: taught?.vi,
+          ok: spoken.wasCorrect,
+          audioSrc: questionAudioUrl(q.id),
+          bookmarkId: q.id,
+        },
+      ];
+    }
     return [
       {
         key: String(q.id),
