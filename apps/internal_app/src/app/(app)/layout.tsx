@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
   { href: '/cases', label: 'Cases', icon: 'folder_shared' },
   { href: '/clients', label: 'Clients', icon: 'group' },
+  { href: '/leads', label: 'Leads', icon: 'trending_up' },
   { href: '/jobs', label: 'Jobs', icon: 'work' },
   { href: '/pdf-generator', label: 'PDF Generator', icon: 'picture_as_pdf' },
   { href: '/tracker', label: 'USCIS Tracker', icon: 'travel_explore' },
