@@ -2,7 +2,11 @@ import { ALL_EVENT_TYPES } from '@mannaos/n400-growth'
 import { describeEvent } from '@/lib/n400/timeline'
 
 describe('describeEvent', () => {
-  it('produces a non-empty title for every known event type', () => {
+  it('renders something for every known event type', () => {
+    // This test documents that each known type produces a renderable entry.
+    // The compiler — not this test — ensures new event types are not forgotten:
+    // if GrowthEventType gains a member but timeline.ts has no case for it,
+    // the `const unhandled: never = type` assignment will fail TypeScript checking.
     for (const type of ALL_EVENT_TYPES) {
       const entry = describeEvent(type, {})
       expect(entry.title.length).toBeGreaterThan(0)

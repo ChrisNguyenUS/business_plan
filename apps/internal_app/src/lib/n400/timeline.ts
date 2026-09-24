@@ -38,9 +38,11 @@ function attemptDetail(payload: Record<string, unknown>): string | null {
 /**
  * Turn one n400_growth_events row into a renderable timeline entry.
  *
- * Every branch here corresponds to an event type in @mannaos/n400-growth, and
- * the test iterates ALL_EVENT_TYPES — if the website adds a type and nobody
- * maps it, that test fails rather than the page quietly rendering "undefined".
+ * Every branch here corresponds to an event type in @mannaos/n400-growth.
+ * The compiler — not the test — catches an unmapped event type: if a member of
+ * GrowthEventType has no case above, TypeScript prevents it from reaching the
+ * default clause, causing a compile error on the `never` assignment below.
+ * The test documents that every defined type renders something useful.
  */
 export function describeEvent(
   type: GrowthEventType,
@@ -120,8 +122,8 @@ export function describeEvent(
     case 'consultation_form_opened':
       return { icon: 'event', title: 'Opened the consultation form', detail: null }
 
-    // Reserved in the taxonomy, not emitted yet. Mapped so the exhaustiveness
-    // test passes and so they render sensibly if they ever start firing.
+    // Reserved in the taxonomy, not emitted yet. Mapped so they render sensibly
+    // if they ever start firing.
     case 'section_completed':
       return { icon: 'done_all', title: 'Section completed', detail: null }
     case 'readiness_snapshot':
@@ -135,7 +137,15 @@ export function describeEvent(
     case 'push_disabled':
       return { icon: 'notifications_off', title: 'Disabled push', detail: null }
 
-    default:
-      return { icon: 'circle', title: String(type), detail: null }
+    default: {
+      // Compile-time exhaustiveness: if a member of GrowthEventType has no
+      // branch above, `type` is not `never` here and this assignment fails to
+      // compile. That is the check that actually protects us — see the note on
+      // the test below.
+      const unhandled: never = type;
+      // Runtime fallback: event_type is an ungoverned TEXT column, so a value
+      // outside the union can still arrive from the database. Degrade, never throw.
+      return { icon: 'circle', title: String(unhandled), detail: null };
+    }
   }
 }
