@@ -19,6 +19,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       [
         "constitution"
       ]
+    ],
+    "mustExclude": [
+      "father"
     ]
   },
   "3": {
@@ -151,6 +154,10 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       [
         "congress"
       ]
+    ],
+    "mustExclude": [
+      "president",
+      "courts"
     ]
   },
   "19": {
@@ -182,7 +189,7 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
     "type": "single",
     "alternatives": [
       [
-        "6 years"
+        "6"
       ]
     ]
   },
@@ -198,7 +205,7 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
     "type": "single",
     "alternatives": [
       [
-        "2 years"
+        "2"
       ]
     ]
   },
@@ -271,7 +278,7 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
     "type": "single",
     "alternatives": [
       [
-        "people"
+        "more people"
       ]
     ]
   },
@@ -331,7 +338,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       ]
     ],
     "mustExclude": [
-      "vice"
+      "vice",
+      "congress",
+      "courts"
     ]
   },
   "43": {
@@ -342,7 +351,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       ]
     ],
     "mustExclude": [
-      "vice"
+      "vice",
+      "congress",
+      "courts"
     ]
   },
   "44": {
@@ -353,7 +364,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       ]
     ],
     "mustExclude": [
-      "vice"
+      "vice",
+      "congress",
+      "courts"
     ]
   },
   "45": {
@@ -364,7 +377,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       ]
     ],
     "mustExclude": [
-      "vice"
+      "vice",
+      "congress",
+      "courts"
     ]
   },
   "46": {
@@ -375,7 +390,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       ]
     ],
     "mustExclude": [
-      "vice"
+      "vice",
+      "congress",
+      "courts"
     ]
   },
   "47": {
@@ -661,6 +678,9 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
       [
         "constitution"
       ]
+    ],
+    "mustExclude": [
+      "father"
     ]
   },
   "83": {
@@ -825,6 +845,7 @@ export const ORAL_ANSWER_CONFIG: Record<number, OralAnswerConfig> = {
     ],
     "minKeywords": 3,
     "mustInclude": [
+      "after",
       "1"
     ]
   },

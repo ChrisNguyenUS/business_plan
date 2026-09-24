@@ -14,12 +14,22 @@ const REPLACE: Readonly<Record<number, OralAnswerConfig>> = {
   37: { type: 'single', alternatives: [['keep powerful']] },
   // Q120 — taught answer is "near New York city"; "New York" is the expected answer.
   120: { type: 'single', alternatives: [['new york']] },
+  // Q35 — echo left only `people`, so any answer containing "people" passed (Gate 1, rev 3.2).
+  35: { type: 'single', alternatives: [['more people']] },
 };
 
-// Q42–46 — "The Vice President" contains "president" and must not pass.
-const VICE: Partial<OralAnswerConfig> = { mustExclude: ['vice'] };
+// Q42–46 — "The Vice President" contains "president" and must not pass; neither
+// may listing all three branches (Gate 1, rev 3.2).
+const PRESIDENT_ONLY: Partial<OralAnswerConfig> = { mustExclude: ['vice', 'congress', 'courts'] };
+// Q2, Q82 — "Father of the Constitution" must not pass (Gate 1, rev 3.2).
+const NOT_FATHER: Partial<OralAnswerConfig> = { mustExclude: ['father'] };
 const EXTEND: Readonly<Record<number, Partial<OralAnswerConfig>>> = {
-  42: VICE, 43: VICE, 44: VICE, 45: VICE, 46: VICE,
+  2: NOT_FATHER, 82: NOT_FATHER,
+  // Q18 — listing all three branches must not pass (Gate 1, rev 3.2).
+  18: { mustExclude: ['president', 'courts'] },
+  42: PRESIDENT_ONLY, 43: PRESIDENT_ONLY, 44: PRESIDENT_ONLY, 45: PRESIDENT_ONLY, 46: PRESIDENT_ONLY,
+  // Q102 — "before world war one" must not pass (Gate 1, rev 3.2).
+  102: { mustInclude: ['after', '1'] },
 };
 
 const COUNT_WORDS: Readonly<Record<string, number>> = { two: 2, three: 3, four: 4, five: 5 };
@@ -27,6 +37,11 @@ const COUNT_RE = /\b(?:name|what are)(?: the)? (two|three|four|five)\b/;
 const NAME_SUFFIX_RE = /\b(?:jr|sr|ii|iii|iv)\b\.?/gi;
 
 const isDigits = (w: string) => /^\d+$/.test(w);
+const UNIT_WORDS: ReadonlySet<string> = new Set(['year', 'years']);
+
+// "Six (6) years" → `6`: an officer accepts the bare number (spec §3.1, rev 3.2).
+const dropUnits = (kws: string[]): string[] =>
+  kws.filter((k, i) => !(UNIT_WORDS.has(k) && i > 0 && isDigits(kws[i - 1])));
 
 export function surnameOf(name: string): string {
   const kws = keywordsOf(name.replace(NAME_SUFFIX_RE, ' '));
@@ -73,10 +88,10 @@ function build(q: N400Question): Built {
     const parts = answer.split(/,|\band\b/i).map((p) => p.trim()).filter(Boolean);
     if (expectedParts > 0 && parts.length === expectedParts) {
       type = 'enumeration';
-      alternatives.push(parts.map((p) => dropEcho(keywordsOf(p)).join(' ')));
+      alternatives.push(parts.map((p) => dropUnits(dropEcho(keywordsOf(p))).join(' ')));
       continue;
     }
-    const kws = dropEcho(keywordsOf(answer));
+    const kws = dropUnits(dropEcho(keywordsOf(answer)));
     alternatives.push([kws.join(' ')]);
     if (kws.length >= 4) {
       type = 'phrase';

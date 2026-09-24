@@ -7,12 +7,12 @@ const cfg = (id: number) => buildOralConfig(N400_QUESTIONS_BY_ID.get(id)!);
 
 describe('buildOralConfig — spec §3.1 examples', () => {
   it.each([
-    [2, { type: 'single', alternatives: [['constitution']] }],
+    [2, { type: 'single', alternatives: [['constitution']], mustExclude: ['father'] }],
     [16, { type: 'enumeration', alternatives: [['congress', 'president', 'courts']] }],
     [37, { type: 'single', alternatives: [['keep powerful']] }],
-    [42, { type: 'single', alternatives: [['president']], mustExclude: ['vice'] }],
+    [42, { type: 'single', alternatives: [['president']], mustExclude: ['vice', 'congress', 'courts'] }],
     [60, { type: 'phrase', alternatives: [['powers not given federal government belong states']], minKeywords: 5, mustInclude: ['not'] }],
-    [102, { type: 'phrase', alternatives: [['after world war 1']], minKeywords: 3, mustInclude: ['1'] }],
+    [102, { type: 'phrase', alternatives: [['after world war 1']], minKeywords: 3, mustInclude: ['after', '1'] }],
     [120, { type: 'single', alternatives: [['new york']] }],
   ])('Q%i', (id, expected) => {
     expect(cfg(id)).toEqual(expected);
@@ -47,6 +47,19 @@ describe('buildOralConfig — rules', () => {
   it('surnameOf strips suffixes', () => {
     expect(surnameOf('Martin Luther King, Jr.')).toBe('king');
     expect(surnameOf('JD Vance')).toBe('vance');
+  });
+});
+
+describe('buildOralConfig — Gate 1 decisions (spec rev 3.2)', () => {
+  it('a unit word after a number is optional', () => {
+    expect(cfg(22)).toEqual({ type: 'single', alternatives: [['6']] });
+    expect(cfg(25)).toEqual({ type: 'single', alternatives: [['2']] });
+  });
+
+  it('overrides block answers that belong to other questions', () => {
+    expect(cfg(35)).toEqual({ type: 'single', alternatives: [['more people']] });
+    expect(cfg(82)).toEqual({ type: 'single', alternatives: [['constitution']], mustExclude: ['father'] });
+    expect(cfg(18)).toEqual({ type: 'single', alternatives: [['congress']], mustExclude: ['president', 'courts'] });
   });
 });
 
