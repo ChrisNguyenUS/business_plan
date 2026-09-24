@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-24 (rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-24 (rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -65,8 +65,9 @@ Two files, merged at runtime by `getOralAnswerConfig(qid, location?)`:
   4: [['govern themselves']],
   ```
 - Keywords are content words only: articles, auxiliaries, fillers and optional qualifiers (`u s, united states, america, american, your`) are dropped at generation time.
-- **Generator defaults:** not an enumeration and ≤ 3 keywords → `single` (all required); ≥ 4 keywords → `phrase` with `minKeywords = ⌈2n/3⌉`. Enumeration = the question asks for a count (`name|what are [the] two|three|four|five`) **and** the answer splits (on `,` / `and`) into exactly that many parts. Person-name questions (30, 38, 39, 57, 78, 83, 99, 105) → surname only. In a `phrase`, every number and negation keyword goes to `mustInclude` (rev 3.1: "after world war two" otherwise passed Q102 "After World War I" at 3 of 4 keywords).
+- **Generator defaults:** not an enumeration and ≤ 3 keywords → `single` (all required); ≥ 4 keywords → `phrase` with `minKeywords = ⌈2n/3⌉`. Enumeration = the question asks for a count (`name|what are [the] two|three|four|five`) **and** the answer splits (on `,` / `and`) into exactly that many parts. Person-name questions (30, 38, 39, 57, 78, 83, 99, 105) → surname only. In a `phrase`, every number and negation keyword goes to `mustInclude` (rev 3.1: "after world war two" otherwise passed Q102 "After World War I" at 3 of 4 keywords). **Unit after a number (rev 3.2):** a `year`/`years` keyword directly after a number keyword is dropped, so the bare number is the answer (Q22 "six", Q25 "two"; Q36 already worked this way through question-echo).
 - **Initial overrides (in the generator):** Q37 `keep powerful`; Q120 `new york` (taught answer "near New York city"); Q42–46 `mustExclude: ['vice']` (rev 3.1: "The Vice President" otherwise passed "The President").
+- **Gate 1 overrides (rev 3.2, owner 2026-09-24):** Q35 `more people` (echo had left only `people`, so any answer containing "people" passed); Q2 and Q82 `mustExclude: ['father']` ("Father of the Constitution" passed "supreme law"); Q18 `mustExclude: ['president', 'courts']` and Q42–46 `mustExclude: ['vice', 'congress', 'courts']` (listing all three branches passed single-branch questions); Q102 `mustInclude: ['after', '1']` ("before world war one" passed).
 - **Question-echo rule:** a keyword that appears in the question text is dropped from the answer's keywords, unless that would leave the part empty. (Rev 2: 14 answers overlap their question.) **Known echo exceptions: Q6 ("Rights of Americans" → `rights`) and Q76 ("War for American Independence" → `war independence`)** — every keyword is in the question, so reading the question aloud passes. Accepted limitation, pinned by test.
 - **Negation:** negation words (`not, no, never, without, cannot, n't`) are never dropped by the normalizer or the generator. When the taught answer contains one, the generator puts it in `mustInclude`, so it is required even when `minKeywords` would otherwise be met without it (today only Q60 "Powers **not** given to the federal government belong to the states"). Everywhere else grading is negation-blind: a `not` in the transcript neither satisfies nor blocks anything. Known, accepted limitation.
 - Location-based questions (Q23/29/61/62) build their config at runtime from the learner's answers via `correctAnswersFor()` in `quiz-engine.ts`, as `single` (person names → surname keyword; capitals → city name).
@@ -87,7 +88,7 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 4. **One-to-one within a part:** inside one part, each transcript word satisfies at most one keyword. Across parts a word may be reused ("north **and** south carolina" satisfies both Carolinas; "freedom of speech and religion" satisfies both freedoms).
 5. Extra words and word order in the transcript are ignored.
 6. **Per part:** `single` → all keywords; `phrase` → ≥ `minKeywords`; `enumeration` → every part, each part needing all its keywords when it has ≤ 3, else ⌈2k/3⌉. `mustInclude` keywords must match exactly; any `mustExclude` word in the transcript blocks `correct`.
-7. **Verdict** (best across alternatives): `correct` if every part is satisfied with exact matches; `near` if ≥ half of the keywords are matched counting near-matches, or all parts are satisfied only thanks to near-matches; else `wrong`.
+7. **Verdict** (best across alternatives): `correct` if every part is satisfied with exact matches; `near` if all parts are satisfied only thanks to near-matches, or — for `single`/`phrase` — ≥ half of the keywords are matched counting near-matches, or — for `enumeration` (rev 3.2) — ≥ half of the **parts** are satisfied counting near-matches; else `wrong`. (Rev 3.2: counting keywords across an enumeration made one item `near` or `wrong` depending on word counts — Q10 "liberty" near, Q19 "senate" wrong, Q48 "secretary" with no department near.)
 
 `near` means "maybe misheard or incomplete", not "almost knows it". It is conservative on purpose.
 
@@ -114,6 +115,11 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 | 102 | After World War I | after world war two | near |
 | 42 | The President | the vice president | near |
 | 81 | New York, New Jersey, North Carolina, South Carolina, Virginia | new york new jersey virginia north and south carolina | correct |
+| 102 | After World War I | before world war one | near (rev 3.2: `after` required) |
+| 22 | Six (6) years | six | correct (rev 3.2: unit optional) |
+| 18 | Congress | congress, the president and the courts | near (rev 3.2: other branches excluded) |
+| 19 | Senate and House of Representatives | senate | near (1 of 2 items) |
+| 48 | Secretary of Education and Secretary of Energy | secretary | wrong (rev 3.2: no item fully named) |
 
 ## 4. Speech capture
 
@@ -229,7 +235,7 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
   - every §3.3 reference case;
   - **cross-question matrix:** the set of (answer of Q_a → graded `correct` for Q_b) pairs, excluding identical answers, must equal a pinned, owner-reviewed allowlist. Most pairs are harmless supersets ("After the Civil War" contains "Civil War"); any new pair fails the test and needs review;
   - **question echo:** reading each question's own text aloud never grades `correct`, except the pinned exceptions Q6, Q76;
-  - partial enumerations grade `near`, never `correct`;
+  - partial enumerations never grade `correct`; they grade `near` when at least half the items are named, else `wrong` (rev 3.2);
   - real-word substitutions (`institution`, `republican`, `senator` for `senate`) never grade `correct`;
   - Q60 without `not` never grades `correct`; a `not` added to any other answer changes nothing;
   - each alias in `oral-aliases.ts` grades `correct`; no alias duplicates a generated alternative;
