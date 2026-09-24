@@ -1095,6 +1095,31 @@ export const vi = {
     cardCounter: 'Câu {index} / {total}',
     unit: { sentence: 'Câu' },
   },
+  oral: {
+    modeChoice: 'Trắc nghiệm',
+    modeVoice: 'Tự nói',
+    hint: 'Nói đáp án bạn đã học. Không cần nói thành câu đầy đủ, chỉ cần có các từ chính.',
+    hintDismiss: 'Đã hiểu',
+    tapToSpeak: 'Bấm để nói',
+    listening: 'Đang nghe… bấm để dừng',
+    processing: 'Đang xử lý…',
+    stop: 'Dừng',
+    grade: 'Chấm',
+    retry: 'Nói lại',
+    didYouMean: 'Có phải bạn nói "{answer}"?',
+    yes: 'Đúng vậy',
+    no: 'Không',
+    youSaid: 'Bạn nói:',
+    youTyped: 'Bạn trả lời:',
+    errNoSpeech: 'Mình chưa nghe thấy bạn nói. Hãy thử lại.',
+    errNotAllowed:
+      'Bạn chưa cho phép dùng micro. Hãy bật quyền micro cho trang này trong cài đặt trình duyệt, hoặc chọn Trắc nghiệm.',
+    errGeneric: 'Không thể nhận diện giọng nói lúc này. Hãy thử lại.',
+    errStalled: 'Micro đang không phản hồi. Tải lại trang để dùng tiếp.',
+    reload: 'Tải lại trang',
+    inAppNotice: 'Mở bằng Safari hoặc Chrome để dùng micro. Ở đây bạn có thể gõ, hoặc bấm 🎤 trên bàn phím để đọc.',
+    typedPlaceholder: 'Nhập câu trả lời',
+  },
 };
 
 export type N400Dict = typeof vi;
