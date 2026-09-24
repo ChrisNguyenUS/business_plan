@@ -8,6 +8,7 @@ const config: Config = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@mannaos/n400-growth$': '<rootDir>/../../packages/n400-growth/src/index.ts',
   },
   testMatch: [
     '<rootDir>/__tests__/**/*.test.ts',

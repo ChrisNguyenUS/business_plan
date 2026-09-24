@@ -20,6 +20,9 @@ importers:
 
   apps/internal_app:
     dependencies:
+      '@mannaos/n400-growth':
+        specifier: workspace:*
+        version: link:../../packages/n400-growth
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.103.0)
