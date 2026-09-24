@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Voice spike</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; }
+  button { font-size: 18px; padding: 14px 18px; margin: 6px 6px 6px 0; border-radius: 12px; border: 1px solid #0f766e; background: #0f766e; color: #fff; }
+  button.secondary { background: #fff; color: #0f766e; }
+  #state { font-weight: 700; }
+  #log { font: 12px/1.35 ui-monospace, monospace; white-space: pre-wrap; background: #f4f4f5; padding: 8px; border-radius: 8px; max-height: 45vh; overflow: auto; }
+  .row { margin: 8px 0; }
+</style>
+</head>
+<body>
+  <h1>Voice spike</h1>
+  <div class="row">API: <span id="api"></span></div>
+  <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
+  <div class="row">State: <span id="state">idle</span> · Answers with transcript: <span id="ok">0</span> / <span id="tries">0</span></div>
+  <div class="row">Say: <b id="prompt"></b></div>
+  <div class="row">Heard: <span id="heard"></span></div>
+  <button id="start">🎤 Speak</button>
+  <button id="stop" class="secondary">Stop</button>
+  <button id="copy" class="secondary">Copy results</button>
+  <div id="log"></div>
+<script>
+  const PROMPTS = ['The Constitution', 'Twenty-seven', 'Checks and balances', 'Congress, president, and the courts', 'Freedom of speech'];
+  const $ = (id) => document.getElementById(id);
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, tries = 0, ok = 0, gotText = false, t0 = 0;
+  const lines = [];
+  function log(msg) {
+    const line = `${((performance.now() - t0) / 1000).toFixed(2)}s ${msg}`;
+    lines.push(line); $('log').textContent = lines.join('\n'); $('log').scrollTop = 1e9;
+  }
+  function setState(s) { $('state').textContent = s; log('state=' + s); }
+  $('api').textContent = Rec ? (window.SpeechRecognition ? 'SpeechRecognition' : 'webkitSpeechRecognition') : 'MISSING';
+  $('ua').textContent = navigator.userAgent;
+  $('prompt').textContent = PROMPTS[0];
+  document.addEventListener('visibilitychange', () => {
+    log('visibility=' + document.visibilityState);
+    if (document.visibilityState === 'hidden' && rec) { rec.abort(); log('aborted on hide'); }
+  });
+  $('start').onclick = () => {
+    if (!Rec) { log('no API'); return; }
+    if (rec) { log('already running — ignored'); return; }
+    if (!t0) t0 = performance.now();
+    tries++; $('tries').textContent = tries; gotText = false; $('heard').textContent = '';
+    rec = new Rec();
+    rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.onstart = () => setState('listening');
+    rec.onaudiostart = () => log('audiostart');
+    rec.onspeechstart = () => log('speechstart');
+    rec.onspeechend = () => setState('processing');
+    rec.onresult = (e) => {
+      const r = e.results[e.results.length - 1];
+      const text = r[0].transcript;
+      $('heard').textContent = text;
+      log(`result final=${r.isFinal} conf=${r[0].confidence} "${text}"`);
+      if (r.isFinal && text.trim()) gotText = true;
+    };
+    rec.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
+    rec.onend = () => {
+      log('end gotText=' + gotText);
+      if (gotText) { ok++; $('ok').textContent = ok; $('prompt').textContent = PROMPTS[ok % PROMPTS.length]; }
+      rec = null; setState('idle');
+    };
+    try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); rec = null; }
+    const mine = rec;
+    setTimeout(() => { if (rec && rec === mine) { log('15s hard stop'); rec.stop(); } }, 15000);
+  };
+  $('stop').onclick = () => { if (rec) { rec.stop(); log('stop pressed'); } };
+  $('copy').onclick = async () => {
+    const text = `UA: ${navigator.userAgent}\nAPI: ${$('api').textContent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
+    try { await navigator.clipboard.writeText(text); log('copied'); } catch { log('clipboard blocked — screenshot the log instead'); }
+  };
+</script>
+</body>
+</html>
