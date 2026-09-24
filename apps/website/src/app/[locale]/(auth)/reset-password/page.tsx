@@ -1,75 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { Check, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
-/* ─── Password policy — the checklist in the card is the single source ─── */
-const RULES: { label: string; test: (v: string) => boolean }[] = [
-  { label: "At least 8 characters", test: (v) => v.length >= 8 },
-  { label: "Upper and lower case letters", test: (v) => /[a-z]/.test(v) && /[A-Z]/.test(v) },
-  { label: "A number", test: (v) => /\d/.test(v) },
-  { label: "A special character", test: (v) => /[^A-Za-z0-9]/.test(v) },
-];
-
-const INPUT =
-  "w-full h-11 rounded-lg border bg-[#f9fafb] pl-10 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60";
+import { meetsPasswordPolicy } from "@/lib/auth/password-policy";
+import {
+  PasswordField,
+  PasswordRules,
+  PasswordStrengthMeter,
+} from "@/components/auth/PasswordFields";
 
 type Status = "verifying" | "ready" | "invalid" | "success";
-
-function PasswordField({
-  id,
-  label,
-  value,
-  onChange,
-  disabled,
-  invalid,
-  autoFocus,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  disabled: boolean;
-  invalid?: boolean;
-  autoFocus?: boolean;
-}) {
-  const [show, setShow] = useState(false);
-  return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-semibold text-charcoal mb-2">
-        {label}
-      </label>
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          id={id}
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          autoComplete="new-password"
-          autoFocus={autoFocus}
-          disabled={disabled}
-          placeholder="••••••••"
-          aria-invalid={invalid ? true : undefined}
-          className={`${INPUT} ${invalid ? "border-red-400" : "border-border focus:border-primary"}`}
-        />
-        <button
-          type="button"
-          onClick={() => setShow((v) => !v)}
-          aria-label={show ? "Hide password" : "Show password"}
-          aria-pressed={show}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted-foreground hover:text-charcoal"
-        >
-          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function ResetPasswordPage() {
   const params = useParams();
@@ -99,18 +43,13 @@ export default function ResetPasswordPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const ruleState = useMemo(
-    () => RULES.map((r) => ({ label: r.label, met: r.test(password) })),
-    [password]
-  );
-  const allRulesMet = ruleState.every((r) => r.met);
   const mismatch = confirm.length > 0 && confirm !== password;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (loading) return; // guards double submit
 
-    if (!allRulesMet) {
+    if (!meetsPasswordPolicy(password)) {
       setError("Your password doesn't meet all the requirements below.");
       return;
     }
@@ -203,6 +142,7 @@ export default function ResetPasswordPage() {
                 disabled={loading}
                 autoFocus
               />
+              <PasswordStrengthMeter password={password} />
               <PasswordField
                 id="manna-confirm-password"
                 label="Confirm password"
@@ -215,17 +155,7 @@ export default function ResetPasswordPage() {
                 invalid={mismatch}
               />
 
-              <ul className="space-y-1.5">
-                {ruleState.map(({ label, met }) => (
-                  <li
-                    key={label}
-                    className={`flex items-center gap-2 text-[13px] ${met ? "text-primary" : "text-muted-foreground"}`}
-                  >
-                    <Check className={`h-4 w-4 ${met ? "opacity-100" : "opacity-30"}`} />
-                    {label}
-                  </li>
-                ))}
-              </ul>
+              <PasswordRules password={password} />
 
               <button
                 type="submit"

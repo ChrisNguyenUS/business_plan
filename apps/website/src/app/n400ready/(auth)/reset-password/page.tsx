@@ -4,6 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import {
+  STRENGTH_SEGMENTS,
+  passwordRuleState,
+  passwordStrengthScore,
+  type PasswordRuleId,
+} from '@/lib/auth/password-policy';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { LangToggle } from '../login/LangToggle';
 import shell from '../login/login.module.css';
@@ -12,17 +18,6 @@ import styles from './reset-password.module.css';
 const LOGIN_URL = '/n400ready/login';
 const LOGIN_SUCCESS_URL = `${LOGIN_URL}?reset=success`;
 
-/* ─── Password policy — the checklist in the card is the single source ─── */
-type RuleId = 'length' | 'case' | 'number' | 'symbol';
-
-const RULES: { id: RuleId; test: (v: string) => boolean }[] = [
-  { id: 'length', test: (v) => v.length >= 8 },
-  { id: 'case', test: (v) => /[a-z]/.test(v) && /[A-Z]/.test(v) },
-  { id: 'number', test: (v) => /\d/.test(v) },
-  { id: 'symbol', test: (v) => /[^A-Za-z0-9]/.test(v) },
-];
-
-const STRENGTH_SEGMENTS = 5;
 const STRENGTH_CLASS = [
   '',
   styles.strengthBarWeak,
@@ -30,13 +25,6 @@ const STRENGTH_CLASS = [
   styles.strengthBarGood,
   styles.strengthBarStrong,
 ];
-
-/** 0–5: one point per satisfied rule, plus one for a comfortably long password. */
-function strengthScore(password: string) {
-  if (!password) return 0;
-  const met = RULES.filter((r) => r.test(password)).length;
-  return Math.min(STRENGTH_SEGMENTS, met + (password.length >= 12 ? 1 : 0));
-}
 
 /* ─── Icons ─── */
 function EyeIcon({ off }: { off: boolean }) {
@@ -127,14 +115,11 @@ export default function N400ResetPasswordPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const ruleState = useMemo(
-    () => RULES.map((r) => ({ id: r.id, met: r.test(password) })),
-    [password]
-  );
+  const ruleState = useMemo(() => passwordRuleState(password), [password]);
   const allRulesMet = ruleState.every((r) => r.met);
-  const score = strengthScore(password);
+  const score = passwordStrengthScore(password);
 
-  const ruleLabels: Record<RuleId, string> = {
+  const ruleLabels: Record<PasswordRuleId, string> = {
     length: t.ruleLength,
     case: t.ruleCase,
     number: t.ruleNumber,

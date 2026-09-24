@@ -4,9 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, User } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import {
+  PasswordField,
+  PasswordRules,
+  PasswordStrengthMeter,
+} from "@/components/auth/PasswordFields";
+import { meetsPasswordPolicy } from "@/lib/auth/password-policy";
 
 export default function SignUpPage() {
   const params = useParams();
@@ -25,12 +31,12 @@ export default function SignUpPage() {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (!meetsPasswordPolicy(password)) {
+      setError("Your password doesn't meet all the requirements below.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
@@ -148,35 +154,23 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-charcoal mb-2">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Min 6 characters"
-                className="w-full h-11 rounded-lg border border-border bg-[#f9fafb] pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-charcoal mb-2">Confirm Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Repeat password"
-                className="w-full h-11 rounded-lg border border-border bg-[#f9fafb] pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
-              />
-            </div>
-          </div>
+          <PasswordField
+            id="manna-signup-password"
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            disabled={loading}
+          />
+          <PasswordStrengthMeter password={password} />
+          <PasswordField
+            id="manna-signup-confirm"
+            label="Confirm Password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            disabled={loading}
+            invalid={confirmPassword.length > 0 && confirmPassword !== password}
+          />
+          <PasswordRules password={password} />
 
           <button
             type="submit"
