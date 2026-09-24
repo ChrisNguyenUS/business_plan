@@ -39,11 +39,11 @@ export default async function LeadsPage({
   searchParams: Promise<{ q?: string; status?: string; page?: string }>
 }) {
   const params = await searchParams
-  const page = Number(params.page ?? '1') || 1
-  const { leads, total } = await getLeads({
+  const requestedPage = Number(params.page ?? '1') || 1
+  const { leads, total, page } = await getLeads({
     q: params.q,
     status: params.status,
-    page,
+    page: requestedPage,
   })
 
   const totalPages = Math.max(1, Math.ceil(total / LEADS_PAGE_SIZE))
@@ -120,17 +120,34 @@ export default async function LeadsPage({
           style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
         >
           <span className="material-symbols-outlined text-5xl text-slate-200">trending_up</span>
-          <p className="mt-4 text-slate-500 font-medium">
-            {hasFilters ? 'No leads match these filters' : 'No leads yet'}
-          </p>
-          {hasFilters && (
-            <Link
-              href="/leads"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
-              style={{ color: '#3AAFB9' }}
-            >
-              Clear filters
-            </Link>
+          {total === 0 ? (
+            <>
+              <p className="mt-4 text-slate-500 font-medium">
+                {hasFilters ? 'No leads match these filters' : 'No leads yet'}
+              </p>
+              {hasFilters && (
+                <Link
+                  href="/leads"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                  style={{ color: '#3AAFB9' }}
+                >
+                  Clear filters
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="mt-4 text-slate-500 font-medium">
+                That page is past the end of the list.
+              </p>
+              <Link
+                href={linkFor({ page: undefined })}
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                style={{ color: '#3AAFB9' }}
+              >
+                Back to the first page
+              </Link>
+            </>
           )}
         </div>
       ) : (
