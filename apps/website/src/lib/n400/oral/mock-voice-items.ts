@@ -40,3 +40,9 @@ export function toVoiceMockAnswers(
   });
   return out;
 }
+
+/** network / audio-capture may keep failing (connection lost, headset gone):
+ *  offer typing instead of trapping the learner mid-test (no resume on reload). */
+export function offersTypedFallback(error: MicError | null): boolean {
+  return error === 'network' || error === 'audio-capture';
+}

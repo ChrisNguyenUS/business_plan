@@ -20,3 +20,9 @@ describe('voice mock page wiring (spec §6 invariant)', () => {
     expect(page).toMatch(/<MicAnswerPanel\s+key=\{slide\.questionId\}/);
   });
 });
+
+describe('voice mock page — typed fallback (final review)', () => {
+  it('lets the learner switch to typing after a network / audio-capture error', () => {
+    expect(page).toContain('onUseTyped={offersTypedFallback(mic.error)');
+  });
+});

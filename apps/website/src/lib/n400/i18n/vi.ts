@@ -1126,6 +1126,7 @@ export const vi = {
     mockUnsupported: 'Mở bằng Safari hoặc Chrome để thi bằng giọng.',
     copyLink: 'Sao chép liên kết',
     linkCopied: 'Đã sao chép',
+    useTyped: 'Gõ câu trả lời thay vì nói',
     micLostTyped: 'Micro không dùng được lúc này. Các câu còn lại bạn trả lời bằng cách gõ (hoặc bấm 🎤 trên bàn phím).',
   },
 };

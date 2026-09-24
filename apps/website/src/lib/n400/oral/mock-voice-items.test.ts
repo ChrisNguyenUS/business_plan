@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAdvance, micLostFrom, mockItemInput, toVoiceMockAnswers, type VoiceItem } from './mock-voice-items';
+import { canAdvance, micLostFrom, mockItemInput, offersTypedFallback, toVoiceMockAnswers, type VoiceItem } from './mock-voice-items';
 
 const item = (over: Partial<VoiceItem> = {}): VoiceItem => ({
   transcript: 'the constitution',
@@ -40,5 +40,14 @@ describe('mock voice items (spec §6, §8, rev 3.4)', () => {
       { qid: 2, transcript: 'the constitution', retried: true, input: 'mic' },
       { qid: 62, selected: 'C' },
     ]);
+  });
+});
+
+describe('typed fallback offer (final review: network / audio-capture mid-test)', () => {
+  it('offers typing when the mic keeps failing for reasons a retry may not fix', () => {
+    expect(offersTypedFallback('network')).toBe(true);
+    expect(offersTypedFallback('audio-capture')).toBe(true);
+    expect(offersTypedFallback('no-speech')).toBe(false);
+    expect(offersTypedFallback(null)).toBe(false);
   });
 });

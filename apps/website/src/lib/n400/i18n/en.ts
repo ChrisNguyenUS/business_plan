@@ -1127,6 +1127,7 @@ export const en: N400Dict = {
     mockUnsupported: 'Open in Safari or Chrome to take the test by voice.',
     copyLink: 'Copy link',
     linkCopied: 'Copied',
+    useTyped: 'Type the answer instead',
     micLostTyped: 'The microphone isn’t available right now. Answer the remaining questions by typing (or tap 🎤 on your keyboard).',
   },
 };

@@ -52,6 +52,8 @@ export interface MicAnswerPanelProps {
   onRetry?: () => void;
   /** Overrides the typed-mode notice (e.g. "mic lost mid-test"). */
   notice?: string;
+  /** When set, the error box offers switching to typed input. */
+  onUseTyped?: () => void;
 }
 
 export function MicAnswerPanel({
@@ -65,6 +67,7 @@ export function MicAnswerPanel({
   canRetry = true,
   onRetry,
   notice,
+  onUseTyped,
 }: MicAnswerPanelProps) {
   const { dict } = useN400Lang();
   const t = dict.oral;
@@ -204,6 +207,11 @@ export function MicAnswerPanel({
       {errorText ? (
         <div className="w-full rounded-2xl border-l-4 border-orange-500 bg-orange-50 p-3 text-sm text-gray-700" role="status">
           {errorText}
+          {onUseTyped ? (
+            <button type="button" onClick={onUseTyped} className="mt-2 block font-semibold text-teal-700">
+              {t.useTyped}
+            </button>
+          ) : null}
           {mic.error === 'stalled' ? (
             <button type="button" onClick={() => window.location.reload()} className="mt-2 block font-semibold text-teal-700">
               {t.reload}

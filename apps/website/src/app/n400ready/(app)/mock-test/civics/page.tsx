@@ -64,7 +64,7 @@ import type { PublicSlide, FinalizeMockAttemptResult, FinalizeVoiceMockAttemptRe
 import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
 import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
 import { getOralAnswerConfig } from '@/lib/n400/oral/get-oral-config';
-import { canAdvance, micLostFrom, mockItemInput, toVoiceMockAnswers, type VoiceItem } from '@/lib/n400/oral/mock-voice-items';
+import { canAdvance, micLostFrom, mockItemInput, offersTypedFallback, toVoiceMockAnswers, type VoiceItem } from '@/lib/n400/oral/mock-voice-items';
 import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
 import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
 import { voiceInputFor } from '@/lib/n400/oral/voice-support';
@@ -458,6 +458,7 @@ function MockTestPageInner() {
                 onSubmit={(text) => onVoiceConfirm(text, itemInput)}
                 onNearAnswer={() => {}}
                 notice={micLost ? dict.oral.micLostTyped : undefined}
+                onUseTyped={offersTypedFallback(mic.error) && !micLost ? () => setMicLost(true) : undefined}
               />
             ) : (
               <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
