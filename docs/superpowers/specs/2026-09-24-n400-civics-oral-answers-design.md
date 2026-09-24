@@ -1,8 +1,8 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-24 (rev 2 — after PO review)
+**Date:** 2026-09-24 (rev 3 — after two PO reviews)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
-**Status:** Approved in brainstorming; rev 2 awaiting written-spec review
+**Status:** Approved in brainstorming; rev 3 approved for planning
 
 ## 1. Goal
 
@@ -29,10 +29,12 @@ Let learners answer Civics questions **by speaking**, the way the real USCIS int
 | D7 | Practice near-miss confirmed with "Đúng vậy" shows as correct in-session but is **not recorded** (preserves the "thuộc = graded only" invariant). |
 | D8 | Speech output is always real words, so **edit-distance tolerance never produces `correct`** — only `near`. (Rev 2: `institution`↔`constitution` and `republican`↔`republic` are distance 2, which the writing grader's threshold would accept.) |
 | D9 | The recognizer ending (`onend`) **never auto-grades**; the learner always sees the transcript first. A confirmed transcript is locked. |
+| D10 | **Grading rules are spec-governed.** Any change to grading rules, generated config or aliases must update this spec and land as a visible diff. Implementers do not "improve" grading on their own. |
+| D11 | Delivery is gated: **Spike → Grading → Practice → Mock → Production rollout.** Each gate needs owner sign-off before the next slice starts. |
 
 ## 3. Grading
 
-### 3.1 Answer config — `lib/n400/oral/oral-answer-config.ts`
+### 3.1 Answer config — generated file + hand-written aliases
 
 ```ts
 type OralAnswerType = 'single' | 'phrase' | 'enumeration';
@@ -41,18 +43,27 @@ interface OralAnswerConfig {
   type: OralAnswerType;
   alternatives: string[][];   // any-of; each inner array = parts, ALL required
   minKeywords?: number;       // phrase only: keywords required per part (explicit)
+  mustInclude?: string[];     // keywords required regardless of minKeywords (e.g. negation)
 }
 
 // Q2:  { type: 'single',      alternatives: [['constitution']] }
 // Q16: { type: 'enumeration', alternatives: [['congress', 'president', 'courts']] }
 // Q37: { type: 'phrase',      alternatives: [['keep powerful']], minKeywords: 2 }   // "president" is in the question → dropped
-// Q4:  { type: 'phrase',      alternatives: [['self government'], ['govern themselves']], minKeywords: 2 } // "people" is in the question → dropped
+// Q60: { type: 'phrase',      alternatives: [['powers not given federal government belong states']], minKeywords: 5, mustInclude: ['not'] }
 ```
 
-- **Generated, then reviewed.** A script (`scripts/n400-build-oral-config.mjs`) derives a draft for all 128 questions from `answersEn` + question text; the output is committed as `oral-answer-config.ts` and reviewed as one diff. Hand edits after review are allowed and are what the tests pin.
+Two files, merged at runtime by `getOralAnswerConfig(qid, location?)`:
+
+- **`lib/n400/oral/oral-answer-config.generated.ts` — generated only.** `scripts/n400-build-oral-config.mjs` derives it for all 128 questions from `answersEn` + question text. Never hand-edited; re-running the script must reproduce it byte-for-byte. Committed and reviewed as one diff. The generator never produces aliases. Where the generator's `type` / `minKeywords` choice is wrong, fix the generator (per-question overrides live inside the script, each with a comment), not the output.
+- **`lib/n400/oral/oral-aliases.ts` — hand-written.** Extra `alternatives` per question, each entry with a one-line reason and its own test. Aliases stay narrow: the taught answer's wording, not free paraphrase. An alias is **exact accepted** (`correct`); anything that merely resembles it is left to the engine's `near` rule and is never added as an alias to "fix" a near verdict.
+
+  ```ts
+  // Q4 — "self-government" is commonly explained as "people govern themselves"; `people` dropped by question-echo.
+  4: [['govern themselves']],
+  ```
 - Keywords are content words only: articles, auxiliaries, fillers and optional qualifiers (`u s, united states, america, american, your`) are dropped at generation time.
 - **Question-echo rule:** a keyword that appears in the question text is dropped from the answer's keywords, unless that would leave the part empty. (Rev 2: 14 answers overlap their question; Q76 "War for American Independence" would pass by repeating the question.)
-- Aliases (equivalent phrasings, ~20–30 questions) are extra `alternatives` entries in the same file, each with a test. Aliases stay narrow: the taught answer's wording, not free paraphrase.
+- **Negation:** negation words (`not, no, never, without, cannot, n't`) are never dropped by the normalizer or the generator. When the taught answer contains one, the generator puts it in `mustInclude`, so it is required even when `minKeywords` would otherwise be met without it (today only Q60 "Powers **not** given to the federal government belong to the states"). Everywhere else grading is negation-blind: a `not` in the transcript neither satisfies nor blocks anything. Known, accepted limitation.
 - Location-based questions (Q23/29/61/62) build their config at runtime from the learner's answers via `correctAnswersFor()` in `quiz-engine.ts`, as `single` (person names → surname keyword; capitals → city name).
 
 ### 3.2 Engine — `lib/n400/oral/grade-oral.ts`
@@ -65,12 +76,12 @@ function gradeOralAnswer(transcript: string, config: OralAnswerConfig): OralGrad
 
 Pure, deterministic, runs identically on client (practice) and server (mock).
 
-1. **Normalize transcript:** lowercase, strip punctuation, hyphens → spaces, number words ↔ digits (`twenty seven` ≡ `27`), drop fillers/qualifiers with the same list the generator uses.
+1. **Normalize transcript:** lowercase, strip punctuation, hyphens → spaces, number words ↔ digits (`twenty seven` ≡ `27`), drop fillers/qualifiers with the same list the generator uses. Negation words are never dropped (§3.1).
 2. **Word match = exact after stemming** (`courts ≡ court`, `writes ≡ write`, `laws ≡ law`). Nothing else counts as a match for `correct`.
 3. **Near-match** = edit distance within the writing grader's thresholds. A near-match word counts **only toward `near`**, never toward `correct`.
 4. **One-to-one:** each transcript word can satisfy at most one keyword (`congress congress congress` matches one part only).
 5. Extra words and word order in the transcript are ignored.
-6. **Per part:** `single` → its keyword(s) all matched; `phrase` → ≥ `minKeywords` matched; `enumeration` → every part matched.
+6. **Per part:** `single` → its keyword(s) all matched; `phrase` → ≥ `minKeywords` matched **and** every `mustInclude` keyword matched; `enumeration` → every part matched.
 7. **Verdict** (best across alternatives): `correct` if every part is satisfied with exact matches; `near` if ≥ half of the keywords are matched counting near-matches, or all parts are satisfied only thanks to near-matches; else `wrong`.
 
 `near` means "maybe misheard or incomplete", not "almost knows it". It is conservative on purpose.
@@ -92,6 +103,8 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 | 4 | Self-government | people govern themselves (alias) | correct |
 | 4 | Self-government | people rule themselves | near (only `themselves`) |
 | 4 | Self-government | freedom | wrong |
+| 60 | Powers not given to the federal government belong to the states | powers not given to the federal government belong to the states | correct |
+| 60 | Powers not given to the federal government belong to the states | powers given to the federal government belong to the states | **not correct** (missing `not`) |
 | 76 | War for American Independence | (reads the question aloud) | wrong |
 
 ## 4. Speech capture
@@ -109,7 +122,7 @@ type MicState =
 type MicError = 'no-speech' | 'not-allowed' | 'network' | 'audio-capture' | 'unavailable';
 
 function useSpeechRecognition(): {
-  supported: boolean;             // feature detection at mount; false on server
+  supported: boolean;             // API present AND not failed this session; false on server
   state: MicState;
   transcript: string;             // interim while listening, final after
   error: MicError | null;
@@ -121,6 +134,7 @@ function useSpeechRecognition(): {
 ```
 
 **Rules**
+- **Runtime support, not just feature detection.** `supported` starts as "API exists". If a `start()` fails with `service-not-allowed` / `not-allowed` before any audio (typical of in-app browsers that expose the API but block it), the hook maps it to `unavailable`, sets `supported=false` for the rest of the session (sessionStorage, try/catch) and the caller falls back to MC. `not-allowed` after a real permission prompt stays `not-allowed` (§8).
 - `start()` only from a click/tap handler; one recognition instance at a time; `abort()` on unmount and on `visibilitychange` → hidden.
 - `onend` **never grades.** With text → `transcript`. Without text → `error: 'no-speech'`. This is the same path whether the learner paused or iOS cut the session short — the app cannot tell those apart, so the learner decides from the visible transcript.
 - `processing` covers the gap between the learner going quiet and the final result, so the button never says "Listening…" while nothing is being heard.
@@ -209,21 +223,42 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
   - **question echo:** reading each question's own text aloud grades `wrong`;
   - partial enumerations grade `near`, never `correct`;
   - real-word substitutions (`institution`, `republican`, `senator` for `senate`) never grade `correct`;
+  - Q60 without `not` never grades `correct`; a `not` added to any other answer changes nothing;
+  - each alias in `oral-aliases.ts` grades `correct`; no alias duplicates a generated alternative;
   - number/filler/qualifier normalization; each alias.
-- `oral-answer-config` snapshot: the generated config is committed; changes show up as a reviewed diff.
+- Generator determinism: re-running `scripts/n400-build-oral-config.mjs` reproduces `oral-answer-config.generated.ts` exactly (test fails on drift).
 - `finalizeVoiceMockAttempt`: rejects another user's attempt; direct `rpc('finalize_mock_attempt_voice_batch')` as `authenticated` is denied; type-level check that `VoiceMockAnswer` has no verdict field.
 - `use-speech-recognition`: mocked `webkitSpeechRecognition` — state transitions, `onend` with and without text, each error code, abort on `visibilitychange`.
 - Manual, required before merge: iPhone Safari (incl. permission denied, tab background, screen lock, app switch), Android Chrome, desktop Chrome, **Facebook in-app browser** (iOS + Android) — confirm correct show/hide; owner records ~10 real answers to sanity-check accuracy.
 - Gate: `npm run type-check && npm run test && npm run build`.
 
-## 12. Build order
+## 12. Build order and gates
 
-1. **Device spike (first task):** minimal hook on iPhone Safari, Android Chrome and the Facebook in-app browser. If Facebook in-app has no support, stop and reassess value before building further, since ad traffic lands there.
-2. `oral-answer-config` generator + reviewed snapshot, then `grade-oral.ts` with the full test suite.
-3. Hook + `MicAnswerPanel`.
-4. Practice flow.
-5. Migration + `finalizeVoiceMockAttempt` + mock flow.
-6. Analytics, Privacy Policy, flags.
+**Slice 0 — Device spike (throwaway, not merged).** A standalone test page using a minimal hook. Script per environment: answer 5 questions in a row, twice — first run starts from a fresh permission prompt, second run includes switching to another app and back mid-session.
+
+| Environment | API present | Permission granted | Transcript returned | 2nd+ answer works without reload | Survives background | GO? |
+|---|---|---|---|---|---|---|
+| iPhone Safari | | | | | | |
+| Android Chrome | | | | | | |
+| Desktop Chrome | | | | | | |
+| Facebook in-app iOS | | | | | | |
+| Facebook in-app Android | | | | | | |
+
+- **GO for an environment:** all 10 answers produce a transcript, no stuck state, no reload needed.
+- Record the **share of N400Ready traffic from the Facebook in-app browser** (GA4) next to the matrix.
+- **Slice 0 passes** when iPhone Safari, Android Chrome and desktop Chrome are GO. The Facebook rows decide the in-app strategy, chosen by the owner from:
+  - (a) ship for Safari/Chrome; in-app browsers show "Mở trong trình duyệt để trả lời bằng giọng";
+  - (b) keyboard-dictation fallback for in-app browsers;
+  - (c) revisit server-side STT.
+- If iPhone Safari or Android Chrome is NO-GO, stop and reassess the feature.
+
+**Slice 1 — Grading:** generator + generated config (reviewed diff) + aliases + `grade-oral.ts` + full §11 grading suite. Gate: owner reviews the generated config diff and the suite passes.
+
+**Slice 2 — Practice:** hook + `MicAnswerPanel` + practice flow + first-use hint + `voice_practice` flag + migration column `answer_mode`. Gate: manual device pass on the GO environments.
+
+**Slice 3 — Mock:** rest of migration + RPC + `finalizeVoiceMockAttempt` + mock flow + result rows + `voice_mock` flag. Gate: security tests + manual device pass.
+
+**Slice 4 — Rollout:** analytics event, Privacy Policy, flag rollout per §7.
 
 ## 13. Post-launch measurement
 
