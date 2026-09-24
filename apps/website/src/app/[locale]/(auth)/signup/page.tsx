@@ -74,16 +74,14 @@ export default function SignUpPage() {
       <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-[#3a4a5c] flex items-center justify-center shadow-lg">
-            <Image
-              src="/images/logo-official.png"
-              alt="Manna One Solution"
-              width={48}
-              height={48}
-              className="rounded-lg"
-              style={{ width: "auto", height: "auto" }}
-            />
-          </div>
+          <Image
+            src="/images/logo-official.png"
+            alt="Manna One Solution"
+            width={120}
+            height={120}
+            className="h-20 w-auto"
+            priority
+          />
         </div>
 
         <h1 className="text-2xl font-bold text-charcoal text-center mb-1">

@@ -74,16 +74,14 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
-            <Image
-              src="/images/logo-official.png"
-              alt="Manna One Solution"
-              width={48}
-              height={48}
-              className="rounded-lg"
-              style={{ width: "auto", height: "auto" }}
-            />
-          </div>
+          <Image
+            src="/images/logo-official.png"
+            alt="Manna One Solution"
+            width={120}
+            height={120}
+            className="h-20 w-auto"
+            priority
+          />
         </div>
 
         {/* Title */}
