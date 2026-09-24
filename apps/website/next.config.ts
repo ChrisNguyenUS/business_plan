@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  transpilePackages: ["@mannaos/n400-growth"],
   async headers() {
     return [
       {

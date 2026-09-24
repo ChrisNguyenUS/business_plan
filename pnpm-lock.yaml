@@ -93,6 +93,9 @@ importers:
 
   apps/website:
     dependencies:
+      '@mannaos/n400-growth':
+        specifier: workspace:*
+        version: link:../../packages/n400-growth
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
