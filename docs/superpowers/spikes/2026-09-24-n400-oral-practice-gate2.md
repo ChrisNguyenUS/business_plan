@@ -24,4 +24,7 @@ Android: not tested (owner accepted risk, D14); `voice_android` stays OFF.
 
 ## Decision (owner)
 
-- Gate 2 pass? <yes/no>
+- iPhone Safari: **good**, owner report 2026-09-24. DB shows 11 practice attempts with `answer_mode='voice'` (item 9 ✓ for voice rows).
+- Desktop Chrome, Facebook in-app iOS, and items 10–14: not yet tested.
+- Owner **waived the rest of Gate 2** on 2026-09-24 to start Slice 3; the remaining items carry over to the Gate 3 device pass.
+- Gate 2 pass? partial (Safari), waived
