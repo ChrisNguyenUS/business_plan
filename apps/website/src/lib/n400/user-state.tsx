@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
+import { practiceAttemptRow, type AnswerMode } from './attempt-row';
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
@@ -345,6 +346,7 @@ function useN400UserStateInternal() {
       questionId: number,
       wasCorrect: boolean,
       mode: QuizMode,
+      answerMode: AnswerMode = 'choice',
     ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
       if (!user) return { milestone: null, unlockedBadges: [] };
       const today = TODAY_LOCAL();
@@ -370,14 +372,7 @@ function useN400UserStateInternal() {
       // Mock test uses recordMockResult below, which writes a single attempt row.
       const { data: quiz, error: qErr } = await supabase
         .from('n400_quiz_attempts')
-        .insert({
-          user_id: user.id,
-          mode,
-          score: wasCorrect ? 1 : 0,
-          total_questions: 1,
-          passed: null,
-          completed_at: new Date().toISOString(),
-        })
+        .insert(practiceAttemptRow(user.id, mode, wasCorrect, answerMode, new Date().toISOString()))
         .select('id')
         .single();
       if (qErr || !quiz) {
