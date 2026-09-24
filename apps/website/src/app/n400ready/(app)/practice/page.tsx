@@ -43,10 +43,20 @@ import { PersonalizedAnswerNotice } from '@/components/n400/PersonalizedAnswerNo
 import { GrowthSlot } from '@/components/n400/GrowthSlot';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
+import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
+import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
+import { getOralAnswerConfig } from '@/lib/n400/oral/get-oral-config';
+import { gradeOralAnswer } from '@/lib/n400/oral/grade-oral';
+import type { OralVerdict } from '@/lib/n400/oral/types';
+import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
+import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
+import { effectiveAnswerMode, voiceInputFor } from '@/lib/n400/oral/voice-support';
+import { voiceOutcome } from '@/lib/n400/oral/voice-outcome';
 
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
 const CATEGORY_STORAGE_KEY = 'n400.practice.category';
+const ANSWER_MODE_KEY = 'n400.practice.answerMode';
 const SEED_STORAGE_KEY = 'n400.practice.seed';
 // "Tiến độ hôm nay" on the summary — completed sessions per local day, kept in
 // localStorage so it survives tab closes (unlike the resumable-session keys).
@@ -95,6 +105,15 @@ function readStoredCategory(): N400CategoryKey | null {
   if (typeof window === 'undefined') return null;
   const raw = window.sessionStorage.getItem(CATEGORY_STORAGE_KEY);
   return raw !== null && raw in N400_CATEGORY_LABELS ? (raw as N400CategoryKey) : null;
+}
+
+function readStoredAnswerMode(): PracticeAnswerMode {
+  if (typeof window === 'undefined') return 'choice';
+  try {
+    return window.localStorage.getItem(ANSWER_MODE_KEY) === 'voice' ? 'voice' : 'choice';
+  } catch {
+    return 'choice';
+  }
 }
 
 /* ─── Interaction State Machine ─── */
@@ -149,6 +168,13 @@ export default function PracticePage() {
   const [milestone, setMilestone] = useState<number | null>(null);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>(() => readStoredAnswerMode());
+  const [voiceText, setVoiceText] = useState('');
+  const [voiceVerdict, setVoiceVerdict] = useState<OralVerdict | null>(null);
+  const [nearAnswer, setNearAnswer] = useState<'yes' | 'no' | null>(null);
+  const mic = useSpeechRecognition();
+  const voiceFlags = useVoiceFlags();
+  const { reset: resetMic } = mic;
   const badges = useN400Badges();
   const studyBodyRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -162,7 +188,15 @@ export default function PracticePage() {
     setShowAllAnswers(false);
     setMilestone(null);
     setUnlockedBadges([]);
+    setVoiceText('');
+    setVoiceVerdict(null);
+    setNearAnswer(null);
   }
+
+  // A new question never inherits the previous one's mic session.
+  useEffect(() => {
+    resetMic();
+  }, [index, resetMic]);
 
   // After render: reset scroll position and focus
   useEffect(() => {
@@ -223,8 +257,35 @@ export default function PracticePage() {
   const isBookmarked = state.bookmarks.includes(question.id);
   const pickedOption = options.find((o) => o.id === selected) ?? null;
 
+  const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+  const voiceInput = voiceInputFor({
+    ua,
+    apiPresent: mic.supported,
+    practiceOn: voiceFlags.practiceOn,
+    androidOn: voiceFlags.androidOn,
+  });
+  const oralConfig = useMemo(
+    () => getOralAnswerConfig(question.id, { stateCode, districtNumber }),
+    [question.id, stateCode, districtNumber]
+  );
+  const voiceHere = effectiveAnswerMode(answerMode, voiceInput, oralConfig !== null) === 'voice';
+  const outcome = voiceVerdict === null ? null : voiceOutcome(voiceVerdict, nearAnswer);
+  const revealedCorrect: boolean | null = voiceHere
+    ? (outcome?.shownCorrect ?? null)
+    : pickedOption
+      ? pickedOption.isCorrect
+      : null;
+
   const markWrong = (questionId: number) => {
     setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
+  };
+
+  const afterRecord = (result: { milestone: number | null; unlockedBadges: string[] }) => {
+    if (result.milestone) {
+      setMilestone(result.milestone);
+      trackStreakMilestone(result.milestone);
+    }
+    if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
   };
 
   const onPick = (id: QuizOption['id']) => {
@@ -235,13 +296,45 @@ export default function PracticePage() {
     const wasCorrect = !!opt?.isCorrect;
     if (wasCorrect) setCorrectCount((c) => c + 1);
     else markWrong(question.id);
-    void recordAnswer(question.id, wasCorrect, 'practice').then((result) => {
-      if (result.milestone) {
-        setMilestone(result.milestone);
-        trackStreakMilestone(result.milestone);
-      }
-      if (result.unlockedBadges.length > 0) setUnlockedBadges(result.unlockedBadges);
-    });
+    void recordAnswer(question.id, wasCorrect, 'practice').then(afterRecord);
+  };
+
+  const settleVoice = (shownCorrect: boolean, record: boolean | null) => {
+    setPhase('revealed');
+    if (shownCorrect) setCorrectCount((c) => c + 1);
+    else markWrong(question.id);
+    // D7: a confirmed near is shown correct but never recorded.
+    if (record !== null) {
+      void recordAnswer(question.id, record, 'practice', voiceInput === 'typed' ? 'typed' : 'voice').then(afterRecord);
+    }
+  };
+
+  const onVoiceSubmit = (text: string) => {
+    if (!oralConfig || voiceVerdict !== null) return;
+    const { verdict } = gradeOralAnswer(text, oralConfig);
+    setVoiceText(text);
+    setVoiceVerdict(verdict);
+    const o = voiceOutcome(verdict, null);
+    if (o) settleVoice(o.shownCorrect, o.record);
+  };
+
+  const onNearAnswer = (yes: boolean) => {
+    if (voiceVerdict !== 'near' || nearAnswer !== null) return;
+    const answer = yes ? 'yes' : 'no';
+    setNearAnswer(answer);
+    const o = voiceOutcome('near', answer);
+    if (o) settleVoice(o.shownCorrect, o.record);
+  };
+
+  const onAnswerModeChange = (m: PracticeAnswerMode) => {
+    if (phase === 'revealed' || voiceVerdict !== null) return;
+    setAnswerMode(m);
+    try {
+      window.localStorage.setItem(ANSWER_MODE_KEY, m);
+    } catch {
+      // Private mode — the choice lasts for this page only.
+    }
+    resetMic();
   };
 
   const onNext = () => {
@@ -275,6 +368,9 @@ export default function PracticePage() {
     setShowAllAnswers(false);
     setMilestone(null);
     setUnlockedBadges([]);
+    setVoiceText('');
+    setVoiceVerdict(null);
+    setNearAnswer(null);
   };
 
   const reseed = () => {
@@ -532,6 +628,17 @@ export default function PracticePage() {
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
+            {voiceInput !== 'none' ? (
+              <div className="mb-2 flex justify-end">
+                <AnswerModeToggle
+                  mode={answerMode}
+                  onChange={onAnswerModeChange}
+                  labels={{ choice: dict.oral.modeChoice, voice: dict.oral.modeVoice }}
+                  disabled={phase === 'revealed'}
+                />
+              </div>
+            ) : null}
+
             {/* Question header — compact on mobile */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
@@ -574,47 +681,58 @@ export default function PracticePage() {
             {/* Answer Options — always one stacked column so the layout stays
                 identical before and after answering. The question stays the hero
                 and each choice is easy to scan/tap. */}
-            <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
-              {options.map((opt) => {
-                const isPicked = selected === opt.id;
-                let style = 'border-gray-200 hover:border-teal-300 bg-white';
-                const chip = 'bg-gray-100 text-gray-700';
-                let mark = (
-                  <span className="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0" />
-                );
+            {voiceHere ? (
+              <MicAnswerPanel
+                input={voiceInput === 'typed' ? 'typed' : 'mic'}
+                mic={mic}
+                locked={voiceVerdict !== null}
+                nearAnswer={voiceVerdict === 'near' && nearAnswer === null ? allAnswers[0].en : null}
+                onSubmit={onVoiceSubmit}
+                onNearAnswer={onNearAnswer}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
+                {options.map((opt) => {
+                  const isPicked = selected === opt.id;
+                  let style = 'border-gray-200 hover:border-teal-300 bg-white';
+                  const chip = 'bg-gray-100 text-gray-700';
+                  let mark = (
+                    <span className="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0" />
+                  );
 
-                if (phase === 'revealed') {
-                  if (opt.isCorrect) {
-                    style = 'border-teal-600 bg-teal-50';
-                    mark = <CheckCircle size={22} className="text-teal-600 shrink-0" />;
-                  } else if (isPicked) {
-                    style = 'border-red-400 bg-red-50';
-                    mark = <XCircle size={22} className="text-red-500 shrink-0" />;
-                  } else {
-                    style = 'border-gray-200 bg-white opacity-70';
+                  if (phase === 'revealed') {
+                    if (opt.isCorrect) {
+                      style = 'border-teal-600 bg-teal-50';
+                      mark = <CheckCircle size={22} className="text-teal-600 shrink-0" />;
+                    } else if (isPicked) {
+                      style = 'border-red-400 bg-red-50';
+                      mark = <XCircle size={22} className="text-red-500 shrink-0" />;
+                    } else {
+                      style = 'border-gray-200 bg-white opacity-70';
+                    }
                   }
-                }
 
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    disabled={phase === 'revealed'}
-                    onClick={() => onPick(opt.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
-                  >
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${chip}`} style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
-                    <div className="flex-1 text-gray-800 font-medium">
-                      <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
-                      {lang !== 'en' && opt.vi !== opt.en ? (
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
-                      ) : null}
-                    </div>
-                    {mark}
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={phase === 'revealed'}
+                      onClick={() => onPick(opt.id)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 motion-reduce:duration-0 min-h-[clamp(56px,7vh,72px)] p-[clamp(0.5rem,1.2vh,0.875rem)] outline-none focus-visible:border-teal-400 focus-visible:ring-2 focus-visible:ring-teal-100 ${style}`}
+                    >
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold ${chip}`} style={{ fontSize: 'clamp(0.875rem, 1.5vw, 1rem)' }}>{opt.id}</div>
+                      <div className="flex-1 text-gray-800 font-medium">
+                        <div style={{ fontSize: 'clamp(0.9375rem, 1.5vw, 1.0625rem)' }}>{opt.en}</div>
+                        {lang !== 'en' && opt.vi !== opt.en ? (
+                          <div className="text-gray-500 mt-0.5" style={{ fontSize: 'clamp(0.75rem, 1.2vw, 0.8125rem)' }}>{opt.vi}</div>
+                        ) : null}
+                      </div>
+                      {mark}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Learning Tip — mobile only (desktop shows it in the right panel).
                 Rendered before answering so the pre-answer screen matches the
@@ -626,11 +744,11 @@ export default function PracticePage() {
             ) : null}
 
             {/* Feedback — full width below the options grid */}
-            {phase === 'revealed' && pickedOption && (
+            {phase === 'revealed' && revealedCorrect !== null && (
               <div
                 ref={feedbackRef}
                 className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-                  pickedOption.isCorrect
+                  revealedCorrect
                     ? 'bg-teal-50 border-teal-500'
                     : 'bg-orange-50 border-orange-500'
                 }`}
@@ -638,7 +756,7 @@ export default function PracticePage() {
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {pickedOption.isCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
+                    {revealedCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   <AudioButton
                     src={answerAudioUrlFor(question, stateCode, districtNumber)}
@@ -647,6 +765,12 @@ export default function PracticePage() {
                     className="ml-auto"
                   />
                 </div>
+                {voiceHere && voiceText ? (
+                  <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                    <span className="font-semibold">{voiceInput === 'typed' ? dict.oral.youTyped : dict.oral.youSaid}</span>{' '}
+                    {voiceText}
+                  </div>
+                ) : null}
                 <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   <span className="font-semibold">{dict.practice.acceptedAnswers}</span>
                 </div>
