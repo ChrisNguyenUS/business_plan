@@ -32,10 +32,14 @@ import {
 import type { StateCode } from '@/lib/n400/state-data'
 import { evaluateAfterAttempt, evaluateAfterStreak } from '@/lib/n400/badges/actions'
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
+import { createServerSupabaseClient } from '@/lib/supabase'
+import { runVoiceFinalize } from '@/lib/n400/oral/finalize-voice-mock'
 import type {
   StartMockAttemptResult,
   MockPick,
   FinalizeMockAttemptResult,
+  FinalizeVoiceMockAttemptResult,
+  VoiceMockAnswer,
 } from './types'
 
 async function getSupabase() {
@@ -154,6 +158,87 @@ export async function finalizeMockAttempt(
     longestStreak: Number(r?.longest_streak ?? 0),
     milestone: r?.milestone ?? null,
     unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0), Boolean(r?.passed), Number(r?.score ?? 0), Number(r?.total ?? MOCK_TEST_QUESTION_COUNT)),
+  }
+}
+
+// Voice mock finalize (spec §6). The client sends transcripts only; grading
+// happens here (grade-voice-mock.ts), and the RPC runs as service_role because
+// it trusts the computed was_correct. Owner checks run in runVoiceFinalize and
+// again inside the RPC.
+export async function finalizeVoiceMockAttempt(
+  attemptId: string,
+  answers: VoiceMockAnswer[],
+): Promise<FinalizeVoiceMockAttemptResult> {
+  const supabase = await getSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const admin = createServerSupabaseClient()
+
+  let run: Awaited<ReturnType<typeof runVoiceFinalize>>
+  try {
+    run = await runVoiceFinalize(
+      {
+        userId: user?.id ?? null,
+        loadAttempt: async (id) => {
+          const { data } = await admin
+            .from('n400_quiz_attempts')
+            .select('user_id, mode, slide_manifest')
+            .eq('id', id)
+            .maybeSingle()
+          return data
+        },
+        loadLocation: async (uid) => {
+          const { data } = await admin
+            .from('n400_user_profile')
+            .select('state_code, district_number')
+            .eq('user_id', uid)
+            .maybeSingle()
+          return data
+        },
+        finalizeRpc: async (args) => {
+          const { data, error } = await admin.rpc('finalize_mock_attempt_voice_batch', args)
+          if (error) throw new Error(error.message)
+          return (data ?? {}) as Record<string, unknown>
+        },
+      },
+      attemptId,
+      answers,
+    )
+  } catch (error) {
+    try {
+      const Sentry = await import('@sentry/nextjs')
+      Sentry.captureException(error, { tags: { feature: 'n400-finalize', step: 'finalize_voice_batch' } })
+    } catch {}
+    throw new Error(`finalize_mock_attempt_voice_batch failed: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
+
+  const r = run.rpc as {
+    score?: number
+    total?: number
+    passed?: boolean
+    current_streak?: number
+    longest_streak?: number
+    milestone?: number | null
+    manifest?: { qid: number; correct: QuizOption['id'] }[]
+  }
+  return {
+    score: Number(r.score ?? 0),
+    total: Number(r.total ?? MOCK_TEST_QUESTION_COUNT),
+    passed: Boolean(r.passed),
+    manifest: r.manifest ?? [],
+    currentStreak: Number(r.current_streak ?? 0),
+    longestStreak: Number(r.longest_streak ?? 0),
+    milestone: r.milestone ?? null,
+    unlockedBadges: await evaluateMockUnlocks(
+      attemptId,
+      r.milestone ?? null,
+      Number(r.current_streak ?? 0),
+      Boolean(r.passed),
+      Number(r.score ?? 0),
+      Number(r.total ?? MOCK_TEST_QUESTION_COUNT),
+    ),
+    answers: run.results.map((x) => ({ qid: x.qid, wasCorrect: x.was_correct, transcript: x.transcript })),
   }
 }
 

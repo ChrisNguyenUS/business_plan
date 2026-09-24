@@ -40,3 +40,16 @@ export interface FinalizeMockAttemptResult {
   // BadgeUnlockToast on the result screen.
   unlockedBadges: string[]
 }
+
+export type { VoiceMockAnswer } from '@/lib/n400/oral/grade-voice-mock'
+
+// Voice mock (spec §6): per-item server verdicts for the result screen.
+export interface VoiceMockAnswerResult {
+  qid: number
+  wasCorrect: boolean
+  transcript: string | null
+}
+
+export interface FinalizeVoiceMockAttemptResult extends FinalizeMockAttemptResult {
+  answers: VoiceMockAnswerResult[]
+}
