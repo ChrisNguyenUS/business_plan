@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Mail, Lock, User } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
@@ -11,7 +11,6 @@ import { OAuthButtons } from "@/components/auth/OAuthButtons";
 export default function SignUpPage() {
   const params = useParams();
   const locale = params.locale as string;
-  const router = useRouter();
   const { signUp } = useAuth();
 
   const [fullName, setFullName] = useState("");
@@ -36,10 +35,17 @@ export default function SignUpPage() {
     }
 
     setLoading(true);
-    const { error: err } = await signUp(email, password, fullName);
+    const { error: err, hasSession } = await signUp(email, password, fullName);
     if (err) {
       setError(err);
       setLoading(false);
+      return;
+    }
+
+    // Email confirmation is off in Supabase: the account is already active and
+    // signed in, so go straight in. Full reload so middleware sees the cookie.
+    if (hasSession) {
+      window.location.href = `/${locale}/portal`;
       return;
     }
 

@@ -28,6 +28,7 @@ export const en: N400Dict = {
     securityNote1: 'Your data is fully protected.',
     securityNote2: 'We never share your information.',
     resetSuccess: 'Your password has been updated. Please sign in with your new password.',
+    linkFailed: 'This link is invalid or has expired. Please request a new one.',
   },
   forgotPassword: {
     title: 'Forgot your password?',

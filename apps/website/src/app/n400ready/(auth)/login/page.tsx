@@ -93,7 +93,10 @@ function N400LoginScreen() {
   const t = dict.login;
 
   // ?reset=success is set by the reset-password page after a successful update.
-  const resetDone = useSearchParams().get('reset') === 'success';
+  const searchParams = useSearchParams();
+  const resetDone = searchParams.get('reset') === 'success';
+  // ?error= is set by /api/auth/callback when an emailed link could not be used.
+  const linkFailed = searchParams.has('error');
 
   const [loadingProvider, setLoadingProvider] = useState<OAuthId | 'email' | null>(null);
   // Land straight on the email form when the user has just reset their password.
@@ -265,6 +268,11 @@ function N400LoginScreen() {
           {/* Password just reset */}
           {resetDone && (
             <div className={styles.successBox} role="status">{t.resetSuccess}</div>
+          )}
+
+          {/* Emailed link failed */}
+          {linkFailed && !error && (
+            <div className={styles.errorBox} role="alert">{t.linkFailed}</div>
           )}
 
           {/* Error */}

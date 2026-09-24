@@ -1,11 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { EmailOtpType, SupabaseClient, User } from '@supabase/supabase-js';
 import { ATTRIB_COOKIE, parseAttributionCookie } from '@/lib/n400/growth/attribution';
 
-// OAuth callback: exchanges the provider code for a session cookie,
-// then bootstraps the avatar on first login. The profile row itself is
+// Auth callback: exchanges the provider/PKCE code for a session cookie,
+// then bootstraps the avatar on first login. Email links (password recovery)
+// may instead carry ?token_hash=&type= — verified server-side, so they work
+// even when opened in a different browser/device than the one that asked. The profile row itself is
 // created by the handle_new_user_v2 DB trigger — not here.
 
 const CONTENT_TYPE_TO_EXT: Record<string, string> = {
@@ -57,14 +59,18 @@ async function bootstrapAvatar(supabase: SupabaseClient, user: User) {
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
+  const otpType = searchParams.get('type') as EmailOtpType | null;
   // Post-login destination; middleware runs the n400_user_profile setup
   // gate on top of this.
   const next = searchParams.get('next') ?? '/n400ready';
   // Only allow same-origin relative redirects.
   const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/n400ready';
+  // Failures go back to the sign-in page of the app the flow started from.
+  const loginPath = safeNext.startsWith('/n400ready') ? '/n400ready/login' : '/login';
 
-  if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=missing_code`);
+  if (!code && !(tokenHash && otpType)) {
+    return NextResponse.redirect(`${origin}${loginPath}?error=missing_code`);
   }
 
   const cookieStore = await cookies();
@@ -85,9 +91,12 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } =
+    tokenHash && otpType
+      ? await supabase.auth.verifyOtp({ type: otpType, token_hash: tokenHash })
+      : await supabase.auth.exchangeCodeForSession(code!);
   if (error || !data.user) {
-    return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
+    return NextResponse.redirect(`${origin}${loginPath}?error=auth_callback_failed`);
   }
 
   // Avatar bootstrap must NEVER block authentication — any failure here

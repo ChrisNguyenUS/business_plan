@@ -28,6 +28,7 @@ export const vi = {
     securityNote1: 'Dữ liệu của bạn được bảo mật tuyệt đối.',
     securityNote2: 'Chúng tôi không chia sẻ thông tin của bạn.',
     resetSuccess: 'Mật khẩu đã được cập nhật. Vui lòng đăng nhập bằng mật khẩu mới.',
+    linkFailed: 'Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu liên kết mới.',
   },
   forgotPassword: {
     title: 'Quên mật khẩu?',

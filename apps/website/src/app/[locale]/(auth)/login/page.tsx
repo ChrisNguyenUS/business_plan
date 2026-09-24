@@ -24,7 +24,10 @@ function LoginContent() {
   const locale = params.locale as string;
   const { signIn } = useAuth();
   // ?reset=success is set by the reset-password page after a successful update.
-  const resetDone = useSearchParams().get("reset") === "success";
+  const searchParams = useSearchParams();
+  const resetDone = searchParams.get("reset") === "success";
+  // ?error= is set by /api/auth/callback when an emailed link could not be used.
+  const linkFailed = searchParams.has("error");
   const [showForgot, setShowForgot] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -108,6 +111,13 @@ function LoginContent() {
         {resetDone && !error && (
           <div role="status" className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-sm text-emerald-700">
             Your password has been updated. Please sign in with your new password.
+          </div>
+        )}
+
+        {/* Emailed link failed */}
+        {linkFailed && !error && (
+          <div role="alert" className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">
+            This link is invalid or has expired. Please request a new one.
           </div>
         )}
 
