@@ -47,6 +47,7 @@ export function gradeOralAnswer(transcript: string, config: OralAnswerConfig): O
     let allLoose = true;
     let total = 0;
     let hits = 0;
+    let partsLoose = 0;
 
     for (const part of parts) {
       const keywords = part.split(' ').filter(Boolean);
@@ -73,12 +74,15 @@ export function gradeOralAnswer(transcript: string, config: OralAnswerConfig): O
       const need = requiredCount(config, keywords.length);
       if (exactCount < need || !mustOk) allExact = false;
       if (looseCount < need) allLoose = false;
+      else partsLoose++;
       total += keywords.length;
       hits += looseCount;
     }
 
-    const verdict: OralVerdict =
-      allExact && !excluded ? 'correct' : allLoose || (hits > 0 && hits * 2 >= total) ? 'near' : 'wrong';
+    // Enumerations count named items; single/phrase count keywords (spec §3.2 rule 7, rev 3.2).
+    const partial =
+      config.type === 'enumeration' ? partsLoose > 0 && partsLoose * 2 >= parts.length : hits > 0 && hits * 2 >= total;
+    const verdict: OralVerdict = allExact && !excluded ? 'correct' : allLoose || partial ? 'near' : 'wrong';
     const rank = RANK[verdict];
     if (!best || rank > best.rank || (rank === best.rank && hits > best.hits)) {
       best = { rank, hits, grade: { verdict, matched, missing } };

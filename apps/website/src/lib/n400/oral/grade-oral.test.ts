@@ -104,3 +104,23 @@ describe('gradeOralAnswer — matched / missing', () => {
     expect(g.missing).toEqual(['courts']);
   });
 });
+
+describe('gradeOralAnswer — enumeration near counts items, not keywords (rev 3.2)', () => {
+  it('half the items named is near', () => {
+    const q19: OralAnswerConfig = { type: 'enumeration', alternatives: [['senate', 'house representatives']] };
+    expect(gradeOralAnswer('senate', q19).verdict).toBe('near');
+  });
+
+  it('fewer than half the items named is wrong', () => {
+    const q65: OralAnswerConfig = {
+      type: 'enumeration',
+      alternatives: [['freedom speech', 'freedom religion', 'bear arms']],
+    };
+    expect(gradeOralAnswer('freedom of speech', q65).verdict).toBe('wrong');
+  });
+
+  it('a word shared by every item names no item', () => {
+    const q48: OralAnswerConfig = { type: 'enumeration', alternatives: [['secretary education', 'secretary energy']] };
+    expect(gradeOralAnswer('secretary', q48).verdict).toBe('wrong');
+  });
+});
