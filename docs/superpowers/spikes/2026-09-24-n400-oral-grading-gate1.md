@@ -54,7 +54,7 @@ Recognizer noise ("Zen", plural "presidents", dropped "of") does not flip a corr
 
 ## Decision (owner)
 
-- Generated config approved? <yes/no + questions to change>
+- Generated config approved? **yes**, owner 2026-09-24, with the rev 3.2 changes below.
 - Overlap decisions (owner, 2026-09-24): fix the cheap ones, accept the rest.
   - 16→18, 16→42–46: **fixed**. Q18 excludes `president`/`courts`; Q42–46 exclude `vice`/`congress`/`courts`.
   - 8→35, 84→35, 128→35: **fixed**. Q35 is now `more people`.
@@ -69,4 +69,4 @@ Recognizer noise ("Zen", plural "presidents", dropped "of") does not flip a corr
   - R3: unit word optional after a number.
 - Echo exceptions Q6/Q76: kept, as the spec already accepts them.
 - Spec: rev 3.2 (commit 0f78eb94). Code: 29f89309, d7009503.
-- Gate 1 pass? <yes/no>
+- Gate 1 pass? **yes**, owner 2026-09-24.
