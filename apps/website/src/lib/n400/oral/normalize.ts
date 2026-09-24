@@ -31,6 +31,39 @@ const STOPWORDS: ReadonlySet<string> = new Set(
 
 const QUALIFIER_STEMS: ReadonlySet<string> = new Set(['america', 'american', 'usa', 'your']);
 
+// Below 100: "twenty seven" → 27. A units word right before "hundred" is left
+// for the next number ("one hundred one hundred" is 100, 100 — not 101, 100).
+function readBelow100(raw: readonly string[], i: number): [number, number] | null {
+  const n = NUMBER_WORDS.get(raw[i]);
+  if (n === undefined) return null;
+  const u = NUMBER_WORDS.get(raw[i + 1]);
+  if (n >= 20 && u !== undefined && u >= 1 && u <= 9 && raw[i + 2] !== 'hundred') return [n + u, i + 2];
+  return [n, i + 1];
+}
+
+// Composes one spoken number starting at raw[i]; returns [value, nextIndex].
+// Neighbouring numbers are never summed ("four five" is 4, 5), and a teen
+// followed by a two-digit pair is read as a year ("seventeen seventy six" → 1776).
+function readNumber(raw: readonly string[], i: number): [number, number] | null {
+  if (raw[i] === 'hundred') return [100, i + 1];
+  const first = NUMBER_WORDS.get(raw[i]);
+  if (first === undefined) return null;
+
+  if (first >= 1 && first <= 9 && raw[i + 1] === 'hundred') {
+    let j = i + 2;
+    if (raw[j] === 'and' && NUMBER_WORDS.has(raw[j + 1])) j++;
+    const rest = raw[j + 1] === 'hundred' ? null : readBelow100(raw, j);
+    return rest ? [first * 100 + rest[0], rest[1]] : [first * 100, j === i + 2 ? j : j - 1];
+  }
+
+  const [v, j] = readBelow100(raw, i)!;
+  if (v >= 11 && v <= 19 && raw[j + 1] !== 'hundred') {
+    const pair = readBelow100(raw, j);
+    if (pair && pair[0] >= 10) return [v * 100 + pair[0], pair[1]];
+  }
+  return [v, j];
+}
+
 export function normalizeTokens(text: string): string[] {
   let s = text
     .toLowerCase()
@@ -51,21 +84,14 @@ export function normalizeTokens(text: string): string[] {
     .map((t) => t.replace(/^(\d+)(?:st|nd|rd|th)$/, '$1'));
 
   const out: string[] = [];
-  let acc: number | null = null;
-  for (const t of raw) {
-    if (t === 'hundred') {
-      acc = (acc ?? 1) * 100;
+  for (let i = 0; i < raw.length; ) {
+    const num = readNumber(raw, i);
+    if (num) {
+      out.push(String(num[0]));
+      i = num[1];
       continue;
     }
-    const n = NUMBER_WORDS.get(t);
-    if (n !== undefined) {
-      acc = (acc ?? 0) + n;
-      continue;
-    }
-    if (acc !== null) {
-      out.push(String(acc));
-      acc = null;
-    }
+    const t = raw[i++];
     const ord = ORDINAL_WORDS.get(t);
     if (ord !== undefined) {
       out.push(String(ord));
@@ -74,7 +100,6 @@ export function normalizeTokens(text: string): string[] {
     if (t.length === 1 && !/\d/.test(t)) continue;
     out.push(t);
   }
-  if (acc !== null) out.push(String(acc));
   return out;
 }
 

@@ -93,3 +93,22 @@ describe('transcriptStems', () => {
     expect(transcriptStems('um, I think… uh')).toEqual([]);
   });
 });
+
+describe('normalizeTokens — number words are composed, never summed', () => {
+  it('keeps separate numbers separate', () => {
+    expect(normalizeTokens('four, five')).toEqual(['4', '5']);
+    expect(normalizeTokens('one two three')).toEqual(['1', '2', '3']);
+    expect(normalizeTokens('twenty-seven, twenty-seven')).toEqual(['27', '27']);
+    expect(normalizeTokens('one hundred one hundred')).toEqual(['100', '100']);
+  });
+
+  it('allows "and" inside a hundreds number', () => {
+    expect(normalizeTokens('four hundred and thirty-five')).toEqual(['435']);
+  });
+
+  it('reads two spoken pairs as a year', () => {
+    expect(normalizeTokens('July fourth, seventeen seventy six')).toEqual(['july', '4', '1776']);
+    expect(normalizeTokens('nineteen twenty nine')).toEqual(['1929']);
+  });
+});
+

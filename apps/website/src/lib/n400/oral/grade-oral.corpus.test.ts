@@ -88,3 +88,16 @@ describe('cross-question matrix', () => {
     expect(overlaps).toEqual(ALLOWED_OVERLAPS);
   });
 });
+
+describe('spoken numbers (final review)', () => {
+  it.each<[number, string, OralVerdict]>([
+    [53, 'four, five', 'wrong'],
+    [54, 'two, three', 'wrong'],
+    [7, 'twenty-seven, twenty-seven', 'correct'],
+    [24, 'four hundred and thirty-five', 'correct'],
+    [79, 'July fourth, seventeen seventy six', 'correct'],
+    [104, 'the stock market crash of nineteen twenty nine', 'correct'],
+  ])('Q%i "%s" → %s', (qid, said, expected) => {
+    expect(verdict(qid, said)).toBe(expected);
+  });
+});
