@@ -19,6 +19,16 @@ Most of the 68 pinned pairs are harmless supersets (e.g. "After the Civil War" c
 | 84→2/82, 88→2/82 | "Father of the Constitution" passes "What is the supreme law?" | accept · add `mustExclude: ['father']` |
 | 97→5 | "14th Amendment" passes "How are changes made to the Constitution?" | accept (contains "amendment") |
 
+### Spec-level findings from the final code review (need a decision)
+
+The code follows spec rev 3.1 in each case. Changing any of these is a spec change (D10).
+
+| # | What happens | Options |
+|---|---|---|
+| R1 | **Q102 direction word is optional.** Config `after world war 1`, min 3, mustInclude `1`. "**before** world war one" and "world war one" both grade `correct`. Q104 "**before** the stock market crash of 1929" → `correct`. | accept · override Q102 `mustInclude: ['after','1']` (and Q104 `['before'…]` check) |
+| R2 | **Partial list: `near` depends on word counts, not items named.** One item from a list: Q19 "senate" → wrong, Q67 "loyal" → wrong, Q69 "vote" → wrong, but Q10 "liberty" → near, Q65 "freedom speech" → near, Q48 "secretary" (no department) → near. §3.2 rule 7 (half the keywords) contradicts §11 ("partial enumerations grade `near`"). A `near` offers "Có phải bạn nói <full answer>?", so "secretary" gets offered the full answer. | pick one rule, e.g. near = ≥ half the **parts** fully matched, with each keyword counted once across parts, then align §3.2 and §11 |
+| R3 | **Duration unit required inconsistently.** Q22 `6 years` and Q25 `2 years` need "years" ("six" → near), but Q36 "four" → correct (the question contains "years", so echo drops it). An officer accepts "six". | accept · generator rule: unit word optional after a number · override Q22/Q25 |
+
 ## 3. Echo exceptions
 
 Q6 ("Rights of Americans" → `rights`) and Q76 ("War for American Independence" → `war independence`) pass when the question is read aloud. Accept or override?
@@ -46,4 +56,5 @@ Recognizer noise ("Zen", plural "presidents", dropped "of") does not flip a corr
 
 - Generated config approved? <yes/no + questions to change>
 - Overlap decisions: <per row>
+- Review findings R1–R3: <per row>
 - Gate 1 pass? <yes/no>
