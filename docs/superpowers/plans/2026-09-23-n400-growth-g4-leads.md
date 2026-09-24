@@ -428,9 +428,9 @@ Expected: an `n400-growth` entry pointing at `../../../../packages/n400-growth`.
 
 - [ ] **Step 5: Typecheck and run the existing tests**
 
-Run: `pnpm --filter internal-app type-check && pnpm --filter internal-app test`
+Run: `pnpm --filter internal_app type-check && pnpm --filter internal_app test`
 
-> If `internal-app` is not the package name, check `apps/internal_app/package.json`'s `"name"` field and use that.
+> If `internal_app` is not the package name, check `apps/internal_app/package.json`'s `"name"` field and use that.
 
 Expected: typecheck silent; the six existing test suites in `__tests__/` still pass.
 
@@ -690,7 +690,7 @@ BEGIN
   LIMIT 1;
 END; $$;
 
-REVOKE EXECUTE ON FUNCTION public.n400_weak_section_for(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.n400_weak_section_for(uuid) FROM anon, PUBLIC;
 GRANT  EXECUTE ON FUNCTION public.n400_weak_section_for(uuid) TO authenticated;
 ```
 
@@ -709,7 +709,7 @@ SELECT * FROM public.n400_weak_section_for(
 
 Expected: either zero rows (that user has no graded section attempts) or exactly one row whose `section` is one of `whatmean`/`yesno`/`writing`. Zero rows is a valid, expected result — the UI handles it.
 
-> This runs as the service role, which passes the guard implicitly. The guard is verified in Task 9 Step 5 with a real staff session.
+> Running this as the service role will raise `unauthorized` because `auth.uid()` is NULL in that context. The guard must be exercised with a simulated staff session instead; this is verified in Task 9 Step 5 with a real staff account.
 
 - [ ] **Step 4: Commit**
 
@@ -802,7 +802,7 @@ describe('describeEvent', () => {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `pnpm --filter internal-app test -- timeline`
+Run: `pnpm --filter internal_app test -- timeline`
 Expected: FAIL — `Cannot find module '@/lib/n400/timeline'`.
 
 - [ ] **Step 3: Write the implementation**
@@ -955,7 +955,7 @@ export function describeEvent(
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `pnpm --filter internal-app test -- timeline`
+Run: `pnpm --filter internal_app test -- timeline`
 Expected: PASS, 9 tests.
 
 > If the `address_entered` case fails, note the `.replace(' · ', ', ')` — addresses read as "Austin, TX", not "Austin · TX". Adjust the helper rather than the expectation.
@@ -1142,7 +1142,7 @@ export async function getLeadWeakSection(userId: string): Promise<WeakSection | 
 
 - [ ] **Step 3: Typecheck**
 
-Run: `pnpm --filter internal-app type-check`
+Run: `pnpm --filter internal_app type-check`
 Expected: silent. If it complains that a `'use server'` module exports a non-async value, a constant is still sitting in `actions/leads.ts` — move it to `leads-shape.ts`.
 
 - [ ] **Step 4: Commit**
@@ -1442,7 +1442,7 @@ Change nothing else in that file. `visibleNav` only filters `/jobs`, so staff se
 
 - [ ] **Step 4: Typecheck and lint**
 
-Run: `pnpm --filter internal-app type-check && pnpm --filter internal-app lint`
+Run: `pnpm --filter internal_app type-check && pnpm --filter internal_app lint`
 Expected: both silent.
 
 - [ ] **Step 5: Commit**
@@ -1727,15 +1727,15 @@ export default async function LeadDetailPage({
 
 - [ ] **Step 4: Typecheck, lint, and run the whole internal_app test suite**
 
-Run: `pnpm --filter internal-app type-check && pnpm --filter internal-app lint && pnpm --filter internal-app test`
-Expected: all three clean; the timeline suite plus the six pre-existing suites pass.
+Run: `pnpm --filter internal_app type-check && pnpm --filter internal_app lint && pnpm --filter internal_app test`
+Expected: typecheck passes; the feature introduces no NEW lint problems in the files it touches (verify by grepping the lint output for new file names; pre-existing lint debt is out of scope); the timeline suite plus the six pre-existing suites pass.
 
 - [ ] **Step 5: Verify in the running app with a real staff account**
 
 This step is the point of the whole plan — do not skip it.
 
 ```bash
-pnpm --filter internal-app dev
+pnpm --filter internal_app dev
 ```
 
 Then, signed in as a user whose `profiles.role = 'staff'` (not admin):
@@ -1790,6 +1790,6 @@ git commit -m "docs: mark growth engine G4 v1 shipped"
 - [ ] No staff or admin account appears in the list
 - [ ] Score sort, status filter, search and pagination all work
 - [ ] A lead detail page shows the timeline, the summary panel and the weakest section
-- [ ] `pnpm build`, `pnpm lint`, `pnpm type-check` pass at the repo root
+- [ ] `pnpm build` and `pnpm type-check` pass at the repo root; the feature introduces no NEW lint problems in the files it touches (pre-existing lint debt is out of scope)
 - [ ] internal_app jest and website vitest both pass
 - [ ] The website behaves exactly as before — the only change there is `events.ts` becoming a re-export
