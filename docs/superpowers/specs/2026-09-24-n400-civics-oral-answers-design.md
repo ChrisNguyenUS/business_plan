@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-24 (rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-24 (rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -203,6 +203,13 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
   4. Call RPC `finalize_mock_attempt_voice_batch` with the **service-role** client (`createServerSupabaseClient()` in `lib/supabase.ts`).
   5. Badges + CAPI via the existing `evaluateMockUnlocks` path.
 - Result screen: each row shows the transcript next to the correct answer.
+- **Rev 3.4 additions (Slice 3 design):**
+  - **Mixed items.** A question with no oral config for the learner's location (`getOralAnswerConfig` → null, e.g. Q62 for DC/territories) is answered by multiple choice inside the voice mock. The server accepts a `selected` option **only** for such questions, and checks it against the attempt's `slide_manifest`. Every other item must carry a transcript.
+  - **Typed input in the mock.** It is used in in-app browsers (D12), and mid-test once the mic becomes unusable (`not-allowed`, `unavailable`, `stalled`). The remaining items then use a text box + [Xác nhận], because reloading would lose the mock's progress (no resume). Typed items have no retry limit and no "App nghe được" echo.
+  - **Attempt `answer_mode`:** `'voice'` if any item was answered by mic, otherwise `'typed'`.
+  - **Location:** the server grades with `n400_user_profile.state_code ?? 'TX'` and `district_number`, the same fallback the client uses for `settings.stateCode`.
+  - **Transcript** is trimmed and capped at **500 characters** server-side.
+  - **Answer shape:** `type VoiceMockAnswer = { qid; transcript; retried; input: 'mic' | 'typed' } | { qid; selected: 'A' | 'B' | 'C' | 'D' }`. There is still no verdict field.
 
 **Invariant:** the client never sends a verdict. `was_correct` is computed only inside `finalizeVoiceMockAttempt`. Enforced by the `VoiceMockAnswer` type and a test; any future refactor that moves grading to the client violates this spec.
 
@@ -212,7 +219,11 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 
 - `n400_quiz_attempts.answer_mode TEXT NOT NULL DEFAULT 'choice' CHECK (answer_mode IN ('choice','voice','typed'))` (rev 3.3: `typed` for the in-app fallback, D12). Slice 2 ships this as `n400_32_voice_answers.sql`. Slice 3 adds `transcript` and the RPC in `n400_33_voice_mock.sql`.
 - `n400_question_attempts.transcript TEXT NULL` — text only; no audio stored anywhere.
-- `finalize_mock_attempt_voice_batch(p_attempt_id uuid, p_results jsonb)` — `p_results = [{qid, was_correct, transcript}]`; inserts question attempts, reuses `finalize_mock_attempt` for score / passed / streak, sets `answer_mode='voice'`, returns the same shape as `finalize_mock_attempt_batch`. **`REVOKE EXECUTE … FROM PUBLIC, anon, authenticated; GRANT EXECUTE … TO service_role;`** — it trusts caller-supplied `was_correct`.
+- `finalize_mock_attempt_voice_batch(p_attempt_id uuid, p_user_id uuid, p_answer_mode text, p_results jsonb)` (rev 3.4 signature) — `p_results = [{qid, was_correct, transcript}]`.
+  - Rejects if the attempt's owner ≠ `p_user_id` or the attempt isn't a mock. The service-role client has no `auth.uid()`, so the owner check is explicit.
+  - Rejects qids not in the manifest; inserts question attempts; sets `answer_mode` (`voice`|`typed`).
+  - Scores through the shared core, and returns the same shape as `finalize_mock_attempt_batch`.
+- **Rev 3.4:** `finalize_mock_attempt` checks `auth.uid()`, which is NULL for the service role. Its body therefore moves unchanged into an internal `n400_finalize_mock_core(p_attempt_id)` (no grants). `finalize_mock_attempt` becomes "owner check + core", with behavior identical for existing MC callers. Shipped as `n400_33_voice_mock.sql` together with the `transcript` column and the `voice_mock` flag seed. **`REVOKE EXECUTE … FROM PUBLIC, anon, authenticated; GRANT EXECUTE … TO service_role;`** — it trusts caller-supplied `was_correct`.
 - Seed flag rows in `n400_feature_flags`: `voice_practice` + `voice_android` (Slice 2) and `voice_mock` (Slice 3), all seeded `enabled = FALSE`. Launch `rollout_pct` is chosen from actual weekly traffic at launch: if weekly voice-eligible users are few, start at 100% (a small % yields too little data to decide anything) and rely on the kill switch; otherwise ramp 10 → 25 → 50 → 100.
 
 ## 8. Errors
@@ -281,7 +292,7 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
 
 **Slice 2 — Practice:** `Permissions-Policy` change (D13) + hook + `MicAnswerPanel` (mic + typed) + practice flow + first-use hint + `voice_practice`/`voice_android` flags + migration column `answer_mode`. Gate: manual device pass on iPhone Safari + desktop Chrome (GO environments) and the Facebook in-app typed fallback.
 
-**Slice 3 — Mock:** rest of migration + RPC + `finalizeVoiceMockAttempt` + mock flow + result rows + `voice_mock` flag. Gate: security tests + manual device pass.
+**Slice 3 — Mock:** migration `n400_33` (transcript, core refactor, voice RPC, `voice_mock` flag) + `finalizeVoiceMockAttempt` + mock flow (mic, typed, mixed MC items) + result rows. Gate: security checks (RPC denied to `authenticated`; another user's attempt rejected; MC mock unchanged) + manual device pass.
 
 **Slice 4 — Rollout:** analytics event, Privacy Policy, flag rollout per §7.
 
