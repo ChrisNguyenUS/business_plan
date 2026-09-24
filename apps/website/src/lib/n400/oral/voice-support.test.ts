@@ -19,7 +19,7 @@ const UA = {
     'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
 };
 
-const on = { apiPresent: true, practiceOn: true, androidOn: false };
+const on = { apiPresent: true, enabled: true, androidOn: false };
 
 describe('isInAppBrowser', () => {
   it.each([UA.fbIos, UA.fbAndroid, UA.zalo, UA.instagram])('in-app: %s', (ua) => {
@@ -47,8 +47,8 @@ describe('voiceInputFor', () => {
     expect(voiceInputFor({ ua: UA.androidChrome, ...on, androidOn: true })).toBe('mic');
   });
 
-  it('nothing without the practice flag or, outside in-app, without the API', () => {
-    expect(voiceInputFor({ ua: UA.fbIos, ...on, practiceOn: false })).toBe('none');
+  it('nothing without the flag or, outside in-app, without the API', () => {
+    expect(voiceInputFor({ ua: UA.fbIos, ...on, enabled: false })).toBe('none');
     expect(voiceInputFor({ ua: UA.macChrome, ...on, apiPresent: false })).toBe('none');
   });
 });

@@ -265,7 +265,7 @@ export default function PracticePage() {
   const voiceInput = voiceInputFor({
     ua,
     apiPresent: mic.supported,
-    practiceOn: voiceFlags.practiceOn,
+    enabled: voiceFlags.practiceOn,
     androidOn: voiceFlags.androidOn,
   });
   const oralConfig = useMemo(

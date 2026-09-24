@@ -18,10 +18,10 @@ export function isAndroid(ua: string): boolean {
 export function voiceInputFor(o: {
   ua: string;
   apiPresent: boolean;
-  practiceOn: boolean;
+  enabled: boolean;
   androidOn: boolean;
 }): VoiceInput {
-  if (!o.practiceOn) return 'none';
+  if (!o.enabled) return 'none';
   if (isInAppBrowser(o.ua)) return 'typed';
   if (!o.apiPresent) return 'none';
   if (isAndroid(o.ua) && !o.androidOn) return 'none';
