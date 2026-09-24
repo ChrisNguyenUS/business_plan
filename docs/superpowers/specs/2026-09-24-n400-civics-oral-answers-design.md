@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-24 (rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-24 (rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -31,6 +31,9 @@ Let learners answer Civics questions **by speaking**, the way the real USCIS int
 | D9 | The recognizer ending (`onend`) **never auto-grades**; the learner always sees the transcript first. A confirmed transcript is locked. |
 | D10 | **Grading rules are spec-governed.** Any change to grading rules, generated config or aliases must update this spec and land as a visible diff. Implementers do not "improve" grading on their own. |
 | D11 | Delivery is gated: **Spike → Grading → Practice → Mock → Production rollout.** Each gate needs owner sign-off before the next slice starts. |
+| D12 | (rev 3.3, Gate 0) **In-app browsers** (Facebook, Messenger, Instagram, Zalo, …) never get the mic: the Facebook iOS WebView allows only the first recognition per session and Refresh doesn't recover it. There, voice mode shows *"Mở bằng Safari hoặc Chrome để dùng micro"* plus a **text box** (the learner types, or dictates with the keyboard's 🎤), graded by the same engine. Recorded as `answer_mode='typed'`. |
+| D13 | (rev 3.3, Gate 0) The site's `Permissions-Policy` must allow `microphone=(self)` (it was `microphone=()`, which made every Chromium browser reject recognition instantly). Owner confirms the header change before it lands. Camera/geolocation stay blocked. |
+| D14 | (rev 3.3, Gate 0) Android Chrome was not device-tested (owner accepted the risk). The mic on Android additionally requires flag `voice_android`, so Android can be switched off on its own. |
 
 ## 3. Grading
 
@@ -153,6 +156,10 @@ function useSpeechRecognition(): {
 - `onend` **never grades.** With text → `transcript`. Without text → `error: 'no-speech'`. This is the same path whether the learner paused or iOS cut the session short — the app cannot tell those apart, so the learner decides from the visible transcript.
 - `processing` covers the gap between the learner going quiet and the final result, so the button never says "Listening…" while nothing is being heard.
 - Technical error details go to Sentry; the UI only shows friendly copy (§8).
+- **Final result may arrive after `speechend`** (seen on Chrome): `processing` lasts until `onend`; the hook never treats `speechend` as "done".
+- **Runtime-unavailable heuristic:** `service-not-allowed` always → `unavailable`. `not-allowed` arriving **< 500 ms after `start()` with no `audiostart`** → `unavailable` (no human answered a prompt that fast); otherwise `not-allowed`.
+- **Stall detector (rev 3.3, Gate 0):** iOS WebKit can go "mic-dead": `audiostart` fires but `speechstart` never does, even while the learner talks. If no `speechstart` and no result arrive within **7 s** of `audiostart`, the hook aborts and reports `no-speech`. A **second consecutive** stall reports `stalled`. That state gets its own copy and a [Tải lại trang] button, because on Safari a reload restores the mic.
+- While listening, the mic button is a **Stop** button; a second tap never starts a second instance.
 
 ### 4.2 Panel — `components/n400/oral/MicAnswerPanel.tsx`
 
@@ -164,19 +171,22 @@ After "Đúng vậy" the transcript is **locked** — no editing, no re-speaking
 
 Renders inside the existing Civics card chrome (memory rule: Speaking/Writing/Civics screens reuse Civics UI).
 
+- `typed` (rev 3.3, D12): a text input + [Chấm], same grading and feedback as `practice`; shown instead of the mic in in-app browsers.
+
 ### 4.3 First-use hint
 
 Shown once (localStorage, try/catch), the first time the learner enters voice mode: ***"Nói đáp án bạn đã học. Không cần nói thành câu đầy đủ, chỉ cần có các từ chính."*** It must not suggest free paraphrase is accepted, because it isn't (D2).
 
 ## 5. Practice flow — `app/n400ready/(app)/practice/page.tsx`
 
-- Toggle **[Trắc nghiệm | 🎤 Tự nói]** in the session header; choice persisted in `localStorage` (try/catch). Hidden when `!supported` or flag `voice_practice` is off.
+- Toggle **[Trắc nghiệm | 🎤 Tự nói]** in the session header; choice persisted in `localStorage` (try/catch). Hidden when flag `voice_practice` is off, or when neither the mic nor the typed fallback applies (unsupported non-in-app browser). In in-app browsers the toggle stays and "Tự nói" uses the typed variant (D12).
 - Voice body: question audio plays (existing audio), no options, `MicAnswerPanel variant="practice"`. Unlimited Nói lại before grading.
 - Recording (`recordAnswer` in `user-state.tsx` gains an optional 4th param `answerMode: 'choice' | 'voice' = 'choice'`, written to `n400_quiz_attempts.answer_mode`):
   - `correct` / `wrong` → `recordAnswer(qid, wasCorrect, 'practice', 'voice')`.
   - `near` + "Đúng vậy" → shown correct, **no** `recordAnswer`.
   - `near` + "Không" → `recordAnswer(qid, false, 'practice', 'voice')`.
-- Feedback after grading reuses the MC feedback (correct answer + 🔊).
+- Feedback after grading reuses the MC feedback (correct answer + 🔊), plus one line *"Bạn nói: <transcript>"* (typed: *"Bạn trả lời: …"*).
+- No autoplay of question audio in voice mode: on iOS, playing audio and then opening the mic in quick succession is a known source of audio-session trouble. The existing 🔊 button stays.
 
 ## 6. Mock flow — `app/n400ready/(app)/mock-test/civics/`
 
@@ -200,10 +210,10 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 
 ## 7. Data — migration `supabase/migrations/n400_32_voice_answers.sql`
 
-- `n400_quiz_attempts.answer_mode TEXT NOT NULL DEFAULT 'choice' CHECK (answer_mode IN ('choice','voice'))`
+- `n400_quiz_attempts.answer_mode TEXT NOT NULL DEFAULT 'choice' CHECK (answer_mode IN ('choice','voice','typed'))` (rev 3.3: `typed` for the in-app fallback, D12). Slice 2 ships this as `n400_32_voice_answers.sql`. Slice 3 adds `transcript` and the RPC in `n400_33_voice_mock.sql`.
 - `n400_question_attempts.transcript TEXT NULL` — text only; no audio stored anywhere.
 - `finalize_mock_attempt_voice_batch(p_attempt_id uuid, p_results jsonb)` — `p_results = [{qid, was_correct, transcript}]`; inserts question attempts, reuses `finalize_mock_attempt` for score / passed / streak, sets `answer_mode='voice'`, returns the same shape as `finalize_mock_attempt_batch`. **`REVOKE EXECUTE … FROM PUBLIC, anon, authenticated; GRANT EXECUTE … TO service_role;`** — it trusts caller-supplied `was_correct`.
-- Seed flag rows in `n400_feature_flags`: `voice_practice` and `voice_mock`. Launch `rollout_pct` is chosen from actual weekly traffic at launch: if weekly voice-eligible users are few, start at 100% (a small % yields too little data to decide anything) and rely on the kill switch; otherwise ramp 10 → 25 → 50 → 100.
+- Seed flag rows in `n400_feature_flags`: `voice_practice` + `voice_android` (Slice 2) and `voice_mock` (Slice 3), all seeded `enabled = FALSE`. Launch `rollout_pct` is chosen from actual weekly traffic at launch: if weekly voice-eligible users are few, start at 100% (a small % yields too little data to decide anything) and rely on the kill switch; otherwise ramp 10 → 25 → 50 → 100.
 
 ## 8. Errors
 
@@ -212,6 +222,7 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 | `no-speech` (incl. `onend` with no text) | "Mình chưa nghe thấy bạn nói. Hãy thử lại." | No |
 | `not-allowed` | Practice → switch to MC + how-to-enable hint. Mock before start → MC; mid-test → hint, progress kept | No |
 | `network` / `audio-capture` / `unavailable` | "Không thể nhận diện giọng nói lúc này. Hãy thử lại." (raw error → Sentry) | No |
+| `stalled` (2nd consecutive mic-dead, rev 3.3) | "Micro đang không phản hồi. Tải lại trang để dùng tiếp." + [Tải lại trang] | No |
 | 15 s reached | Stops; transcript shown for the learner to act on | — |
 | Tab hidden / screen lock / app switch (iOS) | Recognition aborted; stay on the item; Nói lại available | No |
 | Voice finalize fails | Same as MC: Sentry + retry; CAPI dedupes on `attemptId` | — |
@@ -242,7 +253,7 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
   - number/filler/qualifier normalization; each alias.
 - Generator determinism: re-running `scripts/n400-build-oral-config.mjs` reproduces `oral-answer-config.generated.ts` exactly (test fails on drift).
 - `finalizeVoiceMockAttempt`: rejects another user's attempt; direct `rpc('finalize_mock_attempt_voice_batch')` as `authenticated` is denied; type-level check that `VoiceMockAnswer` has no verdict field.
-- `use-speech-recognition`: mocked `webkitSpeechRecognition` — state transitions, `onend` with and without text, each error code, abort on `visibilitychange`.
+- `use-speech-recognition`: the logic lives in a framework-free controller (`speech-controller.ts`) tested in node with a fake recognizer and fake timers (the repo's vitest has no DOM). Cover state transitions, `onend` with and without text, a final result after `speechend`, each error code, the unavailable heuristic, the stall detector (single and consecutive), the 15 s stop, abort, and no double start.
 - Manual, required before merge: iPhone Safari (incl. permission denied, tab background, screen lock, app switch), Android Chrome, desktop Chrome, **Facebook in-app browser** (iOS + Android) — confirm correct show/hide; owner records ~10 real answers to sanity-check accuracy.
 - Gate: `npm run type-check && npm run test && npm run build`.
 
@@ -268,7 +279,7 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
 
 **Slice 1 — Grading:** generator + generated config (reviewed diff) + aliases + `grade-oral.ts` + full §11 grading suite. Gate: owner reviews the generated config diff and the suite passes.
 
-**Slice 2 — Practice:** hook + `MicAnswerPanel` + practice flow + first-use hint + `voice_practice` flag + migration column `answer_mode`. Gate: manual device pass on the GO environments.
+**Slice 2 — Practice:** `Permissions-Policy` change (D13) + hook + `MicAnswerPanel` (mic + typed) + practice flow + first-use hint + `voice_practice`/`voice_android` flags + migration column `answer_mode`. Gate: manual device pass on iPhone Safari + desktop Chrome (GO environments) and the Facebook in-app typed fallback.
 
 **Slice 3 — Mock:** rest of migration + RPC + `finalizeVoiceMockAttempt` + mock flow + result rows + `voice_mock` flag. Gate: security tests + manual device pass.
 
