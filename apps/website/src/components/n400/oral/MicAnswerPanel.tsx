@@ -46,11 +46,30 @@ export interface MicAnswerPanelProps {
   nearAnswer: string | null;
   onSubmit: (text: string) => void;
   onNearAnswer: (yes: boolean) => void;
+  /** 'mock': echo "App nghe được", confirm instead of grade, retry limited by the caller (spec §4.2, §6). */
+  variant?: 'practice' | 'mock';
+  canRetry?: boolean;
+  onRetry?: () => void;
+  /** Overrides the typed-mode notice (e.g. "mic lost mid-test"). */
+  notice?: string;
 }
 
-export function MicAnswerPanel({ input, mic, locked, nearAnswer, onSubmit, onNearAnswer }: MicAnswerPanelProps) {
+export function MicAnswerPanel({
+  input,
+  mic,
+  locked,
+  nearAnswer,
+  onSubmit,
+  onNearAnswer,
+  variant = 'practice',
+  canRetry = true,
+  onRetry,
+  notice,
+}: MicAnswerPanelProps) {
   const { dict } = useN400Lang();
   const t = dict.oral;
+  const mock = variant === 'mock';
+  const submitLabel = mock ? (input === 'typed' ? t.confirm : t.yes) : t.grade;
   const [showHint, setShowHint] = useState(() => !hintSeen());
   const [typed, setTyped] = useState('');
 
@@ -96,7 +115,7 @@ export function MicAnswerPanel({ input, mic, locked, nearAnswer, onSubmit, onNea
       <div className="flex flex-col gap-3">
         {hint}
         <p className="text-gray-600" style={{ fontSize: 'clamp(0.8125rem, 1.4vw, 0.9375rem)' }}>
-          {t.inAppNotice}
+          {notice ?? t.inAppNotice}
         </p>
         <form
           className="flex gap-2"
@@ -118,7 +137,7 @@ export function MicAnswerPanel({ input, mic, locked, nearAnswer, onSubmit, onNea
           />
           {!locked ? (
             <button type="submit" disabled={!value} className={`${primaryBtn} px-5`}>
-              {t.grade}
+              {submitLabel}
             </button>
           ) : null}
         </form>
@@ -169,11 +188,16 @@ export function MicAnswerPanel({ input, mic, locked, nearAnswer, onSubmit, onNea
       ) : null}
 
       {mic.transcript ? (
-        <div
-          className="w-full rounded-2xl border-2 border-gray-200 bg-white p-3 font-medium text-gray-800"
-          aria-live="polite"
-        >
-          {mic.transcript}
+        <div className="w-full">
+          {mock && mic.state === 'transcript' ? (
+            <p className="mb-1 text-sm font-semibold text-gray-600">{t.appHeard}</p>
+          ) : null}
+          <div
+            className="w-full rounded-2xl border-2 border-gray-200 bg-white p-3 font-medium text-gray-800"
+            aria-live="polite"
+          >
+            {mic.transcript}
+          </div>
         </div>
       ) : null}
 
@@ -189,20 +213,23 @@ export function MicAnswerPanel({ input, mic, locked, nearAnswer, onSubmit, onNea
       ) : null}
 
       {!locked && mic.state === 'transcript' ? (
-        <div className="grid w-full grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              mic.reset();
-              mic.start();
-            }}
-            className={secondaryBtn}
-          >
-            <RotateCcw size={16} />
-            {t.retry}
-          </button>
+        <div className={`grid w-full gap-3 ${canRetry ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {canRetry ? (
+            <button
+              type="button"
+              onClick={() => {
+                onRetry?.();
+                mic.reset();
+                mic.start();
+              }}
+              className={secondaryBtn}
+            >
+              <RotateCcw size={16} />
+              {t.retry}
+            </button>
+          ) : null}
           <button type="button" onClick={() => onSubmit(mic.transcript)} className={primaryBtn}>
-            {t.grade}
+            {submitLabel}
           </button>
         </div>
       ) : null}

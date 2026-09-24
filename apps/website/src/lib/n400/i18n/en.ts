@@ -1120,5 +1120,13 @@ export const en: N400Dict = {
     reload: 'Reload page',
     inAppNotice: 'Open in Safari or Chrome to use the microphone. Here you can type, or tap 🎤 on your keyboard to dictate.',
     typedPlaceholder: 'Type your answer',
+    mockModeLabel: 'How to answer',
+    mockModeVoice: 'Answer by voice',
+    appHeard: 'The app heard:',
+    confirm: 'Confirm',
+    mockUnsupported: 'Open in Safari or Chrome to take the test by voice.',
+    copyLink: 'Copy link',
+    linkCopied: 'Copied',
+    micLostTyped: 'The microphone isn’t available right now. Answer the remaining questions by typing (or tap 🎤 on your keyboard).',
   },
 };
