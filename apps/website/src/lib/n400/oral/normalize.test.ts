@@ -112,3 +112,9 @@ describe('normalizeTokens — number words are composed, never summed', () => {
   });
 });
 
+describe('normalizeTokens — accents', () => {
+  it('strips diacritics instead of splitting the word', () => {
+    expect(normalizeTokens('Ben Ray Luján')).toEqual(['ben', 'ray', 'lujan']);
+    expect(normalizeTokens('Jenniffer González-Colón')).toEqual(['jenniffer', 'gonzalez', 'colon']);
+  });
+});

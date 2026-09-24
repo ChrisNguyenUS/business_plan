@@ -55,3 +55,12 @@ describe('ORAL_ALIASES', () => {
     }
   });
 });
+
+describe('getOralAnswerConfig — accented names', () => {
+  it('accepts the unaccented spelling a recognizer may return', () => {
+    const nm = { stateCode: 'NM' as const, districtNumber: null };
+    const pr = { stateCode: 'PR' as const, districtNumber: null };
+    expect(gradeOralAnswer('Lujan', getOralAnswerConfig(23, nm)!).verdict).toBe('correct');
+    expect(gradeOralAnswer('Gonzalez Colon', getOralAnswerConfig(61, pr)!).verdict).toBe('correct');
+  });
+});

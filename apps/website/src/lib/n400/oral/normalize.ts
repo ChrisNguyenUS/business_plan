@@ -66,6 +66,8 @@ function readNumber(raw: readonly string[], i: number): [number, number] | null 
 
 export function normalizeTokens(text: string): string[] {
   let s = text
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
     .replace(/[’‘]/g, "'")
     .replace(/\bcan't\b/g, 'can not')
