@@ -4,6 +4,7 @@
 // browser's Web Speech API). Spec §4.1.
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { oralDebugEnabled, oralDebugLog } from './oral-debug';
 import { SpeechController, type MicSnapshot, type RecognitionLike } from './speech-controller';
 
 const UNAVAILABLE_KEY = 'n400.oral.unavailable';
@@ -48,6 +49,8 @@ async function reportToSentry(code: string, message?: string): Promise<void> {
 
 function createController(): SpeechController {
   const Ctor = recognitionCtor();
+  const debug = oralDebugEnabled();
+  if (debug) oralDebugLog(`api=${Ctor ? 'present' : 'missing'} unavailable=${readUnavailable()}`);
   return new SpeechController({
     create: Ctor ? () => new Ctor() : null,
     now: () => Date.now(),
@@ -62,6 +65,7 @@ function createController(): SpeechController {
       }
     },
     unavailable: readUnavailable(),
+    log: debug ? oralDebugLog : undefined,
   });
 }
 
@@ -80,6 +84,7 @@ export function useSpeechRecognition(): SpeechApi {
   useEffect(() => {
     if (!controller) return;
     const onVisibility = () => {
+      if (oralDebugEnabled()) oralDebugLog(`visibility=${document.visibilityState}`);
       if (document.visibilityState === 'hidden') controller.abort();
     };
     document.addEventListener('visibilitychange', onVisibility);
