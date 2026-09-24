@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveAnswerMode, isInAppBrowser, voiceInputFor } from './voice-support';
+import { answerSurface, effectiveAnswerMode, isInAppBrowser, voiceInputFor } from './voice-support';
 
 // Real user agents from the Gate 0 spike, plus common in-app browsers.
 const UA = {
@@ -63,5 +63,17 @@ describe('effectiveAnswerMode', () => {
 
   it('falls back to choice when the question has no oral config', () => {
     expect(effectiveAnswerMode('voice', 'mic', false)).toBe('choice');
+  });
+});
+
+describe('answerSurface (final review: latch per question)', () => {
+  it('once answered, the question keeps the surface it was answered on', () => {
+    expect(answerSurface('choice', 'voice')).toBe('choice');
+    expect(answerSurface('voice', 'choice')).toBe('voice');
+  });
+
+  it('before answering, follows the current effective mode', () => {
+    expect(answerSurface(null, 'voice')).toBe('voice');
+    expect(answerSurface(null, 'choice')).toBe('choice');
   });
 });

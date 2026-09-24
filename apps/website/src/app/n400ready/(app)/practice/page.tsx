@@ -50,8 +50,8 @@ import { gradeOralAnswer } from '@/lib/n400/oral/grade-oral';
 import type { OralVerdict } from '@/lib/n400/oral/types';
 import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
 import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
-import { effectiveAnswerMode, voiceInputFor } from '@/lib/n400/oral/voice-support';
-import { voiceOutcome } from '@/lib/n400/oral/voice-outcome';
+import { answerSurface, effectiveAnswerMode, voiceInputFor } from '@/lib/n400/oral/voice-support';
+import { nearPromptAnswer, voiceOutcome } from '@/lib/n400/oral/voice-outcome';
 
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
@@ -172,6 +172,8 @@ export default function PracticePage() {
   const [voiceText, setVoiceText] = useState('');
   const [voiceVerdict, setVoiceVerdict] = useState<OralVerdict | null>(null);
   const [nearAnswer, setNearAnswer] = useState<'yes' | 'no' | null>(null);
+  const [nearPrompt, setNearPrompt] = useState<string | null>(null);
+  const [answeredVia, setAnsweredVia] = useState<'choice' | 'voice' | null>(null);
   const mic = useSpeechRecognition();
   const voiceFlags = useVoiceFlags();
   const { reset: resetMic } = mic;
@@ -191,6 +193,8 @@ export default function PracticePage() {
     setVoiceText('');
     setVoiceVerdict(null);
     setNearAnswer(null);
+    setNearPrompt(null);
+    setAnsweredVia(null);
   }
 
   // A new question never inherits the previous one's mic session.
@@ -268,7 +272,8 @@ export default function PracticePage() {
     () => getOralAnswerConfig(question.id, { stateCode, districtNumber }),
     [question.id, stateCode, districtNumber]
   );
-  const voiceHere = effectiveAnswerMode(answerMode, voiceInput, oralConfig !== null) === 'voice';
+  const voiceHere =
+    answerSurface(answeredVia, effectiveAnswerMode(answerMode, voiceInput, oralConfig !== null)) === 'voice';
   const outcome = voiceVerdict === null ? null : voiceOutcome(voiceVerdict, nearAnswer);
   const revealedCorrect: boolean | null = voiceHere
     ? (outcome?.shownCorrect ?? null)
@@ -289,7 +294,8 @@ export default function PracticePage() {
   };
 
   const onPick = (id: QuizOption['id']) => {
-    if (phase === 'revealed') return;
+    if (phase === 'revealed' || voiceVerdict !== null) return;
+    setAnsweredVia('choice');
     setSelected(id);
     setPhase('revealed');
     const opt = options.find((o) => o.id === id);
@@ -310,9 +316,15 @@ export default function PracticePage() {
   };
 
   const onVoiceSubmit = (text: string) => {
-    if (!oralConfig || voiceVerdict !== null) return;
-    const { verdict } = gradeOralAnswer(text, oralConfig);
+    if (phase === 'revealed' || !oralConfig || voiceVerdict !== null) return;
+    const graded = gradeOralAnswer(text, oralConfig).verdict;
+    const prompt =
+      graded === 'near' ? nearPromptAnswer(text, oralConfig, allAnswers.map((a) => a.en)) : null;
+    // A near with no answer to offer cannot be confirmed, so it counts as wrong.
+    const verdict: OralVerdict = graded === 'near' && prompt === null ? 'wrong' : graded;
+    setAnsweredVia('voice');
     setVoiceText(text);
+    setNearPrompt(prompt);
     setVoiceVerdict(verdict);
     const o = voiceOutcome(verdict, null);
     if (o) settleVoice(o.shownCorrect, o.record);
@@ -371,6 +383,11 @@ export default function PracticePage() {
     setVoiceText('');
     setVoiceVerdict(null);
     setNearAnswer(null);
+    setNearPrompt(null);
+    setAnsweredVia(null);
+    // Same index across sessions (e.g. a one-question review run twice) must
+    // not keep the previous session's transcript.
+    resetMic();
   };
 
   const reseed = () => {
@@ -683,10 +700,11 @@ export default function PracticePage() {
                 and each choice is easy to scan/tap. */}
             {voiceHere ? (
               <MicAnswerPanel
+                key={question.id}
                 input={voiceInput === 'typed' ? 'typed' : 'mic'}
                 mic={mic}
                 locked={voiceVerdict !== null}
-                nearAnswer={voiceVerdict === 'near' && nearAnswer === null ? allAnswers[0].en : null}
+                nearAnswer={voiceVerdict === 'near' && nearAnswer === null ? nearPrompt : null}
                 onSubmit={onVoiceSubmit}
                 onNearAnswer={onNearAnswer}
               />

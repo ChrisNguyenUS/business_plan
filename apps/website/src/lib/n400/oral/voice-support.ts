@@ -37,3 +37,12 @@ export function effectiveAnswerMode(
 ): 'choice' | 'voice' {
   return chosen === 'voice' && input !== 'none' && hasConfig ? 'voice' : 'choice';
 }
+
+/** Once a question is answered it keeps the surface it was answered on, even if
+ *  flags or support change afterwards (no second grade for the same question). */
+export function answerSurface(
+  answeredVia: 'choice' | 'voice' | null,
+  effective: 'choice' | 'voice',
+): 'choice' | 'voice' {
+  return answeredVia ?? effective;
+}
