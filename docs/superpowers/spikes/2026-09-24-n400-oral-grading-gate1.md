@@ -47,7 +47,7 @@ Final transcripts captured on iPhone Safari / desktop Chrome, run through the fi
 | 7 | "27" (both Safari and Chrome return digits) | correct |
 | 15 | "Checks and balances" / "check **Zen** balances" | correct / correct |
 | 16 | "Congress president**s** and the courts" | correct |
-| 65 | "freedom of speech" / "Freedom speech" | near / near (Q65 asks for **three** rights; one given) |
+| 65 | "freedom of speech" / "Freedom speech" | wrong / wrong (rev 3.2: Q65 asks for **three** rights; 1 of 3 is under half) |
 | 65 | "**videos** of speech" | wrong (recognizer error; Slice 2 echo + retry covers it) |
 
 Recognizer noise ("Zen", plural "presidents", dropped "of") does not flip a correct answer. Cosmetic: in Q65, `matched` lists "freedom" twice because the word is reused across parts. This matters only if Slice 2 displays `matched`.
@@ -55,6 +55,18 @@ Recognizer noise ("Zen", plural "presidents", dropped "of") does not flip a corr
 ## Decision (owner)
 
 - Generated config approved? <yes/no + questions to change>
-- Overlap decisions: <per row>
-- Review findings R1–R3: <per row>
+- Overlap decisions (owner, 2026-09-24): fix the cheap ones, accept the rest.
+  - 16→18, 16→42–46: **fixed**. Q18 excludes `president`/`courts`; Q42–46 exclude `vice`/`congress`/`courts`.
+  - 8→35, 84→35, 128→35: **fixed**. Q35 is now `more people`.
+  - 88→2/82: **fixed**. Q2/Q82 exclude `father`.
+  - 84→2/82 ("helped people understand the Constitution"): **accepted**. Not covered by the `father` fix.
+  - 25→27, 79→36, 107→27, 97→5 and other supersets: **accepted**.
+  - New after R3: 27→25 ("Two"), 107→25 ("World War II" → 2). **Accepted** as the same kind as 25→27.
+  - Allowlist: 68 → 59 pairs.
+- Review findings (owner, 2026-09-24):
+  - R1: Q102 requires `after`.
+  - R2: enumeration `near` needs at least half the items named.
+  - R3: unit word optional after a number.
+- Echo exceptions Q6/Q76: kept, as the spec already accepts them.
+- Spec: rev 3.2 (commit 0f78eb94). Code: 29f89309, d7009503.
 - Gate 1 pass? <yes/no>
