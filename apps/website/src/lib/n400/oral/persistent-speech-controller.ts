@@ -52,6 +52,8 @@ export class PersistentSpeechController implements MicController {
   private seenAt: number[] = [];
   /** Results below this index belong to earlier windows or pre-tap speech. */
   private minFrom = 0;
+  /** Last recognizer error of the current session (auto-restart after lost capture). */
+  private lastErrorCode = '';
   private windowTimers: unknown[] = [];
   private stallTimer: unknown = null;
   private settleTimer: unknown = null;
@@ -89,12 +91,21 @@ export class PersistentSpeechController implements MicController {
     if (this.openSession(create)) this.openWindow(true);
   }
 
-  /** 🔊 is about to play. Logged only: playback sometimes leaves the session
-   *  hearing, sometimes stops its capture until WebKit ends it ("audio-capture:
-   *  Source is stopped"), and a session the app aborts is followed by a deaf one,
-   *  so the session is always kept (device logs 2026-09-25, spec rev 3.8). */
+  /** 🔊 is about to play. Device probe 2026-09-25 (strategy=stop): stopping the
+   *  session BEFORE <audio> plays keeps playback at full volume, and the session
+   *  the next mic tap opens hears at once. Keeping it through playback kills its
+   *  capture until WebKit ends it ~20 s later. Never opens the mic. Spec rev 3.9. */
   noteAudioPlayed(): void {
-    this.deps.log?.(this.rec ? 'audio played (session kept)' : 'audio played (no session)');
+    if (!this.rec) {
+      this.deps.log?.('audio played (no session)');
+      return;
+    }
+    this.deps.log?.('audio played: stop session first');
+    if (this.windowOpen) {
+      this.discardWindow();
+      this.finish('idle', null);
+    }
+    this.endSession('stop');
   }
 
   /** Learner tapped Stop: close the window with what it heard. The session stays. */
@@ -143,6 +154,7 @@ export class PersistentSpeechController implements MicController {
     this.heardAudio = false;
     this.results = NO_RESULTS;
     this.sessionHeard = false;
+    this.lastErrorCode = '';
     this.seenAt = [];
     this.minFrom = 0;
     this.deps.log?.('session start');
@@ -271,6 +283,7 @@ export class PersistentSpeechController implements MicController {
 
   private onError(code: string, message?: string): void {
     this.deps.log?.(`error ${code}${message ? ` ${message}` : ''}`);
+    this.lastErrorCode = code;
     const c = classifyMicError(code, this.heardAudio, this.deps.now() - this.sessionStartedAt);
     if (!c) return;
     if (c.disable) {
@@ -284,10 +297,25 @@ export class PersistentSpeechController implements MicController {
   private onSessionEnd(): void {
     const rec = this.rec;
     if (!rec) return;
+    const lostCapture = this.lastErrorCode === 'audio-capture' && this.sessionHeard;
     this.detach(rec);
     this.rec = null;
     this.results = NO_RESULTS;
     this.clearIdle();
+    // Other audio killed a WORKING session's capture ("Source is stopped"): a new
+    // session hears at once and needs no tap (probe strategy=keep). Only once per
+    // working session, so a broken mic can't loop.
+    if (lostCapture && this.deps.create) {
+      this.deps.log?.('auto restart after lost capture');
+      const answering = this.windowOpen;
+      if (this.openSession(this.deps.create)) {
+        if (answering) this.rebaseWindow();
+        else this.armIdle();
+        return;
+      }
+      this.discardWindow();
+      return;
+    }
     if (this.windowOpen) this.closeWindow();
     else if (this.disabled && this.snap.supported) this.set({ supported: false });
   }
@@ -334,6 +362,11 @@ export class PersistentSpeechController implements MicController {
   }
 
   private killSession(): void {
+    this.endSession('abort');
+  }
+
+  /** End the session: 'stop' (graceful, before 🔊 — proven on device) or 'abort'. */
+  private endSession(how: 'stop' | 'abort'): void {
     this.clearIdle();
     const rec = this.rec;
     if (!rec) return;
@@ -341,10 +374,26 @@ export class PersistentSpeechController implements MicController {
     this.rec = null;
     this.results = NO_RESULTS;
     try {
-      rec.abort();
+      if (how === 'stop') rec.stop();
+      else rec.abort();
     } catch {
       // Already gone.
     }
+  }
+
+  /** The open answer window continues on a freshly started session. */
+  private rebaseWindow(): void {
+    for (const id of this.windowTimers) this.deps.clearTimer(id);
+    this.windowTimers = [];
+    this.stallTimer = null;
+    this.settleTimer = null;
+    this.windowFrom = 0;
+    this.minFrom = 0;
+    this.windowText = '';
+    this.pendingError = null;
+    this.awaitingAudio = true;
+    this.windowTimer(() => this.closeWindow(), HARD_STOP_MS);
+    this.set({ state: 'listening', transcript: '' });
   }
 
   /** Detach handlers first so a late event can never re-enter. */

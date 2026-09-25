@@ -360,33 +360,32 @@ describe('PersistentSpeechController — final review fixes', () => {
   });
 });
 
-describe('PersistentSpeechController — after 🔊 plays (device logs 2026-09-25)', () => {
-  // Playback sometimes leaves the session hearing, sometimes stops its capture
-  // until WebKit ends it with "audio-capture: Source is stopped". A session the
-  // APP aborts is followed by a deaf one, so the app never restarts it itself.
-  it('keeps the session after audio (no restart, no new recognizer)', () => {
+describe('PersistentSpeechController — 🔊 and lost capture (device probe 2026-09-25, rev 3.9)', () => {
+  // probe strategy=stop: stopping the session BEFORE <audio> plays keeps playback
+  // loud and the session the next tap opens hears at once.
+  it('before 🔊 plays, the session is stopped gracefully; the next tap starts a new one', () => {
     const h = harness();
     open(h);
     h.rec().emit(['27', true]);
     h.advance(SETTLE_MS);
     h.c.noteAudioPlayed();
-    h.c.start();
-    expect(h.recs).toHaveLength(1);
-    expect(h.recs[0].aborted).toBe(0);
-  });
-
-  it('when WebKit ends the session with Source is stopped, the next tap starts a new one', () => {
-    const h = harness();
-    open(h);
-    h.rec().emit(['27', true]);
-    h.advance(SETTLE_MS);
-    h.c.noteAudioPlayed();
-    h.c.start();
-    h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
-    h.rec().onend?.();
-    expect(h.s().error).toBe('audio-capture');
+    expect(h.recs[0]).toMatchObject({ stopped: 1, aborted: 0 });
+    expect(h.recs[0].onresult).toBeNull();
+    expect(h.s()).toMatchObject({ state: 'transcript', transcript: '27' });
     h.c.start();
     expect(h.recs).toHaveLength(2);
+    expect(h.recs[1].started).toBe(1);
+  });
+
+  it('a window open when 🔊 is tapped is dropped', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.start();
+    h.c.noteAudioPlayed();
+    expect(h.s().state).toBe('idle');
+    expect(h.recs[0].stopped).toBe(1);
   });
 
   it('never opens the mic by itself (no prompt, full volume)', () => {
@@ -394,5 +393,46 @@ describe('PersistentSpeechController — after 🔊 plays (device logs 2026-09-2
     h.c.noteAudioPlayed();
     expect(h.recs).toHaveLength(0);
     expect(h.s().state).toBe('idle');
+  });
+
+  // probe strategy=keep: other audio can still kill a running session's capture;
+  // WebKit ends it with "Source is stopped" and a new session — started without a
+  // tap — hears at once.
+  it('WebKit ending a session that heard (audio-capture) restarts it at once, without a tap', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
+    h.rec().onend?.();
+    expect(h.recs).toHaveLength(2);
+    expect(h.recs[1].started).toBe(1);
+    expect(h.s()).toMatchObject({ state: 'transcript', transcript: '27' });
+  });
+
+  it('an answer in progress continues on the restarted session', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.start();
+    h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
+    h.rec().onend?.();
+    expect(h.recs).toHaveLength(2);
+    expect(h.s().state).toBe('listening');
+    h.rec().onstart?.();
+    h.rec().onaudiostart?.();
+    h.rec().emit(['Checks and balances', true]);
+    h.advance(SETTLE_MS);
+    expect(h.s()).toMatchObject({ state: 'transcript', transcript: 'Checks and balances' });
+  });
+
+  it('a session that never heard is not auto-restarted (no loop)', () => {
+    const h = harness();
+    open(h);
+    h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
+    h.rec().onend?.();
+    expect(h.recs).toHaveLength(1);
+    expect(h.s()).toMatchObject({ state: 'error', error: 'audio-capture' });
   });
 });
