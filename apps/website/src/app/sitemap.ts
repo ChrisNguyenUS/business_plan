@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...urls("", 1.0, "weekly"),
     ...urls("/services", 0.9, "monthly"),
     ...urls("/services/immigration", 0.9, "monthly"),
+    ...urls("/services/immigration/eb3", 0.8, "monthly"),
     ...urls("/services/tax", 0.9, "monthly"),
     ...urls("/services/insurance", 0.9, "monthly"),
     ...urls("/services/ai", 0.9, "monthly"),
