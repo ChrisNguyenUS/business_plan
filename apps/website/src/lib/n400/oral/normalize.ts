@@ -68,6 +68,15 @@ const STALL_RE = new RegExp(
   'g',
 );
 
+// Speaking spec §3.4: a stall is kept when every one of its words (stopwords
+// aside) is a keyword of the item being graded (What-mean #61 is "Right now").
+// One shared word is not enough: "one more time" stays dropped for Civics Q35.
+function isAnswerStall(phrase: string, keep: ReadonlySet<string> | undefined): boolean {
+  if (!keep || keep.size === 0) return false;
+  const words = phrase.split(/\s+/).filter((w) => w.length > 1 && !STOPWORDS.has(w));
+  return words.length > 0 && words.every((w) => keep.has(stem(w)));
+}
+
 // Below 100: "twenty seven" → 27. A units word right before "hundred" is left
 // for the next number ("one hundred one hundred" is 100, 100 — not 101, 100).
 function readBelow100(raw: readonly string[], i: number): [number, number] | null {
@@ -103,7 +112,10 @@ function readNumber(raw: readonly string[], i: number): [number, number] | null 
 
 /** `dropStalls` is for transcripts only: answers never contain stalls, and the
  *  generated config must not change with the stall list. */
-export function normalizeTokens(text: string, opts: { dropStalls?: boolean } = {}): string[] {
+export function normalizeTokens(
+  text: string,
+  opts: { dropStalls?: boolean; keep?: ReadonlySet<string> } = {},
+): string[] {
   let s = text
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
@@ -118,7 +130,7 @@ export function normalizeTokens(text: string, opts: { dropStalls?: boolean } = {
     .replace(/\bworld war (?:ii|two|2)\b/g, 'world war 2')
     .replace(/\bworld war (?:i|one|1)\b/g, 'world war 1');
   s = s.replace(/[^a-z0-9\s]/g, ' ');
-  if (opts.dropStalls) s = s.replace(STALL_RE, ' ');
+  if (opts.dropStalls) s = s.replace(STALL_RE, (m) => (isAnswerStall(m, opts.keep) ? m : ' '));
 
   const raw = s
     .split(/\s+/)
@@ -194,7 +206,8 @@ export function keywordsOf(text: string): string[] {
   });
 }
 
-/** Transcript-side tokens: stalls dropped, qualifiers kept (extra words are ignored anyway), stemmed. */
-export function transcriptStems(text: string): string[] {
-  return contentTokens(normalizeTokens(text, { dropStalls: true }), { keepQualifiers: true }).map(stem);
+/** Transcript-side tokens: stalls dropped (unless they are the item's own keywords, `keep`),
+ *  qualifiers kept (extra words are ignored anyway), stemmed. */
+export function transcriptStems(text: string, opts: { keep?: ReadonlySet<string> } = {}): string[] {
+  return contentTokens(normalizeTokens(text, { dropStalls: true, keep: opts.keep }), { keepQualifiers: true }).map(stem);
 }

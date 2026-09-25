@@ -143,3 +143,15 @@ describe('gradeOralAnswer — negations never near-match (rev 3.16)', () => {
     expect(gradeOralAnswer('never', single('evers')).verdict).toBe('wrong');
   });
 });
+
+describe('gradeOralAnswer — a stall that is the answer is kept (speaking spec §3.4)', () => {
+  const current: OralAnswerConfig = { type: 'single', alternatives: [['right now'], ['live now']] };
+
+  it('"right now" is correct for What-mean #61 (Current)', () => {
+    expect(gradeOralAnswer('right now', current).verdict).toBe('correct');
+  });
+
+  it('"where you live now" is correct too', () => {
+    expect(gradeOralAnswer('where you live now', current).verdict).toBe('correct');
+  });
+});

@@ -35,7 +35,7 @@ Learners can answer every spoken part of the interview by voice, the way the rea
 | S2 | **Yes/No is graded by an intent classifier**: `yes` / `no` / `unclear`, checked against `YesNoQuestion.answer` (all 37 are `no` today). Stall phrases are checked first, so "I don't know" is `unclear`, never `no`. `unclear` is never graded: ask again. In mocks it never consumes the retry. |
 | S3 | **One shared grader**, `gradeSpokenItem`, dispatches civics / what-mean / yes-no by item. All three grade **on the client**, like practice and the Full interview already do. The standalone Civics voice mock keeps its server finalize, unchanged. |
 | S4 | **Voice lives in the shared components** (approach A, owner): `SectionMCQuiz` (What-mean practice; both Full interview parts) and `SectionYesNoQuiz` (Yes/No practice) reuse `AnswerModeToggle` + `MicAnswerPanel` exactly. Speaking must match the Civics UI. The Speaking mock page gets the Civics-mock voice branch. |
-| S5 | **Stall protection:** a stall phrase is never dropped when one of its words is a keyword of the item being graded. What-mean #61's definition is "Right now / Where you live now". This applies to Civics too; no Civics answer changes, and a test pins that. |
+| S5 | **Stall protection:** a stall phrase is never dropped when every one of its words is a keyword of the item being graded. What-mean #61's definition is "Right now / Where you live now". This applies to Civics too; no Civics answer changes, and a test pins that. |
 | S6 | **New flag `voice_speaking`**, seeded OFF, is the kill switch for everything in this spec. Civics voice flags are unchanged; Android still needs `voice_android`. |
 | S7 | **Migration `n400_34`** adds `answer_mode` to `n400_section_attempts` and `n400_section_mock_results` and seeds the flag. No Speaking transcripts are stored. The Full interview Civics part stores transcripts in `n400_question_attempts`, like the Civics voice mock. |
 | S8 | **Practice always opens in Trắc nghiệm** (Civics rev 3.13). The choice in the Speaking mock and the Full interview is remembered per surface (localStorage, try/catch), like the Civics mock. |
@@ -105,7 +105,7 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 
 ### 3.4 Stall protection (S5)
 
-- `transcriptStems(text, { keep })` does not drop a stall phrase when any of its word stems is in `keep`.
+- `transcriptStems(text, { keep })` keeps a stall phrase only when **every** one of its words (stopwords aside) is in `keep`. One shared word is not enough: "one more time" stays dropped for Civics Q35 (`more people`), keeping the rev 3.16 fix (S1 prototyping).
 - `gradeOralAnswer` passes its config's keyword stems.
 - Tests:
   - What-mean #61 "right now" grades `correct`;

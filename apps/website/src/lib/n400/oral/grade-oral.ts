@@ -36,8 +36,14 @@ function takeToken(tokens: readonly string[], used: Set<number>, test: (t: strin
   return true;
 }
 
+// The config's own keyword stems: a stall made only of these is part of the answer (speaking spec §3.4).
+function keywordStems(config: OralAnswerConfig): Set<string> {
+  const words = [...config.alternatives.flat().flatMap((part) => part.split(' ')), ...(config.mustInclude ?? [])];
+  return new Set(words.filter(Boolean).map(stem));
+}
+
 export function gradeOralAnswer(transcript: string, config: OralAnswerConfig): OralGrade {
-  const tokens = transcriptStems(transcript);
+  const tokens = transcriptStems(transcript, { keep: keywordStems(config) });
   const mustInclude = new Set((config.mustInclude ?? []).map(stem));
   const excluded = (config.mustExclude ?? []).some((w) => tokens.includes(stem(w)));
 

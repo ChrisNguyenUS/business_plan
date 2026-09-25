@@ -139,3 +139,19 @@ describe('transcriptStems — stall phrases', () => {
     expect(transcriptStems('July fourth')).toEqual(['july', '4']);
   });
 });
+
+// Speaking spec §3.4: a stall is kept when every one of its words is a keyword
+// of the item being graded (What-mean #61 "Current" is "Right now").
+describe('transcriptStems — stall protection (speaking spec §3.4)', () => {
+  it('keeps a stall whose every word is a keyword of the item', () => {
+    expect(transcriptStems('right now', { keep: new Set(['right', 'now', 'live']) })).toEqual(['right', 'now']);
+  });
+
+  it('still drops it without that keyword set', () => {
+    expect(transcriptStems('right now')).toEqual([]);
+  });
+
+  it('drops a stall that shares only one word with the item (Civics Q35 "more people")', () => {
+    expect(transcriptStems('one more time', { keep: new Set(['more', 'peopl']) })).toEqual([]);
+  });
+});
