@@ -291,3 +291,71 @@ describe('PersistentSpeechController (spec D15, rev 3.5)', () => {
     expect(h.s().state).toBe('idle');
   });
 });
+
+describe('PersistentSpeechController — final review fixes', () => {
+  it('question changes do not postpone the 5-minute idle shutdown', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    for (let i = 0; i < 5; i++) {
+      h.advance(60_000);
+      h.c.reset(); // next MC question
+    }
+    expect(h.recs[0].aborted).toBe(1);
+  });
+
+  it('a late final from the previous answer never lands in the retry window', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['The Declaration', false]);
+    h.c.stop(); // learner stops before iOS finalizes
+    h.c.reset();
+    h.c.start(); // Nói lại right away
+    h.rec().emit(['The Declaration of Independence', true]);
+    h.advance(SETTLE_MS);
+    expect(h.s().state).toBe('listening');
+    h.rec().emit(['The Declaration of Independence', true], ['The Constitution', true]);
+    h.advance(SETTLE_MS);
+    expect(h.s().transcript).toBe('The Constitution');
+  });
+
+  it('speech that started well before the tap is excluded', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.reset();
+    h.rec().emit(['27', true], ['what is the supreme law', false]);
+    h.advance(3_000);
+    h.c.start();
+    h.rec().emit(['27', true], ['what is the supreme law of the land', true], ['the Constitution', true]);
+    h.advance(SETTLE_MS);
+    expect(h.s().transcript).toBe('the Constitution');
+  });
+
+  it('a session that has heard speech is never killed by thinking pauses', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.start();
+    h.advance(STALL_MS);
+    h.c.start();
+    h.advance(STALL_MS);
+    expect(h.s().error).toBe('no-speech');
+    expect(h.recs[0].aborted).toBe(0);
+  });
+
+  it('a deaf session reaches stalled even when the learner taps Stop', () => {
+    const h = harness();
+    open(h);
+    h.advance(4_000);
+    h.c.stop();
+    h.c.start();
+    h.advance(4_000);
+    h.c.stop();
+    expect(h.s().error).toBe('stalled');
+    expect(h.recs[0].aborted).toBe(1);
+  });
+});

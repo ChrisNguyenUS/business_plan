@@ -20,14 +20,10 @@ import {
 
 export const SETTLE_MS = 1_200;
 export const IDLE_SHUTDOWN_MS = 5 * 60_000;
+/** An unfinished result counts as the learner's first words only if it began this recently before the tap. */
+export const EARLY_WORDS_MS = 1_000;
 
 const NO_RESULTS: RecognitionResultList = [];
-
-/** First result that isn't final yet (the learner may already be in it), else the end. */
-function firstOpenIndex(results: RecognitionResultList): number {
-  for (let i = 0; i < results.length; i++) if (results[i]?.isFinal !== true) return i;
-  return results.length;
-}
 
 function allFinalFrom(results: RecognitionResultList, from: number): boolean {
   if (results.length <= from) return false;
@@ -50,6 +46,12 @@ export class PersistentSpeechController implements MicController {
   private pendingError: MicError | null = null;
   private disabled: boolean;
   private stalledInRow = 0;
+  /** Any non-empty result in this session: a heard session is never treated as deaf. */
+  private sessionHeard = false;
+  /** When each result index first appeared (for EARLY_WORDS_MS). */
+  private seenAt: number[] = [];
+  /** Results below this index belong to earlier windows or pre-tap speech. */
+  private minFrom = 0;
   private windowTimers: unknown[] = [];
   private stallTimer: unknown = null;
   private settleTimer: unknown = null;
@@ -96,8 +98,9 @@ export class PersistentSpeechController implements MicController {
 
   /** New question / Nói lại / leaving a screen: drop the window, keep the session. */
   reset(): void {
+    const had = this.windowOpen;
     this.discardWindow();
-    if (this.rec) this.armIdle();
+    if (this.rec && had) this.armIdle();
     this.finish('idle', null);
   }
 
@@ -131,6 +134,9 @@ export class PersistentSpeechController implements MicController {
     this.sessionStartedAt = this.deps.now();
     this.heardAudio = false;
     this.results = NO_RESULTS;
+    this.sessionHeard = false;
+    this.seenAt = [];
+    this.minFrom = 0;
     this.deps.log?.('session start');
 
     rec.onstart = () => {
@@ -167,7 +173,7 @@ export class PersistentSpeechController implements MicController {
 
   private openWindow(newSession: boolean): void {
     this.windowOpen = true;
-    this.windowFrom = newSession ? 0 : firstOpenIndex(this.results);
+    this.windowFrom = newSession ? 0 : this.windowStart();
     this.windowText = '';
     this.pendingError = null;
     this.awaitingAudio = newSession && !this.heardAudio;
@@ -182,8 +188,25 @@ export class PersistentSpeechController implements MicController {
     });
   }
 
+  /** Exclude earlier windows and pre-tap speech; keep an utterance begun just before the tap. */
+  private windowStart(): number {
+    const n = this.results.length;
+    const last = n - 1;
+    if (
+      last >= this.minFrom &&
+      this.results[last]?.isFinal !== true &&
+      this.deps.now() - (this.seenAt[last] ?? 0) <= EARLY_WORDS_MS
+    ) {
+      return last;
+    }
+    return Math.max(n, this.minFrom);
+  }
+
   private onResult(results: RecognitionResultList): void {
+    const now = this.deps.now();
+    for (let i = this.seenAt.length; i < results.length; i++) this.seenAt[i] = now;
     this.results = results;
+    if (joinResultsFrom(results, 0)) this.sessionHeard = true;
     if (!this.windowOpen) {
       this.deps.log?.('result outside window (ignored)');
       return;
@@ -222,6 +245,12 @@ export class PersistentSpeechController implements MicController {
     this.deps.log?.(`stall in_row=${this.stalledInRow}`);
     this.deps.report?.('stall', `in_row=${this.stalledInRow} persistent`);
     this.discardWindow();
+    if (this.sessionHeard) {
+      this.stalledInRow = 0;
+      if (this.rec) this.armIdle();
+      this.finish('error', 'no-speech');
+      return;
+    }
     if (this.stalledInRow >= 2) {
       // Two silent windows in a row: treat the session as deaf; the page switches to typing.
       this.killSession();
@@ -259,6 +288,10 @@ export class PersistentSpeechController implements MicController {
     if (!this.windowOpen) return;
     const text = this.windowText.trim();
     const err = this.pendingError;
+    if (!text && !err && this.rec && !this.sessionHeard) {
+      this.onStall();
+      return;
+    }
     this.discardWindow();
     if (this.rec) this.armIdle();
     this.deps.log?.(`window close${err ? ` error=${err}` : ''}`);
@@ -268,6 +301,7 @@ export class PersistentSpeechController implements MicController {
   }
 
   private discardWindow(): void {
+    if (this.windowOpen) this.minFrom = this.results.length;
     this.windowOpen = false;
     this.windowText = '';
     this.awaitingAudio = false;
