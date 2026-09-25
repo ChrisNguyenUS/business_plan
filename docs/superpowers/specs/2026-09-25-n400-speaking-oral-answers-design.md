@@ -46,7 +46,8 @@ Learners can answer every spoken part of the interview by voice, the way the rea
 
 - **Generated:** `lib/n400/oral/whatmean-oral-config.generated.ts`, built from `whatmean-data.ts` (62 terms) by `buildWhatMeanOralConfig` in `lib/n400/oral/build-whatmean-config.ts`. The generator mirrors `build-config.ts`:
   - keywords come from `keywordsOf(definitionEn)`;
-  - an "or" list (`A knife or a gun`, `Husband or wife`, `Nursing, cooking, or translation`) becomes alternatives, any one of which is enough;
+  - a `/` separates alternatives ("To tell / To provide information"). Examples after "such as" are dropped (#23 → `illegal drugs`). "Or"-lists (#9 knife | gun, #39 nursing | cooking | translation, #46 husband | wife) become alternatives through explicit `REPLACE` entries, not automatically: automatic "or" splitting breaks clause definitions (#11, #29). S1 prototyping.
+  - `REPLACE` and `EXTEND` in `build-whatmean-config.ts` hold the per-term overrides, each with its reason. The prototype's cross-term matrix adds `mustInclude`/`mustExclude` so near-twins stay apart (#14 stay vs #15 work; #23 excludes equipment/tools; #37 excludes not; #52 excludes true).
   - 4 or more keywords makes a `phrase` with `minKeywords = ⌈2k/3⌉`; otherwise every keyword is required;
   - negations (`not`, `no`, `never`, `without`) and digits go into `mustInclude`. "Someone who is **not** a U.S. citizen" needs "not".
   - **No echo-drop.** The term's words stay as keywords. Echo is controlled by a test instead: reading the term aloud never grades `correct` for its own item.
