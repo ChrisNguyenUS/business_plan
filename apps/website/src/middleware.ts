@@ -11,7 +11,7 @@ import {
 } from '@/lib/n400/growth/attribution';
 
 const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
-const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt', '/voice-spike.html'];
+const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
 // N400 app lives at /n400ready — no locale segment (language is cookie-based).
