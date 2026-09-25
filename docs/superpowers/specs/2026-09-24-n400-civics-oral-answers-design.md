@@ -272,6 +272,8 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 
 Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the browser's speech service (e.g. Google, Apple); N400Ready stores only the resulting text, never audio.
 
+- **Rev 3.15:** shipped as section 8, "Voice Answers in N400Ready", on `/[locale]/privacy-policy#voice-answers`, with EN and VI text on both locales (the rest of the page is English-only).
+
 ## 11. Testing
 
 - `grade-oral.test.ts`:
