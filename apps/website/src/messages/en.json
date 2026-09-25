@@ -149,5 +149,174 @@
   "portal_cases": "Cases",
   "portal_inquiries": "Inquiries",
   "portal_empty": "Nothing here yet",
-  "portal_empty_desc": "Contact us to get started with your case."
+  "portal_empty_desc": "Contact us to get started with your case.",
+  "eb3": {
+    "meta_title": "EB-3 Other Workers Green Card | MannaOS",
+    "meta_desc": "Learn about the EB-3 Other Workers (unskilled) green card: eligibility, the 5-step process, and an estimated 4–6 year timeline. Free eligibility check with MannaOS.",
+    "featured_badge": "New",
+    "featured_title": "EB-3 Other Workers Green Card",
+    "featured_desc": "No degree required. For people in Vietnam and people already in the U.S. seeking adjustment of status.",
+    "featured_cta": "Learn about EB-3",
+    "hero_eyebrow": "EB-3 Other Workers",
+    "hero_title": "Get a U.S. Green Card through EB-3 Other Workers",
+    "hero_sub": "No degree or fluent English required. A U.S. employer sponsors you, and your spouse and children under 21 can come too.",
+    "cta_messenger": "Message us on Messenger",
+    "cta_check": "Check eligibility",
+    "what_title": "What is EB-3?",
+    "what_intro": "EB-3 is an employment-based green card with 3 subcategories:",
+    "categories": [
+      {
+        "title": "Skilled Workers",
+        "desc": "Jobs requiring at least 2 years of experience or training."
+      },
+      {
+        "title": "Professionals",
+        "desc": "Jobs requiring a U.S. bachelor's degree or equivalent."
+      },
+      {
+        "title": "Other Workers — unskilled",
+        "desc": "Jobs requiring less than 2 years of experience. No degree required. This is the category MannaOS supports."
+      }
+    ],
+    "where_title": "Where are you now?",
+    "where_vn_title": "In Vietnam",
+    "where_vn_desc": "Your case goes through consular processing: DS-260, medical exam, and an interview at the U.S. Consulate General in Ho Chi Minh City.",
+    "where_us_title": "In the U.S.",
+    "where_us_desc": "You may adjust status (I-485) inside the U.S. when your date is current. Requirement: you currently hold lawful status.",
+    "steps_title": "The 5-step process",
+    "steps": [
+      {
+        "title": "Case review",
+        "desc": "MannaOS reviews your information and responds within 48 hours."
+      },
+      {
+        "title": "Employer matching",
+        "desc": "We connect you with a verified U.S. employer that fits your industry and state."
+      },
+      {
+        "title": "PERM + I-140",
+        "desc": "The employer obtains labor certification (PERM), then files an I-140 petition for you."
+      },
+      {
+        "title": "Visa Bulletin wait",
+        "desc": "Wait for your priority date to become current, then interview at the consulate (Vietnam) or file I-485 (U.S.)."
+      },
+      {
+        "title": "Green card",
+        "desc": "You and your family become U.S. permanent residents."
+      }
+    ],
+    "steps_note": "Total time is an estimated 4–6 years, depending on the Visa Bulletin and USCIS and Department of State processing. Timelines are not guaranteed.",
+    "fit_title": "Who is a good fit?",
+    "fit_industries_title": "Common industries",
+    "fit_industries": [
+      "Food processing",
+      "Hotels and restaurants",
+      "Elder care",
+      "Manufacturing"
+    ],
+    "fit_requirements_title": "Basic requirements",
+    "fit_requirements": [
+      "Good health",
+      "Clean criminal record",
+      "Commitment to work for the sponsoring employer",
+      "Financial readiness for each case milestone"
+    ],
+    "cost_title": "Cost structure",
+    "cost_intro": "Costs are split across the milestones of your case, in 4 groups:",
+    "cost_items": [
+      {
+        "title": "Paid by the employer",
+        "desc": "Labor certification (PERM) and recruitment costs are paid by the employer as required by law."
+      },
+      {
+        "title": "Attorney fees",
+        "desc": "Fees for the licensed U.S. immigration attorney who handles the legal filings."
+      },
+      {
+        "title": "Government fees",
+        "desc": "I-140, DS-260 or I-485 filing fees, and the medical exam."
+      },
+      {
+        "title": "MannaOS service fee",
+        "desc": "Case coordination, Vietnamese-language support, translation, and progress tracking."
+      }
+    ],
+    "cost_cta": "Message us for a quote",
+    "faq_title": "Frequently asked questions",
+    "faq": [
+      {
+        "q": "Do I need to speak English?",
+        "a": "The Other Workers category does not require fluent English. Basic English makes work and the interview easier."
+      },
+      {
+        "q": "Can my family come with me?",
+        "a": "Yes. Your spouse and unmarried children under 21 can come as derivative beneficiaries."
+      },
+      {
+        "q": "What is the Visa Bulletin?",
+        "a": "A monthly chart published by the U.S. Department of State showing which filing dates are current. Your wait time depends on it."
+      },
+      {
+        "q": "I'm in the U.S. on a tourist visa. Can I adjust status?",
+        "a": "It depends. The key requirement is holding lawful status when you file I-485. Send us your details for a specific review."
+      },
+      {
+        "q": "I was refused a U.S. visa before. Can I still apply?",
+        "a": "Possibly. The reason for the prior refusal will be reviewed during case evaluation."
+      },
+      {
+        "q": "Do I have to work for the sponsoring employer?",
+        "a": "Yes. EB-3 is based on a real job offer, and you must intend to work for the sponsoring employer after receiving your green card."
+      },
+      {
+        "q": "Is MannaOS a law firm?",
+        "a": "No. MannaOS provides case support and coordination. Legal filings are handled by licensed U.S. immigration attorneys."
+      }
+    ],
+    "disclaimer": "MannaOS provides case support and coordination. MannaOS is not a law firm and does not provide legal advice. Legal filings are handled by licensed U.S. immigration attorneys. Processing times depend on USCIS and the U.S. Department of State and are not guaranteed.",
+    "form": {
+      "title": "Free eligibility check",
+      "sub": "Answer a few short questions and MannaOS will contact you within 48 hours.",
+      "full_name": "Full name",
+      "location": "Where are you now?",
+      "location_vn": "Vietnam",
+      "location_us": "United States",
+      "facebook": "Facebook name or profile link",
+      "facebook_hint": "So MannaOS can message you on Messenger",
+      "zalo": "Zalo number (optional)",
+      "phone": "Phone number",
+      "us_status": "Current visa status",
+      "us_status_b1b2": "Tourist B1/B2",
+      "us_status_f1": "Student F-1",
+      "us_status_other_valid": "Other, still valid",
+      "us_status_expired": "Expired",
+      "us_status_unknown": "Not sure",
+      "birth_year": "Year of birth",
+      "english": "English level",
+      "english_none": "None",
+      "english_basic": "Basic",
+      "english_conversational": "Conversational",
+      "spouse": "Spouse coming with me",
+      "children": "Children under 21",
+      "denial": "Have you ever been refused a U.S. visa?",
+      "denial_yes": "Yes",
+      "denial_no": "No",
+      "timeline": "When do you want to start?",
+      "timeline_now": "Now",
+      "timeline_3_6_months": "Within 3–6 months",
+      "timeline_researching": "Just researching",
+      "notes": "Anything else (optional)",
+      "ack": "I understand MannaOS provides case support, is not a law firm, and does not provide legal advice.",
+      "select_placeholder": "Select...",
+      "submit": "Submit",
+      "submitting": "Submitting...",
+      "error_required": "This field is required",
+      "error_invalid": "Please check this value",
+      "error_submit": "Something went wrong. Please try again or message MannaOS on Messenger.",
+      "success_title": "Thank you!",
+      "success_desc": "MannaOS will contact you on Messenger or by phone within 48 hours.",
+      "success_cta": "Message us now"
+    }
+  }
 }
