@@ -26,3 +26,13 @@ describe('voice mock page — typed fallback (final review)', () => {
     expect(page).toContain('onUseTyped={offersTypedFallback(mic.error)');
   });
 });
+
+describe('voice mock page — hub entry ?start=1 (spec §6, rev 3.14)', () => {
+  it('auto-start defers to mockAutoStarts, so the intro shows when voice is available', () => {
+    expect(page).toContain('if (!mockAutoStarts(voiceState)) return;');
+  });
+
+  it('the auto-start spinner gives way to the intro when voice is available', () => {
+    expect(page).toContain("if (autoStart && stage === 'intro' && (!voiceFlags.loaded || mockAutoStarts(voiceState)))");
+  });
+});

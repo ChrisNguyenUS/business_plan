@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerSurface, effectiveAnswerMode, isInAppBrowser, isIOSDevice, voiceInputFor } from './voice-support';
+import { answerSurface, effectiveAnswerMode, isInAppBrowser, isIOSDevice, mockAutoStarts, voiceInputFor } from './voice-support';
 
 // Real user agents from the Gate 0 spike, plus common in-app browsers.
 const UA = {
@@ -89,5 +89,18 @@ describe('isIOSDevice (spec D15)', () => {
   it('not Mac desktops or Android', () => {
     expect(isIOSDevice(UA.macChrome, 0)).toBe(false);
     expect(isIOSDevice(UA.androidChrome, 5)).toBe(false);
+  });
+});
+
+// The Thi thử hub opens the Civics mock with ?start=1 (auto-start), which
+// skipped the intro, the only place "Cách trả lời" lives. Spec §6, rev 3.14.
+describe('mockAutoStarts', () => {
+  it('auto-starts when the learner has no voice choice', () => {
+    expect(mockAutoStarts('off')).toBe(true);
+    expect(mockAutoStarts('unsupported')).toBe(true);
+  });
+
+  it('keeps the intro when voice is available, so "Cách trả lời" shows', () => {
+    expect(mockAutoStarts('available')).toBe(false);
   });
 });

@@ -47,6 +47,12 @@ export function answerSurface(
   return answeredVia ?? effective;
 }
 
+/** Hub entry (?start=1) skips the Civics mock intro only when the learner has no
+ *  voice choice; with voice available the intro shows "Cách trả lời". Spec §6, rev 3.14. */
+export function mockAutoStarts(voiceState: 'off' | 'unsupported' | 'available'): boolean {
+  return voiceState !== 'available';
+}
+
 /** iPhone/iPod/iPad, including iPadOS that reports a Mac UA (touch points). Spec D15. */
 export function isIOSDevice(ua: string, maxTouchPoints: number): boolean {
   if (/iPhone|iPad|iPod/i.test(ua)) return true;

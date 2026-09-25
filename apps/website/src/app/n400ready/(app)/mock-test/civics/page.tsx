@@ -67,7 +67,7 @@ import { getOralAnswerConfig } from '@/lib/n400/oral/get-oral-config';
 import { canAdvance, micLostFrom, mockItemInput, offersTypedFallback, toVoiceMockAnswers, type VoiceItem } from '@/lib/n400/oral/mock-voice-items';
 import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
 import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
-import { voiceInputFor } from '@/lib/n400/oral/voice-support';
+import { mockAutoStarts, voiceInputFor } from '@/lib/n400/oral/voice-support';
 import type { StateCode } from '@/lib/n400/state-data';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
@@ -205,12 +205,14 @@ function MockTestPageInner() {
     } catch {}
   }, []);
 
-  // Auto-start when arriving from the picker card (?start=1).
+  // Auto-start when arriving from the picker card (?start=1), unless voice is
+  // available here: then the intro stays so the learner can pick "Cách trả lời".
   useEffect(() => {
     if (!hydrated || !autoStart || !voiceFlags.loaded) return;
+    if (!mockAutoStarts(voiceState)) return;
     startNew();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, autoStart, voiceFlags.loaded]);
+  }, [hydrated, autoStart, voiceFlags.loaded, voiceState]);
 
   const startNew = () => {
     if (startedRef.current) return;
@@ -359,8 +361,9 @@ function MockTestPageInner() {
   }
 
   // When auto-starting from the picker card, show a loading state
-  // instead of flashing the full intro screen.
-  if (autoStart && stage === 'intro') {
+  // instead of flashing the full intro screen. Flags decide whether it
+  // auto-starts, so wait for them before showing the intro.
+  if (autoStart && stage === 'intro' && (!voiceFlags.loaded || mockAutoStarts(voiceState))) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 animate-in fade-in duration-300">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
