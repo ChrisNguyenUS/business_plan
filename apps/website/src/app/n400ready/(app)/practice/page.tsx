@@ -679,7 +679,12 @@ export default function PracticePage() {
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={questionAudioUrl(question.id)} label={dict.flashcards.listenQuestion} size="sm" />
+                  <AudioButton
+                    src={questionAudioUrl(question.id)}
+                    label={dict.flashcards.listenQuestion}
+                    size="sm"
+                    onBeforePlay={voiceInput === 'mic' ? mic.warmUp : undefined}
+                  />
                   <button
                     type="button"
                     onClick={() => toggleBookmark(question.id)}
@@ -786,6 +791,7 @@ export default function PracticePage() {
                     {revealedCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   <AudioButton
+                    onBeforePlay={voiceInput === 'mic' ? mic.warmUp : undefined}
                     src={answerAudioUrlFor(question, stateCode, districtNumber)}
                     label={dict.flashcards.listenAnswer}
                     size="sm"

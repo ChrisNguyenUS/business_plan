@@ -13,6 +13,8 @@ type Props = {
   rate?: number;
   /** 'slow' renders a turtle icon for đọc-chậm buttons. */
   variant?: 'default' | 'slow';
+  /** Runs right before playback starts (iOS: open the mic session first, spec D15). */
+  onBeforePlay?: () => void;
 };
 
 /**
@@ -26,6 +28,7 @@ export function AudioButton({
   className = '',
   rate = 1,
   variant = 'default',
+  onBeforePlay,
 }: Props) {
   const { dict } = useN400Lang();
   const effectiveLabel = label ?? dict.flashcards.listen;
@@ -81,6 +84,7 @@ export function AudioButton({
           setPlaying(false);
           return;
         }
+        onBeforePlay?.();
         const p = audio.play();
         if (p && typeof p.then === 'function') {
           p.then(() => setPlaying(true)).catch(() => setUnavailable(true));

@@ -89,6 +89,15 @@ export class PersistentSpeechController implements MicController {
     if (this.openSession(create)) this.openWindow(true);
   }
 
+  /** Before 🔊 plays: on iOS an <audio> playback leaves a session started AFTER it
+   *  deaf, so open the session first (no window, screen untouched). */
+  warmUp(): void {
+    const create = this.deps.create;
+    if (!create || !this.snap.supported || this.rec) return;
+    this.deps.log?.('warm up');
+    if (this.openSession(create)) this.armIdle();
+  }
+
   /** Learner tapped Stop: close the window with what it heard. The session stays. */
   stop(): void {
     if (!this.windowOpen) return;

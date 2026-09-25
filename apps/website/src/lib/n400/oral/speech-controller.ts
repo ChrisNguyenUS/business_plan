@@ -94,6 +94,8 @@ export interface MicController {
   reset(): void;
   abort(): void;
   shutdown(): void;
+  /** Open the recognizer ahead of audio playback (iOS persistent only; no-op otherwise). */
+  warmUp(): void;
 }
 
 export class SpeechController implements MicController {
@@ -214,6 +216,9 @@ export class SpeechController implements MicController {
     this.abortRec();
     this.finish('idle', null);
   }
+
+  /** Per-answer sessions start on the mic tap; nothing to warm up. */
+  warmUp(): void {}
 
   /** Release the mic entirely (MicController). Per-answer: same as abort. */
   shutdown(): void {

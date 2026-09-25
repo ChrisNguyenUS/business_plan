@@ -439,7 +439,12 @@ function MockTestPageInner() {
                       surfaces on the result screen after the test is submitted. */}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={questionAudioUrl(question.id)} label={dict.flashcards.listenQuestion} size="sm" />
+                  <AudioButton
+                    src={questionAudioUrl(question.id)}
+                    label={dict.flashcards.listenQuestion}
+                    size="sm"
+                    onBeforePlay={runMode === 'voice' && voiceInput === 'mic' ? mic.warmUp : undefined}
+                  />
                 </div>
               </div>
             </div>

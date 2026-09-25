@@ -359,3 +359,41 @@ describe('PersistentSpeechController — final review fixes', () => {
     expect(h.recs[0].aborted).toBe(1);
   });
 });
+
+describe('PersistentSpeechController — warmUp before 🔊 (iOS: <audio> then a new session = deaf)', () => {
+  it('opens the session without a window and without touching the screen', () => {
+    const h = harness();
+    h.c.warmUp();
+    expect(h.recs).toHaveLength(1);
+    expect(h.rec()).toMatchObject({ started: 1, continuous: true });
+    expect(h.s().state).toBe('idle');
+    h.rec().onstart?.();
+    h.rec().onaudiostart?.();
+    h.rec().emit(['question audio words', true]);
+    expect(h.s()).toMatchObject({ state: 'idle', transcript: '' });
+  });
+
+  it('the next mic tap reuses the warmed session', () => {
+    const h = harness();
+    h.c.warmUp();
+    h.rec().onstart?.();
+    h.rec().onaudiostart?.();
+    h.c.start();
+    expect(h.recs).toHaveLength(1);
+    expect(h.s().state).toBe('listening');
+  });
+
+  it('is a no-op when a session is already running', () => {
+    const h = harness();
+    open(h);
+    h.c.warmUp();
+    expect(h.recs).toHaveLength(1);
+  });
+
+  it('a warmed but unused session still shuts down after 5 minutes', () => {
+    const h = harness();
+    h.c.warmUp();
+    h.advance(IDLE_SHUTDOWN_MS);
+    expect(h.recs[0].aborted).toBe(1);
+  });
+});
