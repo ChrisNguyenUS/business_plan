@@ -319,8 +319,24 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
 
 **Slice 3 — Mock:** migration `n400_33` (transcript, core refactor, voice RPC, `voice_mock` flag) + `finalizeVoiceMockAttempt` + mock flow (mic, typed, mixed MC items) + result rows. Gate: security checks (RPC denied to `authenticated`; another user's attempt rejected; MC mock unchanged) + manual device pass.
 
-**Slice 4 — Rollout:** analytics event, Privacy Policy, flag rollout per §7.
+**Slice 4 — Rollout:** analytics event, Privacy Policy, flag rollout per §7. **Done (rev 3.15):**
+- Gate 3 passed 2026-09-25 (docs/superpowers/spikes/2026-09-24-n400-oral-mock-gate3.md).
+- `not` never near-matches.
+- `n400_oral_answer` + `answer_mode` on `n400_mock_test_start`.
+- Privacy Policy section 8.
+- Flags: `voice_practice` and `voice_mock` ON 100%. This is §7's small-traffic rule: weekly voice-eligible users are few, so 100% with the kill switch. `voice_android` stays OFF until an Android device pass.
 
 ## 13. Post-launch measurement
 
 Weekly: voice vs choice correct-rate on the same questions, retry and no-speech rates from `n400_oral_answer`, plus the hand-labeled sample (§9). A large voice/choice gap driven by mishearing → turn the affected flag off.
+
+Weekly hand-label sample (§9), run through the Supabase SQL editor:
+
+```sql
+SELECT q.question_id, q.was_correct, q.transcript
+FROM public.n400_question_attempts q
+JOIN public.n400_quiz_attempts a ON a.id = q.attempt_id
+WHERE a.mode = 'mock_test' AND a.answer_mode = 'voice' AND a.completed_at > now() - interval '7 days'
+ORDER BY random()
+LIMIT 20;
+```

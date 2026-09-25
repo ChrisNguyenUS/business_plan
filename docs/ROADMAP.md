@@ -2,9 +2,10 @@
 
 ## Trạng thái hiện tại
 - **Current Phase:** Website Phase 3E — N400 Growth Engine G1–G3c+G4 v1 **shipped** (flags `growth_engine` + `profiling` + `cta_engine` + `booking_form` ON). N400 Civics Test App itself shipped (all 9 phases ✅). G4 v1 read-only shipped (staff-visible Leads page, read-only access to lead history and summary). **Next up:** G4 v2 — consultation inbox, Convert to Client, Sales-Ready notifications. RLS hardening (initplan + duplicate policies + FK indexes) and OAuth-gated features pending credentials.
-- **Last updated:** 2026-09-23
+- **Last updated:** 2026-09-25
 - [x] N400 IA redesign — 4-tab navigation (Home / Học tập / Thi thử / Tiến độ), skill hubs with practice-modes bottom sheet, merged Tiến độ, Phỏng vấn đầy đủ full-interview mock (specs/2026-07-09-n400app-ia-redesign-design.md)
 - [x] N400 Tiến độ redesign — tabs split by depth (Tổng quan / Chi tiết) around the three questions the screen answers; new `readiness.ts` engine (5 interview-readiness criteria, third of the three recommendation engines); every skill now tracked (was Civics-only); writing/speaking mock results surfaced for the first time; BadgeGallery de-duplicated to Tài khoản only. Zero DB migrations (specs/2026-07-15-n400app-progress-redesign-design.md)
+- [x] N400 Civics oral answers — answer civics questions by voice (Web Speech API, keyword grading against the taught answer). Practice [Trắc nghiệm | Tự nói] plus a voice mock that counts; iPhone uses one persistent session with 🔊 through Web Audio; typed fallback for in-app browsers; `n400_oral_answer` GA4 event; Privacy Policy voice section. Flags `voice_practice` + `voice_mock` ON 100%, `voice_android` OFF (specs/2026-09-24-n400-civics-oral-answers-design.md, rev 3.15)
 
 > **Track scope:**
 > - **Track 1** — SDLC 8-phase framework, áp dụng cho **Internal App** (`apps/internal_app/`).
