@@ -370,11 +370,28 @@ describe('PersistentSpeechController — 🔊 and lost capture (device probe 202
     h.advance(SETTLE_MS);
     h.c.noteAudioPlayed();
     expect(h.recs[0]).toMatchObject({ stopped: 1, aborted: 0 });
-    expect(h.recs[0].onresult).toBeNull();
     expect(h.s()).toMatchObject({ state: 'transcript', transcript: '27' });
     h.c.start();
     expect(h.recs).toHaveLength(2);
     expect(h.recs[1].started).toBe(1);
+  });
+
+  it('the stopped session keeps listeners until WebKit ends it, and never touches the screen', () => {
+    // App (listeners dropped at stop) → next session deaf; probe (listeners kept
+    // until end) → next session heard. Device 2026-09-25.
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    const old = h.rec();
+    h.c.noteAudioPlayed();
+    expect(typeof old.onend).toBe('function');
+    expect(typeof old.onresult).toBe('function');
+    old.emit(['27', true], ['stray words', true]);
+    expect(h.s()).toMatchObject({ state: 'transcript', transcript: '27' });
+    old.onend?.();
+    expect(old.onend).toBeNull();
+    expect(old.onresult).toBeNull();
   });
 
   it('a window open when 🔊 is tapped is dropped', () => {

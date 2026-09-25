@@ -54,6 +54,8 @@ export class PersistentSpeechController implements MicController {
   private minFrom = 0;
   /** Last recognizer error of the current session (auto-restart after lost capture). */
   private lastErrorCode = '';
+  /** A session stopped before 🔊, kept referenced until WebKit reports its end. */
+  private retiring: RecognitionLike | null = null;
   private windowTimers: unknown[] = [];
   private stallTimer: unknown = null;
   private settleTimer: unknown = null;
@@ -370,14 +372,35 @@ export class PersistentSpeechController implements MicController {
     this.clearIdle();
     const rec = this.rec;
     if (!rec) return;
-    this.detach(rec);
     this.rec = null;
     this.results = NO_RESULTS;
+    if (how === 'abort') {
+      this.detach(rec);
+      try {
+        rec.abort();
+      } catch {
+        // Already gone.
+      }
+      return;
+    }
+    // Keep listeners and a reference until WebKit reports the end. Dropping them
+    // at stop() (the first try) left the next session deaf; the probe that kept
+    // them got a working session after 🔊 (device 2026-09-25). The listeners are
+    // inert: nothing from the retiring session reaches the screen.
+    const ignore = () => {};
+    rec.onstart = rec.onaudiostart = rec.onspeechstart = rec.onspeechend = ignore;
+    rec.onresult = ignore;
+    rec.onerror = (e) => this.deps.log?.(`retired error ${e.error}`);
+    rec.onend = () => {
+      this.deps.log?.('retired session end');
+      this.detach(rec);
+      if (this.retiring === rec) this.retiring = null;
+    };
+    this.retiring = rec;
     try {
-      if (how === 'stop') rec.stop();
-      else rec.abort();
+      rec.stop();
     } catch {
-      // Already gone.
+      // Already stopping.
     }
   }
 
