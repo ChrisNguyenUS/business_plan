@@ -241,13 +241,15 @@ describe('SpeechController — errors', () => {
 });
 
 describe('SpeechController — stall detector (Gate 0: iOS mic-dead)', () => {
-  it('a stall reports no-speech, then stalled on the second in a row', () => {
+  it('a stall reports no-speech, then stalled on the 4th in a row (owner rev 3.11)', () => {
     const h = harness();
-    h.c.start();
-    h.rec().onstart?.();
-    h.rec().onaudiostart?.();
-    h.advance(STALL_MS);
-    expect(h.s()).toMatchObject({ state: 'error', error: 'no-speech' });
+    for (let i = 1; i <= 3; i++) {
+      h.c.start();
+      h.rec().onstart?.();
+      h.rec().onaudiostart?.();
+      h.advance(STALL_MS);
+      expect(h.s()).toMatchObject({ state: 'error', error: 'no-speech' });
+    }
     expect(h.recs[0].aborted).toBe(1);
 
     h.c.start();

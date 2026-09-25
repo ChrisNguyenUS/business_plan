@@ -9,6 +9,7 @@ import {
   HARD_STOP_MS,
   joinResultsFrom,
   STALL_MS,
+  STALLS_BEFORE_FALLBACK,
   type MicController,
   type MicError,
   type MicSnapshot,
@@ -272,8 +273,8 @@ export class PersistentSpeechController implements MicController {
       this.finish('error', 'no-speech');
       return;
     }
-    if (this.stalledInRow >= 2) {
-      // Two silent windows in a row: treat the session as deaf; the page switches to typing.
+    if (this.stalledInRow >= STALLS_BEFORE_FALLBACK) {
+      // STALLS_BEFORE_FALLBACK silent windows in a row: treat the session as deaf; the page switches to typing.
       this.killSession();
       this.finish('error', 'stalled');
       return;

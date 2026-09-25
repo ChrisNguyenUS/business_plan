@@ -178,12 +178,18 @@ describe('PersistentSpeechController (spec D15, rev 3.5)', () => {
     expect(h.recs).toHaveLength(1);
   });
 
-  it('second silent window shuts the session down as stalled', () => {
+  it('the 4th silent window in a row shuts the session down as stalled (owner rev 3.11)', () => {
     const h = harness();
     open(h);
-    h.advance(STALL_MS);
+    h.advance(STALL_MS); // 1
+    for (let i = 2; i <= 3; i++) {
+      h.c.start();
+      h.advance(STALL_MS);
+      expect(h.s()).toMatchObject({ state: 'error', error: 'no-speech' });
+      expect(h.recs[0].aborted).toBe(0);
+    }
     h.c.start();
-    h.advance(STALL_MS);
+    h.advance(STALL_MS); // 4
     expect(h.s()).toMatchObject({ state: 'error', error: 'stalled' });
     expect(h.recs[0].aborted).toBe(1);
     h.c.start();
@@ -352,6 +358,12 @@ describe('PersistentSpeechController — final review fixes', () => {
     open(h);
     h.advance(4_000);
     h.c.stop();
+    for (let i = 2; i <= 3; i++) {
+      h.c.start();
+      h.advance(4_000);
+      h.c.stop();
+      expect(h.s().error).toBe('no-speech');
+    }
     h.c.start();
     h.advance(4_000);
     h.c.stop();

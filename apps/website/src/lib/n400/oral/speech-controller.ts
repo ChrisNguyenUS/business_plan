@@ -52,6 +52,8 @@ export interface SpeechControllerDeps {
 
 export const HARD_STOP_MS = 15_000;
 export const STALL_MS = 7_000;
+/** Consecutive silent attempts before the page switches to typing (owner rev 3.11: 4, was 2). */
+export const STALLS_BEFORE_FALLBACK = 4;
 export const INSTANT_DENY_MS = 500;
 export const END_GRACE_MS = 2_000;
 
@@ -251,7 +253,7 @@ export class SpeechController implements MicController {
     this.deps.log?.(`stall in_row=${this.stalledInRow}`);
     this.deps.report?.('stall', `in_row=${this.stalledInRow}`);
     this.abortRec();
-    this.finish('error', this.stalledInRow >= 2 ? 'stalled' : 'no-speech');
+    this.finish('error', this.stalledInRow >= STALLS_BEFORE_FALLBACK ? 'stalled' : 'no-speech');
   }
 
   private onError(code: string, message?: string): void {
