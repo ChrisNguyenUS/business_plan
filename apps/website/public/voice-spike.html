@@ -21,7 +21,11 @@
     <a href="?mode=reuse" target="_blank">reuse</a> ·
     <a href="?mode=abort" target="_blank">abort</a> ·
     <a href="?mode=gum" target="_blank">gum</a> ·
-    <a href="?mode=continuous" target="_blank">continuous</a>
+    <a href="?mode=continuous" target="_blank">continuous</a> ·
+    audio: <a href="?mode=audio&strategy=keep" target="_blank">keep</a> /
+    <a href="?mode=audio&strategy=stop" target="_blank">stop</a> /
+    <a href="?mode=audio&strategy=abort" target="_blank">abort</a> /
+    <a href="?mode=audio&strategy=webaudio" target="_blank">webaudio</a>
     <span style="font-size:12px">(each link opens a fresh tab)</span></div>
   <div class="row">API: <span id="api"></span></div>
   <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
@@ -31,6 +35,7 @@
   <button id="start">🎤 Speak</button>
   <button id="stop" class="secondary">Stop</button>
   <button id="copy" class="secondary">Copy results</button>
+  <button id="play" class="secondary" style="display:none">🔊 Play question</button>
   <textarea id="out" readonly style="width:100%;height:30vh;font:12px/1.35 ui-monospace,monospace;font-size:16px"></textarea>
 <script>
   // Gate 0 probe, v2: compares ways of driving iOS Safari's recognizer after
@@ -157,6 +162,73 @@
       try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); keep = false; running = false; }
     };
     $('stop').onclick = () => { keep = false; if (rec) { rec.stop(); log('stop pressed (ends continuous)'); } };
+  }
+  if (MODE === 'audio') {
+    // 🔊 + mic on iOS (device logs 2026-09-25): <audio> playback during a running
+    // continuous session kills its capture until WebKit reports "Source is stopped".
+    //   keep     — session stays; after that error a NEW session starts with no tap
+    //   stop     — rec.stop() before playing; tap 🎤 after playback for a new session
+    //   abort    — rec.abort() before playing; tap 🎤 after playback for a new session
+    //   webaudio — session stays; play through Web Audio instead of <audio>
+    const STRAT = new URLSearchParams(location.search).get('strategy') || 'keep';
+    const AUDIO_SRC = '/n400-audio/civic_question/q002.mp3';
+    let sessions = 0, lastError = '', ctx = null;
+    $('mode').textContent = 'audio / ' + STRAT;
+    const makeSession = () => {
+      const r = new Rec();
+      const id = ++sessions;
+      r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onstart = () => setState(`s${id} listening`);
+      r.onaudiostart = () => log(`s${id} audiostart`);
+      r.onspeechstart = () => log(`s${id} speechstart`);
+      r.onresult = (e) => {
+        const i = e.results.length - 1, res = e.results[i];
+        log(`s${id} result[${i}] final=${res.isFinal} "${res[0].transcript}"`);
+        if (res.isFinal) { ok++; $('ok').textContent = ok; $('heard').textContent = res[0].transcript; }
+      };
+      r.onerror = (e) => { lastError = e.error; log(`s${id} error=${e.error}${e.message ? ' ' + e.message : ''}`); };
+      r.onend = () => {
+        log(`s${id} end`);
+        if (rec !== r) return;
+        running = false; setState('idle');
+        if (STRAT === 'keep' && lastError === 'audio-capture') {
+          lastError = '';
+          log('auto new session (no tap)');
+          try { rec = makeSession(); running = true; rec.start(); } catch (err) { running = false; log('auto start threw ' + err.name + ' ' + err.message); }
+        }
+      };
+      return r;
+    };
+    $('start').onclick = () => {
+      if (!Rec) { log('no API'); return; }
+      if (running) { log('session already running'); return; }
+      tries++; $('tries').textContent = tries;
+      rec = makeSession(); running = true;
+      try { rec.start(); setState('starting'); } catch (err) { running = false; log('start threw ' + err.name + ' ' + err.message); }
+    };
+    $('stop').onclick = () => { if (running && rec) { rec.stop(); log('stop pressed'); } };
+    $('play').style.display = '';
+    $('play').onclick = () => {
+      if (STRAT === 'stop' && running && rec) { rec.stop(); log('stop session before play'); }
+      if (STRAT === 'abort' && running && rec) { const r = rec; rec = null; running = false; r.abort(); log('abort session before play'); setState('idle'); }
+      if (STRAT === 'webaudio') {
+        try {
+          ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+          void ctx.resume();
+          fetch(AUDIO_SRC).then((res) => res.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((buf) => {
+            const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+            src.onended = () => log('webaudio ended');
+            src.start(0); log('webaudio play');
+          }).catch((e) => log('webaudio failed ' + e));
+        } catch (e) { log('webaudio threw ' + e); }
+        return;
+      }
+      const a = new Audio(AUDIO_SRC);
+      a.onplay = () => log('audio play');
+      a.onended = () => log('audio ended');
+      a.onerror = () => log('audio error');
+      a.play().catch((e) => log('play failed ' + e.name));
+    };
   }
   log('ready');
 </script>
