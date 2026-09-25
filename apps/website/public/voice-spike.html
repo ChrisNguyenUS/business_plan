@@ -25,7 +25,8 @@
     audio: <a href="?mode=audio&strategy=keep" target="_blank">keep</a> /
     <a href="?mode=audio&strategy=stop" target="_blank">stop</a> /
     <a href="?mode=audio&strategy=abort" target="_blank">abort</a> /
-    <a href="?mode=audio&strategy=webaudio" target="_blank">webaudio</a>
+    <a href="?mode=audio&strategy=webaudio" target="_blank">webaudio</a> ·
+    <a href="?mode=track" target="_blank">track</a>
     <span style="font-size:12px">(each link opens a fresh tab)</span></div>
   <div class="row">API: <span id="api"></span></div>
   <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
@@ -36,6 +37,7 @@
   <button id="stop" class="secondary">Stop</button>
   <button id="copy" class="secondary">Copy results</button>
   <button id="play" class="secondary" style="display:none">🔊 Play question</button>
+  <button id="trackToggle" class="secondary" style="display:none">🔇 Track on/off</button>
   <textarea id="out" readonly style="width:100%;height:30vh;font:12px/1.35 ui-monospace,monospace;font-size:16px"></textarea>
 <script>
   // Gate 0 probe, v2: compares ways of driving iOS Safari's recognizer after
@@ -226,6 +228,70 @@
       const a = new Audio(AUDIO_SRC);
       a.onplay = () => log('audio play');
       a.onended = () => log('audio ended');
+      a.onerror = () => log('audio error');
+      a.play().catch((e) => log('play failed ' + e.name));
+    };
+  }
+  if (MODE === 'track') {
+    // Web Speech spec: start(MediaStreamTrack) — recognize from OUR getUserMedia
+    // track instead of WebKit's own speech capture (the part that breaks after
+    // <audio> playback on iOS). Does Safari support it, and does it survive 🔊?
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const AUDIO_SRC = '/n400-audio/civic_question/q002.mp3';
+    let stream = null, track = null, sessions = 0;
+    $('mode').textContent = 'track (start(MediaStreamTrack))';
+    if (R) {
+      log(`caps unprefixed=${!!window.SpeechRecognition} available=${typeof R.available} install=${typeof R.install} processLocally=${'processLocally' in R.prototype} phrases=${'phrases' in R.prototype} startLength=${R.prototype.start.length}`);
+    }
+    const getTrack = async () => {
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      track = stream.getAudioTracks()[0];
+      track.onended = () => log('track ended');
+      track.onmute = () => log('track muted');
+      track.onunmute = () => log('track unmuted');
+      log(`track live=${track.readyState} label="${track.label}"`);
+    };
+    const makeSession = () => {
+      const r = new R();
+      const id = ++sessions;
+      r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onstart = () => setState(`s${id} listening`);
+      r.onaudiostart = () => log(`s${id} audiostart`);
+      r.onspeechstart = () => log(`s${id} speechstart`);
+      r.onresult = (e) => {
+        const i = e.results.length - 1, res = e.results[i];
+        log(`s${id} result[${i}] final=${res.isFinal} "${res[0].transcript}"`);
+        if (res.isFinal) { ok++; $('ok').textContent = ok; $('heard').textContent = res[0].transcript; }
+      };
+      r.onerror = (e) => log(`s${id} error=${e.error}${e.message ? ' ' + e.message : ''}`);
+      r.onend = () => { log(`s${id} end`); if (rec === r) { running = false; setState('idle'); } };
+      return r;
+    };
+    $('start').onclick = async () => {
+      if (!R) { log('no API'); return; }
+      if (running) { log('session already running'); return; }
+      tries++; $('tries').textContent = tries;
+      try {
+        if (!track || track.readyState !== 'live') await getTrack();
+        rec = makeSession(); running = true;
+        rec.start(track);
+        setState('starting');
+        log('start(track) called');
+      } catch (err) { running = false; log('start(track) threw ' + err.name + ' ' + err.message); }
+    };
+    $('stop').onclick = () => { if (running && rec) { rec.stop(); log('stop pressed'); } };
+    $('trackToggle').style.display = '';
+    $('trackToggle').onclick = () => {
+      if (!track) { log('no track yet'); return; }
+      track.enabled = !track.enabled;
+      log('track enabled=' + track.enabled);
+    };
+    $('play').style.display = '';
+    $('play').onclick = () => {
+      const a = new Audio(AUDIO_SRC);
+      a.onplay = () => log('audio play');
+      a.onended = () => log(`audio ended (track ${track ? track.readyState : 'none'})`);
       a.onerror = () => log('audio error');
       a.play().catch((e) => log('play failed ' + e.name));
     };
