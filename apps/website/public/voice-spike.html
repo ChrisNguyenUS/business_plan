@@ -20,7 +20,8 @@
     <a href="?mode=new" target="_blank">new</a> ·
     <a href="?mode=reuse" target="_blank">reuse</a> ·
     <a href="?mode=abort" target="_blank">abort</a> ·
-    <a href="?mode=gum" target="_blank">gum</a>
+    <a href="?mode=gum" target="_blank">gum</a> ·
+    <a href="?mode=continuous" target="_blank">continuous</a>
     <span style="font-size:12px">(each link opens a fresh tab)</span></div>
   <div class="row">API: <span id="api"></span></div>
   <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
@@ -38,6 +39,8 @@
   //   reuse — one recognizer for the page, start() again each answer
   //   abort — new per answer + explicit abort() after each end
   //   gum   — new per answer + getUserMedia open/close after each end
+  //   continuous — ONE session with continuous=true for several phrases, plus
+  //                auto-restart on end (the common "only works once" recipe)
   const MODE = new URLSearchParams(location.search).get('mode') || 'new';
   const PROMPTS = ['The Constitution', 'Twenty-seven', 'Checks and balances', 'Congress, president, and the courts', 'Freedom of speech'];
   const $ = (id) => document.getElementById(id);
@@ -113,6 +116,45 @@
     const o = $('out'); o.focus(); o.setSelectionRange(0, o.value.length);
     log(document.execCommand('copy') ? 'copied (fallback)' : 'copy blocked — select the text box and copy');
   };
+  if (MODE === 'continuous') {
+    let keep = false, restarts = 0, finals = 0;
+    const makeContinuous = () => {
+      const r = new Rec();
+      r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onstart = () => setState('listening (continuous)');
+      r.onaudiostart = () => log('audiostart');
+      r.onspeechstart = () => log('speechstart');
+      r.onspeechend = () => log('speechend');
+      r.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i];
+          log(`result[${i}] final=${res.isFinal} "${res[0].transcript}"`);
+          if (res.isFinal) {
+            finals++; ok = finals; $('ok').textContent = finals;
+            $('heard').textContent = res[0].transcript;
+            $('prompt').textContent = PROMPTS[finals % PROMPTS.length];
+          }
+        }
+      };
+      r.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
+      r.onend = () => {
+        log('end');
+        if (!keep) { running = false; setState('idle'); return; }
+        restarts++;
+        log('auto-restart #' + restarts);
+        try { r.start(); } catch (err) { log('auto-restart threw ' + err.name + ' ' + err.message); keep = false; running = false; }
+      };
+      return r;
+    };
+    $('start').onclick = () => {
+      if (!Rec) { log('no API'); return; }
+      if (keep) { log('already listening (continuous)'); return; }
+      keep = true; running = true; tries++; $('tries').textContent = tries;
+      rec = makeContinuous();
+      try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); keep = false; running = false; }
+    };
+    $('stop').onclick = () => { keep = false; if (rec) { rec.stop(); log('stop pressed (ends continuous)'); } };
+  }
   log('ready');
 </script>
 </body>
