@@ -15,8 +15,9 @@ describe('privacy policy — voice answers (spec §10)', () => {
     expect(page).toContain('N400Ready không bao giờ ghi âm hay lưu âm thanh.');
   });
 
-  it('discloses the always-on iPhone microphone (D15, EN + VI)', () => {
-    expect(page).toContain('On iPhone, while you use voice answers, the microphone stays on between questions');
-    expect(page).toContain('Trên iPhone, khi bạn trả lời bằng giọng, micro bật suốt giữa các câu hỏi');
+  // Final review: D15 covers every iOS device (isIOSDevice), iPad included.
+  it('discloses the always-on iPhone and iPad microphone (D15, EN + VI)', () => {
+    expect(page).toContain('On iPhone and iPad, while you use voice answers, the microphone stays on between questions');
+    expect(page).toContain('Trên iPhone và iPad, khi bạn trả lời bằng giọng, micro bật suốt giữa các câu hỏi');
   });
 });
