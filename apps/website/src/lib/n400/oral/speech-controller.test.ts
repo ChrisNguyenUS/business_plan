@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  classifyMicError,
   END_GRACE_MS,
   HARD_STOP_MS,
+  joinResultsFrom,
   STALL_MS,
   SpeechController,
   type RecognitionLike,
@@ -345,5 +347,33 @@ describe('SpeechController — debug log (iPhone diagnosis)', () => {
     h.rec().error('network');
     h.c.abort();
     expect(events).toEqual(expect.arrayContaining(['error network', 'abort']));
+  });
+});
+
+describe('shared helpers (rev 3.5)', () => {
+  it('classifyMicError keeps the per-answer rules', () => {
+    expect(classifyMicError('aborted', false, 0)).toBeNull();
+    expect(classifyMicError('not-allowed', false, 100)).toEqual({ error: 'unavailable', disable: true });
+    expect(classifyMicError('not-allowed', false, 3_000)).toEqual({ error: 'not-allowed', disable: false });
+    expect(classifyMicError('not-allowed', true, 100)).toEqual({ error: 'not-allowed', disable: false });
+    expect(classifyMicError('service-not-allowed', true, 9_000)).toEqual({ error: 'unavailable', disable: true });
+    expect(classifyMicError('network', true, 0)).toEqual({ error: 'network', disable: false });
+    expect(classifyMicError('no-speech', true, 0)).toEqual({ error: 'no-speech', disable: false });
+    expect(classifyMicError('language-not-supported', true, 0)).toEqual({ error: 'unavailable', disable: false });
+  });
+
+  it('joinResultsFrom joins from an index with single spaces', () => {
+    const r = [[{ transcript: 'ambient' }], [{ transcript: 'Congress' }], [{ transcript: ' and the courts' }]];
+    expect(joinResultsFrom(r, 1)).toBe('Congress and the courts');
+    expect(joinResultsFrom(r, 3)).toBe('');
+  });
+
+  it('the per-answer controller is not persistent and shutdown releases the mic', () => {
+    const h = harness();
+    live(h);
+    h.c.shutdown();
+    expect(h.c.persistent).toBe(false);
+    expect(h.s().state).toBe('idle');
+    expect(h.recs[0].aborted).toBe(1);
   });
 });

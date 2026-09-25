@@ -13,6 +13,9 @@ export interface MicSnapshot {
   startedAt: number | null;
 }
 
+/** Results list as WebKit/Chromium report it (continuous sessions accumulate). */
+export type RecognitionResultList = ArrayLike<ArrayLike<{ transcript: string }> & { isFinal?: boolean }>;
+
 /** The subset of SpeechRecognition this app uses. */
 export interface RecognitionLike {
   lang: string;
@@ -23,7 +26,7 @@ export interface RecognitionLike {
   onaudiostart: (() => void) | null;
   onspeechstart: (() => void) | null;
   onspeechend: (() => void) | null;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onresult: ((e: { results: RecognitionResultList }) => void) | null;
   onerror: ((e: { error: string; message?: string }) => void) | null;
   onend: (() => void) | null;
   start(): void;
@@ -58,15 +61,43 @@ const ERROR_MAP: Readonly<Record<string, MicError>> = {
   'audio-capture': 'audio-capture',
 };
 
-function joinResults(results: ArrayLike<ArrayLike<{ transcript: string }>>): string {
-  // Joined with spaces: Chrome's segments carry a leading space, but nothing
-  // guarantees it, and "Congress"+"president" must not fuse into one word.
+/** Results from `from` joined with single spaces: Chrome's segments carry a leading
+ *  space, but nothing guarantees it, and "Congress"+"president" must not fuse. */
+export function joinResultsFrom(results: RecognitionResultList, from: number): string {
   const parts: string[] = [];
-  for (let i = 0; i < results.length; i++) parts.push(results[i]?.[0]?.transcript ?? '');
+  for (let i = from; i < results.length; i++) parts.push(results[i]?.[0]?.transcript ?? '');
   return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
-export class SpeechController {
+/** Recognizer error → learner-facing MicError; `disable` = voice unavailable for this session. */
+export function classifyMicError(
+  code: string,
+  heardAudio: boolean,
+  sinceStartMs: number,
+): { error: MicError; disable: boolean } | null {
+  if (code === 'aborted') return null; // our own abort()
+  if (code === 'service-not-allowed') return { error: 'unavailable', disable: true };
+  if (code === 'not-allowed') {
+    return !heardAudio && sinceStartMs < INSTANT_DENY_MS
+      ? { error: 'unavailable', disable: true }
+      : { error: 'not-allowed', disable: false };
+  }
+  return { error: ERROR_MAP[code] ?? 'unavailable', disable: false };
+}
+
+export interface MicController {
+  readonly persistent: boolean;
+  getSnapshot(): MicSnapshot;
+  subscribe(fn: () => void): () => void;
+  start(): void;
+  stop(): void;
+  reset(): void;
+  abort(): void;
+  shutdown(): void;
+}
+
+export class SpeechController implements MicController {
+  readonly persistent = false;
   private snap: MicSnapshot;
   private readonly listeners = new Set<() => void>();
   private rec: RecognitionLike | null = null;
@@ -142,7 +173,7 @@ export class SpeechController {
     };
     rec.onresult = (e) => {
       this.heard();
-      this.text = joinResults(e.results);
+      this.text = joinResultsFrom(e.results, 0);
       this.deps.log?.(`result "${this.text}"`);
       this.set({ transcript: this.text });
     };
@@ -184,6 +215,11 @@ export class SpeechController {
     this.finish('idle', null);
   }
 
+  /** Release the mic entirely (MicController). Per-answer: same as abort. */
+  shutdown(): void {
+    this.abort();
+  }
+
   reset(): void {
     if (this.rec) this.abortRec();
     this.finish('idle', null);
@@ -210,21 +246,14 @@ export class SpeechController {
 
   private onError(code: string, message?: string): void {
     this.deps.log?.(`error ${code}${message ? ` ${message}` : ''}`);
-    if (code === 'aborted') return; // our own abort()
-    let err: MicError;
-    const instantDeny =
-      code === 'not-allowed' && !this.heardAudio && this.deps.now() - this.startedAt < INSTANT_DENY_MS;
-    if (code === 'service-not-allowed' || instantDeny) {
-      err = 'unavailable';
+    const c = classifyMicError(code, this.heardAudio, this.deps.now() - this.startedAt);
+    if (!c) return;
+    if (c.disable) {
       this.disabled = true;
       this.deps.markUnavailable?.();
-    } else if (code === 'not-allowed') {
-      err = 'not-allowed';
-    } else {
-      err = ERROR_MAP[code] ?? 'unavailable';
     }
-    if (err !== 'no-speech') this.deps.report?.(code, message);
-    if (this.pendingError === null) this.pendingError = err;
+    if (c.error !== 'no-speech') this.deps.report?.(code, message);
+    if (this.pendingError === null) this.pendingError = c.error;
   }
 
   private end(): void {
