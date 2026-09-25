@@ -104,3 +104,12 @@ describe('spoken numbers (final review)', () => {
     expect(verdict(qid, said)).toBe(expected);
   });
 });
+
+// Gate 3 (2026-09-25): "not" sat one edit from the stem "vot", so "I don't know"
+// graded near on Q69/Q70 and practice asked "Có phải bạn nói: Vote…?".
+describe('not-knowing replies never grade better than wrong (spec §3.3, rev 3.15)', () => {
+  it.each(["I don't know", 'I do not know', "I don't remember", 'not sure', 'I am not sure'])('%s', (said) => {
+    const better = graded.filter((q) => verdict(q.id, said) !== 'wrong').map((q) => q.id);
+    expect(better).toEqual([]);
+  });
+});

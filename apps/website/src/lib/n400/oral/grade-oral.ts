@@ -12,9 +12,14 @@ function editDistance(a: string, b: string): number {
   return levenshtein(a, b, () => 1, () => 1, (x, y) => (x === y ? 0 : 1)).distance;
 }
 
+// "not" is a negation, never an answer word (Q60 needs it exactly), yet it is one
+// edit from the stem "vot": "I don't know" graded near on Q69/Q70 (Gate 3, rev 3.15).
+const NEVER_NEAR: ReadonlySet<string> = new Set(['not']);
+
 // A near-match only ever contributes to `near` (D8): recognizers output real
 // words, so "institution" for "constitution" is a different word, not a typo.
 function isNearWord(token: string, keywordStem: string): boolean {
+  if (NEVER_NEAR.has(token)) return false;
   if (/^\d+$/.test(token) || /^\d+$/.test(keywordStem)) return false;
   if (token.length < 3 || keywordStem.length < 3) return false;
   return editDistance(token, keywordStem) <= (keywordStem.length >= LONG_WORD_LEN ? 2 : 1);

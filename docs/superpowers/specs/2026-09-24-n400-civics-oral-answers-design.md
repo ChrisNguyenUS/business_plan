@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-25 (rev 3.15 — Slice 4: `not` never near-matches, `n400_oral_answer`, Privacy Policy voice section; rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -124,6 +124,7 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 | 18 | Congress | congress, the president and the courts | near (rev 3.2: other branches excluded) |
 | 19 | Senate and House of Representatives | senate | near (1 of 2 items) |
 | 48 | Secretary of Education and Secretary of Energy | secretary | wrong (rev 3.2: no item fully named) |
+| 69 | Vote and write to a newspaper | I don't know | wrong (rev 3.15: `not` never near-matches; Gate 3 found `not` ≈ `vote`) |
 
 ## 4. Speech capture
 

@@ -124,3 +124,16 @@ describe('gradeOralAnswer — enumeration near counts items, not keywords (rev 3
     expect(gradeOralAnswer('secretary', q48).verdict).toBe('wrong');
   });
 });
+
+describe('gradeOralAnswer — "not" never near-matches (rev 3.15)', () => {
+  it('"I don\'t know" is not a near "vote" (Gate 3: not ≈ vot)', () => {
+    const participation: OralAnswerConfig = { type: 'enumeration', alternatives: [['vote', 'write newspaper']] };
+    expect(gradeOralAnswer("I don't know", participation).verdict).toBe('wrong');
+    expect(gradeOralAnswer('not sure', participation).verdict).toBe('wrong');
+  });
+
+  it('a real one-edit word still counts as near', () => {
+    const participation: OralAnswerConfig = { type: 'enumeration', alternatives: [['vote', 'write newspaper']] };
+    expect(gradeOralAnswer('vat', participation).verdict).toBe('near');
+  });
+});
