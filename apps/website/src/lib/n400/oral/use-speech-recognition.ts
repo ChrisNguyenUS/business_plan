@@ -1,11 +1,20 @@
 'use client';
 
-// Thin React wrapper over SpeechController (the only file that touches the
-// browser's Web Speech API). Spec §4.1.
+// React side of the mic. VoiceMicProvider (app layout) owns ONE MicController
+// shared by practice and mock, so the iOS persistent session survives screen
+// changes (spec D15). Without a provider the hook falls back to its own.
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { oralDebugEnabled, oralDebugLog } from './oral-debug';
-import { SpeechController, type MicSnapshot, type RecognitionLike } from './speech-controller';
+import { PersistentSpeechController } from './persistent-speech-controller';
+import {
+  SpeechController,
+  type MicController,
+  type MicSnapshot,
+  type RecognitionLike,
+  type SpeechControllerDeps,
+} from './speech-controller';
+import { isIOSDevice } from './voice-support';
 
 const UNAVAILABLE_KEY = 'n400.oral.unavailable';
 
@@ -13,6 +22,8 @@ const SERVER_SNAPSHOT: MicSnapshot = { supported: false, state: 'idle', transcri
 const noopSubscribe = () => () => {};
 
 export interface SpeechApi extends MicSnapshot {
+  /** iOS persistent session (D15): the mic stays on between answers. */
+  persistent: boolean;
   start(): void;
   stop(): void;
   reset(): void;
@@ -47,11 +58,14 @@ async function reportToSentry(code: string, message?: string): Promise<void> {
   }
 }
 
-function createController(): SpeechController {
+export function createMicController(): MicController {
   const Ctor = recognitionCtor();
+  const persistent = isIOSDevice(navigator.userAgent, navigator.maxTouchPoints ?? 0);
   const debug = oralDebugEnabled();
-  if (debug) oralDebugLog(`api=${Ctor ? 'present' : 'missing'} unavailable=${readUnavailable()}`);
-  return new SpeechController({
+  if (debug) {
+    oralDebugLog(`api=${Ctor ? 'present' : 'missing'} mode=${persistent ? 'persistent' : 'per-answer'} unavailable=${readUnavailable()}`);
+  }
+  const deps: SpeechControllerDeps = {
     create: Ctor ? () => new Ctor() : null,
     now: () => Date.now(),
     setTimer: (fn, ms) => window.setTimeout(fn, ms),
@@ -66,14 +80,19 @@ function createController(): SpeechController {
     },
     unavailable: readUnavailable(),
     log: debug ? oralDebugLog : undefined,
-  });
+  };
+  return persistent ? new PersistentSpeechController(deps) : new SpeechController(deps);
 }
 
+export const MicControllerContext = createContext<MicController | null>(null);
+
 export function useSpeechRecognition(): SpeechApi {
+  const shared = useContext(MicControllerContext);
   // No window during SSR; hydration uses the server snapshot, then the real one.
-  const [controller] = useState<SpeechController | null>(() =>
-    typeof window === 'undefined' ? null : createController(),
+  const [own] = useState<MicController | null>(() =>
+    shared || typeof window === 'undefined' ? null : createMicController(),
   );
+  const controller = shared ?? own;
 
   const snap = useSyncExternalStore(
     controller ? controller.subscribe : noopSubscribe,
@@ -81,43 +100,35 @@ export function useSpeechRecognition(): SpeechApi {
     () => SERVER_SNAPSHOT,
   );
 
-  // Field diagnosis only (?oraldebug=1): why does the page remount / the mic die?
   useEffect(() => {
     if (!oralDebugEnabled()) return;
     oralDebugLog(`mount ${window.location.pathname}${window.location.search}`);
-    const onError = (e: ErrorEvent) => oralDebugLog(`window error: ${e.message}`);
-    const onRejection = (e: PromiseRejectionEvent) => oralDebugLog(`unhandledrejection: ${String(e.reason)}`);
-    const onPageHide = (e: PageTransitionEvent) => oralDebugLog(`pagehide persisted=${e.persisted}`);
-    const onPageShow = (e: PageTransitionEvent) => oralDebugLog(`pageshow persisted=${e.persisted}`);
-    window.addEventListener('error', onError);
-    window.addEventListener('unhandledrejection', onRejection);
-    window.addEventListener('pagehide', onPageHide);
-    window.addEventListener('pageshow', onPageShow);
-    return () => {
-      oralDebugLog('unmount');
-      window.removeEventListener('error', onError);
-      window.removeEventListener('unhandledrejection', onRejection);
-      window.removeEventListener('pagehide', onPageHide);
-      window.removeEventListener('pageshow', onPageShow);
-    };
+    return () => oralDebugLog('unmount');
   }, []);
 
+  // Own controller (no provider): abort on hide unless persistent; release on unmount.
   useEffect(() => {
-    if (!controller) return;
+    if (!own) return;
     const onVisibility = () => {
-      if (oralDebugEnabled()) oralDebugLog(`visibility=${document.visibilityState}`);
-      if (document.visibilityState === 'hidden') controller.abort();
+      if (document.visibilityState === 'hidden' && !own.persistent) own.abort();
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
-      controller.abort();
+      own.shutdown();
     };
-  }, [controller]);
+  }, [own]);
+
+  // Shared controller: leaving a screen only resets its capture window.
+  useEffect(() => {
+    if (!shared) return;
+    return () => shared.reset();
+  }, [shared]);
 
   const start = useCallback(() => controller?.start(), [controller]);
   const stop = useCallback(() => controller?.stop(), [controller]);
   const reset = useCallback(() => controller?.reset(), [controller]);
+  const persistent = controller?.persistent ?? false;
 
-  return useMemo(() => ({ ...snap, start, stop, reset }), [snap, start, stop, reset]);
+  return useMemo(() => ({ ...snap, persistent, start, stop, reset }), [snap, persistent, start, stop, reset]);
 }
