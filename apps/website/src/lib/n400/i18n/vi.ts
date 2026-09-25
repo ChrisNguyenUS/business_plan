@@ -1100,7 +1100,7 @@ export const vi = {
     modeVoice: 'Tự nói',
     hint: 'Nói đáp án bạn đã học. Không cần nói thành câu đầy đủ, chỉ cần có các từ chính.',
     hintDismiss: 'Đã hiểu',
-    hintPersistent: 'Trên iPhone, micro sẽ bật suốt khi bạn luyện nói; app chỉ lấy chữ khi bạn bấm nút micro.',
+    hintPersistent: 'Trên iPhone và iPad, micro sẽ bật suốt khi bạn luyện nói; app chỉ lấy chữ khi bạn bấm nút micro.',
     tapToSpeak: 'Bấm để nói',
     listening: 'Đang nghe… bấm để dừng',
     processing: 'Đang xử lý…',

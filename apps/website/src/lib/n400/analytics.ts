@@ -39,7 +39,8 @@ function trackN400Event(eventName: string, params?: Record<string, unknown>): vo
   }
 }
 
-export function trackMockTestStart(answerMode: 'choice' | 'voice' = 'choice'): void {
+/** 'typed' = a voice run in an in-app browser, where every item is typed (matches the DB row). */
+export function trackMockTestStart(answerMode: 'choice' | 'voice' | 'typed' = 'choice'): void {
   trackN400Event('n400_mock_test_start', { answer_mode: answerMode });
 }
 
@@ -62,16 +63,20 @@ const yesNo = (v: boolean | null): 'yes' | 'no' | 'n/a' => (v === null ? 'n/a' :
 
 // GA4 only: not in PIXEL_SAFE_EVENTS, and never the transcript text (spec §9).
 export function trackOralAnswer(e: OralAnswerEvent): void {
-  trackGa('n400_oral_answer', {
-    qid: e.qid,
-    context: e.context,
-    input: e.input,
-    verdict: e.verdict,
-    retried: yesNo(e.retried),
-    confirmed_near: yesNo(e.confirmedNear),
-    error: e.error,
-    transcript_length: e.transcriptLength,
-  });
+  try {
+    trackGa('n400_oral_answer', {
+      qid: e.qid,
+      context: e.context,
+      input: e.input,
+      verdict: e.verdict,
+      retried: yesNo(e.retried),
+      confirmed_near: yesNo(e.confirmedNear),
+      error: e.error,
+      transcript_length: e.transcriptLength,
+    });
+  } catch {
+    // Analytics must never break practice or the mock result.
+  }
 }
 
 export function trackPracticeComplete(score: number, total: number): void {

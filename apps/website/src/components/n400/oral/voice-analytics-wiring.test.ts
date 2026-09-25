@@ -40,7 +40,12 @@ describe('mock sends n400_oral_answer', () => {
   });
 
   it('the mock start carries the answer mode it latches', () => {
-    expect(mock).toContain('trackMockTestStart(run);');
     expect(mock).toContain('setRunMode(run);');
+  });
+});
+
+describe('mock start answer_mode matches the attempt (polish pass)', () => {
+  it('an in-app voice run is reported as typed, like the DB row', () => {
+    expect(mock).toContain("trackMockTestStart(run === 'voice' && voiceInput === 'typed' ? 'typed' : run);");
   });
 });

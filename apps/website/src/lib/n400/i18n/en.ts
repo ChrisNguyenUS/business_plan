@@ -1101,7 +1101,7 @@ export const en: N400Dict = {
     modeVoice: 'Speak',
     hint: 'Say the answer you learned. You don’t need a full sentence, just the key words.',
     hintDismiss: 'Got it',
-    hintPersistent: 'On iPhone the microphone stays on while you practice speaking; the app only takes the words spoken after you tap the mic.',
+    hintPersistent: 'On iPhone and iPad, the microphone stays on while you practice speaking; the app only takes the words spoken after you tap the mic.',
     tapToSpeak: 'Tap to speak',
     listening: 'Listening… tap to stop',
     processing: 'Processing…',

@@ -229,7 +229,7 @@ function MockTestPageInner() {
     startedRef.current = true;
     setError(null);
     const run: PracticeAnswerMode = answerMode === 'voice' && voiceState === 'available' ? 'voice' : 'choice';
-    trackMockTestStart(run);
+    trackMockTestStart(run === 'voice' && voiceInput === 'typed' ? 'typed' : run);
 
     // Build the slides client-side from a seed — the same deterministic
     // shuffle the full interview uses — so the test starts with zero

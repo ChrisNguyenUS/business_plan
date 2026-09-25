@@ -70,3 +70,18 @@ describe('trackMockTestStart', () => {
     expect(ga).toHaveBeenCalledWith('n400_mock_test_start', { answer_mode: 'choice' });
   });
 });
+
+// Final review of Slice 4 (deferred minors, polish pass).
+describe('analytics never breaks the UI', () => {
+  it('trackOralAnswer swallows a throwing gtag', () => {
+    ga.mockImplementationOnce(() => {
+      throw new Error('gtag down');
+    });
+    expect(() => trackOralAnswer(base)).not.toThrow();
+  });
+
+  it('trackMockTestStart can say the run is typed (in-app browsers)', () => {
+    trackMockTestStart('typed');
+    expect(ga).toHaveBeenCalledWith('n400_mock_test_start', { answer_mode: 'typed' });
+  });
+});
