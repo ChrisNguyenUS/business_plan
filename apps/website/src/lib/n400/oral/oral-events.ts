@@ -26,14 +26,11 @@ export function practiceAnswerEvent(
   };
 }
 
-/** A mic error while answering: no verdict, no transcript. */
-export function micErrorEvent(
-  qid: number,
-  context: 'practice' | 'mock',
-  input: 'mic' | 'typed',
-  error: MicError,
-): OralAnswerEvent {
-  return { qid, context, input, verdict: 'none', retried: null, confirmedNear: null, error, transcriptLength: 0 };
+/** A mic error while answering: no verdict, no transcript. Always `input: 'mic'`,
+ *  since only the mic errors; the page's input has already flipped to 'typed'
+ *  for the errors that kill the mic (micLost latch re-renders first). */
+export function micErrorEvent(qid: number, context: 'practice' | 'mock', error: MicError): OralAnswerEvent {
+  return { qid, context, input: 'mic', verdict: 'none', retried: null, confirmedNear: null, error, transcriptLength: 0 };
 }
 
 /** Mock: one event per spoken or typed item, verdicts from the server finalize.

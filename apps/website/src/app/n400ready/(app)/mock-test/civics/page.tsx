@@ -190,7 +190,7 @@ function MockTestPageInner() {
   useEffect(() => {
     const qid = slides[index]?.questionId;
     if (!micError || stage !== 'taking' || runMode !== 'voice' || qid === undefined) return;
-    trackOralAnswer(micErrorEvent(qid, 'mock', mockItemInput(voiceInput, micLost), micError));
+    trackOralAnswer(micErrorEvent(qid, 'mock', micError));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [micError]);
 

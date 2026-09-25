@@ -25,15 +25,17 @@ describe('practiceAnswerEvent', () => {
 });
 
 describe('micErrorEvent', () => {
-  it('has no verdict and no transcript', () => {
-    expect(micErrorEvent(12, 'mock', 'mic', 'no-speech')).toEqual({
+  // Final review: the micLost latch re-renders before the effect runs, so
+  // taking the input from the page labelled fatal mic errors 'typed'.
+  it('has no verdict and no transcript, and always comes from the mic', () => {
+    expect(micErrorEvent(12, 'mock', 'not-allowed')).toEqual({
       qid: 12,
       context: 'mock',
       input: 'mic',
       verdict: 'none',
       retried: null,
       confirmedNear: null,
-      error: 'no-speech',
+      error: 'not-allowed',
       transcriptLength: 0,
     });
   });

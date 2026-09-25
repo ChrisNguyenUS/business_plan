@@ -281,9 +281,11 @@ export default function PracticePage() {
   const panelInput: 'mic' | 'typed' = voiceInput === 'typed' || micLost ? 'typed' : 'mic';
 
   // n400_oral_answer for mic errors (spec §9): one event each time an error appears.
+  // Gated on the chosen mode, not voiceHere: 'unavailable' flips supported → false
+  // (so voiceHere → false) in the same render, and is the error worth counting most.
   const micError = mic.error;
   useEffect(() => {
-    if (micError && voiceHere) trackOralAnswer(micErrorEvent(question.id, 'practice', panelInput, micError));
+    if (micError && answerMode === 'voice') trackOralAnswer(micErrorEvent(question.id, 'practice', micError));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [micError]);
 

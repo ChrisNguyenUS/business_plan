@@ -18,9 +18,11 @@ describe('practice sends n400_oral_answer', () => {
     expect(practice).toContain("trackOralAnswer(practiceAnswerEvent(question.id, panelInput, 'near', yes, voiceText));");
   });
 
-  it('once per mic error', () => {
+  // Final review: gating on voiceHere dropped 'unavailable', which flips
+  // supported → false (so voiceHere → false) in the same render.
+  it('once per mic error while in Tự nói, incl. the error that turns voice off', () => {
     expect(practice).toMatch(
-      /micErrorEvent\(question\.id, 'practice', panelInput, micError\)\);[\s\S]{0,120}\}, \[micError\]\);/,
+      /if \(micError && answerMode === 'voice'\) trackOralAnswer\(micErrorEvent\(question\.id, 'practice', micError\)\);[\s\S]{0,120}\}, \[micError\]\);/,
     );
   });
 });
@@ -34,9 +36,7 @@ describe('mock sends n400_oral_answer', () => {
   });
 
   it('once per mic error during a voice run', () => {
-    expect(mock).toMatch(
-      /micErrorEvent\(qid, 'mock', mockItemInput\(voiceInput, micLost\), micError\)\);[\s\S]{0,120}\}, \[micError\]\);/,
-    );
+    expect(mock).toMatch(/trackOralAnswer\(micErrorEvent\(qid, 'mock', micError\)\);[\s\S]{0,120}\}, \[micError\]\);/);
   });
 
   it('the mock start carries the answer mode it latches', () => {
