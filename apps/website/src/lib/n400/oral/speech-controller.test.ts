@@ -378,10 +378,11 @@ describe('shared helpers (rev 3.5)', () => {
   });
 });
 
-describe('SpeechController — noteAudioPlayed', () => {
+describe('SpeechController — noteAudioPlayed / warmUp', () => {
   it('is a no-op for the per-answer controller', () => {
     const h = harness();
     h.c.noteAudioPlayed();
+    h.c.warmUp();
     expect(h.recs).toHaveLength(0);
     expect(h.s().state).toBe('idle');
   });

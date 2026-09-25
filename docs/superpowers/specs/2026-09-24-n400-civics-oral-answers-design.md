@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.9 — stop the iOS session before 🔊, auto-restart after lost capture; rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-25 (rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -164,12 +164,12 @@ function useSpeechRecognition(): {
   - A mic tap opens a **capture window**. If no session is running, the tap also starts one. The window starts after every earlier result, except an unfinished one that began ≤ **1 s** before the tap (the learner's first words). Speech from earlier windows or from before the tap never enters an answer: `mustExclude` questions (Q2, Q18, Q42–46, Q82) would be hurt by extra words.
   - The window's transcript is its results joined. It closes when the learner taps Stop, **1.2 s** after all of its results are final, or at the **15 s** cap.
   - Stall: if no text arrives within **7 s** (counted from `audiostart` for a brand-new session), the window closes as `no-speech`. A session that has **never produced any text** is treated as deaf: its second silent window (by stall, Stop or cap) shuts it down and reports `stalled`. A session that has heard speech is never killed by silence. Only closed capture windows restart the 5-minute idle clock; question changes don't.
-  - **🔊 and lost capture (rev 3.9, device probe 2026-09-25, supersedes rev 3.6–3.8):**
-    - **Before 🔊 plays**, the session is stopped gracefully (`stop()`, no window kept). Its event listeners stay attached (inert) and the object stays referenced until WebKit fires `end`. The first app build dropped them at `stop()` and the next session came up deaf, while the probe, which kept them, got a working session. The next mic tap opens a new session. Probe `strategy=stop`: that new session heard immediately, 4 answers in a row, and playback ran at full volume because the mic was off.
-    - Keeping the session through playback kills its capture until WebKit ends it about 24 s after playback, with `audio-capture: Source is stopped`.
-    - If WebKit ends a session **that had heard speech** with `audio-capture` (other audio killed its capture), the controller starts a new session at once, **without a tap**. Probe `strategy=keep`: that session heard immediately. An answer window open at that moment continues on the new session.
-    - A session that never heard is not auto-restarted, so a broken mic can't loop.
-    - The mic is never opened just because audio plays.
+  - **🔊 and lost capture (rev 3.10, owner decision 2026-09-25, supersedes rev 3.6–3.9):** the mic runs through 🔊, and lower playback volume is accepted.
+    - Every 🔊 **keeps** a running session.
+    - If none is running, 🔊 first opens one with no window (warm-up). This only happens once a voice answer has worked in this browser (`n400.oral.used`), so it never pops a surprise permission prompt.
+    - Playback may still kill the running session's capture. WebKit then ends it with `audio-capture: Source is stopped`, and the controller starts a new session at once, without a tap: 6/6 on device, including probe `strategy=keep`. An answer window open at that moment continues on the new session.
+    - A session that never produced text is not auto-restarted, so there is no loop.
+    - Rejected on device: stopping the session before 🔊, which worked 1/3 times, with or without keeping its listeners.
   - Tab hidden: nothing happens (WebKit keeps the session). Leaving a screen: close its window only. Idle **5 min** with no window: shut the session down. If the session ends by itself mid-window, the window closes with what it has; outside a window it ends silently, and the learner's screen is untouched.
 - While listening, the mic button is a **Stop** button; a second tap never starts a second instance.
 

@@ -54,8 +54,6 @@ export class PersistentSpeechController implements MicController {
   private minFrom = 0;
   /** Last recognizer error of the current session (auto-restart after lost capture). */
   private lastErrorCode = '';
-  /** A session stopped before 🔊, kept referenced until WebKit reports its end. */
-  private retiring: RecognitionLike | null = null;
   private windowTimers: unknown[] = [];
   private stallTimer: unknown = null;
   private settleTimer: unknown = null;
@@ -93,21 +91,22 @@ export class PersistentSpeechController implements MicController {
     if (this.openSession(create)) this.openWindow(true);
   }
 
-  /** 🔊 is about to play. Device probe 2026-09-25 (strategy=stop): stopping the
-   *  session BEFORE <audio> plays keeps playback at full volume, and the session
-   *  the next mic tap opens hears at once. Keeping it through playback kills its
-   *  capture until WebKit ends it ~20 s later. Never opens the mic. Spec rev 3.9. */
+  /** 🔊 is about to play. Owner decision (rev 3.10): keep the mic on through
+   *  playback; lower volume is accepted. Stopping before 🔊 was unreliable on the
+   *  device (1/3). A session running through playback is ended by WebKit
+   *  ("Source is stopped") and auto-restarted in onSessionEnd; that one hears (6/6). */
   noteAudioPlayed(): void {
-    if (!this.rec) {
-      this.deps.log?.('audio played (no session)');
-      return;
-    }
-    this.deps.log?.('audio played: stop session first');
-    if (this.windowOpen) {
-      this.discardWindow();
-      this.finish('idle', null);
-    }
-    this.endSession('stop');
+    this.deps.log?.(this.rec ? 'audio played (session kept)' : 'audio played (no session)');
+  }
+
+  /** Before 🔊: open the session with no window (screen untouched) so the mic runs
+   *  through playback. The hook only calls this once voice has worked in this
+   *  browser (permission granted: no surprise prompt). */
+  warmUp(): void {
+    const create = this.deps.create;
+    if (!create || !this.snap.supported || this.rec) return;
+    this.deps.log?.('warm up');
+    if (this.openSession(create)) this.armIdle();
   }
 
   /** Learner tapped Stop: close the window with what it heard. The session stays. */
@@ -364,43 +363,16 @@ export class PersistentSpeechController implements MicController {
   }
 
   private killSession(): void {
-    this.endSession('abort');
-  }
-
-  /** End the session: 'stop' (graceful, before 🔊 — proven on device) or 'abort'. */
-  private endSession(how: 'stop' | 'abort'): void {
     this.clearIdle();
     const rec = this.rec;
     if (!rec) return;
+    this.detach(rec);
     this.rec = null;
     this.results = NO_RESULTS;
-    if (how === 'abort') {
-      this.detach(rec);
-      try {
-        rec.abort();
-      } catch {
-        // Already gone.
-      }
-      return;
-    }
-    // Keep listeners and a reference until WebKit reports the end. Dropping them
-    // at stop() (the first try) left the next session deaf; the probe that kept
-    // them got a working session after 🔊 (device 2026-09-25). The listeners are
-    // inert: nothing from the retiring session reaches the screen.
-    const ignore = () => {};
-    rec.onstart = rec.onaudiostart = rec.onspeechstart = rec.onspeechend = ignore;
-    rec.onresult = ignore;
-    rec.onerror = (e) => this.deps.log?.(`retired error ${e.error}`);
-    rec.onend = () => {
-      this.deps.log?.('retired session end');
-      this.detach(rec);
-      if (this.retiring === rec) this.retiring = null;
-    };
-    this.retiring = rec;
     try {
-      rec.stop();
+      rec.abort();
     } catch {
-      // Already stopping.
+      // Already gone.
     }
   }
 

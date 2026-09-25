@@ -94,8 +94,10 @@ export interface MicController {
   reset(): void;
   abort(): void;
   shutdown(): void;
-  /** 🔊 audio is about to play (iOS persistent: restart the session on the next tap). */
+  /** 🔊 audio is about to play (iOS persistent: the session is kept). */
   noteAudioPlayed(): void;
+  /** Open the recognizer ahead of 🔊 so it runs through playback (iOS persistent only). */
+  warmUp(): void;
 }
 
 export class SpeechController implements MicController {
@@ -219,6 +221,9 @@ export class SpeechController implements MicController {
 
   /** Per-answer sessions start fresh on every mic tap; nothing to do. */
   noteAudioPlayed(): void {}
+
+  /** Per-answer sessions start on the mic tap; nothing to warm up. */
+  warmUp(): void {}
 
   /** Release the mic entirely (MicController). Per-answer: same as abort. */
   shutdown(): void {

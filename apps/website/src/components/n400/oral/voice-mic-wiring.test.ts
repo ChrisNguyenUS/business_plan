@@ -37,8 +37,9 @@ describe('🔊 marks the iOS session for a restart (spec D15, rev 3.7)', () => {
     expect(read('src/app/n400ready/(app)/mock-test/civics/page.tsx')).toContain('onBeforePlay={mic.noteAudioPlayed}');
   });
 
-  it('the mic is never opened just because audio plays', () => {
+  it('🔊 opens the mic first only once voice has worked here (no surprise prompt)', () => {
     const hook = read('src/lib/n400/oral/use-speech-recognition.ts');
-    expect(hook).not.toContain('warmUp');
+    expect(hook).toContain('USED_KEY');
+    expect(hook).toContain('if (readUsed()) controller.warmUp();');
   });
 });
