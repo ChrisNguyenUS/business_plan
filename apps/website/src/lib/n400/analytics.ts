@@ -12,6 +12,8 @@
 // here so all N400 analytics live behind one import path.
 
 import { trackGa, generateEventId, trackBadgeUnlocked } from '@/lib/analytics/events';
+import type { MicError } from '@/lib/n400/oral/speech-controller';
+import type { OralVerdict } from '@/lib/n400/oral/types';
 
 const PIXEL_SAFE_EVENTS = new Set([
   'n400_mock_test_start',
@@ -37,8 +39,39 @@ function trackN400Event(eventName: string, params?: Record<string, unknown>): vo
   }
 }
 
-export function trackMockTestStart(): void {
-  trackN400Event('n400_mock_test_start');
+export function trackMockTestStart(answerMode: 'choice' | 'voice' = 'choice'): void {
+  trackN400Event('n400_mock_test_start', { answer_mode: answerMode });
+}
+
+/** One voice/typed answer outcome, or one mic error (spec §9). */
+export interface OralAnswerEvent {
+  qid: number;
+  context: 'practice' | 'mock';
+  input: 'mic' | 'typed';
+  /** 'none' for a mic error event. */
+  verdict: OralVerdict | 'none';
+  /** Mock only (one Nói lại per item); null in practice. */
+  retried: boolean | null;
+  /** Practice near prompt: true = "Đúng vậy", false = "Không", null = no prompt. */
+  confirmedNear: boolean | null;
+  error: MicError | 'none';
+  transcriptLength: number;
+}
+
+const yesNo = (v: boolean | null): 'yes' | 'no' | 'n/a' => (v === null ? 'n/a' : v ? 'yes' : 'no');
+
+// GA4 only: not in PIXEL_SAFE_EVENTS, and never the transcript text (spec §9).
+export function trackOralAnswer(e: OralAnswerEvent): void {
+  trackGa('n400_oral_answer', {
+    qid: e.qid,
+    context: e.context,
+    input: e.input,
+    verdict: e.verdict,
+    retried: yesNo(e.retried),
+    confirmed_near: yesNo(e.confirmedNear),
+    error: e.error,
+    transcript_length: e.transcriptLength,
+  });
 }
 
 export function trackPracticeComplete(score: number, total: number): void {

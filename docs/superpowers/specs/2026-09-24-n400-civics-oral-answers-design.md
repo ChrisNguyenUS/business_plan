@@ -260,7 +260,7 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 
 ## 9. Analytics
 
-- One GA4 event via `lib/n400/analytics.ts`: **`n400_oral_answer`** `{ qid, context: 'practice'|'mock', verdict, retried, confirmed_near, error, transcript_length }`. Not sent to the Meta Pixel. No transcript text in analytics.
+- One GA4 event via `lib/n400/analytics.ts`: **`n400_oral_answer`** `{ qid, context: 'practice'|'mock', input: 'mic'|'typed', verdict: 'correct'|'near'|'wrong'|'none', retried: 'yes'|'no'|'n/a', confirmed_near: 'yes'|'no'|'n/a', error, transcript_length }`. Not sent to the Meta Pixel. No transcript text in analytics. (Rev 3.15: `input` keeps typed answers out of the voice numbers; `retried` is `n/a` in practice, which has no retry limit; each mic error is its own event with `verdict: 'none'`; mock verdicts are the server's, sent after finalize. Payloads are built in `lib/n400/oral/oral-events.ts`.)
 - Retry, confirmation, no-speech and error rates are all derived from this one event.
 - `trackMockTestStart` gains an `answer_mode` param.
 - Nothing is written to `n400_growth_events` (that table feeds the staff Leads timeline).
