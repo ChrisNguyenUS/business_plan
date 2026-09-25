@@ -51,6 +51,8 @@ export async function POST(request: Request) {
       email,
       service_type,
       message,
+      facebook,
+      zalo,
       locale = "en",
       utm_source,
       utm_medium,
@@ -71,13 +73,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true }); // Silently reject bots
     }
 
+    // Facebook/Zalo are free-text handles (EB-3 leads in Vietnam often have no
+    // US phone or email). No dedicated columns — they're prepended to message.
+    const facebookHandle = typeof facebook === "string" ? facebook.trim() : "";
+    const zaloHandle = typeof zalo === "string" ? zalo.trim() : "";
+
     // Validation
-    if (!full_name || (!email && !phone)) {
+    if (!full_name || (!email && !phone && !facebookHandle && !zaloHandle)) {
       return NextResponse.json(
-        { error: "Name and either email or phone are required." },
+        { error: "Name and a contact method are required." },
         { status: 400 }
       );
     }
+
+    const fullMessage =
+      [
+        facebookHandle && `Facebook: ${facebookHandle}`,
+        zaloHandle && `Zalo: ${zaloHandle}`,
+        message,
+      ]
+        .filter(Boolean)
+        .join("\n") || null;
 
     // 1. Insert into Supabase (if configured)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -93,7 +109,7 @@ export async function POST(request: Request) {
           phone: phone || null,
           email: email || null,
           service_type: service_type || null,
-          message: message || null,
+          message: fullMessage,
           locale,
           utm_source: utm_source || null,
           utm_medium: utm_medium || null,
@@ -130,7 +146,7 @@ export async function POST(request: Request) {
             <p><strong>Email:</strong> ${escapeHtml(email || "N/A")}</p>
             <p><strong>Service:</strong> ${escapeHtml(service_type || "General")}</p>
             <p><strong>Message:</strong></p>
-            <p>${escapeHtml(message || "N/A")}</p>
+            <p style="white-space:pre-line">${escapeHtml(fullMessage || "N/A")}</p>
             <hr/>
             <p><small>Language: ${escapeHtml(locale)} | Source: ${escapeHtml(utm_source || "direct")} | Campaign: ${escapeHtml(utm_campaign || "none")}</small></p>
           `,

@@ -83,9 +83,12 @@ export default function ThiThuVietPage() {
             {
               key: item.sentenceId,
               badge: tFormat(dict.mockTest.writingMock.badge, { index: i + 1, num: q.num }),
-              prompt: q.sentenceEn,
-              promptVi: q.sentenceVi,
+              // Same shape as the full interview review: the prompt is the
+              // dictation instruction, the sentence is the correct answer.
+              prompt: dict.mockTest.review.writingPrompt,
               userAnswer: item.userInput.trim() || null,
+              correctAnswer: q.sentenceEn,
+              correctAnswerVi: q.sentenceVi,
               ok: item.correct,
               audioSrc: writingAudioUrl(q.num),
             },

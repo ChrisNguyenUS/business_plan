@@ -149,5 +149,175 @@
   "portal_cases": "Hồ Sơ",
   "portal_inquiries": "Yêu Cầu",
   "portal_empty": "Chưa có dữ liệu",
-  "portal_empty_desc": "Liên hệ chúng tôi để bắt đầu."
+  "portal_empty_desc": "Liên hệ chúng tôi để bắt đầu.",
+  "eb3": {
+    "meta_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
+    "meta_desc": "Tìm hiểu diện EB-3 lao động phổ thông (Other Workers): điều kiện, quy trình 5 bước, thời gian ước tính 4–6 năm. Kiểm tra điều kiện miễn phí cùng MannaOS.",
+    "featured_badge": "Mới",
+    "featured_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
+    "featured_desc": "Không cần bằng cấp. Dành cho người ở Việt Nam và người đang ở Mỹ muốn chuyển diện.",
+    "featured_cta": "Tìm hiểu EB-3",
+    "hero_eyebrow": "EB-3 Other Workers",
+    "hero_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
+    "hero_sub": "Không cần bằng cấp, không cần tiếng Anh giỏi. Có chủ lao động Mỹ bảo lãnh, vợ/chồng và con dưới 21 tuổi được đi cùng.",
+    "cta_messenger": "Nhắn Messenger tư vấn",
+    "cta_check": "Kiểm tra điều kiện",
+    "what_title": "EB-3 là gì?",
+    "what_intro": "EB-3 là diện thẻ xanh dựa trên việc làm, gồm 3 nhánh:",
+    "categories": [
+      {
+        "title": "Skilled Workers",
+        "desc": "Công việc cần ít nhất 2 năm kinh nghiệm hoặc đào tạo."
+      },
+      {
+        "title": "Professionals",
+        "desc": "Công việc yêu cầu bằng cử nhân của Mỹ hoặc tương đương."
+      },
+      {
+        "title": "Other Workers — lao động phổ thông",
+        "desc": "Công việc cần dưới 2 năm kinh nghiệm. Không yêu cầu bằng cấp. Đây là diện MannaOS hỗ trợ."
+      }
+    ],
+    "where_title": "Bạn đang ở đâu?",
+    "where_vn_title": "Đang ở Việt Nam",
+    "where_vn_desc": "Hồ sơ đi theo diện lãnh sự: nộp DS-260, khám sức khỏe và phỏng vấn tại Tổng Lãnh sự quán Mỹ ở TP.HCM.",
+    "where_us_title": "Đang ở Mỹ",
+    "where_us_desc": "Có thể chuyển diện (I-485) ngay tại Mỹ khi đến lượt. Điều kiện: bạn đang giữ tình trạng cư trú hợp pháp.",
+    "steps_title": "Quy trình 5 bước",
+    "steps": [
+      {
+        "title": "Đánh giá hồ sơ",
+        "desc": "MannaOS xem thông tin của bạn và phản hồi trong 48 giờ."
+      },
+      {
+        "title": "Ghép chủ lao động",
+        "desc": "Kết nối với chủ lao động Mỹ đã được xác minh, phù hợp ngành nghề và tiểu bang."
+      },
+      {
+        "title": "PERM + I-140",
+        "desc": "Chủ lao động xin chứng nhận lao động (PERM), sau đó nộp đơn I-140 bảo lãnh bạn."
+      },
+      {
+        "title": "Chờ lịch visa",
+        "desc": "Chờ đến lượt theo Visa Bulletin, sau đó phỏng vấn lãnh sự (ở Việt Nam) hoặc nộp I-485 (ở Mỹ)."
+      },
+      {
+        "title": "Nhận thẻ xanh",
+        "desc": "Bạn và gia đình trở thành thường trú nhân Mỹ."
+      }
+    ],
+    "steps_note": "Tổng thời gian ước tính khoảng 4–6 năm, tùy lịch visa và tốc độ xử lý của USCIS và Bộ Ngoại giao Mỹ. Thời gian không được bảo đảm.",
+    "fit_title": "Ai phù hợp?",
+    "fit_industries_title": "Ngành thường tuyển",
+    "fit_industries": [
+      "Chế biến thực phẩm",
+      "Khách sạn, nhà hàng",
+      "Chăm sóc người cao tuổi",
+      "Nhà máy, sản xuất"
+    ],
+    "fit_requirements_title": "Điều kiện cơ bản",
+    "fit_requirements": [
+      "Sức khỏe tốt",
+      "Lý lịch tư pháp rõ ràng",
+      "Cam kết làm việc cho chủ lao động bảo lãnh",
+      "Chuẩn bị tài chính cho các mốc hồ sơ"
+    ],
+    "cost_title": "Cấu trúc chi phí",
+    "cost_intro": "Chi phí được chia theo từng mốc của hồ sơ. Gồm 4 nhóm:",
+    "cost_items": [
+      {
+        "title": "Chủ lao động chi trả",
+        "desc": "Chi phí xin chứng nhận lao động (PERM) và tuyển dụng do chủ lao động chịu theo quy định."
+      },
+      {
+        "title": "Phí luật sư",
+        "desc": "Phí luật sư di trú được cấp phép tại Mỹ thực hiện hồ sơ pháp lý."
+      },
+      {
+        "title": "Phí chính phủ",
+        "desc": "Lệ phí I-140, DS-260 hoặc I-485, khám sức khỏe."
+      },
+      {
+        "title": "Phí dịch vụ MannaOS",
+        "desc": "Điều phối hồ sơ, hỗ trợ tiếng Việt, dịch thuật và theo dõi tiến độ."
+      }
+    ],
+    "cost_cta": "Nhắn Messenger để nhận báo giá",
+    "faq_title": "Câu hỏi thường gặp",
+    "faq": [
+      {
+        "q": "Tôi có cần biết tiếng Anh không?",
+        "a": "Diện lao động phổ thông không yêu cầu tiếng Anh giỏi. Tiếng Anh cơ bản sẽ giúp bạn làm việc và phỏng vấn dễ dàng hơn."
+      },
+      {
+        "q": "Gia đình có được đi cùng không?",
+        "a": "Có. Vợ/chồng và con chưa kết hôn dưới 21 tuổi được đi cùng theo diện phụ thuộc."
+      },
+      {
+        "q": "Visa Bulletin là gì?",
+        "a": "Bảng lịch visa do Bộ Ngoại giao Mỹ công bố hằng tháng, cho biết hồ sơ nộp từ ngày nào đã đến lượt xét. Thời gian chờ phụ thuộc vào bảng này."
+      },
+      {
+        "q": "Tôi đang ở Mỹ bằng visa du lịch, có chuyển diện được không?",
+        "a": "Tùy trường hợp. Điều kiện quan trọng là bạn đang giữ tình trạng hợp pháp khi nộp I-485. Hãy gửi thông tin để được xem xét cụ thể."
+      },
+      {
+        "q": "Tôi từng bị từ chối visa Mỹ, có nộp được không?",
+        "a": "Vẫn có thể. Lý do bị từ chối trước đây sẽ được xem xét trong quá trình đánh giá hồ sơ."
+      },
+      {
+        "q": "Tôi có phải làm việc cho chủ lao động bảo lãnh không?",
+        "a": "Có. EB-3 dựa trên lời mời làm việc thật, bạn cần có ý định làm việc cho chủ lao động bảo lãnh sau khi nhận thẻ xanh."
+      },
+      {
+        "q": "MannaOS có phải là văn phòng luật không?",
+        "a": "Không. MannaOS là đơn vị hỗ trợ và điều phối hồ sơ. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận."
+      }
+    ],
+    "disclaimer": "MannaOS là đơn vị hỗ trợ và điều phối hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận. Thời gian xử lý phụ thuộc USCIS và Bộ Ngoại giao Mỹ, không được bảo đảm.",
+    "form": {
+      "title": "Kiểm tra điều kiện miễn phí",
+      "sub": "Trả lời vài câu hỏi ngắn, MannaOS sẽ liên hệ bạn trong 48 giờ.",
+      "full_name": "Họ và tên",
+      "location": "Bạn đang ở đâu?",
+      "location_vn": "Việt Nam",
+      "location_us": "Mỹ",
+      "facebook": "Tên hoặc link Facebook",
+      "facebook_hint": "Để MannaOS nhắn Messenger cho bạn",
+      "zalo": "Số Zalo (không bắt buộc)",
+      "phone": "Số điện thoại",
+      "us_status": "Tình trạng visa hiện tại",
+      "us_status_b1b2": "Du lịch B1/B2",
+      "us_status_f1": "Du học F-1",
+      "us_status_other_valid": "Diện khác, còn hạn",
+      "us_status_expired": "Đã hết hạn",
+      "us_status_unknown": "Không rõ",
+      "birth_year": "Năm sinh",
+      "english": "Mức tiếng Anh",
+      "english_none": "Không biết",
+      "english_basic": "Cơ bản",
+      "english_conversational": "Giao tiếp được",
+      "spouse": "Có vợ/chồng đi cùng",
+      "children": "Số con dưới 21 tuổi",
+      "denial": "Bạn đã từng bị từ chối visa Mỹ chưa?",
+      "denial_yes": "Đã từng",
+      "denial_no": "Chưa",
+      "timeline": "Bạn định bắt đầu khi nào?",
+      "timeline_now": "Ngay",
+      "timeline_3_6_months": "Trong 3–6 tháng",
+      "timeline_researching": "Đang tìm hiểu",
+      "notes": "Ghi chú thêm (không bắt buộc)",
+      "ack": "Tôi hiểu MannaOS là đơn vị hỗ trợ hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý.",
+      "select_placeholder": "Chọn...",
+      "submit": "Gửi thông tin",
+      "submitting": "Đang gửi...",
+      "error_required": "Vui lòng điền mục này",
+      "error_invalid": "Thông tin chưa hợp lệ",
+      "error_summary": "Vui lòng kiểm tra các mục được đánh dấu đỏ ở trên.",
+      "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho MannaOS.",
+      "success_title": "Cảm ơn bạn!",
+      "success_desc": "MannaOS sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",
+      "success_cta": "Nhắn Messenger ngay"
+    }
+  }
 }

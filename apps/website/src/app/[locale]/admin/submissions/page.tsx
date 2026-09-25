@@ -128,7 +128,7 @@ export default function AdminSubmissions() {
                 <div className="px-5 pb-4 border-t border-border pt-3 space-y-2">
                   {s.email && <p className="text-sm flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" /> {s.email}</p>}
                   {s.phone && <p className="text-sm flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted-foreground" /> {s.phone}</p>}
-                  {s.message && <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">{s.message}</p>}
+                  {s.message && <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg whitespace-pre-line">{s.message}</p>}
                   <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(s.created_at).toLocaleString()}</p>
                   <div className="flex gap-2 mt-3">
                     {["new", "contacted", "in_progress", "completed", "archived"].map(st => (

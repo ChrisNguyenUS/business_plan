@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, CheckCircle } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -30,6 +30,24 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
             Bắt đầu từ $50 · Tư vấn miễn phí / Starting from $50 · Free consultation
           </p>
         </div>
+
+        {/* Featured: EB-3 */}
+        <Link
+          href={`/${locale}/services/immigration/eb3`}
+          className="group mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-primary bg-teal-light/60 p-6 transition-colors hover:bg-teal-light"
+        >
+          <div>
+            <span className="inline-block rounded-full bg-primary text-white text-xs font-semibold px-2.5 py-0.5 mb-2">
+              {d.eb3.featured_badge}
+            </span>
+            <h2 className="text-xl font-bold text-charcoal mb-1">{d.eb3.featured_title}</h2>
+            <p className="text-sm text-muted-foreground">{d.eb3.featured_desc}</p>
+          </div>
+          <span className="inline-flex items-center gap-1 text-primary font-semibold text-sm shrink-0">
+            {d.eb3.featured_cta}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
 
         {/* What We Offer */}
         {immigrationOfferings.length > 0 && (
