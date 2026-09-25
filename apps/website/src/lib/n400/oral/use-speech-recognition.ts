@@ -17,17 +17,6 @@ import {
 import { isIOSDevice } from './voice-support';
 
 const UNAVAILABLE_KEY = 'n400.oral.unavailable';
-// Set once a voice answer has worked in this browser: mic permission is granted,
-// so warming up before 🔊 can never pop a surprise permission prompt.
-const USED_KEY = 'n400.oral.used';
-
-function readUsed(): boolean {
-  try {
-    return window.localStorage.getItem(USED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
 
 const SERVER_SNAPSHOT: MicSnapshot = { supported: false, state: 'idle', transcript: '', error: null, startedAt: null };
 const noopSubscribe = () => () => {};
@@ -38,8 +27,8 @@ export interface SpeechApi extends MicSnapshot {
   start(): void;
   stop(): void;
   reset(): void;
-  /** Call before playing 🔊 audio (spec D15 rev 3.6). */
-  warmUp(): void;
+  /** Call right before 🔊 audio plays (spec D15, rev 3.7). */
+  noteAudioPlayed(): void;
 }
 
 function readUnavailable(): boolean {
@@ -138,26 +127,14 @@ export function useSpeechRecognition(): SpeechApi {
     return () => shared.reset();
   }, [shared]);
 
-  useEffect(() => {
-    if (snap.state !== 'transcript') return;
-    try {
-      window.localStorage.setItem(USED_KEY, '1');
-    } catch {
-      // Private mode — warm-up just stays off.
-    }
-  }, [snap.state]);
-
-  const warmUp = useCallback(() => {
-    if (!readUsed()) return;
-    controller?.warmUp();
-  }, [controller]);
+  const noteAudioPlayed = useCallback(() => controller?.noteAudioPlayed(), [controller]);
   const start = useCallback(() => controller?.start(), [controller]);
   const stop = useCallback(() => controller?.stop(), [controller]);
   const reset = useCallback(() => controller?.reset(), [controller]);
   const persistent = controller?.persistent ?? false;
 
   return useMemo(
-    () => ({ ...snap, persistent, start, stop, reset, warmUp }),
-    [snap, persistent, start, stop, reset, warmUp],
+    () => ({ ...snap, persistent, start, stop, reset, noteAudioPlayed }),
+    [snap, persistent, start, stop, reset, noteAudioPlayed],
   );
 }

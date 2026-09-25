@@ -443,7 +443,7 @@ function MockTestPageInner() {
                     src={questionAudioUrl(question.id)}
                     label={dict.flashcards.listenQuestion}
                     size="sm"
-                    onBeforePlay={runMode === 'voice' && voiceInput === 'mic' ? mic.warmUp : undefined}
+                    onBeforePlay={mic.noteAudioPlayed}
                   />
                 </div>
               </div>

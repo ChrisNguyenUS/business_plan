@@ -683,7 +683,7 @@ export default function PracticePage() {
                     src={questionAudioUrl(question.id)}
                     label={dict.flashcards.listenQuestion}
                     size="sm"
-                    onBeforePlay={voiceInput === 'mic' ? mic.warmUp : undefined}
+                    onBeforePlay={mic.noteAudioPlayed}
                   />
                   <button
                     type="button"
@@ -791,7 +791,7 @@ export default function PracticePage() {
                     {revealedCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   <AudioButton
-                    onBeforePlay={voiceInput === 'mic' ? mic.warmUp : undefined}
+                    onBeforePlay={mic.noteAudioPlayed}
                     src={answerAudioUrlFor(question, stateCode, districtNumber)}
                     label={dict.flashcards.listenAnswer}
                     size="sm"

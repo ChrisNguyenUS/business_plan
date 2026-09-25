@@ -360,40 +360,46 @@ describe('PersistentSpeechController — final review fixes', () => {
   });
 });
 
-describe('PersistentSpeechController — warmUp before 🔊 (iOS: <audio> then a new session = deaf)', () => {
-  it('opens the session without a window and without touching the screen', () => {
-    const h = harness();
-    h.c.warmUp();
-    expect(h.recs).toHaveLength(1);
-    expect(h.rec()).toMatchObject({ started: 1, continuous: true });
-    expect(h.s().state).toBe('idle');
-    h.rec().onstart?.();
-    h.rec().onaudiostart?.();
-    h.rec().emit(['question audio words', true]);
-    expect(h.s()).toMatchObject({ state: 'idle', transcript: '' });
-  });
-
-  it('the next mic tap reuses the warmed session', () => {
-    const h = harness();
-    h.c.warmUp();
-    h.rec().onstart?.();
-    h.rec().onaudiostart?.();
-    h.c.start();
-    expect(h.recs).toHaveLength(1);
-    expect(h.s().state).toBe('listening');
-  });
-
-  it('is a no-op when a session is already running', () => {
+describe('PersistentSpeechController — after 🔊 plays (device log 2026-09-25)', () => {
+  // <audio> playback silently stops the running session's capture source
+  // (no results until "audio-capture: Source is stopped"); a session opened
+  // after playback hears fine. So the next mic tap starts a fresh session.
+  it('the next mic tap after audio restarts the session', () => {
     const h = harness();
     open(h);
-    h.c.warmUp();
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.noteAudioPlayed();
+    h.c.start();
+    expect(h.recs).toHaveLength(2);
+    expect(h.recs[0].aborted).toBe(1);
+    expect(h.recs[0].onresult).toBeNull();
+    expect(h.recs[1].started).toBe(1);
+  });
+
+  it('without audio the session is reused', () => {
+    const h = harness();
+    open(h);
+    h.rec().emit(['27', true]);
+    h.advance(SETTLE_MS);
+    h.c.start();
     expect(h.recs).toHaveLength(1);
   });
 
-  it('a warmed but unused session still shuts down after 5 minutes', () => {
+  it('never opens the mic by itself (no prompt, full volume)', () => {
     const h = harness();
-    h.c.warmUp();
-    h.advance(IDLE_SHUTDOWN_MS);
-    expect(h.recs[0].aborted).toBe(1);
+    h.c.noteAudioPlayed();
+    expect(h.recs).toHaveLength(0);
+    expect(h.s().state).toBe('idle');
+  });
+
+  it('audio during an open window restarts on the next tap, not mid-answer', () => {
+    const h = harness();
+    open(h);
+    h.c.noteAudioPlayed();
+    expect(h.recs).toHaveLength(1);
+    h.c.stop();
+    h.c.start();
+    expect(h.recs).toHaveLength(2);
   });
 });
