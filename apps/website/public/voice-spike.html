@@ -42,6 +42,9 @@
   //   continuous — ONE session with continuous=true for several phrases, plus
   //                auto-restart on end (the common "only works once" recipe)
   const MODE = new URLSearchParams(location.search).get('mode') || 'new';
+  // keep=1: don't abort on hide — does iOS keep a continuous session alive
+  // across an app switch / tab switch on its own?
+  const KEEP_ON_HIDE = new URLSearchParams(location.search).get('keep') === '1';
   const PROMPTS = ['The Constitution', 'Twenty-seven', 'Checks and balances', 'Congress, president, and the courts', 'Freedom of speech'];
   const $ = (id) => document.getElementById(id);
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -49,17 +52,17 @@
   const lines = [];
   function log(msg) {
     lines.push(`${((performance.now() - t0) / 1000).toFixed(2)}s ${msg}`);
-    $('out').value = `mode=${MODE}\nUA: ${navigator.userAgent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
+    $('out').value = `mode=${MODE}${KEEP_ON_HIDE ? ' keep=1' : ''}\nUA: ${navigator.userAgent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
     $('out').scrollTop = 1e9;
   }
   function setState(s) { $('state').textContent = s; log('state=' + s); }
-  $('mode').textContent = MODE;
+  $('mode').textContent = MODE + (KEEP_ON_HIDE ? ' (keep on hide)' : '');
   $('api').textContent = Rec ? (window.SpeechRecognition ? 'SpeechRecognition' : 'webkitSpeechRecognition') : 'MISSING';
   $('ua').textContent = navigator.userAgent;
   $('prompt').textContent = PROMPTS[0];
   document.addEventListener('visibilitychange', () => {
     log('visibility=' + document.visibilityState);
-    if (document.visibilityState === 'hidden' && running && rec) { rec.abort(); log('aborted on hide'); }
+    if (document.visibilityState === 'hidden' && running && rec && !KEEP_ON_HIDE) { rec.abort(); log('aborted on hide'); }
   });
 
   async function releaseViaGum() {
