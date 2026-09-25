@@ -360,30 +360,33 @@ describe('PersistentSpeechController — final review fixes', () => {
   });
 });
 
-describe('PersistentSpeechController — after 🔊 plays (device log 2026-09-25)', () => {
-  // <audio> playback silently stops the running session's capture source
-  // (no results until "audio-capture: Source is stopped"); a session opened
-  // after playback hears fine. So the next mic tap starts a fresh session.
-  it('the next mic tap after audio restarts the session', () => {
+describe('PersistentSpeechController — after 🔊 plays (device logs 2026-09-25)', () => {
+  // Playback sometimes leaves the session hearing, sometimes stops its capture
+  // until WebKit ends it with "audio-capture: Source is stopped". A session the
+  // APP aborts is followed by a deaf one, so the app never restarts it itself.
+  it('keeps the session after audio (no restart, no new recognizer)', () => {
     const h = harness();
     open(h);
     h.rec().emit(['27', true]);
     h.advance(SETTLE_MS);
     h.c.noteAudioPlayed();
     h.c.start();
-    expect(h.recs).toHaveLength(2);
-    expect(h.recs[0].aborted).toBe(1);
-    expect(h.recs[0].onresult).toBeNull();
-    expect(h.recs[1].started).toBe(1);
+    expect(h.recs).toHaveLength(1);
+    expect(h.recs[0].aborted).toBe(0);
   });
 
-  it('without audio the session is reused', () => {
+  it('when WebKit ends the session with Source is stopped, the next tap starts a new one', () => {
     const h = harness();
     open(h);
     h.rec().emit(['27', true]);
     h.advance(SETTLE_MS);
+    h.c.noteAudioPlayed();
     h.c.start();
-    expect(h.recs).toHaveLength(1);
+    h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
+    h.rec().onend?.();
+    expect(h.s().error).toBe('audio-capture');
+    h.c.start();
+    expect(h.recs).toHaveLength(2);
   });
 
   it('never opens the mic by itself (no prompt, full volume)', () => {
@@ -391,15 +394,5 @@ describe('PersistentSpeechController — after 🔊 plays (device log 2026-09-25
     h.c.noteAudioPlayed();
     expect(h.recs).toHaveLength(0);
     expect(h.s().state).toBe('idle');
-  });
-
-  it('audio during an open window restarts on the next tap, not mid-answer', () => {
-    const h = harness();
-    open(h);
-    h.c.noteAudioPlayed();
-    expect(h.recs).toHaveLength(1);
-    h.c.stop();
-    h.c.start();
-    expect(h.recs).toHaveLength(2);
   });
 });

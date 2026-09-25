@@ -52,8 +52,6 @@ export class PersistentSpeechController implements MicController {
   private seenAt: number[] = [];
   /** Results below this index belong to earlier windows or pre-tap speech. */
   private minFrom = 0;
-  /** 🔊 played since this session started: its capture is presumed dead. */
-  private audioPlayed = false;
   private windowTimers: unknown[] = [];
   private stallTimer: unknown = null;
   private settleTimer: unknown = null;
@@ -84,10 +82,6 @@ export class PersistentSpeechController implements MicController {
     const create = this.deps.create;
     if (!create || !this.snap.supported || this.windowOpen) return;
     this.clearIdle();
-    if (this.rec && this.audioPlayed) {
-      this.deps.log?.('restart after audio');
-      this.killSession();
-    }
     if (this.rec) {
       this.openWindow(false);
       return;
@@ -95,14 +89,12 @@ export class PersistentSpeechController implements MicController {
     if (this.openSession(create)) this.openWindow(true);
   }
 
-  /** 🔊 is about to play. <audio> playback silently stops the running session's
-   *  capture source (no results until a late "Source is stopped" error), while a
-   *  session opened after playback hears fine (device log 2026-09-25). So the
-   *  next mic tap starts a fresh session. Never opens the mic by itself. */
+  /** 🔊 is about to play. Logged only: playback sometimes leaves the session
+   *  hearing, sometimes stops its capture until WebKit ends it ("audio-capture:
+   *  Source is stopped"), and a session the app aborts is followed by a deaf one,
+   *  so the session is always kept (device logs 2026-09-25, spec rev 3.8). */
   noteAudioPlayed(): void {
-    if (!this.rec) return;
-    this.deps.log?.('audio played');
-    this.audioPlayed = true;
+    this.deps.log?.(this.rec ? 'audio played (session kept)' : 'audio played (no session)');
   }
 
   /** Learner tapped Stop: close the window with what it heard. The session stays. */
@@ -151,7 +143,6 @@ export class PersistentSpeechController implements MicController {
     this.heardAudio = false;
     this.results = NO_RESULTS;
     this.sessionHeard = false;
-    this.audioPlayed = false;
     this.seenAt = [];
     this.minFrom = 0;
     this.deps.log?.('session start');
