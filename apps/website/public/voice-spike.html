@@ -26,7 +26,8 @@
     <a href="?mode=audio&strategy=stop" target="_blank">stop</a> /
     <a href="?mode=audio&strategy=abort" target="_blank">abort</a> /
     <a href="?mode=audio&strategy=webaudio" target="_blank">webaudio</a> ·
-    <a href="?mode=track" target="_blank">track</a>
+    <a href="?mode=track" target="_blank">track</a> /
+    <a href="?mode=track&kick=1" target="_blank">track+kick</a>
     <span style="font-size:12px">(each link opens a fresh tab)</span></div>
   <div class="row">API: <span id="api"></span></div>
   <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
@@ -238,8 +239,13 @@
     // <audio> playback on iOS). Does Safari support it, and does it survive 🔊?
     const R = window.SpeechRecognition || window.webkitSpeechRecognition;
     const AUDIO_SRC = '/n400-audio/civic_question/q002.mp3';
-    let stream = null, track = null, sessions = 0;
-    $('mode').textContent = 'track (start(MediaStreamTrack))';
+    // kick=1: when 🔊 ends, stop our track and request a NEW getUserMedia track.
+    // The track and WebKit's speech capture share one source (they die together),
+    // so a fresh capture may revive it or make WebKit fail fast; a session that
+    // then dies with audio-capture is restarted with no tap.
+    const KICK = new URLSearchParams(location.search).get('kick') === '1';
+    let stream = null, track = null, sessions = 0, lastErr = '';
+    $('mode').textContent = 'track (start(MediaStreamTrack))' + (KICK ? ' + kick' : '');
     if (R) {
       log(`caps unprefixed=${!!window.SpeechRecognition} available=${typeof R.available} install=${typeof R.install} processLocally=${'processLocally' in R.prototype} phrases=${'phrases' in R.prototype} startLength=${R.prototype.start.length}`);
     }
@@ -264,8 +270,22 @@
         log(`s${id} result[${i}] final=${res.isFinal} "${res[0].transcript}"`);
         if (res.isFinal) { ok++; $('ok').textContent = ok; $('heard').textContent = res[0].transcript; }
       };
-      r.onerror = (e) => log(`s${id} error=${e.error}${e.message ? ' ' + e.message : ''}`);
-      r.onend = () => { log(`s${id} end`); if (rec === r) { running = false; setState('idle'); } };
+      r.onerror = (e) => { lastErr = e.error; log(`s${id} error=${e.error}${e.message ? ' ' + e.message : ''}`); };
+      r.onend = () => {
+        log(`s${id} end`);
+        if (rec !== r) return;
+        running = false; setState('idle');
+        if (KICK && lastErr === 'audio-capture') {
+          lastErr = '';
+          log('auto new session (no tap)');
+          (async () => {
+            try {
+              if (!track || track.readyState !== 'live') await getTrack();
+              rec = makeSession(); running = true; rec.start(track);
+            } catch (err) { running = false; log('auto start threw ' + err.name + ' ' + err.message); }
+          })();
+        }
+      };
       return r;
     };
     $('start').onclick = async () => {
@@ -291,7 +311,12 @@
     $('play').onclick = () => {
       const a = new Audio(AUDIO_SRC);
       a.onplay = () => log('audio play');
-      a.onended = () => log(`audio ended (track ${track ? track.readyState : 'none'})`);
+      a.onended = () => {
+        log(`audio ended (track ${track ? track.readyState : 'none'})`);
+        if (!KICK) return;
+        log('kick: new getUserMedia');
+        getTrack().then(() => log('kicked')).catch((e) => log('kick failed ' + e.name + ' ' + e.message));
+      };
       a.onerror = () => log('audio error');
       a.play().catch((e) => log('play failed ' + e.name));
     };
