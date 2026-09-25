@@ -67,6 +67,29 @@ const TIMELINE_LABEL: Record<Eb3Timeline, string> = {
 const isBlank = (s: string) => s.trim() === "";
 const yesNo = (b: boolean) => (b ? "Có" : "Không");
 
+// Top-to-bottom order of the fields on the form, so the UI can jump to the
+// first error the visitor would see.
+const EB3_FIELD_ORDER: Eb3Field[] = [
+  "full_name",
+  "location",
+  "facebook",
+  "zalo",
+  "phone",
+  "us_status",
+  "birth_year",
+  "english",
+  "spouse",
+  "children_under_21",
+  "prior_us_visa_denial",
+  "timeline",
+  "notes",
+  "ack_not_law_firm",
+];
+
+export function firstEb3ErrorField(errors: Eb3Errors): Eb3Field | null {
+  return EB3_FIELD_ORDER.find((field) => errors[field] !== undefined) ?? null;
+}
+
 export function emptyEb3Answers(): Eb3Answers {
   return {
     full_name: "",

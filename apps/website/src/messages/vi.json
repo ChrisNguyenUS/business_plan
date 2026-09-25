@@ -313,6 +313,7 @@
       "submitting": "Đang gửi...",
       "error_required": "Vui lòng điền mục này",
       "error_invalid": "Thông tin chưa hợp lệ",
+      "error_summary": "Vui lòng kiểm tra các mục được đánh dấu đỏ ở trên.",
       "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho MannaOS.",
       "success_title": "Cảm ơn bạn!",
       "success_desc": "MannaOS sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",

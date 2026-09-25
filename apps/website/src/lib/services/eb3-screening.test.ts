@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   buildEb3Payload,
+  firstEb3ErrorField,
   emptyEb3Answers,
   formatEb3Message,
   validateEb3,
@@ -180,5 +181,26 @@ describe("buildEb3Payload", () => {
     expect(p.zalo).toBe("");
     expect(p.facebook).toBe("");
     expect(p.service_type).toBe("eb3");
+  });
+});
+
+describe("firstEb3ErrorField", () => {
+  it("returns null when there are no errors", () => {
+    expect(firstEb3ErrorField({})).toBeNull();
+  });
+
+  it("returns the error that appears first in form order, not insertion order", () => {
+    expect(firstEb3ErrorField({ ack_not_law_firm: "required", timeline: "required", birth_year: "invalid" })).toBe(
+      "birth_year",
+    );
+  });
+
+  it("puts name before location before contact fields", () => {
+    expect(firstEb3ErrorField({ phone: "required", location: "required" })).toBe("location");
+    expect(firstEb3ErrorField({ phone: "required", full_name: "required" })).toBe("full_name");
+  });
+
+  it("ignores fields cleared to undefined", () => {
+    expect(firstEb3ErrorField({ full_name: undefined, notes: "invalid" })).toBe("notes");
   });
 });

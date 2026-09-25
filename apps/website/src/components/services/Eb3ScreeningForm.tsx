@@ -13,6 +13,7 @@ import {
   EB3_CHILDREN_MAX,
   EB3_NOTES_MAX,
   emptyEb3Answers,
+  firstEb3ErrorField,
   validateEb3,
   type Eb3Answers,
   type Eb3ErrorCode,
@@ -27,6 +28,22 @@ type FormCopy = Dictionary["eb3"]["form"];
 const SELECT_CLASS =
   "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 const LABEL_CLASS = "block text-sm font-medium text-charcoal mb-1.5";
+
+// Element to focus when a field has the first error (only fields that can error).
+const FIELD_ELEMENT_ID: Partial<Record<Eb3Field, string>> = {
+  full_name: "eb3-name",
+  location: "eb3-location-vn",
+  facebook: "eb3-fb",
+  phone: "eb3-phone",
+  us_status: "eb3-status",
+  birth_year: "eb3-year",
+  english: "eb3-english",
+  children_under_21: "eb3-children",
+  prior_us_visa_denial: "eb3-denial-yes",
+  timeline: "eb3-timeline",
+  notes: "eb3-notes",
+  ack_not_law_firm: "eb3-ack",
+};
 
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -72,6 +89,11 @@ export default function Eb3ScreeningForm({ copy, locale }: { copy: FormCopy; loc
     const result = validateEb3(answers);
     if (!result.ok) {
       setErrors(result.errors);
+      // On mobile the first error is usually above the viewport — bring it into view.
+      const first = firstEb3ErrorField(result.errors);
+      const el = first ? document.getElementById(FIELD_ELEMENT_ID[first] ?? "") : null;
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus({ preventScroll: true });
       return;
     }
 
@@ -154,6 +176,7 @@ export default function Eb3ScreeningForm({ copy, locale }: { copy: FormCopy; loc
           {(["vn", "us"] as const).map((loc) => (
             <button
               key={loc}
+              id={`eb3-location-${loc}`}
               type="button"
               onClick={() => setLocation(loc)}
               aria-pressed={answers.location === loc}
@@ -274,6 +297,7 @@ export default function Eb3ScreeningForm({ copy, locale }: { copy: FormCopy; loc
             <label key={String(v)} className="flex items-center gap-2 text-sm text-charcoal">
               <input
                 type="radio"
+                id={`eb3-denial-${v ? "yes" : "no"}`}
                 name="eb3-denial"
                 checked={answers.prior_us_visa_denial === v}
                 onChange={() => set("prior_us_visa_denial", v)}
@@ -318,6 +342,7 @@ export default function Eb3ScreeningForm({ copy, locale }: { copy: FormCopy; loc
       <div>
         <label className="flex items-start gap-2 text-sm text-charcoal">
           <input
+            id="eb3-ack"
             type="checkbox"
             checked={answers.ack_not_law_firm}
             onChange={(e) => set("ack_not_law_firm", e.target.checked)}
@@ -328,6 +353,7 @@ export default function Eb3ScreeningForm({ copy, locale }: { copy: FormCopy; loc
         {fieldError("ack_not_law_firm")}
       </div>
 
+      {Object.values(errors).some(Boolean) && <p className="text-sm text-red-600">{copy.error_summary}</p>}
       {submitError && <p className="text-sm text-red-600">{copy.error_submit}</p>}
 
       <Button

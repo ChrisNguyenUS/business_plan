@@ -313,6 +313,7 @@
       "submitting": "Submitting...",
       "error_required": "This field is required",
       "error_invalid": "Please check this value",
+      "error_summary": "Please check the fields marked in red above.",
       "error_submit": "Something went wrong. Please try again or message MannaOS on Messenger.",
       "success_title": "Thank you!",
       "success_desc": "MannaOS will contact you on Messenger or by phone within 48 hours.",
