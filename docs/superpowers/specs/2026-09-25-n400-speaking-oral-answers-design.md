@@ -52,7 +52,7 @@ Learners can answer every spoken part of the interview by voice, the way the rea
   - negations (`not`, `no`, `never`, `without`) and digits go into `mustInclude`. "Someone who is **not** a U.S. citizen" needs "not".
   - **No echo-drop.** The term's words stay as keywords. Echo is controlled by a test instead: reading the term aloud never grades `correct` for its own item.
 - **Synonyms and overrides:** `lib/n400/oral/whatmean-oral-aliases.ts` is hand-written and owner-reviewed at Gate S1. It holds extra alternatives per term (e.g. #1 "tell … citizen", #7 "take down … government … violence") and `REPLACE` entries where the generated config is wrong.
-- **Lookup:** `getWhatMeanOralConfig(id: string): OralAnswerConfig | null` merges generated plus aliases.
+- **Lookup:** `getWhatMeanOralConfig(id): { primary; aliases } | null` and `gradeWhatMean(transcript, id)` in `get-whatmean-config.ts`. Synonyms are graded as their own `single` config (every keyword required, inheriting the primary's `mustExclude`), and the better verdict wins. Merging them into a `phrase` config made 13 of 25 synonyms unreachable (S1 prototyping).
 - **Tests:**
   - every `definitionEn` grades `correct` against its own config;
   - the term text never grades `correct` for its own item;
