@@ -22,3 +22,22 @@ describe('practice page voice wiring (final review)', () => {
     expect(between('const onPick', 'const settleVoice')).toContain('voiceVerdict !== null');
   });
 });
+
+describe('practice voice wiring — rev 3.5', () => {
+  const panel = readFileSync(join(process.cwd(), 'src/components/n400/oral/MicAnswerPanel.tsx'), 'utf8');
+
+  it('never tells the learner to reload for the mic', () => {
+    expect(panel).not.toContain('location.reload');
+  });
+
+  it('a stalled mic switches practice to the typed box', () => {
+    expect(page).toContain("mic.error === 'stalled'");
+    expect(page).toContain('setMicLost(true)');
+    expect(page).toContain("const panelInput: 'mic' | 'typed' =");
+  });
+
+  it('explains the always-on mic on iPhone', () => {
+    expect(panel).toContain('mic.persistent');
+    expect(panel).toContain('t.hintPersistent');
+  });
+});

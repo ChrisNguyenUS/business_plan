@@ -1101,6 +1101,7 @@ export const en: N400Dict = {
     modeVoice: 'Speak',
     hint: 'Say the answer you learned. You don’t need a full sentence, just the key words.',
     hintDismiss: 'Got it',
+    hintPersistent: 'On iPhone the microphone stays on while you practice speaking; the app only takes the words spoken after you tap the mic.',
     tapToSpeak: 'Tap to speak',
     listening: 'Listening… tap to stop',
     processing: 'Processing…',
@@ -1116,8 +1117,7 @@ export const en: N400Dict = {
     errNotAllowed:
       'Microphone access is off. Allow the microphone for this site in your browser settings, or choose Multiple choice.',
     errGeneric: 'Speech recognition isn’t available right now. Please try again.',
-    errStalled: 'The microphone stopped responding. Reload the page to continue.',
-    reload: 'Reload page',
+    errStalled: 'The microphone stopped responding. You can type the answer (or tap 🎤 on your keyboard).',
     inAppNotice: 'Open in Safari or Chrome to use the microphone. Here you can type, or tap 🎤 on your keyboard to dictate.',
     typedPlaceholder: 'Type your answer',
     mockModeLabel: 'How to answer',

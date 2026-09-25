@@ -1100,6 +1100,7 @@ export const vi = {
     modeVoice: 'Tự nói',
     hint: 'Nói đáp án bạn đã học. Không cần nói thành câu đầy đủ, chỉ cần có các từ chính.',
     hintDismiss: 'Đã hiểu',
+    hintPersistent: 'Trên iPhone, micro sẽ bật suốt khi bạn luyện nói; app chỉ lấy chữ khi bạn bấm nút micro.',
     tapToSpeak: 'Bấm để nói',
     listening: 'Đang nghe… bấm để dừng',
     processing: 'Đang xử lý…',
@@ -1115,8 +1116,7 @@ export const vi = {
     errNotAllowed:
       'Bạn chưa cho phép dùng micro. Hãy bật quyền micro cho trang này trong cài đặt trình duyệt, hoặc chọn Trắc nghiệm.',
     errGeneric: 'Không thể nhận diện giọng nói lúc này. Hãy thử lại.',
-    errStalled: 'Micro đang không phản hồi. Tải lại trang để dùng tiếp.',
-    reload: 'Tải lại trang',
+    errStalled: 'Micro đang không phản hồi. Bạn có thể gõ câu trả lời (hoặc bấm 🎤 trên bàn phím).',
     inAppNotice: 'Mở bằng Safari hoặc Chrome để dùng micro. Ở đây bạn có thể gõ, hoặc bấm 🎤 trên bàn phím để đọc.',
     typedPlaceholder: 'Nhập câu trả lời',
     mockModeLabel: 'Cách trả lời',

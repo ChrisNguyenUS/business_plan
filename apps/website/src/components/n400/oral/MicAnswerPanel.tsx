@@ -90,7 +90,10 @@ export function MicAnswerPanel({
       className="flex w-full items-start gap-3 rounded-2xl border border-teal-100 bg-teal-50 p-3 text-gray-700"
       style={{ fontSize: 'clamp(0.8125rem, 1.4vw, 0.9375rem)' }}
     >
-      <span className="flex-1">{t.hint}</span>
+      <span className="flex-1">
+        {t.hint}
+        {mic.persistent && input === 'mic' ? <span className="mt-1 block">{t.hintPersistent}</span> : null}
+      </span>
       <button type="button" onClick={dismissHint} className="shrink-0 font-semibold text-teal-700">
         {t.hintDismiss}
       </button>
@@ -210,11 +213,6 @@ export function MicAnswerPanel({
           {onUseTyped ? (
             <button type="button" onClick={onUseTyped} className="mt-2 block font-semibold text-teal-700">
               {t.useTyped}
-            </button>
-          ) : null}
-          {mic.error === 'stalled' ? (
-            <button type="button" onClick={() => window.location.reload()} className="mt-2 block font-semibold text-teal-700">
-              {t.reload}
             </button>
           ) : null}
         </div>

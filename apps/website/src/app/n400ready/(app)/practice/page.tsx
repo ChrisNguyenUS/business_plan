@@ -53,6 +53,7 @@ import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
 import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
 import { answerSurface, effectiveAnswerMode, voiceInputFor } from '@/lib/n400/oral/voice-support';
 import { nearPromptAnswer, voiceOutcome } from '@/lib/n400/oral/voice-outcome';
+import { offersTypedFallback } from '@/lib/n400/oral/mock-voice-items';
 
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
@@ -175,6 +176,7 @@ export default function PracticePage() {
   const [nearAnswer, setNearAnswer] = useState<'yes' | 'no' | null>(null);
   const [nearPrompt, setNearPrompt] = useState<string | null>(null);
   const [answeredVia, setAnsweredVia] = useState<'choice' | 'voice' | null>(null);
+  const [micLost, setMicLost] = useState(false);
   const mic = useSpeechRecognition();
   const voiceFlags = useVoiceFlags();
   const { reset: resetMic } = mic;
@@ -282,6 +284,10 @@ export default function PracticePage() {
       ? pickedOption.isCorrect
       : null;
 
+  // A stalled mic (deaf iOS session) → typed box for the rest of the page (spec §8, rev 3.5).
+  if (!micLost && voiceHere && voiceInput === 'mic' && mic.error === 'stalled') setMicLost(true);
+  const panelInput: 'mic' | 'typed' = voiceInput === 'typed' || micLost ? 'typed' : 'mic';
+
   const markWrong = (questionId: number) => {
     setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
   };
@@ -312,7 +318,7 @@ export default function PracticePage() {
     else markWrong(question.id);
     // D7: a confirmed near is shown correct but never recorded.
     if (record !== null) {
-      void recordAnswer(question.id, record, 'practice', voiceInput === 'typed' ? 'typed' : 'voice').then(afterRecord);
+      void recordAnswer(question.id, record, 'practice', panelInput === 'typed' ? 'typed' : 'voice').then(afterRecord);
     }
   };
 
@@ -702,12 +708,14 @@ export default function PracticePage() {
             {voiceHere ? (
               <MicAnswerPanel
                 key={question.id}
-                input={voiceInput === 'typed' ? 'typed' : 'mic'}
+                input={panelInput}
                 mic={mic}
                 locked={voiceVerdict !== null}
                 nearAnswer={voiceVerdict === 'near' && nearAnswer === null ? nearPrompt : null}
                 onSubmit={onVoiceSubmit}
                 onNearAnswer={onNearAnswer}
+                notice={micLost ? dict.oral.micLostTyped : undefined}
+                onUseTyped={panelInput === 'mic' && offersTypedFallback(mic.error) ? () => setMicLost(true) : undefined}
               />
             ) : (
               <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
@@ -786,7 +794,7 @@ export default function PracticePage() {
                 </div>
                 {voiceHere && voiceText ? (
                   <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    <span className="font-semibold">{voiceInput === 'typed' ? dict.oral.youTyped : dict.oral.youSaid}</span>{' '}
+                    <span className="font-semibold">{panelInput === 'typed' ? dict.oral.youTyped : dict.oral.youSaid}</span>{' '}
                     {voiceText}
                   </div>
                 ) : null}
