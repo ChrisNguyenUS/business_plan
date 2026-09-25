@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Voice spike</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; }
+  button { font-size: 18px; padding: 14px 18px; margin: 6px 6px 6px 0; border-radius: 12px; border: 1px solid #0f766e; background: #0f766e; color: #fff; }
+  button.secondary { background: #fff; color: #0f766e; }
+  #state { font-weight: 700; }
+  #log { font: 12px/1.35 ui-monospace, monospace; white-space: pre-wrap; background: #f4f4f5; padding: 8px; border-radius: 8px; max-height: 45vh; overflow: auto; }
+  .row { margin: 8px 0; }
+</style>
+</head>
+<body>
+  <h1>Voice spike</h1>
+  <div class="row">Mode: <b id="mode"></b> ·
+    <a href="?mode=new" target="_blank">new</a> ·
+    <a href="?mode=reuse" target="_blank">reuse</a> ·
+    <a href="?mode=abort" target="_blank">abort</a> ·
+    <a href="?mode=gum" target="_blank">gum</a> ·
+    <a href="?mode=continuous" target="_blank">continuous</a>
+    <span style="font-size:12px">(each link opens a fresh tab)</span></div>
+  <div class="row">API: <span id="api"></span></div>
+  <div class="row">UA: <span id="ua" style="font-size:12px"></span></div>
+  <div class="row">State: <span id="state">idle</span> · Answers with transcript: <span id="ok">0</span> / <span id="tries">0</span></div>
+  <div class="row">Say: <b id="prompt"></b></div>
+  <div class="row">Heard: <span id="heard"></span></div>
+  <button id="start">🎤 Speak</button>
+  <button id="stop" class="secondary">Stop</button>
+  <button id="copy" class="secondary">Copy results</button>
+  <textarea id="out" readonly style="width:100%;height:30vh;font:12px/1.35 ui-monospace,monospace;font-size:16px"></textarea>
+<script>
+  // Gate 0 probe, v2: compares ways of driving iOS Safari's recognizer after
+  // "works once per tab" was seen in production. ?mode=
+  //   new   — a new recognizer per answer (what the app does)
+  //   reuse — one recognizer for the page, start() again each answer
+  //   abort — new per answer + explicit abort() after each end
+  //   gum   — new per answer + getUserMedia open/close after each end
+  //   continuous — ONE session with continuous=true for several phrases, plus
+  //                auto-restart on end (the common "only works once" recipe)
+  const MODE = new URLSearchParams(location.search).get('mode') || 'new';
+  // keep=1: don't abort on hide — does iOS keep a continuous session alive
+  // across an app switch / tab switch on its own?
+  const KEEP_ON_HIDE = new URLSearchParams(location.search).get('keep') === '1';
+  const PROMPTS = ['The Constitution', 'Twenty-seven', 'Checks and balances', 'Congress, president, and the courts', 'Freedom of speech'];
+  const $ = (id) => document.getElementById(id);
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, shared = null, running = false, tries = 0, ok = 0, gotText = false, t0 = performance.now();
+  const lines = [];
+  function log(msg) {
+    lines.push(`${((performance.now() - t0) / 1000).toFixed(2)}s ${msg}`);
+    $('out').value = `mode=${MODE}${KEEP_ON_HIDE ? ' keep=1' : ''}\nUA: ${navigator.userAgent}\nok ${ok}/${tries}\n\n${lines.join('\n')}`;
+    $('out').scrollTop = 1e9;
+  }
+  function setState(s) { $('state').textContent = s; log('state=' + s); }
+  $('mode').textContent = MODE + (KEEP_ON_HIDE ? ' (keep on hide)' : '');
+  $('api').textContent = Rec ? (window.SpeechRecognition ? 'SpeechRecognition' : 'webkitSpeechRecognition') : 'MISSING';
+  $('ua').textContent = navigator.userAgent;
+  $('prompt').textContent = PROMPTS[0];
+  document.addEventListener('visibilitychange', () => {
+    log('visibility=' + document.visibilityState);
+    if (document.visibilityState === 'hidden' && running && rec && !KEEP_ON_HIDE) { rec.abort(); log('aborted on hide'); }
+  });
+
+  async function releaseViaGum() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+      log('gum open+close ok');
+    } catch (e) { log('gum failed ' + e.name + ' ' + e.message); }
+  }
+
+  function wire(r) {
+    r.lang = 'en-US'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+    r.onstart = () => setState('listening');
+    r.onaudiostart = () => log('audiostart');
+    r.onspeechstart = () => log('speechstart');
+    r.onspeechend = () => setState('processing');
+    r.onresult = (e) => {
+      const res = e.results[e.results.length - 1];
+      const text = res[0].transcript;
+      $('heard').textContent = text;
+      log(`result final=${res.isFinal} "${text}"`);
+      if (text.trim()) gotText = true;
+    };
+    r.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
+    r.onend = () => {
+      log('end gotText=' + gotText);
+      running = false;
+      if (gotText) { ok++; $('ok').textContent = ok; $('prompt').textContent = PROMPTS[ok % PROMPTS.length]; }
+      if (MODE === 'abort') { try { r.abort(); log('abort() after end'); } catch (e) { log('abort threw ' + e.name); } }
+      if (MODE === 'gum') void releaseViaGum();
+      setState('idle');
+    };
+  }
+
+  $('start').onclick = () => {
+    if (!Rec) { log('no API'); return; }
+    if (running) { log('already running — ignored'); return; }
+    tries++; $('tries').textContent = tries; gotText = false; $('heard').textContent = '';
+    if (MODE === 'reuse') {
+      if (!shared) { shared = new Rec(); wire(shared); log('created shared recognizer'); }
+      rec = shared;
+    } else {
+      rec = new Rec(); wire(rec);
+    }
+    running = true;
+    try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); running = false; }
+    const mine = tries;
+    setTimeout(() => { if (running && tries === mine) { log('15s hard stop'); rec.stop(); } }, 15000);
+  };
+  $('stop').onclick = () => { if (running && rec) { rec.stop(); log('stop pressed'); } };
+  $('copy').onclick = async () => {
+    const text = $('out').value;
+    try { await navigator.clipboard.writeText(text); log('copied'); return; } catch {}
+    const o = $('out'); o.focus(); o.setSelectionRange(0, o.value.length);
+    log(document.execCommand('copy') ? 'copied (fallback)' : 'copy blocked — select the text box and copy');
+  };
+  if (MODE === 'continuous') {
+    let keep = false, restarts = 0, finals = 0;
+    const makeContinuous = () => {
+      const r = new Rec();
+      r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+      r.onstart = () => setState('listening (continuous)');
+      r.onaudiostart = () => log('audiostart');
+      r.onspeechstart = () => log('speechstart');
+      r.onspeechend = () => log('speechend');
+      r.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i];
+          log(`result[${i}] final=${res.isFinal} "${res[0].transcript}"`);
+          if (res.isFinal) {
+            finals++; ok = finals; $('ok').textContent = finals;
+            $('heard').textContent = res[0].transcript;
+            $('prompt').textContent = PROMPTS[finals % PROMPTS.length];
+          }
+        }
+      };
+      r.onerror = (e) => log('error=' + e.error + (e.message ? ' ' + e.message : ''));
+      r.onend = () => {
+        log('end');
+        if (!keep) { running = false; setState('idle'); return; }
+        restarts++;
+        log('auto-restart #' + restarts);
+        try { r.start(); } catch (err) { log('auto-restart threw ' + err.name + ' ' + err.message); keep = false; running = false; }
+      };
+      return r;
+    };
+    $('start').onclick = () => {
+      if (!Rec) { log('no API'); return; }
+      if (keep) { log('already listening (continuous)'); return; }
+      keep = true; running = true; tries++; $('tries').textContent = tries;
+      rec = makeContinuous();
+      try { rec.start(); setState('requesting/starting'); } catch (err) { log('start threw ' + err.name + ' ' + err.message); keep = false; running = false; }
+    };
+    $('stop').onclick = () => { keep = false; if (rec) { rec.stop(); log('stop pressed (ends continuous)'); } };
+  }
+  log('ready');
+</script>
+</body>
+</html>

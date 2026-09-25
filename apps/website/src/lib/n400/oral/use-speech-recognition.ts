@@ -4,6 +4,7 @@
 // browser's Web Speech API). Spec §4.1.
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { oralDebugEnabled, oralDebugLog } from './oral-debug';
 import { SpeechController, type MicSnapshot, type RecognitionLike } from './speech-controller';
 
 const UNAVAILABLE_KEY = 'n400.oral.unavailable';
@@ -48,6 +49,8 @@ async function reportToSentry(code: string, message?: string): Promise<void> {
 
 function createController(): SpeechController {
   const Ctor = recognitionCtor();
+  const debug = oralDebugEnabled();
+  if (debug) oralDebugLog(`api=${Ctor ? 'present' : 'missing'} unavailable=${readUnavailable()}`);
   return new SpeechController({
     create: Ctor ? () => new Ctor() : null,
     now: () => Date.now(),
@@ -62,6 +65,7 @@ function createController(): SpeechController {
       }
     },
     unavailable: readUnavailable(),
+    log: debug ? oralDebugLog : undefined,
   });
 }
 
@@ -77,9 +81,31 @@ export function useSpeechRecognition(): SpeechApi {
     () => SERVER_SNAPSHOT,
   );
 
+  // Field diagnosis only (?oraldebug=1): why does the page remount / the mic die?
+  useEffect(() => {
+    if (!oralDebugEnabled()) return;
+    oralDebugLog(`mount ${window.location.pathname}${window.location.search}`);
+    const onError = (e: ErrorEvent) => oralDebugLog(`window error: ${e.message}`);
+    const onRejection = (e: PromiseRejectionEvent) => oralDebugLog(`unhandledrejection: ${String(e.reason)}`);
+    const onPageHide = (e: PageTransitionEvent) => oralDebugLog(`pagehide persisted=${e.persisted}`);
+    const onPageShow = (e: PageTransitionEvent) => oralDebugLog(`pageshow persisted=${e.persisted}`);
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onRejection);
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      oralDebugLog('unmount');
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, []);
+
   useEffect(() => {
     if (!controller) return;
     const onVisibility = () => {
+      if (oralDebugEnabled()) oralDebugLog(`visibility=${document.visibilityState}`);
       if (document.visibilityState === 'hidden') controller.abort();
     };
     document.addEventListener('visibilitychange', onVisibility);

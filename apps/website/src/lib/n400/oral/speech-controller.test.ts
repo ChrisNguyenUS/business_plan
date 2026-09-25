@@ -322,3 +322,28 @@ describe('SpeechController — hard stop and abort', () => {
     expect(calls).toBe(2);
   });
 });
+
+describe('SpeechController — debug log (iPhone diagnosis)', () => {
+  it('logs every recognizer event in order', () => {
+    const events: string[] = [];
+    const h = harness({ log: (e) => events.push(e) });
+    live(h);
+    h.rec().result('27');
+    h.rec().onspeechend?.();
+    h.rec().onend?.();
+    expect(events).toEqual(['start', 'onstart', 'audiostart', 'speechstart', 'result "27"', 'speechend', 'end']);
+  });
+
+  it('logs errors, stalls and aborts', () => {
+    const events: string[] = [];
+    const h = harness({ log: (e) => events.push(e) });
+    h.c.start();
+    h.rec().onaudiostart?.();
+    h.advance(STALL_MS);
+    expect(events).toContain('stall in_row=1');
+    live(h);
+    h.rec().error('network');
+    h.c.abort();
+    expect(events).toEqual(expect.arrayContaining(['error network', 'abort']));
+  });
+});

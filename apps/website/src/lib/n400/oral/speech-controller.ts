@@ -41,6 +41,8 @@ export interface SpeechControllerDeps {
   report?: (code: string, message?: string) => void;
   /** Persists "unavailable for this session" (sessionStorage in the hook). */
   markUnavailable?: () => void;
+  /** Diagnostic event log (?oraldebug=1); never shown to learners by default. */
+  log?: (event: string) => void;
   /** Already marked unavailable earlier this session. */
   unavailable?: boolean;
 }
@@ -101,6 +103,7 @@ export class SpeechController {
   start(): void {
     const create = this.deps.create;
     if (!create || !this.snap.supported || this.rec) return;
+    this.deps.log?.('start');
     let rec: RecognitionLike;
     try {
       rec = create();
@@ -120,20 +123,34 @@ export class SpeechController {
     this.text = '';
     this.pendingError = null;
 
-    rec.onstart = () => this.set({ state: 'listening' });
+    rec.onstart = () => {
+      this.deps.log?.('onstart');
+      this.set({ state: 'listening' });
+    };
     rec.onaudiostart = () => {
+      this.deps.log?.('audiostart');
       this.heardAudio = true;
       if (!this.heardSpeech) this.stallTimer = this.timer(() => this.onStall(), STALL_MS);
     };
-    rec.onspeechstart = () => this.heard();
-    rec.onspeechend = () => this.set({ state: 'processing' });
+    rec.onspeechstart = () => {
+      this.deps.log?.('speechstart');
+      this.heard();
+    };
+    rec.onspeechend = () => {
+      this.deps.log?.('speechend');
+      this.set({ state: 'processing' });
+    };
     rec.onresult = (e) => {
       this.heard();
       this.text = joinResults(e.results);
+      this.deps.log?.(`result "${this.text}"`);
       this.set({ transcript: this.text });
     };
     rec.onerror = (e) => this.onError(e.error, e.message);
-    rec.onend = () => this.end();
+    rec.onend = () => {
+      this.deps.log?.('end');
+      this.end();
+    };
 
     this.timer(() => this.stop(), HARD_STOP_MS);
     this.set({ state: 'requesting_permission', transcript: '', error: null, startedAt: this.startedAt });
@@ -150,6 +167,7 @@ export class SpeechController {
   stop(): void {
     const rec = this.rec;
     if (!rec) return;
+    this.deps.log?.('stop');
     try {
       rec.stop();
     } catch {
@@ -161,6 +179,7 @@ export class SpeechController {
   /** Tab hidden / unmount: drop everything, stay on the item (spec §8). */
   abort(): void {
     if (!this.rec) return;
+    this.deps.log?.('abort');
     this.abortRec();
     this.finish('idle', null);
   }
@@ -183,12 +202,14 @@ export class SpeechController {
     this.stallTimer = null;
     if (!this.rec || this.heardSpeech || this.text) return;
     this.stalledInRow += 1;
+    this.deps.log?.(`stall in_row=${this.stalledInRow}`);
     this.deps.report?.('stall', `in_row=${this.stalledInRow}`);
     this.abortRec();
     this.finish('error', this.stalledInRow >= 2 ? 'stalled' : 'no-speech');
   }
 
   private onError(code: string, message?: string): void {
+    this.deps.log?.(`error ${code}${message ? ` ${message}` : ''}`);
     if (code === 'aborted') return; // our own abort()
     let err: MicError;
     const instantDeny =

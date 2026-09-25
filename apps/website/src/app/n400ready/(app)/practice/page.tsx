@@ -45,6 +45,7 @@ import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
 import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
 import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
+import { OralDebugPanel } from '@/components/n400/oral/OralDebugPanel';
 import { getOralAnswerConfig } from '@/lib/n400/oral/get-oral-config';
 import { gradeOralAnswer } from '@/lib/n400/oral/grade-oral';
 import type { OralVerdict } from '@/lib/n400/oral/types';
@@ -869,6 +870,7 @@ export default function PracticePage() {
 
         {/* Desktop Support Panel — quiet: one illustration + one Learning Tip. */}
         <PracticeSupportPanel />
+        <OralDebugPanel />
       </div>
     </div>
   );
