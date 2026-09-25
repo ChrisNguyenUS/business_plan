@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-24 (rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-24 (rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -34,6 +34,7 @@ Let learners answer Civics questions **by speaking**, the way the real USCIS int
 | D12 | (rev 3.3, Gate 0) **In-app browsers** (Facebook, Messenger, Instagram, Zalo, …) never get the mic: the Facebook iOS WebView allows only the first recognition per session and Refresh doesn't recover it. There, voice mode shows *"Mở bằng Safari hoặc Chrome để dùng micro"* plus a **text box** (the learner types, or dictates with the keyboard's 🎤), graded by the same engine. Recorded as `answer_mode='typed'`. |
 | D13 | (rev 3.3, Gate 0) The site's `Permissions-Policy` must allow `microphone=(self)` (it was `microphone=()`, which made every Chromium browser reject recognition instantly). Owner confirms the header change before it lands. Camera/geolocation stay blocked. |
 | D14 | (rev 3.3, Gate 0) Android Chrome was not device-tested (owner accepted the risk). The mic on Android additionally requires flag `voice_android`, so Android can be switched off on its own. |
+| D15 | (rev 3.5, owner 2026-09-24) **iOS uses ONE persistent recognition session.** On iOS Safari (iOS 27), every **new** `SpeechRecognition` session after the first one in a browser process is deaf: `audiostart` fires, `speechstart` never does, the mic icon stays on, no error. Reload doesn't fix it; a pasted new tab works once. A static page with no app code shows the same, and Mac Safari is fine, so this is a WebKit bug. Four ways of starting sessions all failed. **One `continuous = true` session kept open** was proven on the device: it heard every phrase, lived ~4 min through 76 s and 126 s silences, and survived app and tab switches as long as the page didn't abort it. So on iOS (iPhone, iPod, iPadOS) the app opens one continuous session on the first mic tap and keeps it for the whole app (practice ↔ mock, choice ↔ voice toggle, app/tab switches). Each answer is a **capture window** over the session's results. Results outside a window are discarded in memory: never shown, stored, graded or sent by the app. The session shuts down after **5 min** without a capture window, and when the app layout unmounts. Trade-off accepted by the owner: Safari's mic indicator stays on while the session is open, and Apple's recognizer hears the room during that time (Privacy Policy line in Slice 4). Other browsers keep the per-answer session (§4.1). |
 
 ## 3. Grading
 
@@ -158,7 +159,12 @@ function useSpeechRecognition(): {
 - Technical error details go to Sentry; the UI only shows friendly copy (§8).
 - **Final result may arrive after `speechend`** (seen on Chrome): `processing` lasts until `onend`; the hook never treats `speechend` as "done".
 - **Runtime-unavailable heuristic:** `service-not-allowed` always → `unavailable`. `not-allowed` arriving **< 500 ms after `start()` with no `audiostart`** → `unavailable` (no human answered a prompt that fast); otherwise `not-allowed`.
-- **Stall detector (rev 3.3, Gate 0):** iOS WebKit can go "mic-dead": `audiostart` fires but `speechstart` never does, even while the learner talks. If no `speechstart` and no result arrive within **7 s** of `audiostart`, the hook aborts and reports `no-speech`. A **second consecutive** stall reports `stalled`. That state gets its own copy and a [Tải lại trang] button, because on Safari a reload restores the mic.
+- **Stall detector (rev 3.3, Gate 0):** iOS WebKit can go "mic-dead": `audiostart` fires but `speechstart` never does, even while the learner talks. If no `speechstart` and no result arrive within **7 s** of `audiostart`, the hook aborts and reports `no-speech`. A **second consecutive** stall reports `stalled`. **Rev 3.5:** `stalled` switches the item (practice) or the rest of the test (mock) to the typed box with keyboard dictation. There is no reload advice: on iOS a reload doesn't restore the mic.
+- **Persistent mode (rev 3.5, D15, iOS only):** `continuous = true`, `interimResults = true`, one session per app layout.
+  - A mic tap opens a **capture window**. If no session is running, the tap also starts one. The window starts at the first result that isn't final yet, so the learner's first words are kept; extra ambient words cost nothing, since grading ignores extra words.
+  - The window's transcript is its results joined. It closes when the learner taps Stop, **1.2 s** after all of its results are final, or at the **15 s** cap.
+  - Stall: if no text arrives within **7 s** (counted from `audiostart` for a brand-new session), the window closes as `no-speech` and the session is kept. A **second consecutive** stall shuts the session down (it is deaf) and reports `stalled`.
+  - Tab hidden: nothing happens (WebKit keeps the session). Leaving a screen: close its window only. Idle **5 min** with no window: shut the session down. If the session ends by itself mid-window, the window closes with what it has; outside a window it ends silently, and the learner's screen is untouched.
 - While listening, the mic button is a **Stop** button; a second tap never starts a second instance.
 
 ### 4.2 Panel — `components/n400/oral/MicAnswerPanel.tsx`
@@ -233,7 +239,7 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 | `no-speech` (incl. `onend` with no text) | "Mình chưa nghe thấy bạn nói. Hãy thử lại." | No |
 | `not-allowed` | Practice → switch to MC + how-to-enable hint. Mock before start → MC; mid-test → hint, progress kept | No |
 | `network` / `audio-capture` / `unavailable` | "Không thể nhận diện giọng nói lúc này. Hãy thử lại." (raw error → Sentry) | No |
-| `stalled` (2nd consecutive mic-dead, rev 3.3) | "Micro đang không phản hồi. Tải lại trang để dùng tiếp." + [Tải lại trang] | No |
+| `stalled` (2nd consecutive mic-dead, rev 3.3/3.5) | Switch to the typed box: "Micro không dùng được lúc này. Các câu còn lại bạn trả lời bằng cách gõ (hoặc bấm 🎤 trên bàn phím)." No reload advice (rev 3.5) | No |
 | 15 s reached | Stops; transcript shown for the learner to act on | — |
 | Tab hidden / screen lock / app switch (iOS) | Recognition aborted; stay on the item; Nói lại available | No |
 | Voice finalize fails | Same as MC: Sentry + retry; CAPI dedupes on `attemptId` | — |
@@ -247,6 +253,8 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 - **Recognition error vs grading error cannot be measured automatically** (no ground truth of what was said). Weekly, sample ~20 stored mock transcripts and label them by hand: misheard / graded wrong / learner wrong.
 
 ## 10. Privacy
+
+- **Rev 3.5 (D15):** on iOS the recognition session stays open between answers, so Apple's recognizer processes audio while voice mode is in use. The app discards everything outside a capture window in memory. The Privacy Policy (Slice 4) must say so.
 
 Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the browser's speech service (e.g. Google, Apple); N400Ready stores only the resulting text, never audio.
 
@@ -265,6 +273,7 @@ Privacy Policy (EN/VI) gains a paragraph: voice answers are recognized by the br
 - Generator determinism: re-running `scripts/n400-build-oral-config.mjs` reproduces `oral-answer-config.generated.ts` exactly (test fails on drift).
 - `finalizeVoiceMockAttempt`: rejects another user's attempt; direct `rpc('finalize_mock_attempt_voice_batch')` as `authenticated` is denied; type-level check that `VoiceMockAnswer` has no verdict field.
 - `use-speech-recognition`: the logic lives in a framework-free controller (`speech-controller.ts`) tested in node with a fake recognizer and fake timers (the repo's vitest has no DOM). Cover state transitions, `onend` with and without text, a final result after `speechend`, each error code, the unavailable heuristic, the stall detector (single and consecutive), the 15 s stop, abort, and no double start.
+- `persistent-speech-controller` (rev 3.5): one session across windows (no second `start()` on the recognizer), results outside windows ignored, the window starts at the first non-final result, settle close after 1.2 s, Stop, the 15 s cap, a stall keeps the session, a second stall shuts it down with `stalled`, the session ending mid-window vs outside a window, the 5 min idle shutdown, reset keeps the session, shutdown releases it, and the instant-deny heuristic.
 - Manual, required before merge: iPhone Safari (incl. permission denied, tab background, screen lock, app switch), Android Chrome, desktop Chrome, **Facebook in-app browser** (iOS + Android) — confirm correct show/hide; owner records ~10 real answers to sanity-check accuracy.
 - Gate: `npm run type-check && npm run test && npm run build`.
 
