@@ -29,7 +29,7 @@
 ## Grading audit (2026-09-25)
 
 - Re-grading the 20 stored transcripts with `gradeOralAnswer` reproduces every stored verdict (5 correct; `near` counts as wrong in mock, D8).
-- One recognizer miss in 20: Q123 "The Star-Spangled Banner" came back as "The star sprinkle".
+- No recognizer miss in 20: for Q123 the owner really said "The star sprinkle" (owner, 2026-09-25).
 - **Finding:** "I don't know", "I don't remember", "not sure" grade `near` on Q69/Q70, because the token `not` is one edit from the stem `vot` ("vote"). The mock is unaffected (near = wrong). Practice would ask "Có phải bạn nói: Vote…?" after an "I don't know". → Slice 4, Task 1.
 
 ## Decision (owner)
