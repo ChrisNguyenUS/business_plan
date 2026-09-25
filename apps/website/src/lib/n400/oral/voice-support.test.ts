@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerSurface, effectiveAnswerMode, isInAppBrowser, voiceInputFor } from './voice-support';
+import { answerSurface, effectiveAnswerMode, isInAppBrowser, isIOSDevice, voiceInputFor } from './voice-support';
 
 // Real user agents from the Gate 0 spike, plus common in-app browsers.
 const UA = {
@@ -75,5 +75,19 @@ describe('answerSurface (final review: latch per question)', () => {
   it('before answering, follows the current effective mode', () => {
     expect(answerSurface(null, 'voice')).toBe('voice');
     expect(answerSurface(null, 'choice')).toBe('choice');
+  });
+});
+
+describe('isIOSDevice (spec D15)', () => {
+  it('iPhone, and iPadOS that reports a Mac UA with touch', () => {
+    expect(isIOSDevice(UA.iphoneSafari, 5)).toBe(true);
+    expect(isIOSDevice(UA.fbIos, 5)).toBe(true);
+    const ipadAsMac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Safari/605.1.15';
+    expect(isIOSDevice(ipadAsMac, 5)).toBe(true);
+  });
+
+  it('not Mac desktops or Android', () => {
+    expect(isIOSDevice(UA.macChrome, 0)).toBe(false);
+    expect(isIOSDevice(UA.androidChrome, 5)).toBe(false);
   });
 });

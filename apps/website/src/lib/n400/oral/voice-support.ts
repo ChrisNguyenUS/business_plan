@@ -46,3 +46,9 @@ export function answerSurface(
 ): 'choice' | 'voice' {
   return answeredVia ?? effective;
 }
+
+/** iPhone/iPod/iPad, including iPadOS that reports a Mac UA (touch points). Spec D15. */
+export function isIOSDevice(ua: string, maxTouchPoints: number): boolean {
+  if (/iPhone|iPad|iPod/i.test(ua)) return true;
+  return /Macintosh/i.test(ua) && maxTouchPoints > 1;
+}
