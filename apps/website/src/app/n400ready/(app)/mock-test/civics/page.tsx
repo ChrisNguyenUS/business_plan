@@ -444,6 +444,7 @@ function MockTestPageInner() {
                     label={dict.flashcards.listenQuestion}
                     size="sm"
                     onBeforePlay={mic.noteAudioPlayed}
+                    preferWebAudio={mic.sessionRunning}
                   />
                 </div>
               </div>

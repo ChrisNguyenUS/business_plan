@@ -372,10 +372,9 @@ describe('PersistentSpeechController — final review fixes', () => {
   });
 });
 
-describe('PersistentSpeechController — 🔊 keeps the mic on (owner decision rev 3.10)', () => {
-  // Owner 2026-09-25: keep the mic running through 🔊; lower playback volume is fine.
-  // Stopping before 🔊 was unreliable on device (1/3); a session that runs through
-  // playback is ended by WebKit ("Source is stopped") and the next one hears (6/6).
+describe('PersistentSpeechController — 🔊 and the running session (rev 3.12)', () => {
+  // 🔊 plays through Web Audio while a session runs (probe strategy=webaudio: the
+  // session survived and heard at once); <audio> when none runs.
   it('🔊 keeps a running session (no stop, no new recognizer)', () => {
     const h = harness();
     open(h);
@@ -387,49 +386,35 @@ describe('PersistentSpeechController — 🔊 keeps the mic on (owner decision r
     expect(h.recs).toHaveLength(1);
   });
 
-  it('never opens the mic by itself (noteAudioPlayed without a session)', () => {
+  it('never opens the mic because audio plays', () => {
     const h = harness();
     h.c.noteAudioPlayed();
     expect(h.recs).toHaveLength(0);
     expect(h.s().state).toBe('idle');
   });
 
-  it('warmUp opens the session without a window and without touching the screen', () => {
+  it('sessionRunning tells 🔊 which player to use', () => {
     const h = harness();
-    h.c.warmUp();
-    expect(h.recs).toHaveLength(1);
-    expect(h.rec()).toMatchObject({ started: 1, continuous: true });
-    expect(h.s().state).toBe('idle');
-    h.rec().onstart?.();
-    h.rec().onaudiostart?.();
-    h.rec().emit(['question audio words', true]);
-    expect(h.s()).toMatchObject({ state: 'idle', transcript: '' });
-    h.c.start();
-    expect(h.recs).toHaveLength(1);
-    expect(h.s().state).toBe('listening');
+    expect(h.c.sessionRunning()).toBe(false);
+    open(h);
+    expect(h.c.sessionRunning()).toBe(true);
+    h.c.reset();
+    expect(h.c.sessionRunning()).toBe(true); // session kept between answers
+    h.c.shutdown();
+    expect(h.c.sessionRunning()).toBe(false);
+    open(h);
+    h.rec().onend?.();
+    expect(h.c.sessionRunning()).toBe(false);
   });
 
-  it('warmUp is a no-op when a session is running, and a warmed session still idles out', () => {
+  it('a session that transcribed the loudspeaker is auto-restarted after lost capture', () => {
     const h = harness();
     open(h);
-    h.c.warmUp();
-    expect(h.recs).toHaveLength(1);
-    const w = harness();
-    w.c.warmUp();
-    w.advance(IDLE_SHUTDOWN_MS);
-    expect(w.recs[0].aborted).toBe(1);
-  });
-
-  it('a warmed session that transcribed the loudspeaker is auto-restarted after lost capture', () => {
-    const h = harness();
-    h.c.warmUp();
-    h.rec().onstart?.();
-    h.rec().onaudiostart?.();
-    h.rec().emit(['What is the supreme', false]); // the 🔊 audio itself
+    h.c.stop();
+    h.rec().emit(['What is the supreme', false]); // the 🔊 audio, outside any window
     h.rec().onerror?.({ error: 'audio-capture', message: 'Source is stopped' });
     h.rec().onend?.();
     expect(h.recs).toHaveLength(2);
-    expect(h.s().state).toBe('idle');
   });
 
   // probe strategy=keep: other audio can still kill a running session's capture;

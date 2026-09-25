@@ -98,8 +98,8 @@ export interface MicController {
   shutdown(): void;
   /** 🔊 audio is about to play (iOS persistent: the session is kept). */
   noteAudioPlayed(): void;
-  /** Open the recognizer ahead of 🔊 so it runs through playback (iOS persistent only). */
-  warmUp(): void;
+  /** A persistent session is open right now: 🔊 must then play through Web Audio (rev 3.12). */
+  sessionRunning(): boolean;
 }
 
 export class SpeechController implements MicController {
@@ -224,8 +224,10 @@ export class SpeechController implements MicController {
   /** Per-answer sessions start fresh on every mic tap; nothing to do. */
   noteAudioPlayed(): void {}
 
-  /** Per-answer sessions start on the mic tap; nothing to warm up. */
-  warmUp(): void {}
+  /** Per-answer (Mac/Chrome): <audio> doesn't hurt the next session, so never Web Audio. */
+  sessionRunning(): boolean {
+    return false;
+  }
 
   /** Release the mic entirely (MicController). Per-answer: same as abort. */
   shutdown(): void {

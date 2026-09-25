@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-25 (rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -164,12 +164,18 @@ function useSpeechRecognition(): {
   - A mic tap opens a **capture window**. If no session is running, the tap also starts one. The window starts after every earlier result, except an unfinished one that began ≤ **1 s** before the tap (the learner's first words). Speech from earlier windows or from before the tap never enters an answer: `mustExclude` questions (Q2, Q18, Q42–46, Q82) would be hurt by extra words.
   - The window's transcript is its results joined. It closes when the learner taps Stop, **1.2 s** after all of its results are final, or at the **15 s** cap.
   - Stall: if no text arrives within **7 s** (counted from `audiostart` for a brand-new session), the window closes as `no-speech`. A session that has **never produced any text** is treated as deaf: its **4th** silent window in a row (by stall, Stop or cap; rev 3.11, owner: was 2nd) shuts it down and reports `stalled`. A session that has heard speech is never killed by silence. Only closed capture windows restart the 5-minute idle clock; question changes don't.
-  - **🔊 and lost capture (rev 3.10, owner decision 2026-09-25, supersedes rev 3.6–3.9):** the mic runs through 🔊, and lower playback volume is accepted.
-    - Every 🔊 **keeps** a running session.
-    - If none is running, 🔊 first opens one with no window (warm-up). This only happens once a voice answer has worked in this browser (`n400.oral.used`), so it never pops a surprise permission prompt.
-    - Playback may still kill the running session's capture. WebKit then ends it with `audio-capture: Source is stopped`, and the controller starts a new session at once, without a tap: 6/6 on device, including probe `strategy=keep`. An answer window open at that moment continues on the new session.
-    - A session that never produced text is not auto-restarted, so there is no loop.
-    - Rejected on device: stopping the session before 🔊, which worked 1/3 times, with or without keeping its listeners.
+  - **🔊 and the mic session (rev 3.12, device probes 2026-09-25, supersedes rev 3.6–3.11 on this point):**
+    - While an iOS session is open, every 🔊 in practice and mock plays through **Web Audio** (`web-audio-player.ts`, normal rate only).
+      - Probe `strategy=webaudio`: the session kept hearing through playback, heard "27" 3 s after it ended, and the owner rated the sound good.
+      - With `<audio>`, the capture died for 20–33 s after playback, until WebKit's `audio-capture: Source is stopped`.
+    - With no session open, 🔊 keeps using `<audio>`, at full volume and still audible with the mute switch on. Web Audio is silenced by the mute switch outside a record-capable audio session.
+    - The mic is never opened because of 🔊; the rev 3.6 / 3.10 warm-up is removed.
+    - The session is kept through 🔊 (owner, rev 3.10; lower volume while the mic is open is accepted).
+    - Defence in depth: if other audio kills a working session's capture, WebKit ends it with `audio-capture` and the controller restarts it at once, without a tap. An open answer window continues on the new session, and a session that never heard is not auto-restarted.
+    - Rejected on device:
+      - stopping the session before 🔊 (1/3);
+      - `start(MediaStreamTrack)`: Safari 27 ignores the track (disabling it didn't stop results), and the track dies together with the speech capture;
+      - a fresh `getUserMedia` after playback (didn't revive it).
   - Tab hidden: nothing happens (WebKit keeps the session). Leaving a screen: close its window only. Idle **5 min** with no window: shut the session down. If the session ends by itself mid-window, the window closes with what it has; outside a window it ends silently, and the learner's screen is untouched.
 - While listening, the mic button is a **Stop** button; a second tap never starts a second instance.
 

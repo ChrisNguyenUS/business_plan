@@ -17,17 +17,6 @@ import {
 import { isIOSDevice } from './voice-support';
 
 const UNAVAILABLE_KEY = 'n400.oral.unavailable';
-// Set once a voice answer has worked in this browser: mic permission is granted,
-// so opening the mic before 🔊 can never pop a surprise permission prompt.
-const USED_KEY = 'n400.oral.used';
-
-function readUsed(): boolean {
-  try {
-    return window.localStorage.getItem(USED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
 
 const SERVER_SNAPSHOT: MicSnapshot = { supported: false, state: 'idle', transcript: '', error: null, startedAt: null };
 const noopSubscribe = () => () => {};
@@ -38,8 +27,10 @@ export interface SpeechApi extends MicSnapshot {
   start(): void;
   stop(): void;
   reset(): void;
-  /** Call right before 🔊 audio plays (spec D15, rev 3.7). */
+  /** Call right before 🔊 audio plays (spec D15). */
   noteAudioPlayed(): void;
+  /** True while an iOS persistent session is open: play 🔊 through Web Audio. */
+  sessionRunning(): boolean;
 }
 
 function readUnavailable(): boolean {
@@ -138,28 +129,16 @@ export function useSpeechRecognition(): SpeechApi {
     return () => shared.reset();
   }, [shared]);
 
-  useEffect(() => {
-    if (snap.state !== 'transcript') return;
-    try {
-      window.localStorage.setItem(USED_KEY, '1');
-    } catch {
-      // Private mode — the mic just isn't opened before 🔊.
-    }
-  }, [snap.state]);
-
-  // Owner decision (rev 3.10): the mic runs through 🔊 (lower volume accepted).
-  const noteAudioPlayed = useCallback(() => {
-    if (!controller) return;
-    controller.noteAudioPlayed();
-    if (readUsed()) controller.warmUp();
-  }, [controller]);
+  const noteAudioPlayed = useCallback(() => controller?.noteAudioPlayed(), [controller]);
+  // 🔊 asks this at click time: Web Audio while an iOS session runs (rev 3.12).
+  const sessionRunning = useCallback(() => controller?.sessionRunning() ?? false, [controller]);
   const start = useCallback(() => controller?.start(), [controller]);
   const stop = useCallback(() => controller?.stop(), [controller]);
   const reset = useCallback(() => controller?.reset(), [controller]);
   const persistent = controller?.persistent ?? false;
 
   return useMemo(
-    () => ({ ...snap, persistent, start, stop, reset, noteAudioPlayed }),
-    [snap, persistent, start, stop, reset, noteAudioPlayed],
+    () => ({ ...snap, persistent, start, stop, reset, noteAudioPlayed, sessionRunning }),
+    [snap, persistent, start, stop, reset, noteAudioPlayed, sessionRunning],
   );
 }

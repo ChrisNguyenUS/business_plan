@@ -25,21 +25,25 @@ describe('mic session wiring (spec D15)', () => {
   });
 });
 
-describe('🔊 marks the iOS session for a restart (spec D15, rev 3.7)', () => {
-  it('AudioButton calls onBeforePlay before play()', () => {
+describe('🔊 plays through Web Audio while an iOS mic session runs (rev 3.12)', () => {
+  it('AudioButton asks preferWebAudio at click time and plays through playWebAudio', () => {
     const btn = read('src/components/n400/AudioButton.tsx');
+    expect(btn).toContain('preferWebAudio?.()');
+    expect(btn).toContain('playWebAudio(');
     expect(btn.indexOf('onBeforePlay?.()')).toBeGreaterThan(-1);
     expect(btn.indexOf('onBeforePlay?.()')).toBeLessThan(btn.indexOf('audio.play()'));
   });
 
-  it('practice and mock report playback to the mic', () => {
-    expect(read('src/app/n400ready/(app)/practice/page.tsx').match(/onBeforePlay=\{mic\.noteAudioPlayed\}/g)?.length).toBe(2);
-    expect(read('src/app/n400ready/(app)/mock-test/civics/page.tsx')).toContain('onBeforePlay={mic.noteAudioPlayed}');
+  it('practice and mock pick the player from the running session', () => {
+    const practice = read('src/app/n400ready/(app)/practice/page.tsx');
+    expect(practice.match(/preferWebAudio=\{mic\.sessionRunning\}/g)?.length).toBe(2);
+    expect(practice.match(/onBeforePlay=\{mic\.noteAudioPlayed\}/g)?.length).toBe(2);
+    expect(read('src/app/n400ready/(app)/mock-test/civics/page.tsx')).toContain('preferWebAudio={mic.sessionRunning}');
   });
 
-  it('🔊 opens the mic first only once voice has worked here (no surprise prompt)', () => {
+  it('🔊 never opens the mic (no warm-up any more)', () => {
     const hook = read('src/lib/n400/oral/use-speech-recognition.ts');
-    expect(hook).toContain('USED_KEY');
-    expect(hook).toContain('if (readUsed()) controller.warmUp();');
+    expect(hook).not.toContain('warmUp');
+    expect(hook).toContain('sessionRunning');
   });
 });

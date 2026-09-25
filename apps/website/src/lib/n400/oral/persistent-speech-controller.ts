@@ -92,22 +92,18 @@ export class PersistentSpeechController implements MicController {
     if (this.openSession(create)) this.openWindow(true);
   }
 
-  /** 🔊 is about to play. Owner decision (rev 3.10): keep the mic on through
-   *  playback; lower volume is accepted. Stopping before 🔊 was unreliable on the
-   *  device (1/3). A session running through playback is ended by WebKit
-   *  ("Source is stopped") and auto-restarted in onSessionEnd; that one hears (6/6). */
+  /** 🔊 is about to play. The session is kept (owner, rev 3.10); with a session open,
+   *  AudioButton plays through Web Audio, which doesn't kill the capture (rev 3.12).
+   *  If some other audio does, WebKit ends the session ("Source is stopped") and
+   *  onSessionEnd restarts it. */
   noteAudioPlayed(): void {
     this.deps.log?.(this.rec ? 'audio played (session kept)' : 'audio played (no session)');
   }
 
-  /** Before 🔊: open the session with no window (screen untouched) so the mic runs
-   *  through playback. The hook only calls this once voice has worked in this
-   *  browser (permission granted: no surprise prompt). */
-  warmUp(): void {
-    const create = this.deps.create;
-    if (!create || !this.snap.supported || this.rec) return;
-    this.deps.log?.('warm up');
-    if (this.openSession(create)) this.armIdle();
+  /** Open session right now: 🔊 then plays through Web Audio, which leaves the
+   *  capture alive (probe strategy=webaudio), instead of <audio> (spec rev 3.12). */
+  sessionRunning(): boolean {
+    return this.rec !== null;
   }
 
   /** Learner tapped Stop: close the window with what it heard. The session stays. */

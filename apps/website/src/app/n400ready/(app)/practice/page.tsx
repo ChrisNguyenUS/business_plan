@@ -684,6 +684,7 @@ export default function PracticePage() {
                     label={dict.flashcards.listenQuestion}
                     size="sm"
                     onBeforePlay={mic.noteAudioPlayed}
+                    preferWebAudio={mic.sessionRunning}
                   />
                   <button
                     type="button"
@@ -792,6 +793,7 @@ export default function PracticePage() {
                   </span>
                   <AudioButton
                     onBeforePlay={mic.noteAudioPlayed}
+                    preferWebAudio={mic.sessionRunning}
                     src={answerAudioUrlFor(question, stateCode, districtNumber)}
                     label={dict.flashcards.listenAnswer}
                     size="sm"

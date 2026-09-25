@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Volume2, VolumeX, Turtle } from 'lucide-react';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { playWebAudio, type WebAudioPlayback } from '@/lib/n400/web-audio-player';
 
 type Props = {
   src: string | null;
@@ -13,8 +14,12 @@ type Props = {
   rate?: number;
   /** 'slow' renders a turtle icon for đọc-chậm buttons. */
   variant?: 'default' | 'slow';
-  /** Runs right before playback starts (iOS: open the mic session first, spec D15). */
+  /** Runs right before playback starts (spec D15: lets the mic session know). */
   onBeforePlay?: () => void;
+  /** Asked at click time; true → play through Web Audio instead of <audio>. On iOS,
+   *  <audio> playback kills a running speech-recognition capture; Web Audio doesn't
+   *  (device probe 2026-09-25). Only for normal-rate playback. Spec rev 3.12. */
+  preferWebAudio?: () => boolean;
 };
 
 /**
@@ -29,6 +34,7 @@ export function AudioButton({
   rate = 1,
   variant = 'default',
   onBeforePlay,
+  preferWebAudio,
 }: Props) {
   const { dict } = useN400Lang();
   const effectiveLabel = label ?? dict.flashcards.listen;
@@ -36,6 +42,7 @@ export function AudioButton({
   const [unavailable, setUnavailable] = useState(false);
   const [prevSrc, setPrevSrc] = useState<string | null>(src);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const webRef = useRef<WebAudioPlayback | null>(null);
 
   // Adjust state during render when `src` changes (React-recommended pattern).
   // The actual audio swap happens lazily in onClick — we only reset UI flags here.
@@ -60,6 +67,27 @@ export function AudioButton({
       onClick={(e) => {
         e.stopPropagation();
         if (unavailable) return;
+        if (playing && webRef.current) {
+          webRef.current.stop();
+          webRef.current = null;
+          setPlaying(false);
+          return;
+        }
+        if (!playing && rate === 1 && preferWebAudio?.()) {
+          onBeforePlay?.();
+          const playback = playWebAudio(src, () => {
+            if (webRef.current === playback) webRef.current = null;
+            setPlaying(false);
+          });
+          webRef.current = playback;
+          setPlaying(true);
+          playback.started.catch(() => {
+            if (webRef.current === playback) webRef.current = null;
+            setPlaying(false);
+            setUnavailable(true);
+          });
+          return;
+        }
         // If the existing audio object points at a stale src, dispose of it.
         if (audioRef.current && audioRef.current.src && !audioRef.current.src.endsWith(src)) {
           audioRef.current.pause();

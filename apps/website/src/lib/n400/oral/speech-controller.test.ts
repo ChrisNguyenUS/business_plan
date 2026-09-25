@@ -380,11 +380,17 @@ describe('shared helpers (rev 3.5)', () => {
   });
 });
 
-describe('SpeechController — noteAudioPlayed / warmUp', () => {
+describe('SpeechController — noteAudioPlayed / sessionRunning', () => {
+  it('per-answer: 🔊 always uses <audio> (no persistent session to protect)', () => {
+    const h = harness();
+    live(h);
+    expect(h.c.sessionRunning()).toBe(false);
+    h.c.reset();
+  });
+
   it('is a no-op for the per-answer controller', () => {
     const h = harness();
     h.c.noteAudioPlayed();
-    h.c.warmUp();
     expect(h.recs).toHaveLength(0);
     expect(h.s().state).toBe('idle');
   });
