@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { N400_QUESTIONS } from '../questions-data';
+import { REPS_BY_STATE } from '../reps-data';
+import { STATES } from '../state-data';
 import { gradeOralAnswer } from './grade-oral';
 import { getOralAnswerConfig } from './get-oral-config';
-import { keywordsOf } from './normalize';
-import type { OralVerdict } from './types';
+import { contentTokens, keywordsOf, normalizeTokens, stem, transcriptStems } from './normalize';
+import type { OralAnswerConfig, OralVerdict } from './types';
 
 const graded = N400_QUESTIONS.filter((q) => !q.isLocationBased);
 const verdict = (qid: number, said: string) => gradeOralAnswer(said, getOralAnswerConfig(qid)!).verdict;
@@ -32,8 +34,17 @@ describe('spec §3.3 reference table', () => {
     [18, 'congress, the president and the courts', 'near'],
     [19, 'senate', 'near'],
     [48, 'secretary', 'wrong'],
+    [69, "I don't know", 'wrong'],
+    [27, 'give me a second', 'wrong'],
+    [6, 'right', 'correct'],
   ])('Q%i "%s" → %s', (qid, said, expected) => {
     expect(verdict(qid, said)).toBe(expected);
+  });
+
+  it('Q23 (UT): a stall alone is wrong, a stall before the answer is dropped (rev 3.16)', () => {
+    const ut = getOralAnswerConfig(23, { stateCode: 'UT', districtNumber: null })!;
+    expect(gradeOralAnswer('let me think', ut).verdict).toBe('wrong');
+    expect(gradeOralAnswer('let me think, Mike Lee', ut).verdict).toBe('correct');
   });
 
   it('Q60 without "not" is never correct', () => {
@@ -111,5 +122,65 @@ describe('not-knowing replies never grade better than wrong (spec §3.3, rev 3.1
   it.each(["I don't know", 'I do not know', "I don't remember", 'not sure', 'I am not sure'])('%s', (said) => {
     const better = graded.filter((q) => verdict(q.id, said) !== 'wrong').map((q) => q.id);
     expect(better).toEqual([]);
+  });
+});
+
+// Rev 3.16 (filler sweep after Gate 3): every grading config, incl. each state
+// and district, so location answers (Lee, Reed, Chu, Des Moines…) are covered.
+function everyConfig(): [string, OralAnswerConfig][] {
+  const out: [string, OralAnswerConfig][] = [];
+  for (const q of N400_QUESTIONS) {
+    if (!q.isLocationBased) {
+      const c = getOralAnswerConfig(q.id);
+      if (c) out.push([`Q${q.id}`, c]);
+      continue;
+    }
+    for (const s of STATES) {
+      const districts = [null, ...(REPS_BY_STATE.get(s.code) ?? []).map((r) => r.districtNumber)];
+      for (const d of districts) {
+        const c = getOralAnswerConfig(q.id, { stateCode: s.code, districtNumber: d });
+        if (c) out.push([`Q${q.id}:${s.code}${d === null ? '' : `-${d}`}`, c]);
+      }
+    }
+  }
+  return out;
+}
+
+const STALLS = [
+  'give me a second', 'just a second', 'wait a second', 'one second', 'hold on a second', 'give me a minute',
+  'one moment', 'just a moment', 'wait', 'hold on', 'hang on', 'let me think', 'let me see', 'let me remember',
+  'let me try', 'I need to think', "I don't know", "I don't remember", 'I forgot', "I'm not sure", 'no idea',
+  'no clue', 'dunno', "I can't remember", 'I never learned this', 'never heard of it', 'say again', 'say that again',
+  'can you repeat that', 'repeat the question', 'come again', 'one more time', 'could you say it again', 'pardon',
+  'sorry', 'excuse me', 'what was the question', 'yes', 'yeah', 'okay', 'now', 'good morning', 'hello',
+  'thank you', 'I guess',
+];
+
+describe('stall phrases never grade better than wrong, on any config (spec §3.3, rev 3.16)', () => {
+  const configs = everyConfig();
+  it.each(STALLS)('%s', (said) => {
+    const better = configs.filter(([, c]) => gradeOralAnswer(said, c).verdict !== 'wrong').map(([label]) => label);
+    expect(better).toEqual([]);
+  });
+});
+
+describe('a stall before the taught answer keeps it correct (rev 3.16)', () => {
+  it.each(['let me think', 'give me a second', 'say that again', 'yes'])('%s, <answer>', (stall) => {
+    const broken = graded.filter((q) => verdict(q.id, `${stall}, ${q.answersEn[0]}`) !== 'correct').map((q) => q.id);
+    expect(broken).toEqual([]);
+  });
+});
+
+describe('stall removal never touches a taught answer (rev 3.16)', () => {
+  it('every answer, incl. names, capitals and reps, reads the same with and without it', () => {
+    const texts = [
+      ...N400_QUESTIONS.flatMap((q) => q.answersEn),
+      ...STATES.flatMap((s) => [s.governor, s.capital ?? '', ...s.senators]),
+      ...[...REPS_BY_STATE.values()].flat().map((r) => r.name),
+    ].filter(Boolean);
+    const changed = texts.filter(
+      (t) => transcriptStems(t).join(' ') !== contentTokens(normalizeTokens(t), { keepQualifiers: true }).map(stem).join(' '),
+    );
+    expect(changed).toEqual([]);
   });
 });

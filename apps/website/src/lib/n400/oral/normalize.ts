@@ -31,6 +31,43 @@ const STOPWORDS: ReadonlySet<string> = new Set(
 
 const QUALIFIER_STEMS: ReadonlySet<string> = new Set(['america', 'american', 'usa', 'your']);
 
+// Stalls a learner says while thinking or asking again (rev 3.16, filler sweep after
+// Gate 3). Dropped from transcripts only, before numbers are read: "give me a second"
+// became "give 2" and graded correct on Q25/Q27; "let me think" was near "Lee", "say
+// again" near "Jay", "yes" near "Des Moines". Written as normalizeTokens sees them:
+// lowercase, "n't" → " not", apostrophes → spaces. Longest first, so a phrase wins
+// over the shorter phrase inside it.
+const STALL_PHRASES: readonly string[] = [
+  // asking for time
+  'give me a second', 'give me one second', 'give me a sec', 'give me a minute', 'give me a moment',
+  'wait a second', 'wait a sec', 'wait a minute', 'wait a moment', 'just a second', 'just a sec',
+  'just a minute', 'just a moment', 'hold on a second', 'hold on a minute', 'one second', 'one sec',
+  'one minute', 'one moment', 'a second', 'a minute', 'a moment', 'hold on', 'hang on', 'wait',
+  // thinking aloud
+  'let me think', 'let me see', 'let me remember', 'let me recall', 'let me try', 'let me guess',
+  'i need to think', 'i have to think', 'i guess so', 'i guess',
+  // not knowing
+  'i do not know', 'i dont know', 'do not know', 'dont know', 'i do not remember', 'i dont remember',
+  'i can not remember', 'i forgot', 'i forget', 'i am not sure', 'i m not sure', 'not sure',
+  'i have no idea', 'no idea', 'i have no clue', 'no clue', 'dunno', 'i never learned this',
+  'i never learned that', 'never heard of it', 'i did not study this',
+  // asking again
+  'could you say that again', 'can you say that again', 'could you say it again', 'can you say it again',
+  'say that again', 'say it again', 'say again', 'come again', 'one more time',
+  'could you repeat the question', 'can you repeat the question', 'could you repeat that',
+  'can you repeat that', 'could you repeat', 'can you repeat', 'repeat the question', 'repeat that',
+  'repeat please', 'please repeat', 'what was the question', 'what is the question', 'pardon me',
+  'pardon', 'excuse me', 'sorry',
+  // greetings and acknowledgements
+  'good morning', 'good afternoon', 'good evening', 'hello', 'hi', 'thank you', 'thanks',
+  'yes', 'yeah', 'yep', 'okay', 'ok', 'right now', 'now',
+];
+
+const STALL_RE = new RegExp(
+  `\\b(?:${[...STALL_PHRASES].sort((a, b) => b.length - a.length).map((p) => p.replace(/ /g, '\\s+')).join('|')})\\b`,
+  'g',
+);
+
 // Below 100: "twenty seven" → 27. A units word right before "hundred" is left
 // for the next number ("one hundred one hundred" is 100, 100 — not 101, 100).
 function readBelow100(raw: readonly string[], i: number): [number, number] | null {
@@ -64,7 +101,9 @@ function readNumber(raw: readonly string[], i: number): [number, number] | null 
   return [v, j];
 }
 
-export function normalizeTokens(text: string): string[] {
+/** `dropStalls` is for transcripts only: answers never contain stalls, and the
+ *  generated config must not change with the stall list. */
+export function normalizeTokens(text: string, opts: { dropStalls?: boolean } = {}): string[] {
   let s = text
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
@@ -79,6 +118,7 @@ export function normalizeTokens(text: string): string[] {
     .replace(/\bworld war (?:ii|two|2)\b/g, 'world war 2')
     .replace(/\bworld war (?:i|one|1)\b/g, 'world war 1');
   s = s.replace(/[^a-z0-9\s]/g, ' ');
+  if (opts.dropStalls) s = s.replace(STALL_RE, ' ');
 
   const raw = s
     .split(/\s+/)
@@ -154,7 +194,7 @@ export function keywordsOf(text: string): string[] {
   });
 }
 
-/** Transcript-side tokens: qualifiers kept (extra words are ignored anyway), stemmed. */
+/** Transcript-side tokens: stalls dropped, qualifiers kept (extra words are ignored anyway), stemmed. */
 export function transcriptStems(text: string): string[] {
-  return contentTokens(normalizeTokens(text), { keepQualifiers: true }).map(stem);
+  return contentTokens(normalizeTokens(text, { dropStalls: true }), { keepQualifiers: true }).map(stem);
 }

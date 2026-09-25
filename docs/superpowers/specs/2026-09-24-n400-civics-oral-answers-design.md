@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.15 — Slice 4: `not` never near-matches, `n400_oral_answer`, Privacy Policy voice section; rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-25 (rev 3.16 — stall phrases dropped from transcripts, negations never near-match (filler sweep); rev 3.15 — Slice 4: `not` never near-matches, `n400_oral_answer`, Privacy Policy voice section; rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -86,9 +86,9 @@ function gradeOralAnswer(transcript: string, config: OralAnswerConfig): OralGrad
 
 Pure, deterministic, runs identically on client (practice) and server (mock).
 
-1. **Normalize transcript:** lowercase; `n't` → ` not`, `cannot` → `can not`; strip `'s`; `world war i|one|1` → `world war 1` and `ii|two|2` → `world war 2`; strip punctuation (hyphens → spaces); `4th` → `4`; number and ordinal words → digits (`four hundred thirty five` → `435`, `fourteenth` → `14`); drop single-letter tokens (`D.C.` → `washington`); drop fillers/qualifiers (`day` is a filler, so "New Year, Thanksgiving, Christmas" passes Q126) with the same list the generator uses. Negation words are never dropped (§3.1).
+1. **Normalize transcript:** lowercase; `n't` → ` not`, `cannot` → `can not`; strip `'s`; `world war i|one|1` → `world war 1` and `ii|two|2` → `world war 2`; strip punctuation (hyphens → spaces); `4th` → `4`; number and ordinal words → digits (`four hundred thirty five` → `435`, `fourteenth` → `14`); drop single-letter tokens (`D.C.` → `washington`); drop fillers/qualifiers (`day` is a filler, so "New Year, Thanksgiving, Christmas" passes Q126) with the same list the generator uses. Negation words are never dropped (§3.1). **Rev 3.16 — stalls:** before numbers are read, the transcript (never the answer side) drops stall phrases a learner says while thinking or asking again ("give me a second", "let me think", "I don't know", "say that again", "one more time", "yes", "good morning", "I guess"…; list `STALL_PHRASES` in `normalize.ts`). Without it, "give me a second" read as "give 2" and graded **correct** on Q25/Q27, and "let me think" / "say again" / "yes" were near "Lee" / "Jay" / "Des Moines". A stall before the answer is simply dropped ("let me think, Mike Lee" is correct). Tests pin that stall removal never changes any taught answer, name, capital or representative.
 2. **Word match = exact after stemming** (`courts ≡ court`, `writes ≡ write`, `laws ≡ law`). Nothing else counts as a match for `correct`.
-3. **Near-match** = edit distance within the writing grader's thresholds. A near-match word counts **only toward `near`**, never toward `correct`.
+3. **Near-match** = edit distance within the writing grader's thresholds. A near-match word counts **only toward `near`**, never toward `correct`. Negation words (`not`, `no`, `never`, `without`) never near-match (rev 3.15 `not` ≈ `vote`; rev 3.16 `never` ≈ `Evers`).
 4. **One-to-one within a part:** inside one part, each transcript word satisfies at most one keyword. Across parts a word may be reused ("north **and** south carolina" satisfies both Carolinas; "freedom of speech and religion" satisfies both freedoms).
 5. Extra words and word order in the transcript are ignored.
 6. **Per part:** `single` → all keywords; `phrase` → ≥ `minKeywords`; `enumeration` → every part, each part needing all its keywords when it has ≤ 3, else ⌈2k/3⌉. `mustInclude` keywords must match exactly; any `mustExclude` word in the transcript blocks `correct`.
@@ -125,6 +125,12 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 | 19 | Senate and House of Representatives | senate | near (1 of 2 items) |
 | 48 | Secretary of Education and Secretary of Energy | secretary | wrong (rev 3.2: no item fully named) |
 | 69 | Vote and write to a newspaper | I don't know | wrong (rev 3.15: `not` never near-matches; Gate 3 found `not` ≈ `vote`) |
+| 27 | Two (2) | give me a second | wrong (rev 3.16: stalls dropped before numbers are read; was correct) |
+| 23 (UT) | Mike Lee | let me think | wrong (rev 3.16: stall; was near "Lee") |
+| 23 (UT) | Mike Lee | let me think, Mike Lee | correct (the stall is dropped) |
+| 62 (IA) | Des Moines | yes | wrong (rev 3.16: stall; was near) |
+| 61 (WI) | Tony Evers | I never learned this | wrong (rev 3.16: stall, and `never` never near-matches) |
+| 6 | (The basic) rights of Americans | right | correct — the known Q6 exception ("rights" is the answer), not treated as a stall |
 
 ## 4. Speech capture
 

@@ -118,3 +118,24 @@ describe('normalizeTokens — accents', () => {
     expect(normalizeTokens('Jenniffer González-Colón')).toEqual(['jenniffer', 'gonzalez', 'colon']);
   });
 });
+
+// Rev 3.16 (filler sweep after Gate 3): stalls are dropped from the transcript
+// before numbers are read, so "give me a second" no longer becomes "2".
+describe('transcriptStems — stall phrases', () => {
+  it.each([
+    'give me a second', 'Just a second.', 'wait a minute', 'one moment', 'let me think', "I don't know",
+    "I'm not sure", 'no clue', 'dunno', 'say that again', 'come again', 'one more time', 'yes', 'good morning', 'I guess',
+  ])('%s → nothing to grade', (said) => {
+    expect(transcriptStems(said)).toEqual([]);
+  });
+
+  it('keeps the answer around a stall', () => {
+    expect(transcriptStems('let me think... the Constitution')).toEqual(['constitution']);
+    expect(transcriptStems('give me a second, two years')).toEqual(['2', 'year']);
+  });
+
+  it('leaves ordinals that belong to an answer alone (guard)', () => {
+    expect(transcriptStems('the second world war')).toContain('2');
+    expect(transcriptStems('July fourth')).toEqual(['july', '4']);
+  });
+});

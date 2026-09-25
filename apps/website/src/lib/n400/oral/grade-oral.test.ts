@@ -137,3 +137,9 @@ describe('gradeOralAnswer — "not" never near-matches (rev 3.15)', () => {
     expect(gradeOralAnswer('vat', participation).verdict).toBe('near');
   });
 });
+
+describe('gradeOralAnswer — negations never near-match (rev 3.16)', () => {
+  it('"never" is not a near "Evers" (filler sweep: never ≈ ever)', () => {
+    expect(gradeOralAnswer('never', single('evers')).verdict).toBe('wrong');
+  });
+});
