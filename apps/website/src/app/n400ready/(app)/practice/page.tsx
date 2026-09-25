@@ -19,7 +19,8 @@ import { MilestoneBanner } from '@/components/n400/MilestoneBanner';
 import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { useN400UserState } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
-import { trackStreakMilestone, trackPracticeComplete } from '@/lib/n400/analytics';
+import { trackOralAnswer, trackStreakMilestone, trackPracticeComplete } from '@/lib/n400/analytics';
+import { micErrorEvent, practiceAnswerEvent } from '@/lib/n400/oral/oral-events';
 import { N400_QUESTIONS, N400_CATEGORY_LABELS, type N400CategoryKey } from '@/lib/n400/questions-data';
 import {
   buildOptions,
@@ -279,6 +280,13 @@ export default function PracticePage() {
   if (!micLost && voiceHere && voiceInput === 'mic' && mic.error === 'stalled') setMicLost(true);
   const panelInput: 'mic' | 'typed' = voiceInput === 'typed' || micLost ? 'typed' : 'mic';
 
+  // n400_oral_answer for mic errors (spec §9): one event each time an error appears.
+  const micError = mic.error;
+  useEffect(() => {
+    if (micError && voiceHere) trackOralAnswer(micErrorEvent(question.id, 'practice', panelInput, micError));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [micError]);
+
   const markWrong = (questionId: number) => {
     setWrongIds((prev) => (prev.includes(questionId) ? prev : [...prev, questionId]));
   };
@@ -324,6 +332,8 @@ export default function PracticePage() {
     setVoiceText(text);
     setNearPrompt(prompt);
     setVoiceVerdict(verdict);
+    // A near is sent once the learner answers "Có phải bạn nói …?" (onNearAnswer).
+    if (verdict !== 'near') trackOralAnswer(practiceAnswerEvent(question.id, panelInput, verdict, null, text));
     const o = voiceOutcome(verdict, null);
     if (o) settleVoice(o.shownCorrect, o.record);
   };
@@ -332,6 +342,7 @@ export default function PracticePage() {
     if (voiceVerdict !== 'near' || nearAnswer !== null) return;
     const answer = yes ? 'yes' : 'no';
     setNearAnswer(answer);
+    trackOralAnswer(practiceAnswerEvent(question.id, panelInput, 'near', yes, voiceText));
     const o = voiceOutcome('near', answer);
     if (o) settleVoice(o.shownCorrect, o.record);
   };

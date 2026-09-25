@@ -43,7 +43,8 @@ import { BadgeUnlockToast } from '@/components/n400/BadgeUnlockToast';
 import { GrowthSlot } from '@/components/n400/GrowthSlot';
 import { useN400UserState, type MockResult } from '@/lib/n400/user-state';
 import { useN400Badges } from '@/lib/n400/use-badges';
-import { trackMockTestStart, trackStreakMilestone } from '@/lib/n400/analytics';
+import { trackMockTestStart, trackOralAnswer, trackStreakMilestone } from '@/lib/n400/analytics';
+import { micErrorEvent, mockAnswerEvents } from '@/lib/n400/oral/oral-events';
 import {
   buildOptions,
   correctAnswersFor,
@@ -184,6 +185,15 @@ function MockTestPageInner() {
     setMicLost(true);
   }
 
+  // n400_oral_answer for mic errors during a voice run (spec §9).
+  const micError = mic.error;
+  useEffect(() => {
+    const qid = slides[index]?.questionId;
+    if (!micError || stage !== 'taking' || runMode !== 'voice' || qid === undefined) return;
+    trackOralAnswer(micErrorEvent(qid, 'mock', mockItemInput(voiceInput, micLost), micError));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [micError]);
+
   // A new item never inherits the previous item's mic session.
   useEffect(() => {
     resetMic();
@@ -218,7 +228,8 @@ function MockTestPageInner() {
     if (startedRef.current) return;
     startedRef.current = true;
     setError(null);
-    trackMockTestStart();
+    const run: PracticeAnswerMode = answerMode === 'voice' && voiceState === 'available' ? 'voice' : 'choice';
+    trackMockTestStart(run);
 
     // Build the slides client-side from a seed — the same deterministic
     // shuffle the full interview uses — so the test starts with zero
@@ -246,7 +257,7 @@ function MockTestPageInner() {
     setIndex(0);
     setResult(null);
     setStage('taking');
-    setRunMode(answerMode === 'voice' && voiceState === 'available' ? 'voice' : 'choice');
+    setRunMode(run);
     setVoiceItems(built.map(() => null));
     setMicLost(false);
     setVoiceAnswers(null);
@@ -289,6 +300,7 @@ function MockTestPageInner() {
           ),
         );
         setVoiceAnswers(v.answers);
+        for (const e of mockAnswerEvents(slides.map((s) => s.questionId), finalItems, v.answers)) trackOralAnswer(e);
         r = v;
       } else {
         r = await finalizeMockAttempt(
