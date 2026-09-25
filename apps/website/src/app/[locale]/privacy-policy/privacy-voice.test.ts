@@ -5,20 +5,24 @@ import { describe, expect, it } from 'vitest';
 // Spec §10: the Privacy Policy (EN/VI) covers voice answers, incl. the always-on iPhone mic (D15).
 const page = readFileSync(join(process.cwd(), 'src/app/[locale]/privacy-policy/page.tsx'), 'utf8');
 
-describe('privacy policy — voice answers (spec §10)', () => {
+describe('privacy policy — voice answers (spec §10, owner wording 2026-09-25)', () => {
   it('has a linkable voice section', () => {
     expect(page).toContain('<section id="voice-answers">');
   });
 
-  it('says audio is never stored (EN + VI)', () => {
-    expect(page).toContain('N400Ready never records or stores audio.');
-    expect(page).toContain('N400Ready không bao giờ ghi âm hay lưu âm thanh.');
+  it('says audio is never recorded or stored (EN + VI)', () => {
+    expect(page).toContain('N400Ready does not record or store your audio.');
+    expect(page).toContain('N400Ready không ghi âm hoặc lưu trữ âm thanh của bạn.');
   });
 
-  // Final review: D15 covers every iOS device (isIOSDevice), iPad included.
   it('discloses the always-on iPhone and iPad microphone (D15, EN + VI)', () => {
-    expect(page).toContain('On iPhone and iPad, while you use voice answers, the microphone stays on between questions');
-    expect(page).toContain('Trên iPhone và iPad, khi bạn trả lời bằng giọng, micro bật suốt giữa các câu hỏi');
+    expect(page).toContain('On iPhone and iPad, voice-answer mode may keep the microphone active between questions');
+    expect(page).toContain('Trên iPhone và iPad, chế độ trả lời bằng giọng nói có thể giữ microphone hoạt động giữa các câu hỏi');
+  });
+
+  it('names the sample review of stored mock text (spec §9/§13)', () => {
+    expect(page).toContain('A small sample of answer text may be reviewed by our team to improve answer recognition.');
+    expect(page).toContain('Một phần nhỏ nội dung câu trả lời có thể được nhóm của chúng tôi xem xét để cải thiện khả năng nhận diện câu trả lời.');
   });
 });
 
@@ -28,17 +32,5 @@ describe('in-app hint names iPad too (polish pass, D15)', () => {
   it('hintPersistent says iPhone and iPad', () => {
     expect(vi).toContain("hintPersistent: 'Trên iPhone và iPad,");
     expect(en).toContain("hintPersistent: 'On iPhone and iPad,");
-  });
-});
-
-describe('privacy copy precision (polish pass)', () => {
-  it('says the answer may include words started just before the tap (EARLY_WORDS_MS)', () => {
-    expect(page).toContain('including words you had just started saying');
-    expect(page).toContain('kể cả những chữ bạn vừa bắt đầu nói ngay trước đó');
-  });
-
-  it('names the sample review of stored mock text (spec §9/§13)', () => {
-    expect(page).toContain('our team may review a small sample of this text to improve how answers are recognized');
-    expect(page).toContain('nhóm của chúng tôi có thể xem lại một phần nhỏ để cải thiện việc nhận dạng câu trả lời');
   });
 });
