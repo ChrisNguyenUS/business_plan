@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-09-25 (rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -197,7 +197,7 @@ Shown once (localStorage, try/catch), the first time the learner enters voice mo
 
 ## 5. Practice flow — `app/n400ready/(app)/practice/page.tsx`
 
-- Toggle **[Trắc nghiệm | 🎤 Tự nói]** in the session header; choice persisted in `localStorage` (try/catch). Hidden when flag `voice_practice` is off, or when neither the mic nor the typed fallback applies (unsupported non-in-app browser). In in-app browsers the toggle stays and "Tự nói" uses the typed variant (D12).
+- Toggle **[Trắc nghiệm | 🎤 Tự nói]** in the session header. **Every visit to practice starts in Trắc nghiệm** (owner 2026-09-25, rev 3.13; previously persisted in `localStorage`). The toggle lasts for that visit. The mic session is unaffected: it stays app-wide per D15. Hidden when flag `voice_practice` is off, or when neither the mic nor the typed fallback applies (unsupported non-in-app browser). In in-app browsers the toggle stays and "Tự nói" uses the typed variant (D12).
 - Voice body: question audio plays (existing audio), no options, `MicAnswerPanel variant="practice"`. Unlimited Nói lại before grading.
 - Recording (`recordAnswer` in `user-state.tsx` gains an optional 4th param `answerMode: 'choice' | 'voice' = 'choice'`, written to `n400_quiz_attempts.answer_mode`):
   - `correct` / `wrong` → `recordAnswer(qid, wasCorrect, 'practice', 'voice')`.

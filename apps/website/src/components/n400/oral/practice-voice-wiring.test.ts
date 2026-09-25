@@ -41,3 +41,11 @@ describe('practice voice wiring — rev 3.5', () => {
     expect(panel).toContain('t.hintPersistent');
   });
 });
+
+describe('practice opens in Trắc nghiệm (owner 2026-09-25)', () => {
+  it('every visit starts in multiple choice; the toggle only lasts for that visit', () => {
+    expect(page).toContain("useState<PracticeAnswerMode>('choice')");
+    expect(page).not.toContain('readStoredAnswerMode');
+    expect(page).not.toContain('n400.practice.answerMode');
+  });
+});

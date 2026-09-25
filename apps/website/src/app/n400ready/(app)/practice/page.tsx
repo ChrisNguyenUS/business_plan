@@ -58,7 +58,6 @@ import { offersTypedFallback } from '@/lib/n400/oral/mock-voice-items';
 const PRESET_STORAGE_KEY = 'n400.practice.preset';
 const PROGRESS_STORAGE_KEY = 'n400.practice.progress';
 const CATEGORY_STORAGE_KEY = 'n400.practice.category';
-const ANSWER_MODE_KEY = 'n400.practice.answerMode';
 const SEED_STORAGE_KEY = 'n400.practice.seed';
 // "Tiến độ hôm nay" on the summary — completed sessions per local day, kept in
 // localStorage so it survives tab closes (unlike the resumable-session keys).
@@ -107,15 +106,6 @@ function readStoredCategory(): N400CategoryKey | null {
   if (typeof window === 'undefined') return null;
   const raw = window.sessionStorage.getItem(CATEGORY_STORAGE_KEY);
   return raw !== null && raw in N400_CATEGORY_LABELS ? (raw as N400CategoryKey) : null;
-}
-
-function readStoredAnswerMode(): PracticeAnswerMode {
-  if (typeof window === 'undefined') return 'choice';
-  try {
-    return window.localStorage.getItem(ANSWER_MODE_KEY) === 'voice' ? 'voice' : 'choice';
-  } catch {
-    return 'choice';
-  }
 }
 
 /* ─── Interaction State Machine ─── */
@@ -170,7 +160,8 @@ export default function PracticePage() {
   const [milestone, setMilestone] = useState<number | null>(null);
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
-  const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>(() => readStoredAnswerMode());
+  // Every visit starts in Trắc nghiệm; the toggle lasts for this visit (owner 2026-09-25).
+  const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>('choice');
   const [voiceText, setVoiceText] = useState('');
   const [voiceVerdict, setVoiceVerdict] = useState<OralVerdict | null>(null);
   const [nearAnswer, setNearAnswer] = useState<'yes' | 'no' | null>(null);
@@ -348,11 +339,6 @@ export default function PracticePage() {
   const onAnswerModeChange = (m: PracticeAnswerMode) => {
     if (phase === 'revealed' || voiceVerdict !== null) return;
     setAnswerMode(m);
-    try {
-      window.localStorage.setItem(ANSWER_MODE_KEY, m);
-    } catch {
-      // Private mode — the choice lasts for this page only.
-    }
     resetMic();
   };
 
