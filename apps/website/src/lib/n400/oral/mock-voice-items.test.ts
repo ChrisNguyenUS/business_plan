@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAdvance, micLostFrom, mockItemInput, offersTypedFallback, toVoiceMockAnswers, type VoiceItem } from './mock-voice-items';
+import { canAdvance, micLostFrom, mockItemInput, offersTypedFallback, toVoiceMockAnswers, voiceRunMicLost, type VoiceItem } from './mock-voice-items';
 
 const item = (over: Partial<VoiceItem> = {}): VoiceItem => ({
   transcript: 'the constitution',
@@ -51,3 +51,22 @@ describe('typed fallback offer (final review: network / audio-capture mid-test)'
     expect(offersTypedFallback(null)).toBe(false);
   });
 });
+
+describe('voiceRunMicLost (speaking spec §5.1, final review)', () => {
+  it('a mic that disabled itself is lost, though its input now reads none', () => {
+    // service-not-allowed / instant not-allowed: supported goes false, so voiceInputFor gives 'none'.
+    expect(voiceRunMicLost('none', 'unavailable', false)).toBe(true);
+  });
+
+  it('a deaf or denied mic is lost; a passing error is not', () => {
+    expect(voiceRunMicLost('mic', 'stalled', true)).toBe(true);
+    expect(voiceRunMicLost('mic', 'not-allowed', true)).toBe(true);
+    expect(voiceRunMicLost('mic', 'no-speech', true)).toBe(false);
+    expect(voiceRunMicLost('mic', null, true)).toBe(false);
+  });
+
+  it('in-app browsers type from the start, so there is no mic to lose', () => {
+    expect(voiceRunMicLost('typed', 'unavailable', false)).toBe(false);
+  });
+});
+

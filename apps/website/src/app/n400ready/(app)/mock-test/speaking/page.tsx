@@ -36,7 +36,7 @@ import {
   yesNoAudioUrl,
 } from '@/lib/n400/quiz-engine';
 import { gradeSpokenItem, spokenItemFromId } from '@/lib/n400/oral/grade-spoken-item';
-import { micLostFrom, mockItemInput, offersTypedFallback } from '@/lib/n400/oral/mock-voice-items';
+import { mockItemInput, offersTypedFallback, voiceRunMicLost } from '@/lib/n400/oral/mock-voice-items';
 import { micErrorEvent, mockReaskEvent, speakingMockAnswerEvents } from '@/lib/n400/oral/oral-events';
 import { gradeSpokenMock, mockConfirm, mockRetry, type SpokenMockAnswer } from '@/lib/n400/oral/spoken-mock';
 import { spokenQid, spokenSection } from '@/lib/n400/oral/spoken-practice';
@@ -201,7 +201,7 @@ export default function ThiThuSpeakingPage() {
   // the typed box shows at once; latched in the handlers, because the next item's
   // mic reset clears the error.
   const [micLatched, setMicLatched] = useState(false);
-  const lostNow = runMode === 'voice' && voiceInput === 'mic' && micLostFrom(mic.error, mic.supported);
+  const lostNow = runMode === 'voice' && voiceRunMicLost(voiceInput, mic.error, mic.supported);
   const micLost = micLatched || lostNow;
   const latchMicLost = () => {
     if (lostNow) setMicLatched(true);

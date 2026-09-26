@@ -58,6 +58,7 @@ describe('Thi thử Speaking — voice run', () => {
   });
 
   it('a lost mic types the rest of the test; in-app browsers type from the start (Review Focus 2)', () => {
+    expect(page).toContain("const lostNow = runMode === 'voice' && voiceRunMicLost(voiceInput, mic.error, mic.supported);");
     expect(page).toContain('const micLost = micLatched || lostNow;');
     expect(page).toContain('const itemInput = mockItemInput(voiceInput, micLost);');
     expect(page.match(/latchMicLost\(\);/g)).toHaveLength(3);

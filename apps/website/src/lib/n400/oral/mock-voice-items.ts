@@ -18,6 +18,13 @@ export function micLostFrom(error: MicError | null, supported: boolean): boolean
   return !supported || error === 'not-allowed' || error === 'unavailable' || error === 'stalled';
 }
 
+/** A voice run's mic is lost for the rest of the test (the remaining items type).
+ *  In-app browsers type from the start, so there is nothing to lose; a mic that
+ *  disabled itself turns `supported` off, so its input reads 'none' (speaking spec §5.1). */
+export function voiceRunMicLost(voiceInput: VoiceInput, error: MicError | null, supported: boolean): boolean {
+  return voiceInput !== 'typed' && micLostFrom(error, supported);
+}
+
 export function mockItemInput(voiceInput: VoiceInput, micLost: boolean): 'mic' | 'typed' {
   return voiceInput === 'mic' && !micLost ? 'mic' : 'typed';
 }
