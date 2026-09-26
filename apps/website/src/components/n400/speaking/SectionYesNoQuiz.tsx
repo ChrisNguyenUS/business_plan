@@ -156,8 +156,9 @@ export function SectionYesNoQuiz({
                     preferWebAudio={spoken.mic.sessionRunning}
                   />
                   {/* Slow 🔊 plays through <audio> (rate ≠ 1), which deafens the iOS mic
-                      session for 20–33 s (Civics rev 3.12): hidden in Tự nói. */}
-                  {!spoken.voiceHere ? (
+                      session for 20–33 s (Civics rev 3.12): hidden in Tự nói, and while
+                      a session is open (it outlives the item and the switch). */}
+                  {!spoken.voiceHere && !spoken.mic.sessionRunning() ? (
                     <AudioButton src={audioSrc} label={dict.speaking.yesno.slowLabel} size="sm" rate={0.7} variant="slow" />
                   ) : null}
                 </div>

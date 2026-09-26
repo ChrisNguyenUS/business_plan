@@ -141,7 +141,7 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
   - The shared `VoiceMicProvider` session carries across items.
 - **S2 rulings:**
   - a 🔊 tapped while the mic is listening first drops the open capture window, so the question audio is never graded as the answer;
-  - Yes/No's slow 🔊 (rate 0.7, `<audio>`) is hidden in Tự nói;
+  - Yes/No's slow 🔊 (rate 0.7, `<audio>`) is hidden in Tự nói, and while an iOS mic session is open (the session outlives the item and the switch; final review);
   - `answer_mode` is sent only for voice/typed answers (`'choice'` is the default);
   - the voice state machine is `useSpokenPractice` (`components/n400/oral/use-spoken-practice.ts`). Each item's answer is one object tagged with its item id; the pure rules live in `lib/n400/oral/spoken-practice.ts`;
   - both practice pages key their quiz by the session seed, so Làm lại and Ôn câu sai start a fresh session. This also fixed the old summary showing again.
