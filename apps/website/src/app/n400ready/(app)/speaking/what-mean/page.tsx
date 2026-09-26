@@ -170,7 +170,7 @@ export default function WhatMeanPage() {
       <SectionMCQuiz
         key={mode.seed}
         questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i, dict))}
-        onAnswer={(id, ok) => void recordSectionAnswer('whatmean', id, ok, 'practice')}
+        onAnswer={(id, ok, _selected, via) => void recordSectionAnswer('whatmean', id, ok, 'practice', via)}
         onExit={() => {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });

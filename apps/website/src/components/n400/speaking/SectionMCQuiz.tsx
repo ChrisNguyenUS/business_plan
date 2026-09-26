@@ -25,6 +25,10 @@ import {
   type MockMode,
 } from '@/components/n400/mock-test-chrome';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
+import { AnswerModeToggle } from '@/components/n400/oral/AnswerModeToggle';
+import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
+import { useSpokenPractice } from '@/components/n400/oral/use-spoken-practice';
+import type { AnswerMode } from '@/lib/n400/attempt-row';
 
 export interface MCOption {
   id: 'A' | 'B' | 'C' | 'D';
@@ -60,7 +64,8 @@ export function SectionMCQuiz({
 }: {
   questions: MCQuestion[];
   /** `selected` = the option the learner picked, for callers that build answer reviews. */
-  onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption) => void;
+  /** `via` = how a practice answer was given (voice/typed from Tự nói). */
+  onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption, via?: AnswerMode) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
@@ -89,6 +94,19 @@ export function SectionMCQuiz({
     () => (q && selected ? q.options.find((o) => o.id === selected) ?? null : null),
     [q, selected],
   );
+
+  // Tự nói in practice (speaking spec §4). Exam mode keeps its own flow; the
+  // Full interview's voice comes in slice S4.
+  const spoken = useSpokenPractice({
+    itemId: q ? q.itemId : null,
+    enabled: !examMode,
+    onSettle: ({ shownCorrect, record, via }) => {
+      setPhase('revealed');
+      if (shownCorrect) setCorrectCount((c) => c + 1);
+      else setWrongCount((c) => c + 1);
+      if (record !== null && q) onAnswer(q.itemId, record, undefined, via);
+    },
+  });
 
   useEffect(() => {
     if (done && skipSummary) {
@@ -127,7 +145,7 @@ export function SectionMCQuiz({
     setPhase('revealed');
     if (wasCorrect) setCorrectCount((c) => c + 1);
     else setWrongCount((c) => c + 1);
-    onAnswer(q.itemId, wasCorrect, opt);
+    onAnswer(q.itemId, wasCorrect, opt, 'choice');
   };
 
   const onNext = () => {
@@ -146,6 +164,7 @@ export function SectionMCQuiz({
   };
 
   const isLast = index === questions.length - 1;
+  const revealedCorrect = spoken.voiceHere ? spoken.shownCorrect : !!pickedOption?.isCorrect;
 
   return (
     <div
@@ -168,6 +187,17 @@ export function SectionMCQuiz({
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
+            {spoken.showToggle ? (
+              <div className="mb-2 flex justify-end">
+                <AnswerModeToggle
+                  mode={spoken.answerMode}
+                  onChange={spoken.changeMode}
+                  labels={{ choice: dict.oral.modeChoice, voice: dict.oral.modeVoice }}
+                  disabled={phase === 'revealed'}
+                />
+              </div>
+            ) : null}
+
             {/* Header — question is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
@@ -186,12 +216,32 @@ export function SectionMCQuiz({
                   ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={q.questionAudioSrc} label={dict.flashcards.listenQuestion} size="sm" />
+                  <AudioButton
+                    src={q.questionAudioSrc}
+                    label={dict.flashcards.listenQuestion}
+                    size="sm"
+                    onBeforePlay={spoken.beforeAudio}
+                    preferWebAudio={spoken.mic.sessionRunning}
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Options — stacked before answering, 2-up after (or in exam mode) */}
+            {/* Answer — Tự nói (mic or typed) or the options, stacked before answering */}
+            {spoken.voiceHere ? (
+              <MicAnswerPanel
+                key={q.itemId}
+                input={spoken.panelInput}
+                mic={spoken.mic}
+                locked={spoken.locked}
+                nearAnswer={spoken.nearPrompt}
+                onSubmit={spoken.onSubmit}
+                onNearAnswer={spoken.onNearAnswer}
+                prompt={spoken.reask ? dict.oral.yesNoReask : undefined}
+                notice={spoken.micLost ? dict.oral.micLostTyped : undefined}
+                onUseTyped={spoken.typedFallback}
+              />
+            ) : (
             <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {q.options.map((opt) => {
                 const isPicked = selected === opt.id;
@@ -242,6 +292,7 @@ export function SectionMCQuiz({
                 );
               })}
             </div>
+            )}
 
             {/* Mobile support — exam shows the Exam Rules card; practice shows a
                 Learning Tip. Desktop shows either in the right rail. */}
@@ -259,18 +310,31 @@ export function SectionMCQuiz({
             {phase === 'revealed' ? (
               <div
                 className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-                  pickedOption?.isCorrect ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
+                  revealedCorrect ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {pickedOption?.isCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
+                    {revealedCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
                   {q.answerAudioSrc ? (
-                    <AudioButton src={q.answerAudioSrc} label={dict.flashcards.listenAnswer} size="sm" className="ml-auto" />
+                    <AudioButton
+                      src={q.answerAudioSrc}
+                      label={dict.flashcards.listenAnswer}
+                      size="sm"
+                      className="ml-auto"
+                      onBeforePlay={spoken.beforeAudio}
+                      preferWebAudio={spoken.mic.sessionRunning}
+                    />
                   ) : null}
                 </div>
+                {spoken.voiceHere && spoken.voiceText ? (
+                  <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                    <span className="font-semibold">{spoken.panelInput === 'typed' ? dict.oral.youTyped : dict.oral.youSaid}</span>{' '}
+                    {spoken.voiceText}
+                  </div>
+                ) : null}
                 <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   {q.accepted.map((a, i) => (
                     <li key={i}>

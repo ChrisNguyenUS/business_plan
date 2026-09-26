@@ -88,3 +88,31 @@ describe('SectionYesNoQuiz — Tự nói', () => {
     expect(page).toContain("onAnswer={(id, ok, via) => void recordSectionAnswer('yesno', id, ok, 'practice', via)}");
   });
 });
+
+describe('SectionMCQuiz — Tự nói (practice only)', () => {
+  const quiz = read('src/components/n400/speaking/SectionMCQuiz.tsx');
+  const page = read('src/app/n400ready/(app)/speaking/what-mean/page.tsx');
+
+  it('voice is never on in exam mode — the Full interview is unchanged (Review Focus 5)', () => {
+    expect(quiz).toContain('enabled: !examMode,');
+  });
+
+  it('uses the Civics switch + panel with the near prompt', () => {
+    expect(quiz).toContain('<AnswerModeToggle');
+    expect(quiz).toMatch(/<MicAnswerPanel\s+key=\{q\.itemId\}/);
+    expect(quiz).toContain('nearAnswer={spoken.nearPrompt}');
+  });
+
+  it('a confirmed near is not recorded (D7)', () => {
+    expect(quiz).toContain('if (record !== null && q) onAnswer(q.itemId, record, undefined, via);');
+  });
+
+  it('every 🔊 uses the iOS rules (Review Focus 2)', () => {
+    expect(quiz.match(/onBeforePlay=\{spoken\.beforeAudio\}/g)).toHaveLength(2);
+    expect(quiz.match(/preferWebAudio=\{spoken\.mic\.sessionRunning\}/g)).toHaveLength(2);
+  });
+
+  it('the page records answer_mode', () => {
+    expect(page).toContain("onAnswer={(id, ok, _selected, via) => void recordSectionAnswer('whatmean', id, ok, 'practice', via)}");
+  });
+});
