@@ -139,6 +139,12 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 - **iOS:**
   - Every 🔊 in these screens passes `onBeforePlay={mic.noteAudioPlayed}` and `preferWebAudio={mic.sessionRunning}`, like Civics.
   - The shared `VoiceMicProvider` session carries across items.
+- **S2 rulings:**
+  - a 🔊 tapped while the mic is listening first drops the open capture window, so the question audio is never graded as the answer;
+  - Yes/No's slow 🔊 (rate 0.7, `<audio>`) is hidden in Tự nói;
+  - `answer_mode` is sent only for voice/typed answers (`'choice'` is the default);
+  - the voice state machine is `useSpokenPractice` (`components/n400/oral/use-spoken-practice.ts`). Each item's answer is one object tagged with its item id; the pure rules live in `lib/n400/oral/spoken-practice.ts`;
+  - both practice pages key their quiz by the session seed, so Làm lại and Ôn câu sai start a fresh session. This also fixed the old summary showing again.
 
 ## 5. Mock flows
 
@@ -237,7 +243,7 @@ The Civics spec §8 table applies unchanged, with one new row:
 
 - **S1, Grading (no UI):** §3 and §3.4. **Gate S1 passed 2026-09-25** (owner decisions in §3.1; review doc docs/superpowers/spikes/2026-09-25-n400-speaking-grading-gate1.md).
   - **Gate S1:** the owner reviews `docs/superpowers/spikes/2026-09-25-n400-speaking-grading-gate1.md`: the 62-term table (keywords, synonyms, sample phrasings with verdicts), the cross-term allowlist, and the Yes/No phrase table.
-- **S2, Practice:** §4, migration `n400_34` (the owner approves before apply), `useVoiceFlags.speakingOn`, analytics `section`.
+- **S2, Practice (built, plan docs/superpowers/plans/2026-09-25-n400-speaking-oral-s2-practice.md):** §4, migration `n400_34` (the owner approves before apply), `useVoiceFlags.speakingOn`, analytics `section`.
   - **Gate S2:** device pass with `voice_speaking` ON for the owner.
 - **S3, Thi thử Speaking:** §5.1.
   - **Gate S3:** device pass.
