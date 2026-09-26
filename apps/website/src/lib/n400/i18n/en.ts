@@ -1109,6 +1109,7 @@ export const en: N400Dict = {
     grade: 'Check',
     retry: 'Say it again',
     didYouMean: 'Did you mean "{answer}"?',
+    yesNoReask: 'Please answer Yes or No. Try again.',
     yes: 'Yes',
     no: 'No',
     youSaid: 'You said:',

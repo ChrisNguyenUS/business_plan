@@ -1108,6 +1108,7 @@ export const vi = {
     grade: 'Chấm',
     retry: 'Nói lại',
     didYouMean: 'Có phải bạn nói "{answer}"?',
+    yesNoReask: 'Bạn trả lời Yes hay No? Hãy nói lại.',
     yes: 'Đúng vậy',
     no: 'Không',
     youSaid: 'Bạn nói:',

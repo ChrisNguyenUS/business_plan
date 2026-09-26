@@ -54,6 +54,8 @@ export interface MicAnswerPanelProps {
   notice?: string;
   /** When set, the error box offers switching to typed input. */
   onUseTyped?: () => void;
+  /** A status line under the answer, e.g. the Yes/No re-ask (speaking spec §4). */
+  prompt?: string;
 }
 
 export function MicAnswerPanel({
@@ -68,6 +70,7 @@ export function MicAnswerPanel({
   onRetry,
   notice,
   onUseTyped,
+  prompt,
 }: MicAnswerPanelProps) {
   const { dict } = useN400Lang();
   const t = dict.oral;
@@ -115,6 +118,12 @@ export function MicAnswerPanel({
       </div>
     ) : null;
 
+  const promptRow = prompt ? (
+    <div className="w-full rounded-2xl border-l-4 border-amber-400 bg-amber-50 p-3 text-sm text-gray-700" role="status">
+      {prompt}
+    </div>
+  ) : null;
+
   if (input === 'typed') {
     const value = typed.trim();
     return (
@@ -147,6 +156,7 @@ export function MicAnswerPanel({
             </button>
           ) : null}
         </form>
+        {promptRow}
         {nearRow}
       </div>
     );
@@ -206,6 +216,8 @@ export function MicAnswerPanel({
           </div>
         </div>
       ) : null}
+
+      {promptRow}
 
       {errorText ? (
         <div className="w-full rounded-2xl border-l-4 border-orange-500 bg-orange-50 p-3 text-sm text-gray-700" role="status">
