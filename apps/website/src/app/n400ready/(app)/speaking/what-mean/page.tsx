@@ -164,8 +164,11 @@ export default function WhatMeanPage() {
   }
 
   if (mode.kind === 'practice') {
+    // One quiz instance per session (key = seed): Làm lại / Ôn câu sai start at
+    // question 1, in Trắc nghiệm (speaking spec S8).
     return (
       <SectionMCQuiz
+        key={mode.seed}
         questions={mode.ids.map((id, i) => toQuestion(id, mode.seed, i, dict))}
         onAnswer={(id, ok) => void recordSectionAnswer('whatmean', id, ok, 'practice')}
         onExit={() => {

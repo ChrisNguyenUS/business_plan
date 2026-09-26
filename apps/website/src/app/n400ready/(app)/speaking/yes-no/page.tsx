@@ -38,7 +38,7 @@ const ALL_IDS = YESNO_QUESTIONS.map((q) => q.id);
 type Mode =
   | { kind: 'landing' }
   | { kind: 'deck'; ids: string[] }
-  | { kind: 'quiz'; ids: string[]; minutes?: number | null };
+  | { kind: 'quiz'; ids: string[]; seed: string; minutes?: number | null };
 
 const answerLabel = (answer: 'yes' | 'no') => (answer === 'yes' ? 'Yes, officer' : 'No, officer');
 
@@ -104,7 +104,7 @@ export default function YesNoPage() {
   const startWrongsReview = () => {
     const ids = lastWrongSectionItemIds(state.sectionAttempts, 'yesno').slice(0, 10);
     if (ids.length > 0) {
-      setMode({ kind: 'quiz', ids });
+      setMode({ kind: 'quiz', ids, seed: `${Date.now()}` });
       router.push(`${pathname}?mode=practice`, { scroll: false });
     }
   };
@@ -139,8 +139,11 @@ export default function YesNoPage() {
   }
 
   if (mode.kind === 'quiz') {
+    // One quiz instance per session (key = seed): Làm lại / Ôn câu sai start at
+    // question 1, in Trắc nghiệm (speaking spec S8).
     return (
       <SectionYesNoQuiz
+        key={mode.seed}
         questions={mode.ids.map((id) => YESNO_QUESTIONS_BY_ID[id])}
         onAnswer={(id, ok) => void recordSectionAnswer('yesno', id, ok, 'practice')}
         onExit={() => {
@@ -155,8 +158,9 @@ export default function YesNoPage() {
   }
 
   function startQuizWith(count: number, minutes?: number | null) {
-    const ids = shuffle([...ALL_IDS], `yn-quiz-${Date.now()}`).slice(0, count);
-    setMode({ kind: 'quiz', ids, minutes });
+    const seed = `${Date.now()}`;
+    const ids = shuffle([...ALL_IDS], `yn-quiz-${seed}`).slice(0, count);
+    setMode({ kind: 'quiz', ids, seed, minutes });
     router.push(`${pathname}?mode=practice`, { scroll: false });
   }
 
