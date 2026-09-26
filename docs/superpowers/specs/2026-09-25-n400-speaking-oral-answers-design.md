@@ -161,6 +161,13 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 - **Result rows:** "Bạn nói: …" plus the accepted answer.
 - **Recording:** `recordSectionMockResult('speaking', passed, score, 10, 'voice' | 'typed')`.
 - **Mic trouble:** if the mic is lost mid-test, the remaining items are typed. In-app browsers type from the start.
+- **S3 rulings:**
+  - every Speaking item can be spoken (all 62 What-mean terms have configs; a test pins it), so a voice run is all voice;
+  - the pure rules are `lib/n400/oral/spoken-mock.ts` (confirm, retry once, re-ask, grade at finish);
+  - the choice is remembered under its own key, `n400.mock.speaking.answerMode`;
+  - a voice run records `answer_mode` 'voice' when any answer came from the mic, else 'typed' (the Civics voice mock rule);
+  - result rows say "Bạn nói:" / "Bạn trả lời:" per row, and the result screen's 🔊 follows the iOS rules;
+  - analytics: one `n400_oral_answer` per item at the finish (correct/wrong), an `unclear` event per Yes/No re-ask, and mic errors with the item's section.
 
 ### 5.2 Phỏng vấn đầy đủ
 
@@ -245,7 +252,7 @@ The Civics spec §8 table applies unchanged, with one new row:
   - **Gate S1:** the owner reviews `docs/superpowers/spikes/2026-09-25-n400-speaking-grading-gate1.md`: the 62-term table (keywords, synonyms, sample phrasings with verdicts), the cross-term allowlist, and the Yes/No phrase table.
 - **S2, Practice (built, plan docs/superpowers/plans/2026-09-25-n400-speaking-oral-s2-practice.md):** §4, migration `n400_34` (the owner approves before apply), `useVoiceFlags.speakingOn`, analytics `section`.
   - **Gate S2:** device pass with `voice_speaking` ON for the owner.
-- **S3, Thi thử Speaking:** §5.1.
+- **S3, Thi thử Speaking (built, plan docs/superpowers/plans/2026-09-26-n400-speaking-oral-s3-mock.md):** §5.1.
   - **Gate S3:** device pass.
 - **S4, Full interview:** §5.2 and the Privacy §8 edits.
   - **Gate S4:** device pass, then `voice_speaking` goes to 100% and the ROADMAP entry is added.
