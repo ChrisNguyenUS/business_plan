@@ -4,6 +4,7 @@ import { REPS_BY_STATE } from '../reps-data';
 import { STATES } from '../state-data';
 import { gradeOralAnswer } from './grade-oral';
 import { getOralAnswerConfig } from './get-oral-config';
+import { STALL_SAMPLES } from './stall-samples.fixture';
 import { contentTokens, keywordsOf, normalizeTokens, stem, transcriptStems } from './normalize';
 import type { OralAnswerConfig, OralVerdict } from './types';
 
@@ -146,15 +147,7 @@ function everyConfig(): [string, OralAnswerConfig][] {
   return out;
 }
 
-const STALLS = [
-  'give me a second', 'just a second', 'wait a second', 'one second', 'hold on a second', 'give me a minute',
-  'one moment', 'just a moment', 'wait', 'hold on', 'hang on', 'let me think', 'let me see', 'let me remember',
-  'let me try', 'I need to think', "I don't know", "I don't remember", 'I forgot', "I'm not sure", 'no idea',
-  'no clue', 'dunno', "I can't remember", 'I never learned this', 'never heard of it', 'say again', 'say that again',
-  'can you repeat that', 'repeat the question', 'come again', 'one more time', 'could you say it again', 'pardon',
-  'sorry', 'excuse me', 'what was the question', 'yes', 'yeah', 'okay', 'now', 'good morning', 'hello',
-  'thank you', 'I guess',
-];
+const STALLS = STALL_SAMPLES;
 
 describe('stall phrases never grade better than wrong, on any config (spec §3.3, rev 3.16)', () => {
   const configs = everyConfig();

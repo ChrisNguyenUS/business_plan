@@ -37,12 +37,23 @@ const QUALIFIER_STEMS: ReadonlySet<string> = new Set(['america', 'american', 'us
 // again" near "Jay", "yes" near "Des Moines". Written as normalizeTokens sees them:
 // lowercase, "n't" → " not", apostrophes → spaces. Longest first, so a phrase wins
 // over the shorter phrase inside it.
-const STALL_PHRASES: readonly string[] = [
+
+// Filler: asking for time, greetings, acknowledgements. Dropped unless it is the
+// item's own answer (speaking spec §3.4; What-mean #61 "Current" is "Right now").
+const FILLER_STALLS: readonly string[] = [
   // asking for time
   'give me a second', 'give me one second', 'give me a sec', 'give me a minute', 'give me a moment',
   'wait a second', 'wait a sec', 'wait a minute', 'wait a moment', 'just a second', 'just a sec',
   'just a minute', 'just a moment', 'hold on a second', 'hold on a minute', 'one second', 'one sec',
   'one minute', 'one moment', 'a second', 'a minute', 'a moment', 'hold on', 'hang on', 'wait',
+  // greetings and acknowledgements
+  'good morning', 'good afternoon', 'good evening', 'hello', 'hi', 'thank you', 'thanks',
+  'yes', 'yeah', 'yep', 'okay', 'ok', 'right now', 'now',
+];
+
+// Thinking aloud, not knowing, asking again: never an answer, always dropped
+// (S1 final review: "I need to think" was kept as "need" and graded near What-mean #52).
+const NEVER_ANSWER_STALLS: readonly string[] = [
   // thinking aloud
   'let me think', 'let me see', 'let me remember', 'let me recall', 'let me try', 'let me guess',
   'i need to think', 'i have to think', 'i guess so', 'i guess',
@@ -58,23 +69,26 @@ const STALL_PHRASES: readonly string[] = [
   'can you repeat that', 'could you repeat', 'can you repeat', 'repeat the question', 'repeat that',
   'repeat please', 'please repeat', 'what was the question', 'what is the question', 'pardon me',
   'pardon', 'excuse me', 'sorry',
-  // greetings and acknowledgements
-  'good morning', 'good afternoon', 'good evening', 'hello', 'hi', 'thank you', 'thanks',
-  'yes', 'yeah', 'yep', 'okay', 'ok', 'right now', 'now',
 ];
+
+const STALL_PHRASES: readonly string[] = [...FILLER_STALLS, ...NEVER_ANSWER_STALLS];
+const FILLER_SET: ReadonlySet<string> = new Set(FILLER_STALLS);
 
 const STALL_RE = new RegExp(
   `\\b(?:${[...STALL_PHRASES].sort((a, b) => b.length - a.length).map((p) => p.replace(/ /g, '\\s+')).join('|')})\\b`,
   'g',
 );
 
-// Speaking spec §3.4: a stall is kept when every one of its words (stopwords
-// aside) is a keyword of the item being graded (What-mean #61 is "Right now").
-// One shared word is not enough: "one more time" stays dropped for Civics Q35.
+// Speaking spec §3.4: a filler stall is kept when every one of its words
+// (stopwords aside) is a keyword of the item being graded (What-mean #61 is
+// "Right now"). One shared word is not enough: "one more time" stays dropped for
+// Civics Q35. Thinking-aloud, not-knowing and asking-again stalls are never kept.
 function isAnswerStall(phrase: string, keep: ReadonlySet<string> | undefined): boolean {
   if (!keep || keep.size === 0) return false;
-  const words = phrase.split(/\s+/).filter((w) => w.length > 1 && !STOPWORDS.has(w));
-  return words.length > 0 && words.every((w) => keep.has(stem(w)));
+  const words = phrase.split(/\s+/).filter(Boolean);
+  if (!FILLER_SET.has(words.join(' '))) return false;
+  const content = words.filter((w) => w.length > 1 && !STOPWORDS.has(w));
+  return content.length > 0 && content.every((w) => keep.has(stem(w)));
 }
 
 // Below 100: "twenty seven" → 27. A units word right before "hundred" is left

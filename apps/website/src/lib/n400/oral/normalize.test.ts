@@ -155,3 +155,13 @@ describe('transcriptStems — stall protection (speaking spec §3.4)', () => {
     expect(transcriptStems('one more time', { keep: new Set(['more', 'peopl']) })).toEqual([]);
   });
 });
+
+describe('transcriptStems — thinking-aloud stalls are never an answer (S1 final review)', () => {
+  it('"I need to think" is dropped even when "need" is a keyword of the item', () => {
+    expect(transcriptStems('I need to think', { keep: new Set(['not', 'need']) })).toEqual([]);
+  });
+
+  it('a filler stall that is the answer is still kept', () => {
+    expect(transcriptStems('now', { keep: new Set(['right', 'now', 'live']) })).toEqual(['now']);
+  });
+});

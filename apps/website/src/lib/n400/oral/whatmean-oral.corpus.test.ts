@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { WHATMEAN_QUESTIONS, WHATMEAN_QUESTIONS_BY_ID } from '../whatmean-data';
 import { getWhatMeanOralConfig, gradeWhatMean } from './get-whatmean-config';
-import { keywordsOf, stem } from './normalize';
+import { STALL_SAMPLES } from './stall-samples.fixture';
 import { WHATMEAN_ORAL_ALIASES } from './whatmean-oral-aliases';
 
 const verdict = (id: string, said: string) => gradeWhatMean(said, id)!.verdict;
@@ -70,21 +70,20 @@ describe('negations, framing, stalls (Review Focus 1, 3)', () => {
     expect(verdict('wm-7', 'It means to remove a government by force, officer')).toBe('correct');
   });
 
-  const STALLS = [
-    'give me a second', 'let me think', "I don't know", 'not sure', 'no idea', 'say that again',
-    'one more time', 'yes', 'now', 'right now', 'good morning', 'I guess', 'I never learned this', 'sorry',
-  ];
+  // S1 final review: the full Civics stall list; the only stalls that are an
+  // item's own answer are pinned explicitly (What-mean #61 "Current" is "Right now").
+  const ANSWER_STALLS: Readonly<Record<string, Readonly<Record<string, 'correct' | 'near'>>>> = {
+    'wm-61': { now: 'near', 'right now': 'correct' },
+  };
 
-  it.each(STALLS)('"%s" never grades better than wrong, unless it IS the answer', (said) => {
-    const stallStems = keywordsOf(said).map(stem);
-    const better = ids.filter((id) => {
-      const c = getWhatMeanOralConfig(id)!;
-      const own = new Set(
-        [c.primary, c.aliases].flatMap((x) => (x ? x.alternatives.flat().flatMap((p) => p.split(' ')) : [])).map(stem),
-      );
-      const isAnswer = stallStems.length > 0 && stallStems.every((s) => own.has(s));
-      return !isAnswer && verdict(id, said) !== 'wrong';
-    });
+  it.each([...STALL_SAMPLES, 'right now'])('"%s" never grades better than wrong, except pinned answers', (said) => {
+    const better = ids.filter((id) => verdict(id, said) !== 'wrong' && ANSWER_STALLS[id]?.[said] === undefined);
     expect(better).toEqual([]);
+  });
+
+  it('the pinned answer stalls grade as pinned', () => {
+    for (const [id, bySaid] of Object.entries(ANSWER_STALLS)) {
+      for (const [said, v] of Object.entries(bySaid)) expect(verdict(id, said)).toBe(v);
+    }
   });
 });
