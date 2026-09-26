@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
-import { practiceAttemptRow, type AnswerMode } from './attempt-row';
+import { practiceAttemptRow, sectionAttemptRow, type AnswerMode } from './attempt-row';
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
@@ -443,6 +443,7 @@ function useN400UserStateInternal() {
       itemId: string,
       wasCorrect: boolean,
       mode: QuizMode,
+      answerMode: AnswerMode = 'choice',
     ): Promise<{ milestone: number | null; unlockedBadges: string[] }> => {
       if (!user) return { milestone: null, unlockedBadges: [] };
       const today = TODAY_LOCAL();
@@ -463,13 +464,7 @@ function useN400UserStateInternal() {
 
       const { data: inserted, error } = await supabase
         .from('n400_section_attempts')
-        .insert({
-          user_id: user.id,
-          section,
-          item_id: itemId,
-          mode,
-          was_correct: wasCorrect,
-        })
+        .insert(sectionAttemptRow(user.id, section, itemId, wasCorrect, mode, answerMode))
         .select('id')
         .single();
       if (error) console.error('n400: recordSectionAnswer failed', error);

@@ -1,5 +1,6 @@
-// One-row quiz-attempt envelope for practice/flashcard answers (see
-// recordAnswer in user-state.tsx). Spec §5 / §7 (oral answers rev 3.3).
+// One-row attempt envelopes for practice/flashcard answers (see recordAnswer and
+// recordSectionAnswer in user-state.tsx). Civics oral spec §5 / §7 (rev 3.3);
+// speaking spec §6.
 
 import type { QuizMode } from './storage';
 
@@ -32,5 +33,29 @@ export function practiceAttemptRow(
     passed: null,
     completed_at: completedAt,
   };
+  return answerMode === 'choice' ? row : { ...row, answer_mode: answerMode };
+}
+
+/** One n400_section_attempts row (Speaking/Writing practice and flashcards). Like
+ *  practiceAttemptRow, `choice` omits answer_mode: the column defaults to 'choice',
+ *  so choice answers insert exactly as before n400_34 (speaking spec §6). */
+export interface SectionAttemptRow {
+  user_id: string;
+  section: string;
+  item_id: string;
+  mode: string;
+  was_correct: boolean;
+  answer_mode?: AnswerMode;
+}
+
+export function sectionAttemptRow(
+  userId: string,
+  section: string,
+  itemId: string,
+  wasCorrect: boolean,
+  mode: string,
+  answerMode: AnswerMode = 'choice',
+): SectionAttemptRow {
+  const row: SectionAttemptRow = { user_id: userId, section, item_id: itemId, mode, was_correct: wasCorrect };
   return answerMode === 'choice' ? row : { ...row, answer_mode: answerMode };
 }
