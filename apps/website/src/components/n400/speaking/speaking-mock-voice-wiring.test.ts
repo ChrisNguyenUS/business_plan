@@ -18,3 +18,18 @@ describe('MockResultScreen — voice rows', () => {
     expect(screen).toContain('preferWebAudio={preferWebAudio}');
   });
 });
+
+describe('SpeakingMockIntro', () => {
+  const intro = read('src/components/n400/speaking/SpeakingMockIntro.tsx');
+
+  it('uses the Civics mock "Cách trả lời" picker', () => {
+    expect(intro).toContain('{dict.oral.mockModeLabel}');
+    expect(intro).toContain('labels={{ choice: dict.oral.modeChoice, voice: dict.oral.mockModeVoice }}');
+  });
+
+  it('describes this test with the existing strings and starts it', () => {
+    expect(intro).toContain('const test = dict.mockTest.tests.speaking;');
+    expect(intro).toContain('{dict.mockTest.intro.startButtonFirst}');
+    expect(intro).toContain('onClick={onStart}');
+  });
+});
