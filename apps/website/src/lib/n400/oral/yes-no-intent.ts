@@ -10,9 +10,15 @@ const UNSURE: readonly string[] = [
   'i do not remember', 'i dont remember', 'i can not remember', 'no idea', 'no clue', 'dunno',
   'i forgot', 'i forget', 'say again', 'say that again', 'say it again', 'repeat', 'pardon',
   'what was the question', 'what is the question', 'come again', 'one more time',
+  // Not understanding / not hearing / not recalling (S1 final review): "I don't
+  // understand" held a "not" and graded as a correct "No".
+  'not understand', 'dont understand', 'didnt understand', 'not get it', 'dont get it',
+  'not hear', 'didnt hear', 'cant hear', 'not catch', 'didnt catch',
+  'not recall', 'dont recall', 'cant recall', 'not certain',
+  'not really sure', 'not quite sure', 'not so sure',
 ];
 const NO_WORDS: ReadonlySet<string> = new Set(['no', 'nope', 'nah', 'never', 'not']);
-const YES_WORDS: ReadonlySet<string> = new Set(['yes', 'yeah', 'yep', 'yup', 'correct']);
+const YES_WORDS: ReadonlySet<string> = new Set(['yes', 'yeah', 'yep', 'yup', 'correct', 'sure']);
 // "I have / I did / I do / I am / I was" — a yes unless a negation follows.
 const YES_AFTER_I: ReadonlySet<string> = new Set(['have', 'did', 'do', 'am', 'was']);
 

@@ -15,6 +15,14 @@ const TABLE: [string, YesNoIntent][] = [
   ["I don't know", 'unclear'], ['I do not know', 'unclear'], ['not sure', 'unclear'], ["I'm not sure", 'unclear'],
   ["I don't remember", 'unclear'], ['No idea', 'unclear'], ['Say again', 'unclear'], ['Can you repeat the question', 'unclear'],
   ['Yes no', 'unclear'], ['', 'unclear'], ['um', 'unclear'], ['Maybe', 'unclear'], ['Yes, I have not', 'unclear'],
+  // S1 final review: not understanding / not hearing / not recalling is never an answer (spec §3.2 rule 1).
+  ["I don't understand", 'unclear'], ['I do not understand the question', 'unclear'], ["sorry I don't understand", 'unclear'],
+  ["I didn't understand", 'unclear'], ["I don't get it", 'unclear'], ["I didn't hear you", 'unclear'],
+  ["I didn't catch that", 'unclear'], ["I can't hear you", 'unclear'], ["I don't recall", 'unclear'],
+  ["I can't recall", 'unclear'], ["I'm not certain", 'unclear'], ['not really sure', 'unclear'],
+  ["I'm not quite sure", 'unclear'], ['I am not so sure', 'unclear'], ["I don't think so", 'no'],
+  // Spec §3.2 lists "sure" as affirmative.
+  ['Sure', 'yes'],
 ];
 
 describe('classifyYesNo (speaking spec §3.2)', () => {
