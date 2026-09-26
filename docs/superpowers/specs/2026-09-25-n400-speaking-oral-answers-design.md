@@ -51,7 +51,7 @@ Learners can answer every spoken part of the interview by voice, the way the rea
   - 4 or more keywords makes a `phrase` with `minKeywords = ⌈2k/3⌉`; otherwise every keyword is required;
   - negations (`not`, `no`, `never`, `without`) and digits go into `mustInclude`. "Someone who is **not** a U.S. citizen" needs "not".
   - **No echo-drop.** The term's words stay as keywords. Echo is controlled by a test instead: reading the term aloud never grades `correct` for its own item.
-- **Synonyms and overrides:** `lib/n400/oral/whatmean-oral-aliases.ts` is hand-written and owner-reviewed at Gate S1. It holds extra alternatives per term (e.g. #1 "tell … citizen", #7 "take down … government … violence") and `REPLACE` entries where the generated config is wrong.
+- **Synonyms:** `lib/n400/oral/whatmean-oral-aliases.ts` is hand-written and owner-reviewed at Gate S1. It holds extra accepted phrasings per term (e.g. #1 "tell … citizen", #7 "take down … government … force"). Per-term overrides (`REPLACE`, `EXTEND`) live in `build-whatmean-config.ts`, each with its reason.
 - **Lookup:** `getWhatMeanOralConfig(id): { primary; aliases } | null` and `gradeWhatMean(transcript, id)` in `get-whatmean-config.ts`. Synonyms are graded as their own `single` config (every keyword required, inheriting the primary's `mustExclude`), and the better verdict wins. Merging them into a `phrase` config made 13 of 25 synonyms unreachable (S1 prototyping).
 - **Tests:**
   - every `definitionEn` grades `correct` against its own config;
@@ -71,7 +71,7 @@ export function classifyYesNo(transcript: string): YesNoIntent;
 export function gradeYesNo(transcript: string, expected: 'yes' | 'no'): 'correct' | 'wrong' | 'unclear';
 ```
 
-The classifier normalizes with `normalizeTokens(text)` **without** `dropStalls`. The generic `STALL_PHRASES` list drops "yes", "yeah" and "okay", so it must never run here. The classifier keeps its own not-knowing list.
+The classifier has its own small normalizer: lowercase; contractions expanded ("n't" → " not", "'m" → " am", "'ve" → " have"); punctuation removed; single letters **kept** ("I have not" vs "I have"). It does not use the shared `normalizeTokens`, which drops single letters and reads "one" as "1", and it never runs the generic `STALL_PHRASES` list, which drops "yes", "yeah" and "okay". It imports nothing from `normalize.ts` (pinned by test) and keeps its own not-knowing list, which also covers not understanding, not hearing, not recalling and not being certain ("I don't understand" held a "not" and graded as a correct No: S1 final review). "I don't think so" stays No.
 
 Classification, in order:
 1. A not-knowing or asking-again stall anywhere ("I don't know", "not sure", "I don't remember", "say again", "repeat", "what was the question"…) → `unclear`.
