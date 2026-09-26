@@ -1,6 +1,6 @@
 # N400 Speaking + Full-Interview Oral Answers — Design
 
-**Date:** 2026-09-25 (rev 1.0 — brainstorm with the owner, design sections 1–5 approved)
+**Date:** 2026-09-25 (rev 1.1 — S2 plan review: Tự nói per practice session, D7 analytics, Yes/No `unclear` is not a verdict, §6 `note` column. rev 1.0 — brainstorm with the owner, design sections 1–5 approved)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Builds on:** `docs/superpowers/specs/2026-09-24-n400-civics-oral-answers-design.md` (rev 3.16), called "the Civics spec" below. Everything there applies here unless this spec says otherwise:
 - Web Speech API; the iOS persistent session (D15); 🔊 through Web Audio while a session runs.
@@ -38,7 +38,7 @@ Learners can answer every spoken part of the interview by voice, the way the rea
 | S5 | **Stall protection:** a filler stall phrase (asking for time, greetings, acknowledgements) is never dropped when every one of its words is a keyword of the item being graded; thinking-aloud, not-knowing and asking-again stalls are always dropped. What-mean #61's definition is "Right now / Where you live now". This applies to Civics too; no Civics answer changes, and a test pins that. |
 | S6 | **New flag `voice_speaking`**, seeded OFF, is the kill switch for everything in this spec. Civics voice flags are unchanged; Android still needs `voice_android`. |
 | S7 | **Migration `n400_34`** adds `answer_mode` to `n400_section_attempts` and `n400_section_mock_results` and seeds the flag. No Speaking transcripts are stored. The Full interview Civics part stores transcripts in `n400_question_attempts`, like the Civics voice mock. |
-| S8 | **Practice always opens in Trắc nghiệm** (Civics rev 3.13). The choice in the Speaking mock and the Full interview is remembered per surface (localStorage, try/catch), like the Civics mock. |
+| S8 | **Practice always opens in Trắc nghiệm** (Civics rev 3.13). In Speaking, every practice session does, Làm lại and Ôn câu sai included; within a session Tự nói stays on from item to item (owner, rev 1.1). The choice in the Speaking mock and the Full interview is remembered per surface (localStorage, try/catch), like the Civics mock. |
 
 ## 3. Grading
 
@@ -120,7 +120,7 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 ## 4. Practice flows (Học tập)
 
 - **Where the switch lives:** the practice session screen, not the hub, gets **[Trắc nghiệm | Tự nói]**, identical to Civics.
-  - Each visit starts in Trắc nghiệm (S8).
+  - Each practice session starts in Trắc nghiệm (S8): a new start, Làm lại and Ôn câu sai each open a fresh session. Within a session, Tự nói stays on from item to item. (The Civics page keeps it for the whole visit.)
   - Hubs and flashcards are unchanged, so the no-scroll hub rule holds.
   - The switch is hidden when `voice_speaking` is off or the browser has no speech API.
   - In-app browsers get the typed box (D12).
@@ -128,10 +128,10 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 - **What-mean, Tự nói:**
   - The term shows with 🔊 (the question audio) above the Civics `MicAnswerPanel`.
   - Correct or wrong: the existing feedback (the taught definition plus 🔊), plus one line, "Bạn nói: …".
-  - Near: "Có phải bạn nói: *<definition>*?" with [Đúng vậy] / [Không]. Đúng vậy shows correct but is **not recorded** (D7).
+  - Near: "Có phải bạn nói: *<definition>*?" with [Đúng vậy] / [Không]. Đúng vậy shows correct but is **not recorded** (D7): no attempt row, so it never counts for "thuộc", review debt or streak. Its `n400_oral_answer` event is still sent, with `confirmed_near` (Civics spec §9).
 - **Yes/No, Tự nói:**
   - `MicAnswerPanel` replaces [Yes, officer] / [No, officer].
-  - `unclear`: "Bạn trả lời Yes hay No? Hãy nói lại." Nothing is recorded, and the mic stays ready.
+  - `unclear`: "Bạn trả lời Yes hay No? Hãy nói lại." It is not a verdict: nothing is counted or recorded, the item stays open and the mic stays ready. Its analytics event has `verdict: unclear` (§8).
   - Correct or wrong: the existing feedback plus "Bạn nói: …".
 - **Recording:**
   - A voice answer calls `recordSectionAnswer(section, itemId, correct, 'practice', 'voice' | 'typed')`, so it counts for "thuộc", review debt, streak and badges exactly like a choice answer.
@@ -177,7 +177,7 @@ ALTER TABLE public.n400_section_attempts
 ALTER TABLE public.n400_section_mock_results
   ADD COLUMN answer_mode TEXT NOT NULL DEFAULT 'choice'
   CHECK (answer_mode IN ('choice', 'voice', 'typed'));
-INSERT INTO public.n400_feature_flags (flag_key, enabled, rollout_pct, description)
+INSERT INTO public.n400_feature_flags (flag_key, enabled, rollout_pct, note)
 VALUES ('voice_speaking', FALSE, 100, 'Speaking (What-mean, Yes/No) + Full interview voice answers')
 ON CONFLICT (flag_key) DO NOTHING;
 ```
@@ -222,7 +222,8 @@ The Civics spec §8 table applies unchanged, with one new row:
 - **Source-reading wiring tests** (repo convention; vitest has no DOM):
   - voice UI renders only with `speakingOn` plus support;
   - voice answers record with `answer_mode`;
-  - D7: a confirmed near is not recorded;
+  - D7: a confirmed near is not recorded, and its analytics event is still sent;
+  - each practice session remounts the quiz, so Làm lại and Ôn câu sai start fresh in Trắc nghiệm;
   - `unclear` is not recorded;
   - the Full interview writes `answerMode` and transcripts;
   - every 🔊 on these screens has the iOS wiring.
