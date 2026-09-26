@@ -145,7 +145,7 @@ export default function YesNoPage() {
       <SectionYesNoQuiz
         key={mode.seed}
         questions={mode.ids.map((id) => YESNO_QUESTIONS_BY_ID[id])}
-        onAnswer={(id, ok) => void recordSectionAnswer('yesno', id, ok, 'practice')}
+        onAnswer={(id, ok, via) => void recordSectionAnswer('yesno', id, ok, 'practice', via)}
         onExit={() => {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });

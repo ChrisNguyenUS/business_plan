@@ -58,3 +58,33 @@ describe('MicAnswerPanel prompt', () => {
     expect(panel.match(/\{promptRow\}/g)).toHaveLength(2);
   });
 });
+
+describe('SectionYesNoQuiz — Tự nói', () => {
+  const quiz = read('src/components/n400/speaking/SectionYesNoQuiz.tsx');
+  const page = read('src/app/n400ready/(app)/speaking/yes-no/page.tsx');
+
+  it('uses the hook and the Civics switch + panel', () => {
+    expect(quiz).toContain('useSpokenPractice({');
+    expect(quiz).toContain('<AnswerModeToggle');
+    expect(quiz).toMatch(/<MicAnswerPanel\s+key=\{q\.id\}/);
+  });
+
+  it('shows the re-ask prompt for unclear', () => {
+    expect(quiz).toContain('prompt={spoken.reask ? dict.oral.yesNoReask : undefined}');
+  });
+
+  it('records only settled answers, with how they were given', () => {
+    expect(quiz).toContain('if (record !== null && q) onAnswer(q.id, record, via);');
+    expect(quiz).toContain("onAnswer(q.id, ok, 'choice');");
+  });
+
+  it('every 🔊 uses the iOS rules; the slow 🔊 is hidden in Tự nói (Review Focus 1, 2)', () => {
+    expect(quiz.match(/onBeforePlay=\{spoken\.beforeAudio\}/g)).toHaveLength(2);
+    expect(quiz.match(/preferWebAudio=\{spoken\.mic\.sessionRunning\}/g)).toHaveLength(2);
+    expect(quiz).toMatch(/\{!spoken\.voiceHere \? \(\s*<AudioButton src=\{audioSrc\} label=\{dict\.speaking\.yesno\.slowLabel\}/);
+  });
+
+  it('the page records answer_mode', () => {
+    expect(page).toContain("onAnswer={(id, ok, via) => void recordSectionAnswer('yesno', id, ok, 'practice', via)}");
+  });
+});

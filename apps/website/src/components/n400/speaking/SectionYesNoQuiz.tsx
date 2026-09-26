@@ -15,6 +15,10 @@ import { yesNoAudioUrl } from '@/lib/n400/quiz-engine';
 import type { YesNoQuestion } from '@/lib/n400/yesno-data';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
+import { AnswerModeToggle } from '@/components/n400/oral/AnswerModeToggle';
+import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
+import { useSpokenPractice } from '@/components/n400/oral/use-spoken-practice';
+import type { AnswerMode } from '@/lib/n400/attempt-row';
 
 type Choice = 'yes' | 'no';
 
@@ -27,7 +31,7 @@ export function SectionYesNoQuiz({
   estimatedMinutes,
 }: {
   questions: YesNoQuestion[];
-  onAnswer: (itemId: string, wasCorrect: boolean) => void;
+  onAnswer: (itemId: string, wasCorrect: boolean, via?: AnswerMode) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
@@ -48,6 +52,18 @@ export function SectionYesNoQuiz({
     [q, selected],
   );
 
+  // Tự nói (speaking spec §4): voice answers settle through the hook.
+  const spoken = useSpokenPractice({
+    itemId: q ? q.id : null,
+    enabled: true,
+    onSettle: ({ shownCorrect, record, via }) => {
+      setPhase('revealed');
+      if (shownCorrect) setCorrectCount((c) => c + 1);
+      else setWrongCount((c) => c + 1);
+      if (record !== null && q) onAnswer(q.id, record, via);
+    },
+  });
+
   if (done || !q) {
     return (
       <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
@@ -64,6 +80,7 @@ export function SectionYesNoQuiz({
   }
 
   const audioSrc = yesNoAudioUrl(q.num);
+  const correctShown = spoken.voiceHere ? spoken.shownCorrect : wasCorrect;
 
   const onPick = (choice: Choice) => {
     if (phase === 'revealed') return;
@@ -72,7 +89,7 @@ export function SectionYesNoQuiz({
     setPhase('revealed');
     if (ok) setCorrectCount((c) => c + 1);
     else setWrongCount((c) => c + 1);
-    onAnswer(q.id, ok);
+    onAnswer(q.id, ok, 'choice');
   };
 
   const onNext = () => {
@@ -104,6 +121,17 @@ export function SectionYesNoQuiz({
             className="flex-1 min-h-0 overflow-y-auto p-[clamp(0.75rem,2vh,1.5rem)]"
             style={{ scrollbarGutter: 'stable' }}
           >
+            {spoken.showToggle ? (
+              <div className="mb-2 flex justify-end">
+                <AnswerModeToggle
+                  mode={spoken.answerMode}
+                  onChange={spoken.changeMode}
+                  labels={{ choice: dict.oral.modeChoice, voice: dict.oral.modeVoice }}
+                  disabled={phase === 'revealed'}
+                />
+              </div>
+            ) : null}
+
             {/* Header — question is the hero */}
             <div className="mb-[clamp(0.5rem,1vw,1rem)]">
               <div className="flex items-start justify-between gap-2">
@@ -120,13 +148,37 @@ export function SectionYesNoQuiz({
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <AudioButton src={audioSrc} label={dict.flashcards.listenQuestion} size="sm" />
-                  <AudioButton src={audioSrc} label={dict.speaking.yesno.slowLabel} size="sm" rate={0.7} variant="slow" />
+                  <AudioButton
+                    src={audioSrc}
+                    label={dict.flashcards.listenQuestion}
+                    size="sm"
+                    onBeforePlay={spoken.beforeAudio}
+                    preferWebAudio={spoken.mic.sessionRunning}
+                  />
+                  {/* Slow 🔊 plays through <audio> (rate ≠ 1), which deafens the iOS mic
+                      session for 20–33 s (Civics rev 3.12): hidden in Tự nói. */}
+                  {!spoken.voiceHere ? (
+                    <AudioButton src={audioSrc} label={dict.speaking.yesno.slowLabel} size="sm" rate={0.7} variant="slow" />
+                  ) : null}
                 </div>
               </div>
             </div>
 
-            {/* Answer buttons — Yes / No */}
+            {/* Answer — Tự nói (mic or typed) or the Yes / No buttons */}
+            {spoken.voiceHere ? (
+              <MicAnswerPanel
+                key={q.id}
+                input={spoken.panelInput}
+                mic={spoken.mic}
+                locked={spoken.locked}
+                nearAnswer={null}
+                onSubmit={spoken.onSubmit}
+                onNearAnswer={spoken.onNearAnswer}
+                prompt={spoken.reask ? dict.oral.yesNoReask : undefined}
+                notice={spoken.micLost ? dict.oral.micLostTyped : undefined}
+                onUseTyped={spoken.typedFallback}
+              />
+            ) : (
             <div className="grid grid-cols-2 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
               {choices.map((choice) => {
                 const isPicked = selected === choice.id;
@@ -162,6 +214,7 @@ export function SectionYesNoQuiz({
                 );
               })}
             </div>
+            )}
 
             {/* Learning Tip — mobile only, before answering */}
             {phase !== 'revealed' ? (
@@ -174,16 +227,29 @@ export function SectionYesNoQuiz({
             {phase === 'revealed' ? (
               <div
                 className={`mt-[clamp(0.5rem,1vh,0.75rem)] rounded-2xl p-[clamp(0.625rem,1.5vh,1rem)] border-l-4 animate-in fade-in slide-in-from-top-2 duration-300 motion-reduce:animate-none ${
-                  wasCorrect ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
+                  correctShown ? 'bg-teal-50 border-teal-500' : 'bg-orange-50 border-orange-500'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="text-amber-500 shrink-0" size={16} />
                   <span className="font-bold text-gray-800" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
-                    {wasCorrect ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
+                    {correctShown ? dict.practice.correctFeedback : dict.practice.incorrectFeedback}
                   </span>
-                  <AudioButton src={audioSrc} label={dict.flashcards.listenAnswer} size="sm" className="ml-auto" />
+                  <AudioButton
+                    src={audioSrc}
+                    label={dict.flashcards.listenAnswer}
+                    size="sm"
+                    className="ml-auto"
+                    onBeforePlay={spoken.beforeAudio}
+                    preferWebAudio={spoken.mic.sessionRunning}
+                  />
                 </div>
+                {spoken.voiceHere && spoken.voiceText ? (
+                  <div className="text-gray-700 mb-1" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
+                    <span className="font-semibold">{spoken.panelInput === 'typed' ? dict.oral.youTyped : dict.oral.youSaid}</span>{' '}
+                    {spoken.voiceText}
+                  </div>
+                ) : null}
                 <ul className="text-gray-700 space-y-0.5 list-disc pl-5" style={{ fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)' }}>
                   <li>
                     <span className="font-medium">{tFormat(dict.speaking.yesno.standardAnswer, { label: answerLabel })}</span>
