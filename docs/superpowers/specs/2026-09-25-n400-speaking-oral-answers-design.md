@@ -53,6 +53,11 @@ Learners can answer every spoken part of the interview by voice, the way the rea
   - **No echo-drop.** The term's words stay as keywords. Echo is controlled by a test instead: reading the term aloud never grades `correct` for its own item.
 - **Synonyms:** `lib/n400/oral/whatmean-oral-aliases.ts` is hand-written and owner-reviewed at Gate S1. It holds extra accepted phrasings per term (e.g. #1 "tell … citizen", #7 "take down … government … force"). Per-term overrides (`REPLACE`, `EXTEND`) live in `build-whatmean-config.ts`, each with its reason.
 - **Lookup:** `getWhatMeanOralConfig(id): { primary; aliases } | null` and `gradeWhatMean(transcript, id)` in `get-whatmean-config.ts`. Synonyms are graded as their own `single` config (every keyword required, inheriting the primary's `mustExclude`), and the better verdict wins. Merging them into a `phrase` config made 13 of 25 synonyms unreachable (S1 prototyping).
+- **Phrases (Gate S1, owner 2026-09-25):** a config may list `phrases`: word sequences, stopwords included, that count as a full answer. They are used where the definition is made of stopwords: #52 Exempt is graded only by "not have to" | "not need to" | "not required" (blocked by "true" and "know"), so generic "not"/"something" never pass ("It's not something I know" is wrong). An excluded word turns a phrase match into `near`.
+- **Owner decisions at Gate S1 (2026-09-25):**
+  - these synonyms are accepted: #3 "choose a leader" (blocked by sign/register, so Register to vote's definition stays near); #6 "non-citizen" / "noncitizen" / "foreigner"; #7 "remove the government using violence"; #12 "murder"; #29 "not telling the truth"; #44 "two wives/husbands"; #45 "whether you are married"; #61 "now";
+  - #47 Annulled: "cancelled"/"canceled" is accepted only together with "as if it never happened". The qualifier is material, so "The marriage was cancelled" stays `near`;
+  - one keyword that belongs to another term is not the target concept ("A gun" for #37 Bear arms is wrong). The full answer is ("Use a gun to defend the country in a war").
 - **Tests:**
   - every `definitionEn` grades `correct` against its own config;
   - the term text never grades `correct` for its own item;
@@ -229,7 +234,7 @@ The Civics spec §8 table applies unchanged, with one new row:
 
 ## 12. Slices and gates
 
-- **S1, Grading (no UI):** §3 and §3.4.
+- **S1, Grading (no UI):** §3 and §3.4. **Gate S1 passed 2026-09-25** (owner decisions in §3.1; review doc docs/superpowers/spikes/2026-09-25-n400-speaking-grading-gate1.md).
   - **Gate S1:** the owner reviews `docs/superpowers/spikes/2026-09-25-n400-speaking-grading-gate1.md`: the 62-term table (keywords, synonyms, sample phrasings with verdicts), the cross-term allowlist, and the Yes/No phrase table.
 - **S2, Practice:** §4, migration `n400_34` (the owner approves before apply), `useVoiceFlags.speakingOn`, analytics `section`.
   - **Gate S2:** device pass with `voice_speaking` ON for the owner.

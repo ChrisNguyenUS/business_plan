@@ -46,27 +46,34 @@ const YES_NO = [
   "I don't understand", "I didn't hear you", "I don't recall", "I'm not certain", 'Yes no', 'Maybe',
 ];
 
-// Natural answers the current table does NOT accept (final review probes), with a
-// suggested data change for the owner to accept or reject (D10).
-const VARIANTS: [id: string, said: string, suggestion: string][] = [
-  ['wm-3', 'Choose a leader', 'add synonym "choose leader", or keep near ("in an election" is taught)'],
-  ['wm-6', 'A non-citizen', 'add synonyms "non citizen", "noncitizen"'],
-  ['wm-6', 'A foreigner', 'add synonym "foreigner"'],
-  ['wm-7', 'Remove the government using violence', 'add synonym "remove government violence"'],
-  ['wm-12', 'To murder someone', 'add synonym "murder"'],
-  ['wm-29', 'Not telling the truth', 'add synonym "not tell truth" (also #32 Lie\'s synonym)'],
-  ['wm-44', 'Having two wives', 'add synonyms "2 wife", "2 husband"'],
-  ['wm-45', 'Whether you are married', 'add synonym "married not" ("married or not"), or keep'],
-  ['wm-47', 'The marriage was cancelled', 'add synonym "marriage cancelled" (double l does not stem to "cancel")'],
-  ['wm-52', "You don't have to do it", 'keep near: the definition is mostly stopwords ("not have to do something")'],
-  ['wm-52', "It's not something I know", 'block "know" (mustExclude) so this is not correct'],
-  ['wm-61', 'Now', 'keep near, or add synonym "now"'],
+// Gate S1 owner decisions (2026-09-25): each phrase with the verdict the owner chose.
+const DECISIONS: [id: string, said: string, expected: 'correct' | 'near' | 'wrong', note: string][] = [
+  ['wm-3', 'Choose a leader', 'correct', 'synonym "choose leader"; "Sign up to choose a leader" stays near (blocked by sign/register)'],
+  ['wm-6', 'A non-citizen', 'correct', 'synonym "non citizen"'],
+  ['wm-6', 'A noncitizen', 'correct', 'synonym "noncitizen"'],
+  ['wm-6', 'A foreigner', 'correct', 'synonym "foreigner"'],
+  ['wm-7', 'Remove the government using violence', 'correct', 'synonym "remove government violence"'],
+  ['wm-12', 'To murder someone', 'correct', 'synonym "murder"'],
+  ['wm-29', 'Not telling the truth', 'correct', 'synonym "not tell truth" (also #32 Lie)'],
+  ['wm-44', 'Having two wives', 'correct', 'synonym "2 wives"'],
+  ['wm-44', 'Having two husbands', 'correct', 'synonym "2 husbands"'],
+  ['wm-45', 'Whether you are married', 'correct', 'synonym "whether married"'],
+  ['wm-47', 'The marriage was cancelled', 'near', 'kept near: "as if it never happened" is material'],
+  ['wm-47', 'The marriage was cancelled as if it never happened', 'correct', 'synonym needs "never happened"'],
+  ['wm-52', "You don't have to do it", 'correct', 'phrase "not have to"'],
+  ['wm-52', 'You do not have to do it', 'correct', 'phrase "not have to"'],
+  ['wm-52', "It's not something I know", 'wrong', 'graded by phrases now; generic not/something never pass'],
+  ['wm-61', 'Now', 'correct', 'synonym "now"'],
+  ['wm-37', 'A gun', 'wrong', 'one keyword of another term (Weapon) is not the Bear arms concept'],
+  ['wm-37', 'Use a gun to defend the country in a war', 'correct', 'the full Bear arms concept'],
 ];
 
 const cell = (s: string) => s.replace(/\|/g, '/');
 function describeConfig(c: OralAnswerConfig): string {
   const alts = c.alternatives.map((parts) => `[${parts.join(' + ')}]`).join(' OR ');
-  const parts = [c.type === 'phrase' ? `≥${c.minKeywords} words of ${alts}` : alts];
+  const parts: string[] = [];
+  if (alts) parts.push(c.type === 'phrase' ? `≥${c.minKeywords} words of ${alts}` : alts);
+  if (c.phrases) parts.push(`phrase: ${c.phrases.map((p) => `"${p}"`).join(' OR ')}`);
   if (c.mustInclude) parts.push(`must say: ${c.mustInclude.join(', ')}`);
   if (c.mustExclude) parts.push(`blocked by: ${c.mustExclude.join(', ')}`);
   return parts.join('; ');
@@ -100,13 +107,14 @@ Natural sample answers: ${counts.correct ?? 0} correct · ${counts.near ?? 0} ne
 |---|---|---|---|---|---|
 ${rows.join('\n')}
 
-## Natural answers that do NOT pass yet (decide each)
+## Gate S1 decisions applied (owner, 2026-09-25)
 
-| # | Term | Said | Verdict | Suggested change |
-|---|---|---|---|---|
-${VARIANTS.map(([id, said, suggestion]) => {
+| # | Term | Said | Owner wants | Now graded | Rule |
+|---|---|---|---|---|---|
+${DECISIONS.map(([id, said, expected, note]) => {
   const q = WHATMEAN_QUESTIONS.find((x) => x.id === id)!;
-  return `| ${q.num} | ${cell(q.termEn)} | "${cell(said)}" | **${gradeWhatMean(said, id)!.verdict}** | ${cell(suggestion)} |`;
+  const v = gradeWhatMean(said, id)!.verdict;
+  return `| ${q.num} | ${cell(q.termEn)} | "${cell(said)}" | ${expected} | **${v}**${v === expected ? '' : ' ⚠️'} | ${cell(note)} |`;
 }).join('\n')}
 
 ## Cross-term matches (pinned in whatmean-oral.corpus.test.ts)
@@ -115,7 +123,7 @@ A long answer that contains another term's short answer:
 - #37's definition ("use a gun to defend…") is correct for #9 Weapon (gun).
 - #48's definition ("to lie under oath") is correct for #29 Misrepresentation (lie).
 - #49's definition ("promise to tell the truth") is correct for #62 Disclose (tell).
-- Synonyms: "tell … citizen" (#1) and "not tell … truth" (#32) → #62; "more than one wife/husband" (#44) → #46; "lying under oath" (#48) → #29.
+- Synonyms: "tell … citizen" (#1) and "not tell … truth" (#29, #32) → #62; "not telling the truth" is accepted by both #29 and #32; "more than one wife/husband" and "two husbands" (#44) → #46; "lying under oath" (#48) → #29.
 
 ## Yes/No (all 37 standard answers are "No")
 
@@ -125,13 +133,11 @@ ${YES_NO.map((s) => `| ${cell(s)} | **${classifyYesNo(s)}** |`).join('\n')}
 
 "unclear" is never graded: the app asks "Bạn trả lời Yes hay No? Hãy nói lại." In a mock it does not use up the retry.
 
-## Decisions (owner)
+## Gate S1 decision
 
-- Synonyms and overrides OK? <yes / changes>
-- "Natural answers that do NOT pass yet": accept which suggested changes? <list>
-- #3 Vote: "Choose a leader" is **near** because the taught definition says "in an election". Accept, or add "choose a leader" as a synonym? <keep near / add>
-- Cross-term matches OK? <yes / tighten>
-- Gate S1 pass? <yes / no>
+- Owner review 2026-09-25: the decisions above were applied; every row matches what the owner asked for (a ⚠️ would mark a mismatch).
+- Intentionally near: #47 "The marriage was cancelled" / "canceled" (the "as if it never happened" qualifier is material); #3 "Sign up to choose a leader" (that is Register to vote).
+- Gate S1: **PASS** on the owner's acceptance criteria.
 `;
 
 writeFileSync(out, body);

@@ -12,16 +12,16 @@ Natural sample answers: 61 correct · 1 near · 0 wrong.
 |---|---|---|---|---|---|
 | 1 | Claim to be a U.S. citizen | To say you are a U.S. citizen. | [say citizen] | tell citizen · pretend citizen | "Saying that I am an American citizen" → **correct** |
 | 2 | Register to vote | Sign up to choose a leader. | ≥3 words of [sign up choose leader] | sign up vote | "Sign up to vote" → **correct** |
-| 3 | Vote | To choose a leader in an election. | [choose leader election] |  | "Choose a leader" → **near** |
+| 3 | Vote | To choose a leader in an election. | [choose leader election]; blocked by: sign, register | choose leader | "Choose a leader" → **correct** |
 | 4 | Owe overdue taxes | Didn't pay taxes on time. | ≥3 words of [not pay taxes time]; must say: not |  | "I did not pay my taxes on time" → **correct** |
 | 5 | Nonresident | Someone who does not live in the U.S. | [not live] |  | "A person who does not live in America" → **correct** |
-| 6 | Alien | Someone who is not a U.S. citizen. | [not citizen] |  | "A person who is not a citizen" → **correct** |
-| 7 | Overthrow | To remove a government by force. | [remove government force] | take down government force | "Remove the government with force" → **correct** |
+| 6 | Alien | Someone who is not a U.S. citizen. | [not citizen] | non citizen · noncitizen · foreigner | "A person who is not a citizen" → **correct** |
+| 7 | Overthrow | To remove a government by force. | [remove government force] | take down government force · remove government violence | "Remove the government with force" → **correct** |
 | 8 | Unconstitutional means | Methods that go against the Constitution. | [against constitution] |  | "Ways that are against the Constitution" → **correct** |
 | 9 | Weapon | A knife or a gun. | [knife] OR [gun] |  | "A gun" → **correct** |
 | 10 | Torture | To cause great pain to someone. | ≥3 words of [cause great pain someone] | hurt someone | "Hurt someone very badly" → **correct** |
 | 11 | Genocide | To kill a group of people because of their religion or race. | ≥4 words of [kill group people religion race] | kill people race · kill people religion | "Killing people because of their race" → **correct** |
-| 12 | Kill | To cause someone to die. | [cause someone die] | make someone die | "To make someone die" → **correct** |
+| 12 | Kill | To cause someone to die. | [cause someone die] | make someone die · murder | "To make someone die" → **correct** |
 | 13 | Prison / Jail | A place where the police keep people who have been arrested. | ≥4 words of [place police keep people arrested] | place people locked | "A place where police keep people" → **correct** |
 | 14 | Detention facility | A place where people are forced to stay. | ≥3 words of [place people forced stay]; must say: stay |  | "A place where people must stay" → **correct** |
 | 15 | Labor camp | A place where people are forced to work. | ≥3 words of [place people forced work]; must say: work |  | "A place where people are forced to work" → **correct** |
@@ -38,7 +38,7 @@ Natural sample answers: 61 correct · 1 near · 0 wrong.
 | 26 | Illegal gambling | To play a game for money that is against the law. | ≥4 words of [play game money against law] | gamble money illegal · gamble money illegally | "Playing games for money against the law" → **correct** |
 | 27 | Support your dependent | To pay child support. | [pay child support] |  | "Pay child support" → **correct** |
 | 28 | Pay alimony | To give money to an ex-spouse after a divorce. | ≥4 words of [give money ex spouse after divorce] |  | "Give money to your ex-wife after divorce" → **correct** |
-| 29 | Misrepresentation | Lying about who you are or something you did. | [lie] OR [lying] |  | "Lying about who you are" → **correct** |
+| 29 | Misrepresentation | Lying about who you are or something you did. | [lie] OR [lying] | not tell truth | "Lying about who you are" → **correct** |
 | 30 | Public benefit | Money from the government such as food stamps. | [money government] |  | "Money from the government" → **correct** |
 | 31 | Fraudulent | To claim something that is not true. | ≥3 words of [claim something not true]; must say: not |  | "Claiming something that is not true" → **correct** |
 | 32 | Lie | To say things that are not true. | ≥3 words of [say things not true]; must say: not | not tell truth | "Not telling the truth" → **correct** |
@@ -53,15 +53,15 @@ Natural sample answers: 61 correct · 1 near · 0 wrong.
 | 41 | Perform work of national importance under civilian direction | Do non-military work during a national crisis. | ≥4 words of [non military work national crisis] |  | "Non-military work in a national crisis" → **correct** |
 | 42 | Example of work of national importance | Helping the Red Cross after an earthquake. | [red cross] |  | "Helping the Red Cross" → **correct** |
 | 43 | Habitual drunkard | A person who regularly drinks too much alcohol. | [drink much alcohol] OR [drink alcohol regularly] OR [alcoholic] |  | "Someone who drinks too much alcohol" → **correct** |
-| 44 | Polygamy | Married to more than one person at the same time. | ≥4 words of [married more 1 person same time]; must say: 1 | more 1 wife · more 1 husband | "Married to more than one person" → **correct** |
-| 45 | Marital status | Being single, married, divorced, or widowed. | ≥2 words of [single married divorced widowed] |  | "Single or married" → **correct** |
+| 44 | Polygamy | Married to more than one person at the same time. | ≥4 words of [married more 1 person same time]; must say: 1 | more 1 wife · more 1 husband · 2 wives · 2 husbands | "Married to more than one person" → **correct** |
+| 45 | Marital status | Being single, married, divorced, or widowed. | ≥2 words of [single married divorced widowed] | whether married | "Single or married" → **correct** |
 | 46 | Spouse | Husband or wife. | [husband] OR [wife] |  | "My wife" → **correct** |
-| 47 | Annulled | Marriage officially ended as if it never happened. | ≥4 words of [marriage officially ended never happened]; must say: never | marriage cancel | "The marriage was canceled" → **correct** |
+| 47 | Annulled | Marriage officially ended as if it never happened. | ≥4 words of [marriage officially ended never happened]; must say: never | marriage cancel never happened · marriage cancelled never happened | "The marriage was canceled" → **near** |
 | 48 | Perjury / Penalty of perjury | To lie under oath. | [lie under oath] | lying under oath | "Lying under oath" → **correct** |
 | 49 | Swear / Certify | To promise to tell the truth. | [promise tell truth] |  | "Promise to tell the truth" → **correct** |
 | 50 | Verify | To prove something is true. | [prove something true] | show true · confirm true | "Prove that something is true" → **correct** |
 | 51 | Pending | Has not been decided yet. | [not decided] |  | "Not decided yet" → **correct** |
-| 52 | Exempt | To not have to do something. | [not something]; must say: not; blocked by: true | not required · not need | "You do not need to do something" → **correct** |
+| 52 | Exempt | To not have to do something. | phrase: "not have to" OR "not need to" OR "not required"; blocked by: true, know |  | "You do not need to do something" → **correct** |
 | 53 | Militia | An army that does not work for an official government. | ≥4 words of [army not work official government]; must say: not | army not government | "An army that is not from the government" → **correct** |
 | 54 | Insurgent organization | A group that uses weapons to fight a government. | ≥4 words of [group uses weapons fight government] |  | "A group that fights the government with weapons" → **correct** |
 | 55 | Vigilante unit | A group that acts like police but is not official police. | ≥4 words of [group acts police not official]; must say: not | not real police | "People acting like police but not real police" → **correct** |
@@ -70,25 +70,31 @@ Natural sample answers: 61 correct · 1 near · 0 wrong.
 | 58 | Good Moral Character | Being a good person and following the law. | ≥3 words of [good person following law] |  | "Being a good person who follows the law" → **correct** |
 | 59 | Naturalization | The process to become a U.S. citizen. | [become citizen] |  | "Becoming a U.S. citizen" → **correct** |
 | 60 | Prior / Previous | Before. | [before] | earlier | "Before" → **correct** |
-| 61 | Current | Right now / Where you live now. | [right now] OR [live now] |  | "Right now" → **correct** |
+| 61 | Current | Right now / Where you live now. | [right now] OR [live now] | now | "Right now" → **correct** |
 | 62 | Disclose | To tell / To provide information. | [tell] OR [provide information] |  | "To tell" → **correct** |
 
-## Natural answers that do NOT pass yet (decide each)
+## Gate S1 decisions applied (owner, 2026-09-25)
 
-| # | Term | Said | Verdict | Suggested change |
-|---|---|---|---|---|
-| 3 | Vote | "Choose a leader" | **near** | add synonym "choose leader", or keep near ("in an election" is taught) |
-| 6 | Alien | "A non-citizen" | **near** | add synonyms "non citizen", "noncitizen" |
-| 6 | Alien | "A foreigner" | **wrong** | add synonym "foreigner" |
-| 7 | Overthrow | "Remove the government using violence" | **near** | add synonym "remove government violence" |
-| 12 | Kill | "To murder someone" | **wrong** | add synonym "murder" |
-| 29 | Misrepresentation | "Not telling the truth" | **wrong** | add synonym "not tell truth" (also #32 Lie's synonym) |
-| 44 | Polygamy | "Having two wives" | **wrong** | add synonyms "2 wife", "2 husband" |
-| 45 | Marital status | "Whether you are married" | **wrong** | add synonym "married not" ("married or not"), or keep |
-| 47 | Annulled | "The marriage was cancelled" | **near** | add synonym "marriage cancelled" (double l does not stem to "cancel") |
-| 52 | Exempt | "You don't have to do it" | **near** | keep near: the definition is mostly stopwords ("not have to do something") |
-| 52 | Exempt | "It's not something I know" | **correct** | block "know" (mustExclude) so this is not correct |
-| 61 | Current | "Now" | **near** | keep near, or add synonym "now" |
+| # | Term | Said | Owner wants | Now graded | Rule |
+|---|---|---|---|---|---|
+| 3 | Vote | "Choose a leader" | correct | **correct** | synonym "choose leader"; "Sign up to choose a leader" stays near (blocked by sign/register) |
+| 6 | Alien | "A non-citizen" | correct | **correct** | synonym "non citizen" |
+| 6 | Alien | "A noncitizen" | correct | **correct** | synonym "noncitizen" |
+| 6 | Alien | "A foreigner" | correct | **correct** | synonym "foreigner" |
+| 7 | Overthrow | "Remove the government using violence" | correct | **correct** | synonym "remove government violence" |
+| 12 | Kill | "To murder someone" | correct | **correct** | synonym "murder" |
+| 29 | Misrepresentation | "Not telling the truth" | correct | **correct** | synonym "not tell truth" (also #32 Lie) |
+| 44 | Polygamy | "Having two wives" | correct | **correct** | synonym "2 wives" |
+| 44 | Polygamy | "Having two husbands" | correct | **correct** | synonym "2 husbands" |
+| 45 | Marital status | "Whether you are married" | correct | **correct** | synonym "whether married" |
+| 47 | Annulled | "The marriage was cancelled" | near | **near** | kept near: "as if it never happened" is material |
+| 47 | Annulled | "The marriage was cancelled as if it never happened" | correct | **correct** | synonym needs "never happened" |
+| 52 | Exempt | "You don't have to do it" | correct | **correct** | phrase "not have to" |
+| 52 | Exempt | "You do not have to do it" | correct | **correct** | phrase "not have to" |
+| 52 | Exempt | "It's not something I know" | wrong | **wrong** | graded by phrases now; generic not/something never pass |
+| 61 | Current | "Now" | correct | **correct** | synonym "now" |
+| 37 | Bear arms on behalf of the United States | "A gun" | wrong | **wrong** | one keyword of another term (Weapon) is not the Bear arms concept |
+| 37 | Bear arms on behalf of the United States | "Use a gun to defend the country in a war" | correct | **correct** | the full Bear arms concept |
 
 ## Cross-term matches (pinned in whatmean-oral.corpus.test.ts)
 
@@ -96,7 +102,7 @@ A long answer that contains another term's short answer:
 - #37's definition ("use a gun to defend…") is correct for #9 Weapon (gun).
 - #48's definition ("to lie under oath") is correct for #29 Misrepresentation (lie).
 - #49's definition ("promise to tell the truth") is correct for #62 Disclose (tell).
-- Synonyms: "tell … citizen" (#1) and "not tell … truth" (#32) → #62; "more than one wife/husband" (#44) → #46; "lying under oath" (#48) → #29.
+- Synonyms: "tell … citizen" (#1) and "not tell … truth" (#29, #32) → #62; "not telling the truth" is accepted by both #29 and #32; "more than one wife/husband" and "two husbands" (#44) → #46; "lying under oath" (#48) → #29.
 
 ## Yes/No (all 37 standard answers are "No")
 
@@ -128,10 +134,8 @@ A long answer that contains another term's short answer:
 
 "unclear" is never graded: the app asks "Bạn trả lời Yes hay No? Hãy nói lại." In a mock it does not use up the retry.
 
-## Decisions (owner)
+## Gate S1 decision
 
-- Synonyms and overrides OK? <yes / changes>
-- "Natural answers that do NOT pass yet": accept which suggested changes? <list>
-- #3 Vote: "Choose a leader" is **near** because the taught definition says "in an election". Accept, or add "choose a leader" as a synonym? <keep near / add>
-- Cross-term matches OK? <yes / tighten>
-- Gate S1 pass? <yes / no>
+- Owner review 2026-09-25: the decisions above were applied; every row matches what the owner asked for (a ⚠️ would mark a mismatch).
+- Intentionally near: #47 "The marriage was cancelled" / "canceled" (the "as if it never happened" qualifier is material); #3 "Sign up to choose a leader" (that is Register to vote).
+- Gate S1: **PASS** on the owner's acceptance criteria.
