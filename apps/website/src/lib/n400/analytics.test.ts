@@ -23,6 +23,7 @@ afterEach(() => {
 
 const base: OralAnswerEvent = {
   qid: 69,
+  section: 'civics',
   context: 'practice',
   input: 'mic',
   verdict: 'wrong',
@@ -37,6 +38,7 @@ describe('trackOralAnswer (spec §9)', () => {
     trackOralAnswer(base);
     expect(ga).toHaveBeenCalledWith('n400_oral_answer', {
       qid: 69,
+      section: 'civics',
       context: 'practice',
       input: 'mic',
       verdict: 'wrong',
@@ -83,5 +85,12 @@ describe('analytics never breaks the UI', () => {
   it('trackMockTestStart can say the run is typed (in-app browsers)', () => {
     trackMockTestStart('typed');
     expect(ga).toHaveBeenCalledWith('n400_mock_test_start', { answer_mode: 'typed' });
+  });
+});
+
+describe('trackOralAnswer — Speaking (speaking spec §8)', () => {
+  it('sends the section and a Yes/No unclear verdict', () => {
+    trackOralAnswer({ ...base, qid: 7, section: 'yesno', verdict: 'unclear' });
+    expect(ga.mock.calls[0][1]).toMatchObject({ qid: 7, section: 'yesno', verdict: 'unclear' });
   });
 });

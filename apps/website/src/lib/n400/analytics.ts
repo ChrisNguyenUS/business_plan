@@ -44,13 +44,17 @@ export function trackMockTestStart(answerMode: 'choice' | 'voice' | 'typed' = 'c
   trackN400Event('n400_mock_test_start', { answer_mode: answerMode });
 }
 
+/** Which interview part a spoken answer belongs to (speaking spec §8). */
+export type OralSection = 'civics' | 'whatmean' | 'yesno';
+
 /** One voice/typed answer outcome, or one mic error (spec §9). */
 export interface OralAnswerEvent {
   qid: number;
+  section: OralSection;
   context: 'practice' | 'mock';
   input: 'mic' | 'typed';
-  /** 'none' for a mic error event. */
-  verdict: OralVerdict | 'none';
+  /** 'none' for a mic error event; 'unclear' for a Yes/No answer that was re-asked. */
+  verdict: OralVerdict | 'unclear' | 'none';
   /** Mock only (one Nói lại per item); null in practice. */
   retried: boolean | null;
   /** Practice near prompt: true = "Đúng vậy", false = "Không", null = no prompt. */
@@ -66,6 +70,7 @@ export function trackOralAnswer(e: OralAnswerEvent): void {
   try {
     trackGa('n400_oral_answer', {
       qid: e.qid,
+      section: e.section,
       context: e.context,
       input: e.input,
       verdict: e.verdict,

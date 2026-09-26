@@ -1,21 +1,24 @@
 // n400_oral_answer payloads (spec §9). Pure, so the pages only hand these to
 // trackOralAnswer; mock verdicts come from the server finalize, never the client.
 
-import type { OralAnswerEvent } from '@/lib/n400/analytics';
+import type { OralAnswerEvent, OralSection } from '@/lib/n400/analytics';
 import type { VoiceItem } from './mock-voice-items';
 import type { MicError } from './speech-controller';
 import type { OralVerdict } from './types';
 
-/** Practice: a graded answer, or a near answer the learner confirmed or denied. */
+/** Practice: a graded answer, a near answer the learner confirmed or denied, or a
+ *  Yes/No answer that was neither (unclear → re-asked). */
 export function practiceAnswerEvent(
   qid: number,
   input: 'mic' | 'typed',
-  verdict: OralVerdict,
+  verdict: OralVerdict | 'unclear',
   confirmedNear: boolean | null,
   transcript: string,
+  section: OralSection = 'civics',
 ): OralAnswerEvent {
   return {
     qid,
+    section,
     context: 'practice',
     input,
     verdict,
@@ -29,8 +32,13 @@ export function practiceAnswerEvent(
 /** A mic error while answering: no verdict, no transcript. Always `input: 'mic'`,
  *  since only the mic errors; the page's input has already flipped to 'typed'
  *  for the errors that kill the mic (micLost latch re-renders first). */
-export function micErrorEvent(qid: number, context: 'practice' | 'mock', error: MicError): OralAnswerEvent {
-  return { qid, context, input: 'mic', verdict: 'none', retried: null, confirmedNear: null, error, transcriptLength: 0 };
+export function micErrorEvent(
+  qid: number,
+  context: 'practice' | 'mock',
+  error: MicError,
+  section: OralSection = 'civics',
+): OralAnswerEvent {
+  return { qid, section, context, input: 'mic', verdict: 'none', retried: null, confirmedNear: null, error, transcriptLength: 0 };
 }
 
 /** Mock: one event per spoken or typed item, verdicts from the server finalize.
@@ -48,6 +56,7 @@ export function mockAnswerEvents(
     if (!item || wasCorrect === undefined) return;
     events.push({
       qid,
+      section: 'civics',
       context: 'mock',
       input: item.input,
       verdict: wasCorrect ? 'correct' : 'wrong',

@@ -13,6 +13,7 @@ describe('practiceAnswerEvent', () => {
   it('carries the verdict, the near answer and only the transcript length', () => {
     expect(practiceAnswerEvent(69, 'mic', 'near', true, 'vote and write')).toEqual({
       qid: 69,
+      section: 'civics',
       context: 'practice',
       input: 'mic',
       verdict: 'near',
@@ -30,6 +31,7 @@ describe('micErrorEvent', () => {
   it('has no verdict and no transcript, and always comes from the mic', () => {
     expect(micErrorEvent(12, 'mock', 'not-allowed')).toEqual({
       qid: 12,
+      section: 'civics',
       context: 'mock',
       input: 'mic',
       verdict: 'none',
@@ -68,5 +70,20 @@ describe('mockAnswerEvents', () => {
 
   it('an item the server did not return sends nothing', () => {
     expect(mockAnswerEvents([21], [said('100')], [])).toEqual([]);
+  });
+});
+
+describe('Speaking sections (speaking spec §8)', () => {
+  it('practice events carry the item section and allow unclear', () => {
+    expect(practiceAnswerEvent(3, 'mic', 'unclear', null, "I don't know", 'yesno')).toMatchObject({
+      qid: 3,
+      section: 'yesno',
+      verdict: 'unclear',
+    });
+  });
+
+  it('mic errors and mock answers default to civics', () => {
+    expect(micErrorEvent(12, 'practice', 'no-speech', 'whatmean').section).toBe('whatmean');
+    expect(mockAnswerEvents([21], [said('100')], [{ qid: 21, wasCorrect: true }])[0].section).toBe('civics');
   });
 });
