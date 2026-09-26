@@ -28,6 +28,10 @@ export const WHATMEAN_ORAL_CONFIG: Record<string, OralAnswerConfig> = {
       [
         "choose leader election"
       ]
+    ],
+    "mustExclude": [
+      "sign",
+      "register"
     ]
   },
   "wm-4": {
@@ -490,16 +494,15 @@ export const WHATMEAN_ORAL_CONFIG: Record<string, OralAnswerConfig> = {
   },
   "wm-52": {
     "type": "single",
-    "alternatives": [
-      [
-        "not something"
-      ]
-    ],
-    "mustInclude": [
-      "not"
+    "alternatives": [],
+    "phrases": [
+      "not have to",
+      "not need to",
+      "not required"
     ],
     "mustExclude": [
-      "true"
+      "true",
+      "know"
     ]
   },
   "wm-53": {

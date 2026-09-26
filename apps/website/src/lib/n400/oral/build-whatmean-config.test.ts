@@ -39,7 +39,19 @@ describe('buildWhatMeanOralConfig — rules (speaking spec §3.1)', () => {
     expect(cfg('wm-15')).toMatchObject({ mustInclude: ['work'] });
     expect(cfg('wm-23')).toMatchObject({ mustExclude: ['equipment', 'tools'] });
     expect(cfg('wm-37')).toMatchObject({ mustExclude: ['not'] });
-    expect(cfg('wm-52')).toMatchObject({ mustExclude: ['true'] });
+  });
+
+  it('Exempt is graded by phrases, not by "not"/"something" (Gate S1)', () => {
+    expect(cfg('wm-52')).toEqual({
+      type: 'single',
+      alternatives: [],
+      phrases: ['not have to', 'not need to', 'not required'],
+      mustExclude: ['true', 'know'],
+    });
+  });
+
+  it('Vote keeps Register to vote out (Gate S1)', () => {
+    expect(cfg('wm-3')).toMatchObject({ mustExclude: ['sign', 'register'] });
   });
 });
 

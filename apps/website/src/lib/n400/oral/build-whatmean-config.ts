@@ -35,12 +35,23 @@ const REPLACE: Readonly<Record<string, OralAnswerConfig>> = {
   'wm-46': { type: 'single', alternatives: [['husband'], ['wife']] },
   // Pending — "yet" is optional.
   'wm-51': { type: 'single', alternatives: [['not decided']] },
+  // Exempt — the definition is stopwords ("To not have to do something"): graded by
+  // phrases, so generic "not"/"something" never pass ("It's not something I know" is
+  // wrong). Keeps the exclusions for "true" (Fraudulent) and "know". Gate S1 (owner).
+  'wm-52': {
+    type: 'single',
+    alternatives: [],
+    phrases: ['not have to', 'not need to', 'not required'],
+    mustExclude: ['true', 'know'],
+  },
   // Naturalization — "process" is filler.
   'wm-59': { type: 'single', alternatives: [['become citizen']] },
 };
 
 // Additions to the generated config, each with its reason (prototype cross-term matrix).
 const EXTEND: Readonly<Record<string, Partial<OralAnswerConfig>>> = {
+  // Vote: "Sign up to choose a leader" is Register to vote (synonym "choose a leader", Gate S1).
+  'wm-3': { mustExclude: ['sign', 'register'] },
   // Detention facility vs Labor camp: "forced to work" must not pass here.
   'wm-14': { mustInclude: ['stay'] },
   // Labor camp vs Detention facility: "forced to stay" must not pass here.
@@ -49,8 +60,6 @@ const EXTEND: Readonly<Record<string, Partial<OralAnswerConfig>>> = {
   'wm-23': { mustExclude: ['equipment', 'tools'] },
   // Bear arms: the non-combatant definition ("not fighting in a war") must not pass.
   'wm-37': { mustExclude: ['not'] },
-  // Exempt: Fraudulent's definition ("claim something that is not true") must not pass.
-  'wm-52': { mustExclude: ['true'] },
 };
 
 const isDigits = (w: string) => /^\d+$/.test(w);
