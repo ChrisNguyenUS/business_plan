@@ -33,3 +33,55 @@ describe('SpeakingMockIntro', () => {
     expect(intro).toContain('onClick={onStart}');
   });
 });
+
+describe('Thi thử Speaking — voice run', () => {
+  const page = read('src/app/n400ready/(app)/mock-test/speaking/page.tsx');
+
+  it('offers voice with voice_speaking + support; without it the test starts directly (Review Focus 5)', () => {
+    expect(page).toContain('enabled: voiceFlags.speakingOn,');
+    expect(page).toContain("startedMode ?? (voiceFlags.loaded && !voiceAvailable ? 'choice' : null)");
+    expect(page).toContain('<SpeakingMockIntro');
+    expect(page).toContain('if (!voiceFlags.loaded) {');
+  });
+
+  it('remembers the choice for this test, and latches a direct start on the first pick (S8)', () => {
+    expect(page).toContain("const SPEAKING_MOCK_MODE_KEY = 'n400.mock.speaking.answerMode';");
+    expect(page).toContain('window.localStorage.setItem(SPEAKING_MOCK_MODE_KEY, m);');
+    expect(page.match(/if \(startedMode === null\) setStartedMode\('choice'\);/g)).toHaveLength(2);
+  });
+
+  it('answers through the Civics mock panel; a re-ask or a mic error keeps the retry (Review Focus 1, 2)', () => {
+    expect(page).toMatch(/<MicAnswerPanel\s+key=\{item\.id\}\s+variant="mock"/);
+    expect(page).toContain('canRetry={!current?.retried}');
+    expect(page).toContain('prompt={current?.reask ? dict.oral.yesNoReask : undefined}');
+    expect(page).toContain('mockConfirm(current, text, itemInput, gradeSpokenItem(spoken, text, location).verdict)');
+  });
+
+  it('a lost mic types the rest of the test; in-app browsers type from the start (Review Focus 2)', () => {
+    expect(page).toContain('const micLost = micLatched || lostNow;');
+    expect(page).toContain('const itemInput = mockItemInput(voiceInput, micLost);');
+    expect(page.match(/latchMicLost\(\);/g)).toHaveLength(3);
+  });
+
+  it('grades at the finish and records the run once, with how it was answered (Review Focus 4)', () => {
+    expect(page).toContain('const graded = gradeSpokenMock(spokenItems, voiceAnswers, location);');
+    expect(page).toContain(
+      "void recordSectionMockResult('speaking', graded.score >= PASS_THRESHOLD, graded.score, TOTAL, graded.answerMode);",
+    );
+    expect(page).toContain('for (const e of speakingMockAnswerEvents(spokenItems, voiceAnswers, graded.ok)) trackOralAnswer(e);');
+    expect(page).toContain("trackOralAnswer(micErrorEvent(spokenQid(spoken), 'mock', micError, spokenSection(spoken)));");
+  });
+
+  it('every 🔊 uses the iOS rules; the slow 🔊 never plays in a voice run or over an open session (Review Focus 3)', () => {
+    expect(page.match(/onBeforePlay=\{audio\.onBeforePlay\}/g)).toHaveLength(2);
+    expect(page.match(/preferWebAudio=\{audio\.preferWebAudio\}/g)).toHaveLength(2);
+    expect(page.match(/\{audio\.showSlow \? \(/g)).toHaveLength(2);
+    expect(page).toContain("showSlow: runMode !== 'voice' && !mic.sessionRunning(),");
+    expect(page).toContain("if (mic.state === 'listening') resetMic();");
+    expect(page).toMatch(/onBeforePlay=\{beforeAudio\}\s+preferWebAudio=\{mic\.sessionRunning\}/);
+  });
+
+  it('result rows say "Bạn nói:" / "Bạn trả lời:"', () => {
+    expect(page).toContain("userAnswerLabel: answer?.input === 'typed' ? dict.oral.youTyped : dict.oral.youSaid,");
+  });
+});
