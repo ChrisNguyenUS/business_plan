@@ -59,3 +59,26 @@ export function sectionAttemptRow(
   const row: SectionAttemptRow = { user_id: userId, section, item_id: itemId, mode, was_correct: wasCorrect };
   return answerMode === 'choice' ? row : { ...row, answer_mode: answerMode };
 }
+
+/** One n400_section_mock_results row (Speaking/Writing mock). Like the rows above,
+ *  `choice` omits answer_mode: the column defaults to 'choice' (speaking spec §6). */
+export interface SectionMockResultRow {
+  user_id: string;
+  section: 'writing' | 'speaking';
+  passed: boolean;
+  score: number;
+  total: number;
+  answer_mode?: AnswerMode;
+}
+
+export function sectionMockResultRow(
+  userId: string,
+  section: 'writing' | 'speaking',
+  passed: boolean,
+  score: number,
+  total: number,
+  answerMode: AnswerMode = 'choice',
+): SectionMockResultRow {
+  const row: SectionMockResultRow = { user_id: userId, section, passed, score, total };
+  return answerMode === 'choice' ? row : { ...row, answer_mode: answerMode };
+}
