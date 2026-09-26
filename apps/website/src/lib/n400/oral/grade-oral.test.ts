@@ -155,3 +155,28 @@ describe('gradeOralAnswer — a stall that is the answer is kept (speaking spec 
     expect(gradeOralAnswer('where you live now', current).verdict).toBe('correct');
   });
 });
+
+// Speaking Gate S1 (owner, 2026-09-25): a definition made of stopwords ("To not
+// have to do something") is graded by phrases — word sequences with their
+// stopwords — instead of generic keywords like "not" / "something".
+describe('gradeOralAnswer — phrases (speaking Gate S1)', () => {
+  const exempt: OralAnswerConfig = {
+    type: 'single',
+    alternatives: [],
+    phrases: ['not have to', 'not need to', 'not required'],
+    mustExclude: ['true', 'know'],
+  };
+
+  it('a phrase counts with its stopwords ("not have to")', () => {
+    expect(gradeOralAnswer("You don't have to do it", exempt).verdict).toBe('correct');
+    expect(gradeOralAnswer('You do not have to do it', exempt).verdict).toBe('correct');
+  });
+
+  it('generic words alone never pass: "It\'s not something I know" is wrong', () => {
+    expect(gradeOralAnswer("It's not something I know", exempt).verdict).toBe('wrong');
+  });
+
+  it('an excluded word blocks a phrase match', () => {
+    expect(gradeOralAnswer("You don't have to know", exempt).verdict).toBe('near');
+  });
+});

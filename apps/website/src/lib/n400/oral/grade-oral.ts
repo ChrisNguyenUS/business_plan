@@ -2,7 +2,7 @@
 // (practice) and on the server (mock). Spec §3.2.
 
 import { levenshtein } from 'edit-distance';
-import { NEGATIONS, stem, transcriptStems } from './normalize';
+import { NEGATIONS, normalizeTokens, stem, transcriptStems } from './normalize';
 import type { OralAnswerConfig, OralGrade, OralVerdict } from './types';
 
 const LONG_WORD_LEN = 8;
@@ -43,9 +43,18 @@ function keywordStems(config: OralAnswerConfig): Set<string> {
 }
 
 export function gradeOralAnswer(transcript: string, config: OralAnswerConfig): OralGrade {
-  const tokens = transcriptStems(transcript, { keep: keywordStems(config) });
+  const keep = keywordStems(config);
+  const tokens = transcriptStems(transcript, { keep });
   const mustInclude = new Set((config.mustInclude ?? []).map(stem));
   const excluded = (config.mustExclude ?? []).some((w) => tokens.includes(stem(w)));
+
+  // Speaking Gate S1: a phrase — a word sequence with its stopwords — is a full answer
+  // ("You don't have to do it" → "not have to"). Stalls are dropped first, as for keywords.
+  if (config.phrases?.length) {
+    const said = ` ${normalizeTokens(transcript, { dropStalls: true, keep }).join(' ')} `;
+    const hit = config.phrases.find((p) => said.includes(` ${p} `));
+    if (hit) return { verdict: excluded ? 'near' : 'correct', matched: [hit], missing: [] };
+  }
 
   let best: { rank: number; hits: number; grade: OralGrade } | null = null;
 
