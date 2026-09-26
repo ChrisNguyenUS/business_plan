@@ -32,6 +32,8 @@ export interface MockResultRow {
   prompt: string;
   promptVi?: string;
   userAnswer: string | null;
+  /** Overrides the screen's label for this row, e.g. "Bạn nói:" for a voice answer. */
+  userAnswerLabel?: string;
   /** Shown on wrong rows only; omit when `prompt` already is the answer. */
   correctAnswer?: string;
   /** Vietnamese gloss for the correct answer — shown after the test, next to `correctAnswer`. */
@@ -159,6 +161,8 @@ export function MockResultScreen({
   reviewLabel,
   reviewTip,
   hubHref,
+  onBeforePlay,
+  preferWebAudio,
 }: {
   passed: boolean;
   score: number;
@@ -176,6 +180,9 @@ export function MockResultScreen({
   reviewTip?: string;
   /** "Về trang Thi thử" target on the pass footer. */
   hubHref: string;
+  /** iOS 🔊 rules for the rows' 🔊 while a mic session may be open (Civics rev 3.12). */
+  onBeforePlay?: () => void;
+  preferWebAudio?: () => boolean;
 }) {
   const { dict, lang } = useN400Lang();
   const { state, toggleBookmark } = useN400UserState();
@@ -275,7 +282,7 @@ export function MockResultScreen({
                     <div className="text-xs text-gray-500 mt-0.5">{row.promptVi}</div>
                   ) : null}
                   <div className="text-sm mt-2">
-                    <span className="text-gray-500">{effectiveUserAnswerLabel} </span>
+                    <span className="text-gray-500">{row.userAnswerLabel ?? effectiveUserAnswerLabel} </span>
                     <span className={row.ok ? 'text-teal-700 font-medium' : 'text-orange-600 font-medium'}>
                       {row.userAnswer ?? dict.mockTest.result.skipped}
                     </span>
@@ -293,7 +300,13 @@ export function MockResultScreen({
                 <div className="flex flex-col items-end gap-2 shrink-0 self-stretch justify-between">
                   <div className="flex items-center gap-1.5">
                     {row.audioSrc !== undefined ? (
-                      <AudioButton src={row.audioSrc} size="sm" label={dict.flashcards.listenQuestion} />
+                      <AudioButton
+                        src={row.audioSrc}
+                        size="sm"
+                        label={dict.flashcards.listenQuestion}
+                        onBeforePlay={onBeforePlay}
+                        preferWebAudio={preferWebAudio}
+                      />
                     ) : null}
                     {row.bookmarkId != null ? (
                       <BookmarkToggle
