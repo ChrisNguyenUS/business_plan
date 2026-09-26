@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { VoiceItem } from './mock-voice-items';
-import { micErrorEvent, mockAnswerEvents, practiceAnswerEvent } from './oral-events';
+import { micErrorEvent, mockAnswerEvents, mockReaskEvent, practiceAnswerEvent, speakingMockAnswerEvents } from './oral-events';
+import type { SpokenMockAnswer } from './spoken-mock';
 
 const said = (transcript: string, retried = false, input: 'mic' | 'typed' = 'mic'): VoiceItem => ({
   transcript,
@@ -85,5 +86,45 @@ describe('Speaking sections (speaking spec §8)', () => {
   it('mic errors and mock answers default to civics', () => {
     expect(micErrorEvent(12, 'practice', 'no-speech', 'whatmean').section).toBe('whatmean');
     expect(mockAnswerEvents([21], [said('100')], [{ qid: 21, wasCorrect: true }])[0].section).toBe('civics');
+  });
+});
+
+describe('Speaking mock events (speaking spec §5.1, §8)', () => {
+  const answered = (transcript: string, input: 'mic' | 'typed', retried = false): SpokenMockAnswer => ({
+    transcript,
+    retried,
+    input,
+    confirmed: true,
+    reask: false,
+  });
+
+  it('one event per confirmed item at the finish, with its section; near counts as wrong', () => {
+    const events = speakingMockAnswerEvents(
+      [
+        { kind: 'whatmean', id: 'wm-47' },
+        { kind: 'yesno', id: 'yn-7' },
+        { kind: 'yesno', id: 'yn-8' },
+      ],
+      [answered('The marriage was cancelled', 'mic', true), answered('No', 'typed'), null],
+      [false, true, false],
+    );
+    expect(events).toEqual([
+      { qid: 47, section: 'whatmean', context: 'mock', input: 'mic', verdict: 'wrong', retried: true, confirmedNear: null, error: 'none', transcriptLength: 26 },
+      { qid: 7, section: 'yesno', context: 'mock', input: 'typed', verdict: 'correct', retried: false, confirmedNear: null, error: 'none', transcriptLength: 2 },
+    ]);
+  });
+
+  it('a Yes/No re-ask is an unclear mock event', () => {
+    expect(mockReaskEvent({ kind: 'yesno', id: 'yn-3' }, 'mic', false, "I don't know")).toEqual({
+      qid: 3,
+      section: 'yesno',
+      context: 'mock',
+      input: 'mic',
+      verdict: 'unclear',
+      retried: false,
+      confirmedNear: null,
+      error: 'none',
+      transcriptLength: 12,
+    });
   });
 });

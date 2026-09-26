@@ -1,8 +1,12 @@
 // n400_oral_answer payloads (spec §9). Pure, so the pages only hand these to
-// trackOralAnswer; mock verdicts come from the server finalize, never the client.
+// trackOralAnswer. Civics mock verdicts come from the server finalize; the
+// Speaking mock grades on the client (speaking spec S3).
 
 import type { OralAnswerEvent, OralSection } from '@/lib/n400/analytics';
 import type { VoiceItem } from './mock-voice-items';
+import type { SpokenItem } from './grade-spoken-item';
+import type { SpokenMockAnswer } from './spoken-mock';
+import { spokenQid, spokenSection } from './spoken-practice';
 import type { MicError } from './speech-controller';
 import type { OralVerdict } from './types';
 
@@ -67,4 +71,52 @@ export function mockAnswerEvents(
     });
   });
   return events;
+}
+
+/** Thi thử Speaking (speaking spec §5.1, §8): one event per confirmed item at the
+ *  finish, with its section. `near` counts as wrong (D8), so the verdict is correct
+ *  or wrong, like the Civics voice mock. */
+export function speakingMockAnswerEvents(
+  items: readonly (SpokenItem | null)[],
+  answers: readonly (SpokenMockAnswer | null)[],
+  ok: readonly boolean[],
+): OralAnswerEvent[] {
+  const events: OralAnswerEvent[] = [];
+  items.forEach((item, i) => {
+    const a = answers[i];
+    if (!item || !a?.confirmed) return;
+    events.push({
+      qid: spokenQid(item),
+      section: spokenSection(item),
+      context: 'mock',
+      input: a.input,
+      verdict: ok[i] ? 'correct' : 'wrong',
+      retried: a.retried,
+      confirmedNear: null,
+      error: 'none',
+      transcriptLength: a.transcript.length,
+    });
+  });
+  return events;
+}
+
+/** A Yes/No mock answer that was neither yes nor no: asked again, retry kept (spec §10).
+ *  Sent so the unclear rate can be measured (spec §13). */
+export function mockReaskEvent(
+  item: SpokenItem,
+  input: 'mic' | 'typed',
+  retried: boolean,
+  transcript: string,
+): OralAnswerEvent {
+  return {
+    qid: spokenQid(item),
+    section: spokenSection(item),
+    context: 'mock',
+    input,
+    verdict: 'unclear',
+    retried,
+    confirmedNear: null,
+    error: 'none',
+    transcriptLength: transcript.length,
+  };
 }
