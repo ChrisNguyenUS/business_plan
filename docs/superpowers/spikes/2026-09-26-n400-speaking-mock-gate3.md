@@ -17,4 +17,5 @@
 
 ## Decision (owner)
 
-- Gate S3 pass? <yes/no>
+- Gate S3 pass? **Pending.** S3 is deployed (main b63c7762, 2026-09-26); the owner will run this checklist later.
+- Owner's call (2026-09-26): start S4 (Full interview) now, without waiting for this device pass.
