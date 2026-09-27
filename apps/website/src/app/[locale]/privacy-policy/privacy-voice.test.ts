@@ -34,3 +34,15 @@ describe('in-app hint names iPad too (polish pass, D15)', () => {
     expect(en).toContain("hintPersistent: 'On iPhone and iPad,");
   });
 });
+
+describe('privacy policy — interview questions by voice (speaking spec §9)', () => {
+  it('names civics and interview questions (EN + VI)', () => {
+    expect(page).toContain('N400Ready lets you answer civics and interview questions by voice.');
+    expect(page).toContain('N400Ready cho phép bạn trả lời câu hỏi công dân và câu hỏi phỏng vấn bằng giọng nói.');
+  });
+
+  it('stores answer text for Civics mock tests (EN + VI)', () => {
+    expect(page).toContain('For Civics mock tests, N400Ready stores the text of each answer');
+    expect(page).toContain('Với bài thi thử Civics, N400Ready lưu phần văn bản của từng câu trả lời');
+  });
+});
