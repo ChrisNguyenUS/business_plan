@@ -1124,6 +1124,8 @@ export const vi = {
     typedPlaceholder: 'Nhập câu trả lời',
     mockModeLabel: 'Cách trả lời',
     mockModeVoice: 'Trả lời bằng giọng',
+    fullModeVoice: 'Toàn bộ bằng giọng',
+    fullModeNote: 'Áp dụng cho phần Civics và Speaking. Phần Viết vẫn gõ như cũ.',
     appHeard: 'App nghe được:',
     confirm: 'Xác nhận',
     mockUnsupported: 'Mở bằng Safari hoặc Chrome để thi bằng giọng.',

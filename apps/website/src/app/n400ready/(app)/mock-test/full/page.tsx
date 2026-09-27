@@ -30,6 +30,12 @@ import ReviewAnswers, {
   type WritingAnswer,
 } from './ReviewAnswers';
 import { InterludeScreen } from './interview-chrome';
+import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
+import type { ExamVoice } from '@/components/n400/oral/use-spoken-exam';
+import { answerModeOf } from '@/lib/n400/attempt-row';
+import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
+import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
+import { voiceInputFor } from '@/lib/n400/oral/voice-support';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   FULL_CIVICS_COUNT,
@@ -74,6 +80,18 @@ function generateAttemptId(): string {
 }
 
 const FULL_TOTAL_COUNT = FULL_CIVICS_COUNT + FULL_SPEAKING_COUNT + FULL_WRITING_COUNT;
+
+// The learner's "Cách trả lời" for the Full interview, remembered for this test
+// (speaking spec S8).
+const FULL_MODE_KEY = 'n400.mock.full.answerMode';
+
+function readStoredFullMode(): PracticeAnswerMode {
+  try {
+    return window.localStorage.getItem(FULL_MODE_KEY) === 'voice' ? 'voice' : 'choice';
+  } catch {
+    return 'choice';
+  }
+}
 
 function buildPartsCopy(dict: N400Dict): {
   icon: LucideIcon;
@@ -151,6 +169,23 @@ export default function FullInterviewPage() {
   const [writingAnswerList, setWritingAnswerList] = useState<WritingAnswer[]>([]);
   const startedAt = useRef<string>('');
 
+  // Voice (speaking spec §5.2): one choice at the start covers the Civics and
+  // Speaking parts; Writing stays typed.
+  const mic = useSpeechRecognition();
+  const voiceFlags = useVoiceFlags();
+  const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+  const voiceInput = voiceInputFor({
+    ua,
+    apiPresent: mic.supported,
+    enabled: voiceFlags.speakingOn,
+    androidOn: voiceFlags.androidOn,
+  });
+  const voiceAvailable = voiceInput !== 'none';
+  const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>(() => readStoredFullMode());
+  // The run's mode, latched at Bắt đầu; the mic-lost latch spans both parts.
+  const [runMode, setRunMode] = useState<PracticeAnswerMode>('choice');
+  const [micLatched, setMicLatched] = useState(false);
+
   const stateCode = state.settings.stateCode;
   const districtNumber = state.address.districtNumber;
 
@@ -184,6 +219,8 @@ export default function FullInterviewPage() {
     setSpeakingAnswerList([]);
     setWritingAnswerList([]);
     startedAt.current = new Date().toISOString();
+    setRunMode(answerMode === 'voice' && voiceAvailable ? 'voice' : 'choice');
+    setMicLatched(false);
     setCivics(null);
     setSpeaking(null);
     setWriting(null);
@@ -193,6 +230,26 @@ export default function FullInterviewPage() {
   // begin() already reshuffles via its seed bump — no double bump here.
   const retake = () => {
     setPhase({ kind: 'intro' });
+  };
+
+  const examVoice: ExamVoice | undefined =
+    runMode === 'voice'
+      ? { input: voiceInput, micLost: micLatched, onMicLost: () => setMicLatched(true), context: 'full' }
+      : undefined;
+
+  const onModeChange = (m: PracticeAnswerMode) => {
+    setAnswerMode(m);
+    try {
+      window.localStorage.setItem(FULL_MODE_KEY, m);
+    } catch {
+      // Private mode — the choice lasts for this page only.
+    }
+  };
+
+  // 🔊 on the review screen while an iOS session may still be open (Civics rev 3.12).
+  const beforeAudio = () => {
+    if (mic.state === 'listening') mic.reset();
+    mic.noteAudioPlayed();
   };
 
   if (phase.kind === 'civics') {
@@ -205,11 +262,13 @@ export default function FullInterviewPage() {
         examMode
         mockMode="full"
         examSection={{ current: 1, total: 3, ...dict.mockTest.full.civicsSection }}
-        onAnswer={(itemId, ok, selected) =>
+        examVoice={examVoice}
+        onAnswer={(itemId, ok, selected, _via, spoken) =>
           civicsAnswers.current.push({
             questionId: Number(itemId.slice(4)),
             wasCorrect: ok,
             selectedEn: selected?.en,
+            ...(spoken ? { transcript: spoken.transcript, input: spoken.input } : {}),
           })
         }
         onComplete={({ correct }) => {
@@ -219,20 +278,24 @@ export default function FullInterviewPage() {
           // Advance BEFORE recording so a recording throw can't strand the
           // user on the quiz's null (skipSummary) render.
           setPhase({ kind: 'interlude', next: 'speaking' });
-          void recordMockResult({
-            id: generateAttemptId(),
-            startedAt: startedAt.current,
-            completedAt: new Date().toISOString(),
-            score: correct,
-            total: FULL_CIVICS_COUNT,
-            passed,
-            // Persisted attempts keep the lean shape — selectedEn only feeds
-            // this session's review screen.
-            questionResults: civicsAnswers.current.map(({ questionId, wasCorrect }) => ({
-              questionId,
-              wasCorrect,
-            })),
-          });
+          void recordMockResult(
+            {
+              id: generateAttemptId(),
+              startedAt: startedAt.current,
+              completedAt: new Date().toISOString(),
+              score: correct,
+              total: FULL_CIVICS_COUNT,
+              passed,
+              // Persisted attempts keep the lean shape plus a voice answer's words
+              // (speaking spec §5.2) — selectedEn only feeds this session's review.
+              questionResults: civicsAnswers.current.map(({ questionId, wasCorrect, transcript }) => ({
+                questionId,
+                wasCorrect,
+                ...(transcript !== undefined ? { transcript } : {}),
+              })),
+            },
+            answerModeOf(civicsAnswers.current.map((a) => a.input)),
+          );
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -250,15 +313,21 @@ export default function FullInterviewPage() {
         examMode
         mockMode="full"
         examSection={{ current: 2, total: 3, ...dict.mockTest.full.speakingSection }}
-        onAnswer={(itemId, ok, selected) =>
-          speakingAnswers.current.push({ itemId, wasCorrect: ok, selectedEn: selected?.en })
+        examVoice={examVoice}
+        onAnswer={(itemId, ok, selected, _via, spoken) =>
+          speakingAnswers.current.push({
+            itemId,
+            wasCorrect: ok,
+            selectedEn: selected?.en,
+            ...(spoken ? { transcript: spoken.transcript, input: spoken.input } : {}),
+          })
         }
         onComplete={({ correct }) => {
           const passed = correct >= FULL_SPEAKING_PASS;
           setSpeaking({ correct, total: FULL_SPEAKING_COUNT, passed });
           setSpeakingAnswerList([...speakingAnswers.current]);
           setPhase({ kind: 'interlude', next: 'writing' });
-          void recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT);
+          void recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT, answerModeOf(speakingAnswers.current.map((a) => a.input)));
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -341,6 +410,8 @@ export default function FullInterviewPage() {
         overall={overall}
         onBack={() => setPhase({ kind: 'summary' })}
         onRetake={retake}
+        onBeforePlay={beforeAudio}
+        preferWebAudio={mic.sessionRunning}
       />
     );
   }
@@ -431,6 +502,19 @@ export default function FullInterviewPage() {
           })}
         </div>
       </div>
+
+      {/* Cách trả lời (speaking spec §5.2): only when voice is available here */}
+      {voiceAvailable ? (
+        <div className="mt-5 rounded-2xl border border-slate-100 p-4 text-left sm:p-5">
+          <p className="mb-2 text-sm font-semibold text-gray-700">{dict.oral.mockModeLabel}</p>
+          <AnswerModeToggle
+            mode={answerMode}
+            onChange={onModeChange}
+            labels={{ choice: dict.oral.modeChoice, voice: dict.oral.fullModeVoice }}
+          />
+          <p className="mt-2 text-xs text-gray-500">{dict.oral.fullModeNote}</p>
+        </div>
+      ) : null}
 
       {/* CTA */}
       <button

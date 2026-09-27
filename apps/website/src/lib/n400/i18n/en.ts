@@ -1125,6 +1125,8 @@ export const en: N400Dict = {
     typedPlaceholder: 'Type your answer',
     mockModeLabel: 'How to answer',
     mockModeVoice: 'Answer by voice',
+    fullModeVoice: 'All by voice',
+    fullModeNote: 'Applies to the Civics and Speaking parts. Writing stays typed.',
     appHeard: 'The app heard:',
     confirm: 'Confirm',
     mockUnsupported: 'Open in Safari or Chrome to take the test by voice.',

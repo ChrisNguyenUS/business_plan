@@ -78,3 +78,36 @@ describe('Full interview review — voice rows', () => {
     expect(review).toMatch(/onBeforePlay=\{onBeforePlay\}\s+preferWebAudio=\{preferWebAudio\}/);
   });
 });
+
+describe('Phỏng vấn đầy đủ — voice run', () => {
+  const page = read('src/app/n400ready/(app)/mock-test/full/page.tsx');
+
+  it('offers "Toàn bộ bằng giọng" only when voice is available here, remembered for this test (Review Focus 1)', () => {
+    expect(page).toContain('enabled: voiceFlags.speakingOn,');
+    expect(page).toContain('{voiceAvailable ? (');
+    expect(page).toContain('labels={{ choice: dict.oral.modeChoice, voice: dict.oral.fullModeVoice }}');
+    expect(page).toContain("const FULL_MODE_KEY = 'n400.mock.full.answerMode';");
+  });
+
+  it('one choice at Bắt đầu covers the Civics and Speaking parts', () => {
+    expect(page).toContain("setRunMode(answerMode === 'voice' && voiceAvailable ? 'voice' : 'choice');");
+    expect(page.match(/examVoice=\{examVoice\}/g)).toHaveLength(2);
+  });
+
+  it('the mic-lost latch spans both parts and resets at Bắt đầu (Review Focus 3)', () => {
+    expect(page).toContain('onMicLost: () => setMicLatched(true)');
+    expect(page).toContain('setMicLatched(false);');
+  });
+
+  it('records how each part was answered, and the Civics words (Review Focus 4)', () => {
+    expect(page).toContain('answerModeOf(civicsAnswers.current.map((a) => a.input))');
+    expect(page).toContain(
+      "recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT, answerModeOf(speakingAnswers.current.map((a) => a.input)))",
+    );
+    expect(page).toContain('...(transcript !== undefined ? { transcript } : {})');
+  });
+
+  it('the review 🔊 follows the iOS rules (Review Focus 5)', () => {
+    expect(page).toMatch(/onBeforePlay=\{beforeAudio\}\s+preferWebAudio=\{mic\.sessionRunning\}/);
+  });
+});
