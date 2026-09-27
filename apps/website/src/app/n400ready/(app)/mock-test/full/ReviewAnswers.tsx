@@ -30,12 +30,17 @@ export interface CivicsAnswer {
   wasCorrect: boolean;
   /** English text of the option the learner picked. */
   selectedEn?: string;
+  /** A voice run's spoken or typed words (speaking spec §5.2). */
+  transcript?: string;
+  input?: 'mic' | 'typed';
 }
 
 export interface SpeakingAnswer {
   itemId: string;
   wasCorrect: boolean;
   selectedEn?: string;
+  transcript?: string;
+  input?: 'mic' | 'typed';
 }
 
 export interface WritingAnswer {
@@ -64,6 +69,9 @@ interface ReviewAnswersProps {
   overall: boolean;
   onBack: () => void;
   onRetake: () => void;
+  /** iOS 🔊 rules for the rows' 🔊 while a mic session may be open (Civics rev 3.12). */
+  onBeforePlay?: () => void;
+  preferWebAudio?: () => boolean;
 }
 
 type SectionKey = 'civics' | 'speaking' | 'writing';
@@ -77,6 +85,8 @@ interface ReviewItem {
   promptEn: string;
   promptVi?: string;
   userAnswer: string | null;
+  /** "Bạn nói" / "Bạn trả lời" for a voice row; the section default otherwise. */
+  answerLabel?: string;
   correct: { en: string; vi?: string }[];
   ok: boolean;
   audioSrc?: string | null;
@@ -126,6 +136,8 @@ export default function ReviewAnswers({
   overall,
   onBack,
   onRetake,
+  onBeforePlay,
+  preferWebAudio,
 }: ReviewAnswersProps) {
   const { state, toggleBookmark } = useN400UserState();
   const { dict, lang } = useN400Lang();
@@ -136,6 +148,9 @@ export default function ReviewAnswers({
   const [sectionFilter, setSectionFilter] = useState<SectionFilter>('all');
 
   const items = useMemo<ReviewItem[]>(() => {
+    // A voice row names how it was answered (speaking spec §5.2).
+    const spokenLabel = (a: { transcript?: string; input?: 'mic' | 'typed' }) =>
+      a.transcript === undefined ? undefined : a.input === 'typed' ? rt.youTyped : rt.youSaid;
     const civicsItems = civicsAnswers.flatMap((a): ReviewItem[] => {
       const q = N400_QUESTIONS_BY_ID.get(a.questionId);
       if (!q) return [];
@@ -148,7 +163,8 @@ export default function ReviewAnswers({
           badge: tFormat(rt.civicsBadge, { category: categoryName, id: q.id }),
           promptEn: q.questionEn,
           promptVi: q.questionVi,
-          userAnswer: a.selectedEn ?? null,
+          userAnswer: a.transcript ?? a.selectedEn ?? null,
+          answerLabel: spokenLabel(a),
           correct: q.answersEn.map((en, i) => ({ en, vi: q.answersVi[i] })),
           ok: a.wasCorrect,
           audioSrc: questionAudioUrl(q.id),
@@ -168,7 +184,8 @@ export default function ReviewAnswers({
           badge: q.badge,
           promptEn: q.headerEn,
           promptVi: q.headerVi,
-          userAnswer: a.selectedEn ?? null,
+          userAnswer: a.transcript ?? a.selectedEn ?? null,
+          answerLabel: spokenLabel(a),
           correct: q.accepted,
           ok: a.wasCorrect,
           audioSrc: q.questionAudioSrc,
@@ -341,7 +358,13 @@ export default function ReviewAnswers({
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {item.audioSrc !== undefined ? (
-                  <AudioButton src={item.audioSrc} size="sm" label={dict.flashcards.listenQuestion} />
+                  <AudioButton
+                    src={item.audioSrc}
+                    size="sm"
+                    label={dict.flashcards.listenQuestion}
+                    onBeforePlay={onBeforePlay}
+                    preferWebAudio={preferWebAudio}
+                  />
                 ) : null}
                 {item.bookmarkId != null ? (
                   <button
@@ -392,7 +415,7 @@ export default function ReviewAnswers({
                       item.ok ? 'text-teal-700' : 'text-orange-600'
                     }`}
                   >
-                    {item.section === 'writing' ? rt.yourAnswer : rt.yourSelection}
+                    {item.answerLabel ?? (item.section === 'writing' ? rt.yourAnswer : rt.yourSelection)}
                   </span>
                 </div>
                 <p

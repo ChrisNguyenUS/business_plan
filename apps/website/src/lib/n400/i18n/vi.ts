@@ -857,6 +857,8 @@ export const vi = {
       filterLabel: 'Lọc theo phần',
       yourAnswer: 'Bạn viết',
       yourSelection: 'Câu trả lời của bạn',
+      youSaid: 'Bạn nói',
+      youTyped: 'Bạn trả lời',
       correctAnswer: 'Đáp án đúng',
       expectedAnswer: 'Câu trả lời mong đợi',
       rightAnswer: 'Câu đúng',

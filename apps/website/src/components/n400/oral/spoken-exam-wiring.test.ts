@@ -60,3 +60,21 @@ describe('SectionMCQuiz — exam voice run', () => {
     expect(quiz).toContain('disabled={examNextBlocked}');
   });
 });
+
+describe('Full interview review — voice rows', () => {
+  const review = read('src/app/n400ready/(app)/mock-test/full/ReviewAnswers.tsx');
+  const vi = read('src/lib/n400/i18n/vi.ts');
+  const en = read('src/lib/n400/i18n/en.ts');
+
+  it('a voice row shows the words under "Bạn nói" / "Bạn trả lời" (Review Focus 4)', () => {
+    expect(review.match(/userAnswer: a\.transcript \?\? a\.selectedEn \?\? null,/g)).toHaveLength(2);
+    expect(review).toContain("a.transcript === undefined ? undefined : a.input === 'typed' ? rt.youTyped : rt.youSaid");
+    expect(review).toContain("{item.answerLabel ?? (item.section === 'writing' ? rt.yourAnswer : rt.yourSelection)}");
+    expect(vi).toContain("youSaid: 'Bạn nói',");
+    expect(en).toContain("youSaid: 'You said',");
+  });
+
+  it('the review 🔊 can follow the iOS rules (Review Focus 5)', () => {
+    expect(review).toMatch(/onBeforePlay=\{onBeforePlay\}\s+preferWebAudio=\{preferWebAudio\}/);
+  });
+});

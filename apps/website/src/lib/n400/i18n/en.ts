@@ -858,6 +858,8 @@ export const en: N400Dict = {
       filterLabel: 'Filter by section',
       yourAnswer: 'You wrote',
       yourSelection: 'Your answer',
+      youSaid: 'You said',
+      youTyped: 'You answered',
       correctAnswer: 'Correct Answer',
       expectedAnswer: 'Expected Answer',
       rightAnswer: 'Right Answer',
