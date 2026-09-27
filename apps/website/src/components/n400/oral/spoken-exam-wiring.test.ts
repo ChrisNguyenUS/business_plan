@@ -111,3 +111,11 @@ describe('Phỏng vấn đầy đủ — voice run', () => {
     expect(page).toMatch(/onBeforePlay=\{beforeAudio\}\s+preferWebAudio=\{mic\.sessionRunning\}/);
   });
 });
+
+describe('useSpokenExam resets its own mic (S4 final review)', () => {
+  const hook = read('src/components/n400/oral/use-spoken-exam.ts');
+
+  it('a new item never inherits the previous capture window, without relying on the practice hook', () => {
+    expect(hook).toMatch(/useEffect\(\(\) => \{\s*resetMic\(\);\s*\}, \[itemId, resetMic\]\);/);
+  });
+});

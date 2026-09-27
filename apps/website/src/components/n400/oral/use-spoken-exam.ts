@@ -66,6 +66,13 @@ export function useSpokenExam(opts: { itemId: string | null; voice: ExamVoice | 
   const itemInput = mockItemInput(voice?.input ?? 'none', micLost);
   const { reset: resetMic } = mic;
 
+  // A new item never inherits the previous item's capture window. Its own reset,
+  // so it doesn't depend on the practice hook's; the mic is an external system and
+  // resetting it sets no React state.
+  useEffect(() => {
+    resetMic();
+  }, [itemId, resetMic]);
+
   // n400_oral_answer for mic errors during a voice run (speaking spec §8).
   const micError = mic.error;
   useEffect(() => {

@@ -101,8 +101,8 @@ export function SectionMCQuiz({
     [q, selected],
   );
 
-  // Tự nói in practice (speaking spec §4). Exam mode keeps its own flow; the
-  // Full interview's voice comes in slice S4.
+  // Tự nói in practice (speaking spec §4). Exam mode answers by voice through
+  // useSpokenExam below (speaking spec §5.2).
   const spoken = useSpokenPractice({
     itemId: q ? q.itemId : null,
     enabled: !examMode,
