@@ -22,7 +22,8 @@ export interface MockResult {
   score: number;
   total: number;
   passed: boolean;
-  questionResults: { questionId: number; wasCorrect: boolean }[];
+  /** `transcript`: a spoken or typed answer's words (Full interview voice run, speaking spec §5.2). */
+  questionResults: { questionId: number; wasCorrect: boolean; transcript?: string }[];
 }
 
 /**

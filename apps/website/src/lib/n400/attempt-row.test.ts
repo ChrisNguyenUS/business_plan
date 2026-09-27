@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { practiceAttemptRow, sectionAttemptRow, sectionMockResultRow } from './attempt-row';
+import {
+  answerModeOf,
+  mockQuestionAttemptRows,
+  mockQuizAttemptRow,
+  practiceAttemptRow,
+  sectionAttemptRow,
+  sectionMockResultRow,
+} from './attempt-row';
 
 const AT = '2026-09-24T12:00:00.000Z';
 
@@ -54,5 +61,45 @@ describe('sectionMockResultRow (speaking spec §5.1)', () => {
   it('voice and typed runs carry answer_mode', () => {
     expect(sectionMockResultRow('u1', 'speaking', false, 7, 10, 'voice')).toMatchObject({ answer_mode: 'voice' });
     expect(sectionMockResultRow('u1', 'speaking', true, 8, 10, 'typed')).toMatchObject({ answer_mode: 'typed' });
+  });
+});
+
+describe('answerModeOf (speaking spec §5.2)', () => {
+  it("'voice' when any answer came from the mic, else 'typed' when any was typed, else 'choice'", () => {
+    expect(answerModeOf(['typed', 'mic', undefined])).toBe('voice');
+    expect(answerModeOf(['typed', undefined])).toBe('typed');
+    expect(answerModeOf([undefined, undefined])).toBe('choice');
+    expect(answerModeOf([])).toBe('choice');
+  });
+});
+
+describe('Full interview Civics rows (speaking spec §5.2, Review Focus 1, 4)', () => {
+  const r = { score: 13, total: 20, passed: true, startedAt: 'S', completedAt: 'C' };
+
+  it('a choice run inserts exactly as before (no answer_mode)', () => {
+    expect(mockQuizAttemptRow('u1', r)).toEqual({
+      user_id: 'u1',
+      mode: 'mock_test',
+      score: 13,
+      total_questions: 20,
+      passed: true,
+      started_at: 'S',
+      completed_at: 'C',
+    });
+  });
+
+  it('a voice run carries answer_mode', () => {
+    expect(mockQuizAttemptRow('u1', r, 'voice')).toMatchObject({ answer_mode: 'voice' });
+  });
+
+  it('spoken answers keep their words, trimmed and capped at 500; picked answers have none', () => {
+    const rows = mockQuestionAttemptRows('a1', [
+      { questionId: 12, wasCorrect: true, transcript: '  freedom of speech ' },
+      { questionId: 29, wasCorrect: false },
+      { questionId: 3, wasCorrect: false, transcript: 'x'.repeat(600) },
+    ]);
+    expect(rows[0]).toEqual({ attempt_id: 'a1', question_id: 12, was_correct: true, transcript: 'freedom of speech' });
+    expect(rows[1]).toEqual({ attempt_id: 'a1', question_id: 29, was_correct: false });
+    expect(rows[2].transcript).toHaveLength(500);
   });
 });

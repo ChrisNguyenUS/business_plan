@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
-import { practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type AnswerMode } from './attempt-row';
+import { mockQuestionAttemptRows, mockQuizAttemptRow, practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type AnswerMode } from './attempt-row';
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
@@ -518,7 +518,7 @@ function useN400UserStateInternal() {
   );
 
   const recordMockResult = useCallback(
-    async (result: MockResult) => {
+    async (result: MockResult, answerMode: AnswerMode = 'choice') => {
       if (!user) return;
       const today = TODAY_LOCAL();
       const newStreak = nextStreak(state.streak, today);
@@ -530,15 +530,7 @@ function useN400UserStateInternal() {
 
       const { data: quiz, error: qErr } = await supabase
         .from('n400_quiz_attempts')
-        .insert({
-          user_id: user.id,
-          mode: 'mock_test',
-          score: result.score,
-          total_questions: result.total,
-          passed: result.passed,
-          started_at: result.startedAt,
-          completed_at: result.completedAt,
-        })
+        .insert(mockQuizAttemptRow(user.id, result, answerMode))
         .select('id')
         .single();
       if (qErr || !quiz) {
@@ -546,11 +538,7 @@ function useN400UserStateInternal() {
         return;
       }
       if (result.questionResults.length > 0) {
-        const rows = result.questionResults.map((r) => ({
-          attempt_id: quiz.id,
-          question_id: r.questionId,
-          was_correct: r.wasCorrect,
-        }));
+        const rows = mockQuestionAttemptRows(quiz.id, result.questionResults);
         const { error: aErr } = await supabase.from('n400_question_attempts').insert(rows);
         if (aErr) console.error('n400: recordMockResult (answers) failed', aErr);
       }
