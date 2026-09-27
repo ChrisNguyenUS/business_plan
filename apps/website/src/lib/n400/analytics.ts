@@ -51,7 +51,8 @@ export type OralSection = 'civics' | 'whatmean' | 'yesno';
 export interface OralAnswerEvent {
   qid: number;
   section: OralSection;
-  context: 'practice' | 'mock';
+  /** 'full' = the Full interview (speaking spec §8). */
+  context: 'practice' | 'mock' | 'full';
   input: 'mic' | 'typed';
   /** 'none' for a mic error event; 'unclear' for a Yes/No answer that was re-asked. */
   verdict: OralVerdict | 'unclear' | 'none';

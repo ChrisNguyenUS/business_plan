@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { VoiceItem } from './mock-voice-items';
-import { micErrorEvent, mockAnswerEvents, mockReaskEvent, practiceAnswerEvent, speakingMockAnswerEvents } from './oral-events';
+import { micErrorEvent, mockAnswerEvents, mockReaskEvent, practiceAnswerEvent, speakingMockAnswerEvents, spokenAnswerEvent } from './oral-events';
 import type { SpokenMockAnswer } from './spoken-mock';
 
 const said = (transcript: string, retried = false, input: 'mic' | 'typed' = 'mic'): VoiceItem => ({
@@ -126,5 +126,38 @@ describe('Speaking mock events (speaking spec §5.1, §8)', () => {
       error: 'none',
       transcriptLength: 12,
     });
+  });
+});
+
+describe('Full interview events (speaking spec §8)', () => {
+  const answered = (transcript: string, input: 'mic' | 'typed'): SpokenMockAnswer => ({
+    transcript,
+    retried: false,
+    input,
+    confirmed: true,
+    reask: false,
+  });
+
+  it('a civics answer in the Full interview carries context full and section civics', () => {
+    expect(spokenAnswerEvent({ kind: 'civics', qid: 12 }, answered('Freedom of speech', 'mic'), true, 'full')).toEqual({
+      qid: 12,
+      section: 'civics',
+      context: 'full',
+      input: 'mic',
+      verdict: 'correct',
+      retried: false,
+      confirmedNear: null,
+      error: 'none',
+      transcriptLength: 17,
+    });
+  });
+
+  it('re-asks and mic errors can come from the Full interview', () => {
+    expect(mockReaskEvent({ kind: 'yesno', id: 'yn-2' }, 'typed', true, 'maybe', 'full')).toMatchObject({
+      context: 'full',
+      verdict: 'unclear',
+      retried: true,
+    });
+    expect(micErrorEvent(5, 'full', 'no-speech', 'whatmean')).toMatchObject({ context: 'full', section: 'whatmean' });
   });
 });

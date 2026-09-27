@@ -38,7 +38,7 @@ export function practiceAnswerEvent(
  *  for the errors that kill the mic (micLost latch re-renders first). */
 export function micErrorEvent(
   qid: number,
-  context: 'practice' | 'mock',
+  context: OralAnswerEvent['context'],
   error: MicError,
   section: OralSection = 'civics',
 ): OralAnswerEvent {
@@ -73,9 +73,29 @@ export function mockAnswerEvents(
   return events;
 }
 
+/** One confirmed spoken or typed mock answer (speaking spec §8). `near` counts as
+ *  wrong (D8), so the verdict is correct or wrong, like the Civics voice mock. */
+export function spokenAnswerEvent(
+  item: SpokenItem,
+  answer: SpokenMockAnswer,
+  ok: boolean,
+  context: 'mock' | 'full' = 'mock',
+): OralAnswerEvent {
+  return {
+    qid: spokenQid(item),
+    section: spokenSection(item),
+    context,
+    input: answer.input,
+    verdict: ok ? 'correct' : 'wrong',
+    retried: answer.retried,
+    confirmedNear: null,
+    error: 'none',
+    transcriptLength: answer.transcript.length,
+  };
+}
+
 /** Thi thử Speaking (speaking spec §5.1, §8): one event per confirmed item at the
- *  finish, with its section. `near` counts as wrong (D8), so the verdict is correct
- *  or wrong, like the Civics voice mock. */
+ *  finish, with its section. */
 export function speakingMockAnswerEvents(
   items: readonly (SpokenItem | null)[],
   answers: readonly (SpokenMockAnswer | null)[],
@@ -84,18 +104,7 @@ export function speakingMockAnswerEvents(
   const events: OralAnswerEvent[] = [];
   items.forEach((item, i) => {
     const a = answers[i];
-    if (!item || !a?.confirmed) return;
-    events.push({
-      qid: spokenQid(item),
-      section: spokenSection(item),
-      context: 'mock',
-      input: a.input,
-      verdict: ok[i] ? 'correct' : 'wrong',
-      retried: a.retried,
-      confirmedNear: null,
-      error: 'none',
-      transcriptLength: a.transcript.length,
-    });
+    if (item && a?.confirmed) events.push(spokenAnswerEvent(item, a, ok[i]));
   });
   return events;
 }
@@ -107,11 +116,12 @@ export function mockReaskEvent(
   input: 'mic' | 'typed',
   retried: boolean,
   transcript: string,
+  context: 'mock' | 'full' = 'mock',
 ): OralAnswerEvent {
   return {
     qid: spokenQid(item),
     section: spokenSection(item),
-    context: 'mock',
+    context,
     input,
     verdict: 'unclear',
     retried,
