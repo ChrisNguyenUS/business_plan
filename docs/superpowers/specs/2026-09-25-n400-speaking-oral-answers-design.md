@@ -180,6 +180,13 @@ export function gradeSpokenItem(item: SpokenItem, transcript: string, location: 
 - **Review screen:** a voice row shows "Bạn nói: …" instead of the picked option.
 - **Unchanged:** interludes, the stepper and the pass rules (12/20, 8/10, 1/3).
 - **Mic trouble:** if the mic is lost, the remaining voice items are typed. The run never falls back to multiple choice.
+- **S4 rulings:**
+  - exam voice items are graded silently at Next (same result as grading when the part completes; no verdict mid-test), in `useSpokenExam` (`components/n400/oral/use-spoken-exam.ts`) on the S3 pure rules;
+  - the mic-lost latch lives in the page and spans both parts;
+  - each part records `answerModeOf(inputs)`: voice if any mic answer, typed if any typed, else choice;
+  - the Civics words are inserted by the client, trimmed and capped at 500 characters; RLS allows `answer_mode` and `transcript` (verified 2026-09-26);
+  - `voice_speaking` gates the whole voice run, Civics part included;
+  - the review 🔊 follows the iOS rules; the Writing part's 🔊 is unchanged.
 
 ## 6. Data: migration `supabase/migrations/n400_34_speaking_voice.sql`
 
@@ -254,7 +261,7 @@ The Civics spec §8 table applies unchanged, with one new row:
   - **Gate S2:** device pass with `voice_speaking` ON for the owner.
 - **S3, Thi thử Speaking (built, plan docs/superpowers/plans/2026-09-26-n400-speaking-oral-s3-mock.md):** §5.1.
   - **Gate S3:** device pass.
-- **S4, Full interview:** §5.2 and the Privacy §8 edits.
+- **S4, Full interview (built, plan docs/superpowers/plans/2026-09-26-n400-speaking-oral-s4-full-interview.md):** §5.2 and the Privacy §8 edits.
   - **Gate S4:** device pass, then `voice_speaking` goes to 100% and the ROADMAP entry is added.
 
 Each slice has its own plan, written after the previous gate passes (S1's plan comes first).
