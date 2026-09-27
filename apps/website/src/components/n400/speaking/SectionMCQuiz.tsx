@@ -28,7 +28,9 @@ import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { AnswerModeToggle } from '@/components/n400/oral/AnswerModeToggle';
 import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
 import { useSpokenPractice } from '@/components/n400/oral/use-spoken-practice';
+import { useSpokenExam, type ExamVoice } from '@/components/n400/oral/use-spoken-exam';
 import type { AnswerMode } from '@/lib/n400/attempt-row';
+import type { SpokenMockAnswer } from '@/lib/n400/oral/spoken-mock';
 
 export interface MCOption {
   id: 'A' | 'B' | 'C' | 'D';
@@ -61,11 +63,13 @@ export function SectionMCQuiz({
   mockMode = 'full',
   onComplete,
   estimatedMinutes,
+  examVoice,
 }: {
   questions: MCQuestion[];
   /** `selected` = the option the learner picked, for callers that build answer reviews. */
   /** `via` = how a practice answer was given (voice/typed from Tự nói). */
-  onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption, via?: AnswerMode) => void;
+  /** `spoken` = the confirmed voice/typed answer in an exam voice run (its words feed the review). */
+  onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption, via?: AnswerMode, spoken?: SpokenMockAnswer) => void;
   onExit: () => void;
   onRestart: () => void;
   title: string;
@@ -80,6 +84,8 @@ export function SectionMCQuiz({
   onComplete?: (result: { correct: number; wrong: number }) => void;
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
+  /** A voice run in exam mode (speaking spec §5.2): items answer by voice or typing. */
+  examVoice?: ExamVoice;
 }) {
   const { dict, lang } = useN400Lang();
   const [index, setIndex] = useState(0);
@@ -107,6 +113,9 @@ export function SectionMCQuiz({
       if (record !== null && q) onAnswer(q.itemId, record, undefined, via);
     },
   });
+
+  // A voice run in exam mode: the §5.1 mock item (speaking spec §5.2).
+  const exam = useSpokenExam({ itemId: examMode && q ? q.itemId : null, voice: examMode ? examVoice : undefined });
 
   useEffect(() => {
     if (done && skipSummary) {
@@ -149,7 +158,14 @@ export function SectionMCQuiz({
   };
 
   const onNext = () => {
-    if (examMode) {
+    if (examMode && exam.voiceHere) {
+      // Voice run: grade the confirmed answer silently (no verdict mid-test).
+      const settled = exam.settle();
+      if (!settled) return;
+      if (settled.wasCorrect) setCorrectCount((c) => c + 1);
+      else setWrongCount((c) => c + 1);
+      onAnswer(q.itemId, settled.wasCorrect, undefined, settled.answer.input === 'typed' ? 'typed' : 'voice', settled.answer);
+    } else if (examMode) {
       if (!selected) return;
       // Grade silently — no reveal state, straight to the next question.
       const opt = q.options.find((o) => o.id === selected);
@@ -165,6 +181,7 @@ export function SectionMCQuiz({
 
   const isLast = index === questions.length - 1;
   const revealedCorrect = spoken.voiceHere ? spoken.shownCorrect : !!pickedOption?.isCorrect;
+  const examNextBlocked = examMode && (exam.voiceHere ? exam.current?.confirmed !== true : !selected);
 
   return (
     <div
@@ -240,6 +257,22 @@ export function SectionMCQuiz({
                 prompt={spoken.reask ? dict.oral.yesNoReask : undefined}
                 notice={spoken.micLost ? dict.oral.micLostTyped : undefined}
                 onUseTyped={spoken.typedFallback}
+              />
+            ) : exam.voiceHere ? (
+              <MicAnswerPanel
+                key={q.itemId}
+                variant="mock"
+                input={exam.itemInput}
+                mic={spoken.mic}
+                locked={exam.current?.confirmed === true}
+                nearAnswer={null}
+                canRetry={!exam.current?.retried}
+                onRetry={exam.onRetry}
+                onSubmit={exam.onConfirm}
+                onNearAnswer={() => {}}
+                prompt={exam.current?.reask ? dict.oral.yesNoReask : undefined}
+                notice={exam.micLost ? dict.oral.micLostTyped : undefined}
+                onUseTyped={exam.typedFallback}
               />
             ) : (
             <div className="grid grid-cols-1 gap-[clamp(0.5rem,1.2vh,0.75rem)]">
@@ -356,9 +389,9 @@ export function SectionMCQuiz({
               <button
                 type="button"
                 onClick={onNext}
-                disabled={examMode && !selected}
+                disabled={examNextBlocked}
                 className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-md transition-all ${
-                  examMode && !selected
+                  examNextBlocked
                     ? 'cursor-not-allowed bg-teal-600/20 text-teal-700/50 shadow-none'
                     : 'bg-teal-600 text-white hover:bg-teal-700 shadow-teal-600/20'
                 }`}
