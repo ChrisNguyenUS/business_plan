@@ -3,7 +3,7 @@
 // speaking spec §6.
 
 import type { QuizMode } from './storage';
-import { MAX_TRANSCRIPT } from './oral/grade-voice-mock';
+import { MAX_TRANSCRIPT } from './oral/transcript-limit';
 
 export type AnswerMode = 'choice' | 'voice' | 'typed';
 

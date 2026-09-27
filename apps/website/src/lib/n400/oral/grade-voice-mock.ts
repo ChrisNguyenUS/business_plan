@@ -6,6 +6,7 @@
 import type { QuizOption } from '../quiz-engine';
 import { getOralAnswerConfig, type OralLocation } from './get-oral-config';
 import { gradeOralAnswer } from './grade-oral';
+import { MAX_TRANSCRIPT } from './transcript-limit';
 
 export type SpokenMockAnswer = { qid: number; transcript: string; retried: boolean; input: 'mic' | 'typed' };
 export type ChoiceMockAnswer = { qid: number; selected: QuizOption['id'] };
@@ -22,7 +23,7 @@ export interface GradedMockItem {
   transcript: string | null;
 }
 
-export const MAX_TRANSCRIPT = 500;
+export { MAX_TRANSCRIPT };
 
 const OPTION_IDS: ReadonlySet<string> = new Set(['A', 'B', 'C', 'D']);
 

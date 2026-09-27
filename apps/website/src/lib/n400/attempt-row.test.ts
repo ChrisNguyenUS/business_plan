@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   answerModeOf,
@@ -101,5 +103,16 @@ describe('Full interview Civics rows (speaking spec §5.2, Review Focus 1, 4)', 
     expect(rows[0]).toEqual({ attempt_id: 'a1', question_id: 12, was_correct: true, transcript: 'freedom of speech' });
     expect(rows[1]).toEqual({ attempt_id: 'a1', question_id: 29, was_correct: false });
     expect(rows[2].transcript).toHaveLength(500);
+  });
+});
+
+describe('attempt-row stays light (S4 final review)', () => {
+  // user-state (on every N400Ready page) imports these builders: the oral grader
+  // must not come along with the transcript limit.
+  it('takes the transcript limit from an import-free module, not the grader', () => {
+    const src = readFileSync(join(process.cwd(), 'src/lib/n400/attempt-row.ts'), 'utf8');
+    expect(src).toContain("import { MAX_TRANSCRIPT } from './oral/transcript-limit';");
+    const limit = readFileSync(join(process.cwd(), 'src/lib/n400/oral/transcript-limit.ts'), 'utf8');
+    expect(limit).not.toMatch(/^import /m);
   });
 });
