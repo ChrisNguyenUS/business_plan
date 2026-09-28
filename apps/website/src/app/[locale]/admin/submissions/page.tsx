@@ -17,7 +17,16 @@ interface Submission {
 }
 
 const STATUSES = ["all", "new", "contacted", "in_progress", "completed", "archived"];
-const SERVICES = ["all", "Tax & Business", "Insurance & Finance", "Immigration", "AI / Automation"];
+// Keys are the service_type values the contact form and EB-3 screening store.
+const SERVICE_LABELS: Record<string, string> = {
+  tax: "Tax & Business",
+  insurance: "Insurance & Finance",
+  immigration: "Immigration",
+  eb3: "EB-3 Other Workers",
+  ai: "AI / Automation",
+  general: "General",
+};
+const SERVICES = ["all", ...Object.keys(SERVICE_LABELS)];
 
 export default function AdminSubmissions() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -84,7 +93,7 @@ export default function AdminSubmissions() {
           {STATUSES.map(s => <option key={s} value={s}>{s === "all" ? "All Statuses" : s.replaceAll("_", " ")}</option>)}
         </select>
         <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)} className="h-10 rounded-lg border border-border px-3 text-sm bg-white">
-          {SERVICES.map(s => <option key={s} value={s}>{s === "all" ? "All Services" : s}</option>)}
+          {SERVICES.map(s => <option key={s} value={s}>{s === "all" ? "All Services" : SERVICE_LABELS[s]}</option>)}
         </select>
       </div>
 
@@ -108,7 +117,7 @@ export default function AdminSubmissions() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-charcoal">{s.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{s.service_type || "General"}</p>
+                    <p className="text-xs text-muted-foreground">{(s.service_type && SERVICE_LABELS[s.service_type]) || s.service_type || "General"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
