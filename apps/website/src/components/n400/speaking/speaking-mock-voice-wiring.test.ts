@@ -53,7 +53,7 @@ describe('Thi thử Speaking — voice run', () => {
   it('answers through the Civics mock panel; a re-ask or a mic error keeps the retry (Review Focus 1, 2)', () => {
     expect(page).toMatch(/<MicAnswerPanel\s+key=\{item\.id\}\s+variant="mock"/);
     expect(page).toContain('canRetry={!current?.retried}');
-    expect(page).toContain('prompt={current?.reask ? dict.oral.yesNoReask : undefined}');
+    expect(page).toContain("prompt={current?.reask ? (itemInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}");
     expect(page).toContain('mockConfirm(current, text, itemInput, gradeSpokenItem(spoken, text, location).verdict)');
   });
 
@@ -78,7 +78,7 @@ describe('Thi thử Speaking — voice run', () => {
     expect(page.match(/preferWebAudio=\{audio\.preferWebAudio\}/g)).toHaveLength(2);
     expect(page.match(/\{audio\.showSlow \? \(/g)).toHaveLength(2);
     expect(page).toContain("showSlow: runMode !== 'voice' && !mic.sessionRunning(),");
-    expect(page).toContain("if (mic.state === 'listening') resetMic();");
+    expect(page).toContain('if (captureOpen(mic.state)) resetMic();');
     expect(page).toMatch(/onBeforePlay=\{beforeAudio\}\s+preferWebAudio=\{mic\.sessionRunning\}/);
   });
 

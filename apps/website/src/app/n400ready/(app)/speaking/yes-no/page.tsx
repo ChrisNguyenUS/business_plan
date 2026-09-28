@@ -150,7 +150,7 @@ export default function YesNoPage() {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });
         }}
-        onRestart={() => startQuizWith(mode.ids.length)}
+        onRestart={() => startQuizWith(mode.ids.length, mode.minutes)}
         onReviewWrong={(ids) => startQuizIds(ids)}
         title="Yes No Quiz"
         estimatedMinutes={mode.minutes}

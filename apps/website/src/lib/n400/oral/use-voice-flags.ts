@@ -17,9 +17,11 @@ export interface VoiceFlags {
 }
 
 const OFF: VoiceFlags = { practiceOn: false, androidOn: false, mockOn: false, speakingOn: false, loaded: false };
+// Auth finished with no user: nothing will load, so the flags are known — all off.
+const LOADED_OFF: VoiceFlags = { ...OFF, loaded: true };
 
 export function useVoiceFlags(): VoiceFlags {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [flags, setFlags] = useState<VoiceFlags>(OFF);
 
   useEffect(() => {
@@ -40,5 +42,6 @@ export function useVoiceFlags(): VoiceFlags {
     };
   }, [user]);
 
-  return user ? flags : OFF;
+  if (!user) return authLoading ? OFF : LOADED_OFF;
+  return flags;
 }

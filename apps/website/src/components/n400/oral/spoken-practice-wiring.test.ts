@@ -43,7 +43,7 @@ describe('useSpokenPractice', () => {
 
   it('🔊 drops an open capture window before playing (Review Focus 2)', () => {
     const body = hook.slice(hook.indexOf('const beforeAudio'), hook.indexOf('return {'));
-    expect(body).toContain("if (mic.state === 'listening') resetMic();");
+    expect(body).toContain('if (captureOpen(mic.state)) resetMic();');
     expect(body).toContain('mic.noteAudioPlayed();');
   });
 
@@ -70,7 +70,7 @@ describe('SectionYesNoQuiz — Tự nói', () => {
   });
 
   it('shows the re-ask prompt for unclear', () => {
-    expect(quiz).toContain('prompt={spoken.reask ? dict.oral.yesNoReask : undefined}');
+    expect(quiz).toContain("prompt={spoken.reask ? (spoken.panelInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}");
   });
 
   it('records only settled answers, with how they were given', () => {

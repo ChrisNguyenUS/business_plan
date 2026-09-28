@@ -3,7 +3,7 @@
 
 import type { QuizOption } from '../quiz-engine';
 import type { VoiceMockAnswer } from './grade-voice-mock';
-import type { MicError } from './speech-controller';
+import type { MicError, MicState } from './speech-controller';
 import type { VoiceInput } from './voice-support';
 
 export interface VoiceItem {
@@ -52,4 +52,11 @@ export function toVoiceMockAnswers(
  *  offer typing instead of trapping the learner mid-test (no resume on reload). */
 export function offersTypedFallback(error: MicError | null): boolean {
   return error === 'network' || error === 'audio-capture';
+}
+
+/** A capture window is open or opening: a 🔊 now would be heard as the answer
+ *  (the panel shows these states as busy). Never 'error': a stalled mic must stay
+ *  visible until the mic-lost latch runs. */
+export function captureOpen(state: MicState): boolean {
+  return state === 'requesting_permission' || state === 'listening' || state === 'processing';
 }

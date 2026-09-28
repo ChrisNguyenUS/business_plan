@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import type { PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
 import { trackOralAnswer } from '@/lib/n400/analytics';
 import { canSpeak, gradeSpokenItem, spokenItemFromId } from '@/lib/n400/oral/grade-spoken-item';
-import { offersTypedFallback } from '@/lib/n400/oral/mock-voice-items';
+import { captureOpen, offersTypedFallback } from '@/lib/n400/oral/mock-voice-items';
 import { micErrorEvent, practiceAnswerEvent } from '@/lib/n400/oral/oral-events';
 import {
   afterAttempt,
@@ -155,7 +155,7 @@ export function useSpokenPractice(opts: {
   };
 
   const changeMode = (m: PracticeAnswerMode) => {
-    if (locked) return;
+    if (locked || m === answerMode) return;
     latchMicLost();
     setAnswerMode(m);
     setStored(freshAnswer(opts.itemId));
@@ -165,7 +165,7 @@ export function useSpokenPractice(opts: {
   // 🔊 while a capture window is open would be graded as the answer (S1 final
   // review): drop the window first, then let the controller note the playback.
   const beforeAudio = () => {
-    if (mic.state === 'listening') resetMic();
+    if (captureOpen(mic.state)) resetMic();
     mic.noteAudioPlayed();
   };
 

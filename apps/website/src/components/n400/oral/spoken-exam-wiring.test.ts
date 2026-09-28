@@ -45,7 +45,7 @@ describe('SectionMCQuiz — exam voice run', () => {
   it('answers through the Civics mock panel: Đúng vậy locks, Nói lại once, re-ask prompt', () => {
     expect(quiz).toMatch(/exam\.voiceHere \? \(\s*<MicAnswerPanel\s+key=\{q\.itemId\}\s+variant="mock"/);
     expect(quiz).toContain('canRetry={!exam.current?.retried}');
-    expect(quiz).toContain('prompt={exam.current?.reask ? dict.oral.yesNoReask : undefined}');
+    expect(quiz).toContain("prompt={exam.current?.reask ? (exam.itemInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}");
   });
 
   it('grades at Next and hands the words to the page (Review Focus 4)', () => {
@@ -84,7 +84,7 @@ describe('Phỏng vấn đầy đủ — voice run', () => {
 
   it('offers "Toàn bộ bằng giọng" only when voice is available here, remembered for this test (Review Focus 1)', () => {
     expect(page).toContain('enabled: voiceFlags.speakingOn,');
-    expect(page).toContain('{voiceAvailable ? (');
+    expect(page).toContain('{voiceAvailable || pickerPending ? (');
     expect(page).toContain('labels={{ choice: dict.oral.modeChoice, voice: dict.oral.fullModeVoice }}');
     expect(page).toContain("const FULL_MODE_KEY = 'n400.mock.full.answerMode';");
   });

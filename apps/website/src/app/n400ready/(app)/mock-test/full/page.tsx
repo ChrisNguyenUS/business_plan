@@ -35,6 +35,7 @@ import type { ExamVoice } from '@/components/n400/oral/use-spoken-exam';
 import { answerModeOf } from '@/lib/n400/attempt-row';
 import { useSpeechRecognition } from '@/lib/n400/oral/use-speech-recognition';
 import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
+import { captureOpen } from '@/lib/n400/oral/mock-voice-items';
 import { voiceInputFor } from '@/lib/n400/oral/voice-support';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
@@ -181,6 +182,10 @@ export default function FullInterviewPage() {
     androidOn: voiceFlags.androidOn,
   });
   const voiceAvailable = voiceInput !== 'none';
+  // Hold the picker's place while the flags load in a browser that can answer by
+  // voice, so it doesn't pop in above Bắt đầu (Android waits for voice_android).
+  const browserCanVoice = voiceInputFor({ ua, apiPresent: mic.supported, enabled: true, androidOn: false }) !== 'none';
+  const pickerPending = !voiceFlags.loaded && browserCanVoice;
   const [answerMode, setAnswerMode] = useState<PracticeAnswerMode>(() => readStoredFullMode());
   // The run's mode, latched at Bắt đầu; the mic-lost latch spans both parts.
   const [runMode, setRunMode] = useState<PracticeAnswerMode>('choice');
@@ -248,7 +253,7 @@ export default function FullInterviewPage() {
 
   // 🔊 on the review screen while an iOS session may still be open (Civics rev 3.12).
   const beforeAudio = () => {
-    if (mic.state === 'listening') mic.reset();
+    if (captureOpen(mic.state)) mic.reset();
     mic.noteAudioPlayed();
   };
 
@@ -504,13 +509,14 @@ export default function FullInterviewPage() {
       </div>
 
       {/* Cách trả lời (speaking spec §5.2): only when voice is available here */}
-      {voiceAvailable ? (
+      {voiceAvailable || pickerPending ? (
         <div className="mt-5 rounded-2xl border border-slate-100 p-4 text-left sm:p-5">
           <p className="mb-2 text-sm font-semibold text-gray-700">{dict.oral.mockModeLabel}</p>
           <AnswerModeToggle
             mode={answerMode}
             onChange={onModeChange}
             labels={{ choice: dict.oral.modeChoice, voice: dict.oral.fullModeVoice }}
+            disabled={pickerPending}
           />
           <p className="mt-2 text-xs text-gray-500">{dict.oral.fullModeNote}</p>
         </div>

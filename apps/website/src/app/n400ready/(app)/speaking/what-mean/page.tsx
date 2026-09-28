@@ -175,7 +175,7 @@ export default function WhatMeanPage() {
           setMode({ kind: 'landing' });
           router.replace(pathname, { scroll: false });
         }}
-        onRestart={() => startPracticeWith(mode.ids.length)}
+        onRestart={() => startPracticeWith(mode.ids.length, mode.minutes)}
         onReviewWrong={(ids) => startPracticeIds(ids)}
         title={dict.speaking.whatmean.title}
         estimatedMinutes={mode.minutes}

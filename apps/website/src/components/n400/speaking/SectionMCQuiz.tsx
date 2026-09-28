@@ -265,7 +265,7 @@ export function SectionMCQuiz({
                 nearAnswer={spoken.nearPrompt}
                 onSubmit={spoken.onSubmit}
                 onNearAnswer={spoken.onNearAnswer}
-                prompt={spoken.reask ? dict.oral.yesNoReask : undefined}
+                prompt={spoken.reask ? (spoken.panelInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}
                 notice={spoken.micLost ? dict.oral.micLostTyped : undefined}
                 onUseTyped={spoken.typedFallback}
               />
@@ -281,7 +281,7 @@ export function SectionMCQuiz({
                 onRetry={exam.onRetry}
                 onSubmit={exam.onConfirm}
                 onNearAnswer={() => {}}
-                prompt={exam.current?.reask ? dict.oral.yesNoReask : undefined}
+                prompt={exam.current?.reask ? (exam.itemInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}
                 notice={exam.micLost ? dict.oral.micLostTyped : undefined}
                 onUseTyped={exam.typedFallback}
               />

@@ -36,7 +36,7 @@ import {
   yesNoAudioUrl,
 } from '@/lib/n400/quiz-engine';
 import { gradeSpokenItem, spokenItemFromId } from '@/lib/n400/oral/grade-spoken-item';
-import { mockItemInput, offersTypedFallback, voiceRunMicLost } from '@/lib/n400/oral/mock-voice-items';
+import { captureOpen, mockItemInput, offersTypedFallback, voiceRunMicLost } from '@/lib/n400/oral/mock-voice-items';
 import { micErrorEvent, mockReaskEvent, speakingMockAnswerEvents } from '@/lib/n400/oral/oral-events';
 import { gradeSpokenMock, mockConfirm, mockRetry, type SpokenMockAnswer } from '@/lib/n400/oral/spoken-mock';
 import { spokenQid, spokenSection } from '@/lib/n400/oral/spoken-practice';
@@ -230,7 +230,7 @@ export default function ThiThuSpeakingPage() {
   // 🔊 while a capture window is open would be heard as the answer (speaking S2):
   // drop the window, then let the controller note the playback.
   const beforeAudio = () => {
-    if (mic.state === 'listening') resetMic();
+    if (captureOpen(mic.state)) resetMic();
     mic.noteAudioPlayed();
   };
   const audio: AudioRules = {
@@ -422,7 +422,7 @@ export default function ThiThuSpeakingPage() {
       onRetry={onVoiceRetry}
       onSubmit={onVoiceConfirm}
       onNearAnswer={() => {}}
-      prompt={current?.reask ? dict.oral.yesNoReask : undefined}
+      prompt={current?.reask ? (itemInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}
       notice={micLost ? dict.oral.micLostTyped : undefined}
       onUseTyped={offersTypedFallback(mic.error) && !micLost ? () => setMicLatched(true) : undefined}
     />

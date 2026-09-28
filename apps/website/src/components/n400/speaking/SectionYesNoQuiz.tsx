@@ -186,7 +186,7 @@ export function SectionYesNoQuiz({
                 nearAnswer={null}
                 onSubmit={spoken.onSubmit}
                 onNearAnswer={spoken.onNearAnswer}
-                prompt={spoken.reask ? dict.oral.yesNoReask : undefined}
+                prompt={spoken.reask ? (spoken.panelInput === 'typed' ? dict.oral.yesNoReaskTyped : dict.oral.yesNoReask) : undefined}
                 notice={spoken.micLost ? dict.oral.micLostTyped : undefined}
                 onUseTyped={spoken.typedFallback}
               />

@@ -1111,6 +1111,7 @@ export const vi = {
     retry: 'Nói lại',
     didYouMean: 'Có phải bạn nói "{answer}"?',
     yesNoReask: 'Bạn trả lời Yes hay No? Hãy nói lại.',
+    yesNoReaskTyped: 'Bạn trả lời Yes hay No? Hãy trả lời lại.',
     yes: 'Đúng vậy',
     no: 'Không',
     youSaid: 'Bạn nói:',
