@@ -151,10 +151,18 @@ export default function YesNoPage() {
           router.replace(pathname, { scroll: false });
         }}
         onRestart={() => startQuizWith(mode.ids.length)}
+        onReviewWrong={(ids) => startQuizIds(ids)}
         title="Yes No Quiz"
         estimatedMinutes={mode.minutes}
       />
     );
+  }
+
+  // "Ôn câu sai": a fresh session (new seed → new key) with only the wrong items.
+  function startQuizIds(ids: string[]) {
+    if (ids.length === 0) return;
+    setMode({ kind: 'quiz', ids, seed: `${Date.now()}` });
+    router.push(`${pathname}?mode=practice`, { scroll: false });
   }
 
   function startQuizWith(count: number, minutes?: number | null) {

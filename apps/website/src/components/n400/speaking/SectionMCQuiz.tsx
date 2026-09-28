@@ -56,6 +56,7 @@ export function SectionMCQuiz({
   onAnswer,
   onExit,
   onRestart,
+  onReviewWrong,
   title,
   skipSummary = false,
   examMode = false,
@@ -72,6 +73,8 @@ export function SectionMCQuiz({
   onAnswer: (itemId: string, wasCorrect: boolean, selected?: MCOption, via?: AnswerMode, spoken?: SpokenMockAnswer) => void;
   onExit: () => void;
   onRestart: () => void;
+  /** "Ôn câu sai": replay only this session's wrong items; without it the summary restarts. */
+  onReviewWrong?: (wrongItemIds: string[]) => void;
   title: string;
   /** When true, never render the end-of-session summary; fire onComplete instead. */
   skipSummary?: boolean;
@@ -93,6 +96,8 @@ export function SectionMCQuiz({
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  // This session's wrong items, for "Ôn câu sai" (practice only).
+  const [wrongIds, setWrongIds] = useState<string[]>([]);
 
   const done = index >= questions.length;
   const q = done ? null : questions[index];
@@ -109,7 +114,10 @@ export function SectionMCQuiz({
     onSettle: ({ shownCorrect, record, via }) => {
       setPhase('revealed');
       if (shownCorrect) setCorrectCount((c) => c + 1);
-      else setWrongCount((c) => c + 1);
+      else {
+        setWrongCount((c) => c + 1);
+        if (q) setWrongIds((w) => [...w, q.itemId]);
+      }
       if (record !== null && q) onAnswer(q.itemId, record, undefined, via);
     },
   });
@@ -133,7 +141,7 @@ export function SectionMCQuiz({
           correct={correctCount}
           total={questions.length}
           wrongCount={wrongCount}
-          onReviewWrong={onRestart}
+          onReviewWrong={onReviewWrong ? () => onReviewWrong(wrongIds) : onRestart}
           onRetry={onRestart}
           onChangeMode={onExit}
         />
@@ -153,7 +161,10 @@ export function SectionMCQuiz({
     setSelected(id);
     setPhase('revealed');
     if (wasCorrect) setCorrectCount((c) => c + 1);
-    else setWrongCount((c) => c + 1);
+    else {
+      setWrongCount((c) => c + 1);
+      setWrongIds((w) => [...w, q.itemId]);
+    }
     onAnswer(q.itemId, wasCorrect, opt, 'choice');
   };
 

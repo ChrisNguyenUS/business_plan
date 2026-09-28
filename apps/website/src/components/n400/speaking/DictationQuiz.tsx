@@ -52,13 +52,18 @@ interface DictationQuizProps {
    * mid-quiz (Đổi chế độ) it is < total, so orchestrating callers can tell
    * an abandon apart from a real completion. `perItem` carries the per-sentence
    * verdicts so callers can record real attempts (review debt needs them).
+   * `next` = the summary button tapped: "Ôn câu sai" or "Làm lại". The caller
+   * records the finished run first, then opens the next session.
    */
-  onSessionEnd: (results: {
-    correct: number;
-    total: number;
-    answered: number;
-    perItem: { sentenceId: string; correct: boolean; userInput: string }[];
-  }) => void;
+  onSessionEnd: (
+    results: {
+      correct: number;
+      total: number;
+      answered: number;
+      perItem: { sentenceId: string; correct: boolean; userInput: string }[];
+    },
+    next?: 'review-wrong' | 'retry',
+  ) => void;
   // Mock tests own their single result screen — skip this component's internal
   // PracticeSessionSummary and hand off to the caller as soon as the last
   // sentence is graded, instead of showing two result screens back to back.
@@ -263,24 +268,14 @@ export function DictationQuiz({
     if (skipSummary) return null;
     const correct = results.filter((r) => r.correct).length;
     const wrongCount = results.filter((r) => !r.correct).length;
-    const restart = () => {
-      setIndex(0);
-      setUserInput('');
-      setGradeResult(null);
-      setShowFeedback(false);
-      setRetryCount(0);
-      setRevealed(false);
-      setFirstCorrect(null);
-      setResults([]);
-    };
     return (
       <div className="flex flex-col h-full overflow-hidden max-w-[1100px] mx-auto w-full">
         <PracticeSessionSummary
           correct={correct}
           total={questions.length}
           wrongCount={wrongCount}
-          onReviewWrong={restart}
-          onRetry={restart}
+          onReviewWrong={() => onSessionEnd(sessionResults(), 'review-wrong')}
+          onRetry={() => onSessionEnd(sessionResults(), 'retry')}
           onChangeMode={() => onSessionEnd(sessionResults())}
         />
       </div>

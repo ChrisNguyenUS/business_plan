@@ -176,10 +176,18 @@ export default function WhatMeanPage() {
           router.replace(pathname, { scroll: false });
         }}
         onRestart={() => startPracticeWith(mode.ids.length)}
+        onReviewWrong={(ids) => startPracticeIds(ids)}
         title={dict.speaking.whatmean.title}
         estimatedMinutes={mode.minutes}
       />
     );
+  }
+
+  // "Ôn câu sai": a fresh session (new seed → new key) with only the wrong items.
+  function startPracticeIds(ids: string[]) {
+    if (ids.length === 0) return;
+    setMode({ kind: 'practice', ids, seed: `${Date.now()}` });
+    router.push(`${pathname}?mode=practice`, { scroll: false });
   }
 
   function startPracticeWith(count: number, minutes?: number | null) {

@@ -33,7 +33,7 @@ const ALL = WRITING_SENTENCES;
 
 type Mode =
   | { kind: 'landing' }
-  | { kind: 'quiz'; questions: WritingSentence[]; minutes?: number | null };
+  | { kind: 'quiz'; questions: WritingSentence[]; seed: string; minutes?: number | null };
 
 export default function WritingPage() {
   const { dict } = useN400Lang();
@@ -83,7 +83,7 @@ export default function WritingPage() {
       .map((id) => ALL.find((s) => s.id === id))
       .filter((s): s is WritingSentence => s !== undefined);
     if (questions.length > 0) {
-      setMode({ kind: 'quiz', questions });
+      setMode({ kind: 'quiz', questions, seed: `${Date.now()}` });
       router.push(`${pathname}?mode=practice`, { scroll: false });
     }
   };
@@ -103,9 +103,16 @@ export default function WritingPage() {
   }
 
   const startQuizWith = (count: number, minutes?: number | null) => {
-    const questions = shuffle([...ALL], `wr-quiz-${Date.now()}`).slice(0, count);
-    setMode({ kind: 'quiz', questions, minutes });
+    const seed = `${Date.now()}`;
+    const questions = shuffle([...ALL], `wr-quiz-${seed}`).slice(0, count);
+    setMode({ kind: 'quiz', questions, seed, minutes });
     router.push(`${pathname}?mode=practice`, { scroll: false });
+  };
+
+  // "Ôn câu sai": a fresh session (new seed → new key) with only these sentences.
+  const startQuizSentences = (questions: WritingSentence[]) => {
+    if (questions.length === 0) return;
+    setMode({ kind: 'quiz', questions, seed: `${Date.now()}` });
   };
 
   const startMode = (m: PracticeMode) => {
@@ -120,17 +127,25 @@ export default function WritingPage() {
     const { questions } = mode;
     return (
       <DictationQuiz
+        key={mode.seed}
         questions={questions}
         estimatedMinutes={mode.minutes}
-        onSessionEnd={({ perItem }) => {
+        onSessionEnd={({ perItem }, next) => {
           // Record each graded sentence with its REAL verdict — review debt
           // ("câu sai chưa ôn") is derived from these attempts, so the split
-          // must match what the learner actually got wrong.
+          // must match what the learner actually got wrong. This runs before
+          // Ôn câu sai / Làm lại too, so a finished run is never dropped.
           perItem.forEach(({ sentenceId, correct }) => {
             void recordSectionAnswer('writing', sentenceId, correct, 'practice');
           });
-          setMode({ kind: 'landing' });
-          router.replace(pathname, { scroll: false });
+          const wrongIds = new Set(perItem.filter((r) => !r.correct).map((r) => r.sentenceId));
+          const wrong = questions.filter((s) => wrongIds.has(s.id));
+          if (next === 'review-wrong') startQuizSentences(wrong);
+          else if (next === 'retry') startQuizWith(questions.length, mode.minutes);
+          else {
+            setMode({ kind: 'landing' });
+            router.replace(pathname, { scroll: false });
+          }
         }}
       />
     );

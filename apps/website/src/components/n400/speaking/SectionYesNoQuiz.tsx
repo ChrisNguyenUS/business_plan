@@ -27,6 +27,7 @@ export function SectionYesNoQuiz({
   onAnswer,
   onExit,
   onRestart,
+  onReviewWrong,
   title,
   estimatedMinutes,
 }: {
@@ -34,6 +35,8 @@ export function SectionYesNoQuiz({
   onAnswer: (itemId: string, wasCorrect: boolean, via?: AnswerMode) => void;
   onExit: () => void;
   onRestart: () => void;
+  /** "Ôn câu sai": replay only this session's wrong items; without it the summary restarts. */
+  onReviewWrong?: (wrongItemIds: string[]) => void;
   title: string;
   /** Total estimated minutes for the session (from preset). */
   estimatedMinutes?: number | null;
@@ -44,6 +47,8 @@ export function SectionYesNoQuiz({
   const [phase, setPhase] = useState<'idle' | 'revealed'>('idle');
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  // This session's wrong items, for "Ôn câu sai".
+  const [wrongIds, setWrongIds] = useState<string[]>([]);
 
   const done = index >= questions.length;
   const q = done ? null : questions[index];
@@ -59,7 +64,10 @@ export function SectionYesNoQuiz({
     onSettle: ({ shownCorrect, record, via }) => {
       setPhase('revealed');
       if (shownCorrect) setCorrectCount((c) => c + 1);
-      else setWrongCount((c) => c + 1);
+      else {
+        setWrongCount((c) => c + 1);
+        if (q) setWrongIds((w) => [...w, q.id]);
+      }
       if (record !== null && q) onAnswer(q.id, record, via);
     },
   });
@@ -71,7 +79,7 @@ export function SectionYesNoQuiz({
           correct={correctCount}
           total={questions.length}
           wrongCount={wrongCount}
-          onReviewWrong={onRestart}
+          onReviewWrong={onReviewWrong ? () => onReviewWrong(wrongIds) : onRestart}
           onRetry={onRestart}
           onChangeMode={onExit}
         />
@@ -88,7 +96,10 @@ export function SectionYesNoQuiz({
     setSelected(choice);
     setPhase('revealed');
     if (ok) setCorrectCount((c) => c + 1);
-    else setWrongCount((c) => c + 1);
+    else {
+      setWrongCount((c) => c + 1);
+      setWrongIds((w) => [...w, q.id]);
+    }
     onAnswer(q.id, ok, 'choice');
   };
 
