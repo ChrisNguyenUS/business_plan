@@ -174,7 +174,7 @@ export default async function Eb3Page({ params }: { params: Promise<{ locale: st
           <div className="space-y-3">
             {eb3.faq.map((f) => (
               <details key={f.q} className="group rounded-xl border border-border p-4">
-                <summary className="cursor-pointer font-medium text-charcoal list-none flex justify-between gap-4">
+                <summary className="cursor-pointer font-medium text-charcoal list-none [&::-webkit-details-marker]:hidden flex justify-between gap-4">
                   {f.q}
                   <span className="text-primary group-open:rotate-45 transition-transform">+</span>
                 </summary>
