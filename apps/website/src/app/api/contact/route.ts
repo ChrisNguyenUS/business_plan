@@ -75,8 +75,8 @@ export async function POST(request: Request) {
 
     // Facebook/Zalo are free-text handles (EB-3 leads in Vietnam often have no
     // US phone or email). No dedicated columns — they're prepended to message.
-    const facebookHandle = typeof facebook === "string" ? facebook.trim() : "";
-    const zaloHandle = typeof zalo === "string" ? zalo.trim() : "";
+    const facebookHandle = typeof facebook === "string" ? facebook.replace(/\s+/g, " ").trim() : "";
+    const zaloHandle = typeof zalo === "string" ? zalo.replace(/\s+/g, " ").trim() : "";
 
     // Validation
     if (!full_name || (!email && !phone && !facebookHandle && !zaloHandle)) {
