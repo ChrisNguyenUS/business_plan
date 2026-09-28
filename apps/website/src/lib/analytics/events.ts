@@ -29,8 +29,13 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+// Meta wants digits with the country code. An explicit "+" or "00" prefix
+// already carries one (e.g. +84 for Vietnam leads); otherwise assume US.
 export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
+  const trimmed = phone.trim();
+  const digits = trimmed.replace(/\D/g, "");
+  if (trimmed.startsWith("+")) return digits;
+  if (digits.startsWith("00")) return digits.slice(2);
   return digits.startsWith("1") ? digits : `1${digits}`;
 }
 
