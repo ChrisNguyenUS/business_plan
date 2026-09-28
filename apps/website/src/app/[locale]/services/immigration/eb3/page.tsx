@@ -27,7 +27,7 @@ export default async function Eb3Page({ params }: { params: Promise<{ locale: st
       name: eb3.hero_title,
       description: eb3.meta_desc,
       serviceType: "EB-3 Other Workers immigration case support",
-      provider: { "@type": "Organization", name: "MannaOS", url: "https://mannaos.com" },
+      provider: { "@type": "Organization", name: "Manna One Solution", url: "https://mannaos.com" },
       areaServed: [
         { "@type": "Country", name: "Vietnam" },
         { "@type": "Country", name: "United States" },
