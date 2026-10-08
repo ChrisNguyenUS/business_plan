@@ -35,7 +35,9 @@ describe('N400 mobile layout contracts', () => {
     const detail = source('src/app/n400ready/(app)/statistic/page.tsx');
     const overview = source('src/app/n400ready/(app)/progress/page.tsx');
 
-    expect(detail).toContain('grid grid-cols-1 gap-4 xl:grid-cols-2');
+    // One column on mobile, two from xl. The gap is not pinned: spacing is free
+    // to change (d6db9741 tightened it on mobile, which left this contract red).
+    expect(detail).toMatch(/grid grid-cols-1 gap-[\d.]+ xl:grid-cols-2/);
     expect(detail).not.toContain('grid grid-cols-5 gap-4');
     expect(detail).not.toContain('className="w-3/5');
     expect(detail).not.toContain('className="w-2/5');
