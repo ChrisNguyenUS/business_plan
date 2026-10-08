@@ -39,6 +39,7 @@ import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
 import { captureOpen } from '@/lib/n400/oral/mock-voice-items';
 import { voiceInputFor } from '@/lib/n400/oral/voice-support';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { speakingMockItems, writingMockItems } from '@/lib/n400/section-mock-items';
 import {
   fullCivicsSubmission,
   serverVerdicts,
@@ -149,7 +150,7 @@ function buildIntroRules(dict: N400Dict): { icon: LucideIcon; text: string }[] {
 export default function FullInterviewPage() {
   const { dict } = useN400Lang();
   const base = '/n400ready';
-  const { state, hydrated, noteMockResult, recordSectionMockResult } = useN400UserState();
+  const { state, hydrated, noteMockResult, recordSectionMockResult, recordSectionMockItems } = useN400UserState();
   const PARTS_COPY = buildPartsCopy(dict);
   const INTRO_CHIPS = buildIntroChips(dict);
   const INTRO_RULES = buildIntroRules(dict);
@@ -398,6 +399,7 @@ export default function FullInterviewPage() {
           setSpeakingAnswerList([...speakingAnswers.current]);
           setPhase({ kind: 'interlude', next: 'writing' });
           void recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT, answerModeOf(speakingAnswers.current.map((a) => a.input)));
+          void recordSectionMockItems(speakingMockItems(speakingAnswers.current));
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -428,6 +430,7 @@ export default function FullInterviewPage() {
           setPhase({ kind: 'summary' });
           civicsSave.current?.retryIfFailed();
           void recordSectionMockResult('writing', passed, correct, total);
+          void recordSectionMockItems(writingMockItems(perItem));
         }}
       />
     );

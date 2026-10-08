@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { WRITING_SENTENCES } from '@/lib/n400/writing-data';
 import { shuffle, writingAudioUrl } from '@/lib/n400/quiz-engine';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { writingMockItems } from '@/lib/n400/section-mock-items';
 import { DictationQuiz } from '@/components/n400/speaking/DictationQuiz';
 import { MockResultScreen, type MockResultRow } from '@/components/n400/MockResultScreen';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
@@ -28,7 +29,7 @@ interface Outcome {
 export default function ThiThuVietPage() {
   const { dict } = useN400Lang();
   const router = useRouter();
-  const { recordSectionMockResult } = useN400UserState();
+  const { recordSectionMockResult, recordSectionMockItems } = useN400UserState();
 
   // Fresh random 3 sentences per attempt; `seed` bumps to reshuffle + remount.
   const [seed, setSeed] = useState(0);
@@ -96,6 +97,7 @@ export default function ThiThuVietPage() {
         });
         setOutcome({ correct, total, rows });
         void recordSectionMockResult('writing', correct >= PASS_THRESHOLD, correct, total);
+        void recordSectionMockItems(writingMockItems(perItem));
       }}
     />
   );

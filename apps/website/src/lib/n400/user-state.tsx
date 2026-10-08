@@ -7,6 +7,7 @@ import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
 import { practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type AnswerMode } from './attempt-row';
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
+import type { SectionMockItem } from './section-mock-items';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
 import {
@@ -517,6 +518,29 @@ function useN400UserStateInternal() {
     [recordSectionAnswer]
   );
 
+  // The items of a Speaking or Writing mock (owner decision 2026-10-08, B′): one
+  // graded mock_test row each, so a miss joins "Ôn câu sai" and a right answer
+  // counts toward "thuộc", like the Civics mock's question rows. One batch; the
+  // mock's result row (recordSectionMockResult) owns streak and badges.
+  const recordSectionMockItems = useCallback(
+    async (items: readonly SectionMockItem[]) => {
+      if (!user || items.length === 0) return;
+      const at = new Date().toISOString();
+      setState((s) => ({
+        ...s,
+        sectionAttempts: [
+          ...s.sectionAttempts,
+          ...items.map((i) => ({ section: i.section, itemId: i.itemId, wasCorrect: i.wasCorrect, mode: 'mock_test' as const, at })),
+        ].slice(-2000),
+      }));
+      const { error } = await supabase
+        .from('n400_section_attempts')
+        .insert(items.map((i) => sectionAttemptRow(user.id, i.section, i.itemId, i.wasCorrect, 'mock_test', i.answerMode)));
+      if (error) console.error('n400: recordSectionMockItems failed', error);
+    },
+    [user]
+  );
+
   // A Civics mock finalized server-side (the Full interview's Civics part, RLS
   // hardening spec §2.4): the RPC already wrote the attempt and stamped the
   // streak, so this only brings local state in line until the next full load.
@@ -607,6 +631,7 @@ function useN400UserStateInternal() {
     setSectionKnown,
     noteMockResult,
     recordSectionMockResult,
+    recordSectionMockItems,
     resetAll,
     user,
   };

@@ -26,6 +26,7 @@ import { MicAnswerPanel } from '@/components/n400/oral/MicAnswerPanel';
 import { SpeakingMockIntro } from '@/components/n400/speaking/SpeakingMockIntro';
 import { trackOralAnswer } from '@/lib/n400/analytics';
 import { useN400UserState } from '@/lib/n400/user-state';
+import { speakingMockItems } from '@/lib/n400/section-mock-items';
 import { WHATMEAN_QUESTIONS } from '@/lib/n400/whatmean-data';
 import { YESNO_QUESTIONS } from '@/lib/n400/yesno-data';
 import { buildWhatMeanOptions } from '@/lib/n400/whatmean-options';
@@ -163,7 +164,7 @@ function voiceRow(item: MockItem, i: number, answer: SpokenMockAnswer | null, ok
 
 export default function ThiThuSpeakingPage() {
   const { dict } = useN400Lang();
-  const { state, recordSectionMockResult } = useN400UserState();
+  const { state, recordSectionMockResult, recordSectionMockItems } = useN400UserState();
   const location = { stateCode: state.settings.stateCode, districtNumber: state.address.districtNumber };
 
   const [seed, setSeed] = useState(0);
@@ -353,6 +354,9 @@ export default function ThiThuSpeakingPage() {
     resetMic();
     for (const e of speakingMockAnswerEvents(spokenItems, voiceAnswers, graded.ok)) trackOralAnswer(e);
     void recordSectionMockResult('speaking', graded.score >= PASS_THRESHOLD, graded.score, TOTAL, graded.answerMode);
+    void recordSectionMockItems(speakingMockItems(
+      items.map((it, i) => ({ itemId: it.id, wasCorrect: graded.ok[i], input: voiceAnswers[i]?.input ?? 'mic' })),
+    ));
   };
 
   const onNext = () => {
@@ -401,6 +405,10 @@ export default function ThiThuSpeakingPage() {
     if (isLast) {
       setFinished(true);
       void recordSectionMockResult('speaking', newCount >= PASS_THRESHOLD, newCount, TOTAL);
+      // Earlier items' verdicts are in `answers` (one row each, in order); this one is new.
+      void recordSectionMockItems(speakingMockItems(
+        items.map((it, i) => ({ itemId: it.id, wasCorrect: i === index ? wasCorrect : answers[i]?.ok ?? false })),
+      ));
       return;
     }
     setIndex((i) => i + 1);

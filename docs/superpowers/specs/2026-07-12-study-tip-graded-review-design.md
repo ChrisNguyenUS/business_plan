@@ -70,3 +70,9 @@ Stale-skill and finish-civics rungs are **removed** — the dashboard hero owns 
 
 Real review sessions for Writing / Yes-No / What Mean practice pages
 (`?start=review` pattern), and point the cards' "Ôn lại câu sai (n)" links at them.
+
+**Status 2026-10-08:** Phase 2 shipped earlier (What Mean / Yes-No / Viết hubs have the `wrongs` mode and `?start=wrongs`; Study and Statistic links point at them).
+
+## Phase 3 — mock items join the debt (owner, 2026-10-08)
+
+Speaking and Writing mocks — standalone (`/mock-test/speaking`, `/mock-test/viet`) and the Full interview's Speaking and Writing parts — recorded only an aggregate result, so a miss there never reached "Ôn câu sai" (a Civics mock miss does). Each finished mock now also writes one `n400_section_attempts` row per item with `mode = 'mock_test'` (`section-mock-items.ts`, `recordSectionMockItems`), which D1 already treats as graded: a miss joins the debt, a right answer counts toward "thuộc", and a later graded answer clears or re-opens it. The aggregate row (`recordSectionMockResult`) still owns streak and badges; an abandoned mock records nothing.
