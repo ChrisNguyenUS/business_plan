@@ -257,7 +257,7 @@ function MockTestPageInner() {
     resetMic();
 
     // Register the attempt row in the background; finish() awaits it.
-    const args = { seed, stateCode, districtNumber };
+    const args = { kind: 'civics' as const, seed, stateCode, districtNumber };
     pendingStart.current = args;
     const p = startMockAttempt(args).then((r) => {
       setAttemptId(r.attemptId);

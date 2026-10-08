@@ -1,14 +1,13 @@
 'use server'
 
 // Mock-test server actions. The data layer for /n400ready/mock-test:
-//   - startMockAttempt    replays the client's seed through the SAME
-//                         deterministic builders (selectMockTestQuestions +
-//                         buildOptions) and persists the answer key as the
-//                         slide_manifest. The client builds its slides locally
-//                         from that seed for an instant start (same approach
-//                         as the full interview) and registers the attempt
-//                         here in the background — grading still happens
-//                         server-side against this manifest.
+//   - startMockAttempt    replays the client's seed through the shared builder
+//                         (civics-mock-slides.ts, kind 'civics' or 'full') and
+//                         stores the answer key as the slide_manifest, inserting
+//                         with the service role: the owner cannot insert
+//                         mock_test rows (n400_37). The client builds its slides
+//                         from the same seed for an instant start and registers
+//                         the attempt here in the background.
 //   - finalizeMockAttempt replays the user's picks through the server-side
 //                         checker in ONE round trip (`finalize_mock_attempt_batch`
 //                         RPC, which derives was_correct from the manifest,
@@ -24,11 +23,11 @@ import { after } from 'next/server'
 import { createHash } from 'node:crypto'
 
 import {
-  buildOptions,
-  selectMockTestQuestions,
   MOCK_TEST_QUESTION_COUNT,
   type QuizOption,
 } from '@/lib/n400/quiz-engine'
+import { civicsMockAnswerKey, civicsMockSlides, type CivicsMockKind } from '@/lib/n400/civics-mock-slides'
+import { parseMockKind, parseStartMockInput } from '@/lib/n400/civics-mock-input'
 import type { StateCode } from '@/lib/n400/state-data'
 import { evaluateAfterAttempt, evaluateAfterStreak } from '@/lib/n400/badges/actions'
 import { sendCapiEvent } from '@/lib/analytics/meta-capi'
@@ -58,6 +57,7 @@ async function getSupabase() {
 }
 
 export async function startMockAttempt(input: {
+  kind: CivicsMockKind
   seed: string
   stateCode: StateCode
   districtNumber: number | null
@@ -68,42 +68,20 @@ export async function startMockAttempt(input: {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('unauthorized')
 
-  // The client generated these and built its slides from them; replaying the
-  // same inputs here yields an identical option set, so the stored manifest
-  // matches what the user actually saw. Guard against garbage input.
-  const { seed, stateCode, districtNumber } = input
-  if (typeof seed !== 'string' || seed.length === 0 || seed.length > 64) {
-    throw new Error('invalid seed')
-  }
-  if (districtNumber !== null && !Number.isInteger(districtNumber)) {
-    throw new Error('invalid district')
-  }
+  // The client built its slides from these inputs; the shared builder gives the
+  // answer key it was dealt (spec §2.1). Untrusted input, so parse it first.
+  const { kind, seed, stateCode, districtNumber } = parseStartMockInput(input)
+  const manifest = civicsMockAnswerKey(civicsMockSlides(kind, seed, stateCode, districtNumber))
 
-  // Skip Q29 (your U.S. Representative) when district is unresolved — without
-  // it the question has no buildable answer for this user.
-  const questions = selectMockTestQuestions(seed).filter(
-    (q) => q.id !== 29 || districtNumber !== null,
-  )
-
-  // Replay the option build server-side. The manifest stores ONLY the answer key.
-  const manifest: { qid: number; correct: QuizOption['id'] }[] = []
-  for (const q of questions) {
-    const options = buildOptions(q, stateCode, `mock-${seed}-${q.id}`, districtNumber)
-    const correct = options.find((o) => o.isCorrect)
-    if (!correct) {
-      // Should never happen — buildOptions always shuffles in the correct one.
-      throw new Error(`quiz-engine: no correct option built for q${q.id}`)
-    }
-    manifest.push({ qid: q.id, correct: correct.id })
-  }
-
+  // Service role: since n400_37 the owner cannot insert mock_test rows, so an
+  // answer key can only come from this builder (spec §2.2).
   const startedAt = new Date().toISOString()
-  const { data: attempt, error } = await supabase
+  const { data: attempt, error } = await createServerSupabaseClient()
     .from('n400_quiz_attempts')
     .insert({
       user_id: user.id,
       mode: 'mock_test',
-      total_questions: MOCK_TEST_QUESTION_COUNT,
+      total_questions: manifest.length,
       slide_manifest: manifest,
       started_at: startedAt,
     })
@@ -119,7 +97,9 @@ export async function startMockAttempt(input: {
 export async function finalizeMockAttempt(
   attemptId: string,
   picks: MockPick[],
+  kind: CivicsMockKind = 'civics',
 ): Promise<FinalizeMockAttemptResult> {
+  const capi = parseMockKind(kind) === 'civics'
   const supabase = await getSupabase()
 
   // One RPC does it all: replays every pick against the server-built
@@ -157,7 +137,7 @@ export async function finalizeMockAttempt(
     currentStreak: Number(r?.current_streak ?? 0),
     longestStreak: Number(r?.longest_streak ?? 0),
     milestone: r?.milestone ?? null,
-    unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0), Boolean(r?.passed), Number(r?.score ?? 0), Number(r?.total ?? MOCK_TEST_QUESTION_COUNT)),
+    unlockedBadges: await evaluateMockUnlocks(attemptId, r?.milestone ?? null, Number(r?.current_streak ?? 0), Boolean(r?.passed), Number(r?.score ?? 0), Number(r?.total ?? MOCK_TEST_QUESTION_COUNT), capi),
   }
 }
 
@@ -168,7 +148,9 @@ export async function finalizeMockAttempt(
 export async function finalizeVoiceMockAttempt(
   attemptId: string,
   answers: VoiceMockAnswer[],
+  kind: CivicsMockKind = 'civics',
 ): Promise<FinalizeVoiceMockAttemptResult> {
+  const capi = parseMockKind(kind) === 'civics'
   const supabase = await getSupabase()
   const {
     data: { user },
@@ -237,6 +219,7 @@ export async function finalizeVoiceMockAttempt(
       Boolean(r.passed),
       Number(r.score ?? 0),
       Number(r.total ?? MOCK_TEST_QUESTION_COUNT),
+      capi,
     ),
     answers: run.results.map((x) => ({ qid: x.qid, wasCorrect: x.was_correct, transcript: x.transcript })),
   }
@@ -248,7 +231,7 @@ export async function finalizeVoiceMockAttempt(
 // independent, so they run concurrently. Errors are swallowed inside
 // the action wrappers, so this can never block finalize.
 //
-// The n400_mock_test_pass Meta CAPI event (fired on pass) is scheduled
+// The n400_mock_test_pass Meta CAPI event (fired on a standalone pass only — the Full interview's Civics part sends kind 'full', spec §0) is scheduled
 // via after() — it's pure analytics with no bearing on the response, so
 // it must not add its external HTTP latency to the result screen.
 // Deterministic event_id = sha256("n400-pass:" + attemptId) so a
@@ -262,13 +245,14 @@ async function evaluateMockUnlocks(
   passed: boolean,
   score: number,
   total: number,
+  capi: boolean,
 ): Promise<string[]> {
   const [sessionUnlocks, streakUnlocks] = await Promise.all([
     evaluateAfterAttempt('mock_test', attemptId),
     milestone === null ? Promise.resolve([]) : evaluateAfterStreak(currentStreak),
   ])
 
-  if (passed) {
+  if (passed && capi) {
     after(async () => {
       try {
         const supabase = await getSupabase()
