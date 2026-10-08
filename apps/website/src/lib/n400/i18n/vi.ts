@@ -1013,7 +1013,7 @@ export const vi = {
       subtitle: 'Đạt {metCount}/{totalCount} điều kiện',
       leadIn: 'Hoàn thành các điều kiện bên dưới để sẵn sàng cho buổi phỏng vấn nhập tịch.',
       summaryLabel: 'Mức sẵn sàng',
-      milestonesCompleted: 'mốc đã hoàn thành',
+      milestonesCompleted: 'đã đạt',
       groupStudy: '📚 Học tập',
       groupMock: '🎤 Thi thử',
       itemDesc: {
@@ -1066,7 +1066,7 @@ export const vi = {
   readiness: {
     knownLabel: 'Thuộc {percent}% câu {skillLabel}',
     milestoneLabel: 'Học thêm {remaining} câu {skillLabel}',
-    detailLabel: '{known}/{total} câu',
+    detailLabel: '{known}/{total}',
     skillLabels: { civics: 'Civics', whatmean: 'What Mean', yesno: 'Yes/No', writing: 'Viết' },
     cta: {
       civics: 'Học Civics',
@@ -1077,13 +1077,13 @@ export const vi = {
       speakingMock: 'Thi thử Speaking',
       civicsMock: 'Thi thử Civics',
     },
-    writingMockLabel: 'Đậu bài thi thử Viết gần nhất',
-    speakingMockLabel: 'Đậu bài thi thử Speaking gần nhất',
-    civicsMockLabel: 'Đậu {streak} bài thi thử Civics gần nhất',
+    writingMockLabel: 'Đậu thi thử Viết gần nhất',
+    speakingMockLabel: 'Đậu thi thử Speaking gần nhất',
+    civicsMockLabel: 'Đậu {streak} thi thử Civics gần nhất',
     statusPassed: 'Đã đậu',
     statusFailed: 'Chưa đậu',
     statusNotTaken: 'Chưa thi',
-    civicsMockDetail: '{passes}/{streak} lần đậu',
+    civicsMockDetail: '{passes}/{streak}',
   },
   quiz: {
     avgAccuracyLabel: 'Độ chính xác trung bình',
