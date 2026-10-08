@@ -38,8 +38,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) return;
     if (new URLSearchParams(window.location.search).get('updated') !== '1') return;
-    reloadAddress();
-    setIsAddressModalOpen(false);
+    // Close the editor once the fresh address is in: a callback, not the effect
+    // body, since setState inside an effect is a lint error here.
+    void reloadAddress().finally(() => setIsAddressModalOpen(false));
     window.history.replaceState(null, '', '/n400ready/profile');
   }, [user, reloadAddress]);
 

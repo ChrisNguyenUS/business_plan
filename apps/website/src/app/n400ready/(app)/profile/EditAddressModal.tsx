@@ -1,12 +1,11 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Info, ArrowRight, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { AddressAutocomplete, type AddressSelection } from '@/components/n400/AddressAutocomplete';
@@ -73,15 +72,20 @@ export function EditAddressModal({
 
   const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
 
-  // Reset internal state if the modal is reopened or prefill changes
-  useEffect(() => {
-    if (isOpen) {
+  // Reset internal state when the modal opens, or when the prefill changes while
+  // it is open. Adjusted during render (React's "storing information from previous
+  // renders" pattern): setState inside an effect is a lint error here.
+  const resetKey = isOpen ? JSON.stringify([prefillCity, prefillState, prefillZip]) : null;
+  const [lastResetKey, setLastResetKey] = useState(resetKey);
+  if (resetKey !== lastResetKey) {
+    setLastResetKey(resetKey);
+    if (resetKey !== null) {
       setCity(prefillCity);
       setStateCode(prefillState);
       setZip(prefillZip);
       setCoords(null);
     }
-  }, [isOpen, prefillCity, prefillState, prefillZip]);
+  }
 
   const handleAutocompleteSelect = (s: AddressSelection) => {
     setCity(s.city);
