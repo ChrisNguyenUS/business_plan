@@ -252,3 +252,12 @@ Mỗi migration và mỗi thay đổi logic là commit riêng.
 - Duyệt câu chữ ghi chú "Chưa lưu được kết quả phần Civics" (EN/VI, §2.4).
 - Chạy thử Phỏng vấn đầy đủ sau khi deploy R3a (§4).
 - Các Gate S2/S3/S4 về giọng nói vẫn đang chờ, độc lập với spec này.
+
+## 8. Kiểm chứng bổ sung sau review (2026-10-08)
+
+Review cuối (minor #5) chỉ ra ma trận tương đương chưa thử INSERT của admin trên 9 bảng tra cứu/cấu hình, và chưa thử UPDATE ghi giá trị mới. Một khối `DO` tự rollback trên prod (sau `n400_38`) cho kết quả:
+
+- INSERT vào `n400_questions`, `n400_answers`, `n400_location_answers`, `n400_state_data`, `n400_representatives`, `n400_badges`, `n400_growth_rules`, `n400_cta_definitions`, `n400_prompt_definitions`: **client và staff bị chặn ở cả 9 bảng (42501); admin qua RLS ở cả 9** (8 bảng thêm được; `n400_questions` dừng ở ràng buộc trùng khóa 23505, tức là đã qua RLS).
+- Owner đổi `user_id` của dòng mình sang user khác (`n400_section_attempts`, `n400_user_profile`): **bị chặn** (WITH CHECK).
+- Sửa nội dung `n400_questions`: admin sửa được 1 dòng; client không chạm được dòng nào.
+- Không để lại dữ liệu thừa.
