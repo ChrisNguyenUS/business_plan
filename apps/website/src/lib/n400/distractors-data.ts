@@ -611,7 +611,7 @@ export const N400_DISTRACTORS: Record<number, N400Distractor[]> = {
   ],
   87: [
     { en: "First president of the United States", vi: "Tổng thống đầu tiên của Hoa Kỳ" },
-    { en: "\"Father of the Constitution\"", vi: "\"Cha đẻ của Hiến pháp\"" },
+    { en: "Father of the Constitution", vi: "Cha đẻ của Hiến pháp" },
     { en: "First Secretary of the Treasury", vi: "Bộ trưởng Ngân khố đầu tiên" },
     { en: "Led the Union during the Civil War", vi: "Lãnh đạo Liên bang trong Nội chiến" },
     { en: "First Postmaster General", vi: "Tổng Giám đốc Bưu điện đầu tiên" },
@@ -626,7 +626,7 @@ export const N400_DISTRACTORS: Record<number, N400Distractor[]> = {
   89: [
     { en: "First president of the United States", vi: "Tổng thống đầu tiên của Hoa Kỳ" },
     { en: "Wrote the Declaration of Independence", vi: "Viết Tuyên ngôn Độc lập" },
-    { en: "\"Father of the Constitution\"", vi: "\"Cha đẻ của Hiến pháp\"" },
+    { en: "Father of the Constitution", vi: "Cha đẻ của Hiến pháp" },
     { en: "Chief Justice of the Supreme Court", vi: "Chánh án Tòa án Tối cao" },
     { en: "Discovered electricity", vi: "Khám phá ra điện" },
   ],
