@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { StateCode } from './state-data';
 import { nextStreak, milestoneCrossed } from './storage';
-import { mockQuestionAttemptRows, mockQuizAttemptRow, practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type AnswerMode } from './attempt-row';
+import { practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type AnswerMode } from './attempt-row';
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
@@ -369,7 +369,7 @@ function useN400UserStateInternal() {
       });
 
       // Practice/flashcard answers persist via a one-row quiz attempt envelope.
-      // Mock test uses recordMockResult below, which writes a single attempt row.
+      // Civics mock results are written by the server (the finalize RPCs).
       const { data: quiz, error: qErr } = await supabase
         .from('n400_quiz_attempts')
         .insert(practiceAttemptRow(user.id, mode, wasCorrect, answerMode, new Date().toISOString()))
@@ -517,45 +517,6 @@ function useN400UserStateInternal() {
     [recordSectionAnswer]
   );
 
-  const recordMockResult = useCallback(
-    async (result: MockResult, answerMode: AnswerMode = 'choice') => {
-      if (!user) return;
-      const today = TODAY_LOCAL();
-      const newStreak = nextStreak(state.streak, today);
-      setState((s) => ({
-        ...s,
-        mockResults: [...s.mockResults, result].slice(-100),
-        streak: newStreak,
-      }));
-
-      const { data: quiz, error: qErr } = await supabase
-        .from('n400_quiz_attempts')
-        .insert(mockQuizAttemptRow(user.id, result, answerMode))
-        .select('id')
-        .single();
-      if (qErr || !quiz) {
-        console.error('n400: recordMockResult (quiz) failed', qErr);
-        return;
-      }
-      if (result.questionResults.length > 0) {
-        const rows = mockQuestionAttemptRows(quiz.id, result.questionResults);
-        const { error: aErr } = await supabase.from('n400_question_attempts').insert(rows);
-        if (aErr) console.error('n400: recordMockResult (answers) failed', aErr);
-      }
-      await supabase.from('n400_user_profile').upsert(
-        {
-          user_id: user.id,
-          current_streak: newStreak.current,
-          longest_streak: newStreak.longest,
-          last_activity_date: newStreak.lastActivityDate,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
-    },
-    [user, state.streak]
-  );
-
   // A Civics mock finalized server-side (the Full interview's Civics part, RLS
   // hardening spec §2.4): the RPC already wrote the attempt and stamped the
   // streak, so this only brings local state in line until the next full load.
@@ -643,7 +604,6 @@ function useN400UserStateInternal() {
     setFlashcardKnown,
     recordSectionAnswer,
     setSectionKnown,
-    recordMockResult,
     noteMockResult,
     recordSectionMockResult,
     resetAll,

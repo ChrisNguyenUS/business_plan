@@ -31,4 +31,10 @@ describe('user-state writes (RLS hardening spec §2.4, §2.6)', () => {
   it('exposes noteMockResult', () => {
     expect(src).toMatch(/\n {4}noteMockResult,\n/);
   });
+
+  it('never writes a mock_test attempt from the browser (n400_37 relies on it)', () => {
+    expect(src).not.toContain('recordMockResult');
+    expect(src).not.toContain('mockQuizAttemptRow');
+    expect(src).not.toContain('mockQuestionAttemptRows');
+  });
 });
