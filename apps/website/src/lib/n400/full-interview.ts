@@ -8,15 +8,14 @@ import { YESNO_QUESTIONS } from './yesno-data';
 import { WRITING_SENTENCES, type WritingSentence } from './writing-data';
 import { buildWhatMeanOptions } from './whatmean-options';
 import {
-  buildOptions,
   correctAnswersFor,
-  selectMockTestQuestions,
   shuffle,
   questionAudioUrl,
   whatMeanQuestionAudioUrl,
   whatMeanAnswerAudioUrl,
   yesNoAudioUrl,
 } from './quiz-engine';
+import { civicsMockSlides } from './civics-mock-slides';
 import type { StateCode } from './state-data';
 import type { MCQuestion } from '@/components/n400/speaking/SectionMCQuiz';
 import type { N400Dict } from './i18n/vi';
@@ -35,7 +34,7 @@ export function buildCivicsPhase(
   districtNumber: number | null,
   dict: N400Dict,
 ): MCQuestion[] {
-  return selectMockTestQuestions(seed).map((q, i) => {
+  return civicsMockSlides('full', seed, stateCode, districtNumber).map(({ question: q, options }) => {
     const located = correctAnswersFor(q, stateCode, districtNumber);
     const accepted =
       located.length > 0 ? located : q.answersEn.map((en, j) => ({ en, vi: q.answersVi[j] ?? en }));
@@ -46,7 +45,7 @@ export function buildCivicsPhase(
       headerVi: q.questionVi,
       questionAudioSrc: questionAudioUrl(q.id),
       answerAudioSrc: null,
-      options: buildOptions(q, stateCode, `full-${seed}-${i}`, districtNumber),
+      options,
       accepted,
     };
   });

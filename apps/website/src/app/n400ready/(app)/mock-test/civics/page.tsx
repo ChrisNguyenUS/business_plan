@@ -46,15 +46,14 @@ import { useN400Badges } from '@/lib/n400/use-badges';
 import { trackMockTestStart, trackOralAnswer, trackStreakMilestone } from '@/lib/n400/analytics';
 import { micErrorEvent, mockAnswerEvents } from '@/lib/n400/oral/oral-events';
 import {
-  buildOptions,
   correctAnswersFor,
-  selectMockTestQuestions,
   questionAudioUrl,
   isPass,
   MOCK_TEST_QUESTION_COUNT,
   MOCK_TEST_PASS_THRESHOLD,
   type QuizOption,
 } from '@/lib/n400/quiz-engine';
+import { civicsMockSlides } from '@/lib/n400/civics-mock-slides';
 import { N400_QUESTIONS_BY_ID, type N400Question } from '@/lib/n400/questions-data';
 import {
   startMockAttempt,
@@ -237,19 +236,13 @@ function MockTestPageInner() {
     const seed = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const stateCode = state.settings.stateCode;
     const districtNumber = state.address.districtNumber;
-    // Skip Q29 (your U.S. Representative) when district is unresolved —
-    // mirrors the same filter inside startMockAttempt.
-    const questions = selectMockTestQuestions(seed).filter(
-      (q) => q.id !== 29 || districtNumber !== null,
+    // Q29 is skipped without a district inside the shared builder (spec §2.1).
+    const built: PublicSlide[] = civicsMockSlides('civics', seed, stateCode, districtNumber).map(
+      ({ question, options }) => ({
+        questionId: question.id,
+        options: options.map((o) => ({ id: o.id, en: o.en, vi: o.vi })),
+      }),
     );
-    const built: PublicSlide[] = questions.map((q) => ({
-      questionId: q.id,
-      options: buildOptions(q, stateCode, `mock-${seed}-${q.id}`, districtNumber).map((o) => ({
-        id: o.id,
-        en: o.en,
-        vi: o.vi,
-      })),
-    }));
 
     setAttemptId(null);
     setSlides(built);
