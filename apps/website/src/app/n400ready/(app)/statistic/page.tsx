@@ -16,7 +16,6 @@ import { useMemo } from 'react';
 import {
   ArrowRight,
   BookOpen,
-  Check,
   ChevronRight,
   ClipboardCheck,
   FileCheck2,
@@ -31,7 +30,6 @@ import { ProgressTabs } from '@/components/n400/progress/ProgressTabs';
 import { useN400UserState } from '@/lib/n400/user-state';
 import {
   deriveReadiness,
-  isMockCriterion,
   type ReadinessCriterion,
   type ReadinessCriterionId,
 } from '@/lib/n400/readiness';
@@ -71,42 +69,6 @@ const CRITERION_STYLE: Record<ReadinessCriterionId, { Icon: LucideIcon; iconBg: 
   speaking_mock: { Icon: Mic, iconBg: 'bg-orange-50', iconText: 'text-orange-500' },
   civics_mock: { Icon: ClipboardCheck, iconBg: 'bg-yellow-50', iconText: 'text-yellow-600' },
 };
-
-/**
- * Encouraging, never punitive: ○ not started · ◔ in progress · ✓ done. The
- * in-progress state is a real arc so partial work still reads as forward motion.
- * No red anywhere — an unmet milestone is calm slate, not a failure.
- */
-function StatusRing({ progress, met }: { progress: number; met: boolean }) {
-  if (met) {
-    return (
-      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-teal-500 text-white">
-        <Check size={10} strokeWidth={3} />
-      </span>
-    );
-  }
-  if (progress <= 0) {
-    return <span className="block size-4 shrink-0 rounded-full border-2 border-slate-200" />;
-  }
-  const radius = 8;
-  const circumference = 2 * Math.PI * radius;
-  const dash = Math.max(0.06, Math.min(progress, 1)) * circumference;
-  return (
-    <svg viewBox="0 0 20 20" className="size-4 shrink-0 -rotate-90" aria-hidden>
-      <circle cx="10" cy="10" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="3" />
-      <circle
-        cx="10"
-        cy="10"
-        r={radius}
-        fill="none"
-        stroke="#0d9488"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeDasharray={`${dash} ${circumference}`}
-      />
-    </svg>
-  );
-}
 
 export default function StatisticPage() {
   const { dict, lang } = useN400Lang();
@@ -250,7 +212,6 @@ export default function StatisticPage() {
           {readiness.criteria.map((c: ReadinessCriterion) => {
             const style = CRITERION_STYLE[c.id];
             const Icon = style.Icon;
-            const isMock = isMockCriterion(c.id);
             const pct = Math.round(c.progress * 100);
             return (
               <li key={c.id} className="rounded-xl px-1 py-2 transition-colors hover:bg-slate-50/70 sm:px-2">
@@ -258,7 +219,6 @@ export default function StatisticPage() {
                   <div className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${style.iconBg}`}>
                     <Icon size={16} className={style.iconText} />
                   </div>
-                  <StatusRing progress={c.progress} met={c.met} />
                   <span className={`min-w-0 flex-1 truncate text-sm font-bold ${c.met ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                     {c.label}
                   </span>
@@ -268,9 +228,6 @@ export default function StatisticPage() {
                   <div className="min-w-0 flex-1">
                     <ProgressBar progress={pct} colorClass="bg-teal-500" heightClass="h-1" />
                   </div>
-                  {isMock ? null : (
-                    <span className="w-8 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">{pct}%</span>
-                  )}
                   {c.met ? null : (
                     <Link
                       href={`${base}${c.cta.href}`}
