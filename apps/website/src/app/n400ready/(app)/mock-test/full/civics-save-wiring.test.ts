@@ -32,8 +32,18 @@ describe('Full interview Civics part is graded by the server (spec §2.4)', () =
     expect(save).not.toContain('pendingStart.current');
   });
 
-  it('ignores a save that settles after a newer run started (Review Focus 2)', () => {
-    expect(page).toContain('if (runToken.current !== run) return;');
+  it("a save that settles after a newer run started keeps off the new run's screen (Review Focus 2)", () => {
+    expect(page).toContain('const onScreen = runToken.current === run;');
+    expect(page).toContain('if (onScreen) setCivicsSaveStatus(status);');
+    expect(page).toMatch(
+      /if \(onScreen\) \{\s*setCivics\(\{ correct: r\.score, total: r\.total, passed: r\.passed \}\);\s*setCivicsAnswerList\(reviewed\);\s*\}/,
+    );
+  });
+
+  it('a save that settles after a restart still reaches local history (final review #2)', () => {
+    const cb = page.slice(page.indexOf('civicsSave.current = startCivicsSave(save,'), page.indexOf("if (phase.kind === 'civics')"));
+    expect(cb).not.toContain('if (runToken.current !== run) return;');
+    expect(cb).toContain('// The server saved this run either way, so local history records it.\n      noteMockResult(');
   });
 
   it('opening the summary gives a failed save its one retry, and the note shows when unsaved', () => {

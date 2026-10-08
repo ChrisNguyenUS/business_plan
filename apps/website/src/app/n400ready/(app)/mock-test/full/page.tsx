@@ -308,14 +308,19 @@ export default function FullInterviewPage() {
       return { id, r };
     };
     civicsSave.current = startCivicsSave(save, (status, saved) => {
-      if (runToken.current !== run) return; // a newer run started
-      setCivicsSaveStatus(status);
+      // A newer run owns the screen; a save that lands after a restart only
+      // reaches history.
+      const onScreen = runToken.current === run;
+      if (onScreen) setCivicsSaveStatus(status);
       if (status !== 'saved' || !saved) return;
       const { id, r } = saved;
       const verdicts = serverVerdicts(submission, r);
       const reviewed = answers.map((a) => ({ ...a, wasCorrect: verdicts.get(a.questionId) ?? false }));
-      setCivics({ correct: r.score, total: r.total, passed: r.passed });
-      setCivicsAnswerList(reviewed);
+      if (onScreen) {
+        setCivics({ correct: r.score, total: r.total, passed: r.passed });
+        setCivicsAnswerList(reviewed);
+      }
+      // The server saved this run either way, so local history records it.
       noteMockResult(
         {
           id,
