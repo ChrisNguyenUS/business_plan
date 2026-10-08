@@ -27,6 +27,7 @@
 - [ ] **Growth G4 v2** (`apps/internal_app/`): hộp yêu cầu tư vấn, Convert to Client, báo Sales-Ready.
 - [ ] **RLS cho internal_app và `profiles`:** advisor còn báo initplan và policy trùng; `is_ultimate_admin` (search_path chưa cố định, anon gọi được). Nằm ngoài phần RLS N400 đã làm.
 - [ ] **EB-3:** gửi số Zalo vào CAPI dạng số điện thoại (số VN dạng 0xx không có mã quốc gia, cần chuẩn hóa theo vị trí).
+- [ ] **Dọn nhánh trên GitHub** (cần bạn OK — xóa nhánh remote không hoàn tác bằng một lệnh): 5 nhánh đã merge hết vào `main`, xóa không mất gì: `feat/flashcards-bookmark-merge`, `feat/n400-growth-g4-leads`, `feat/n400ready-i18n`, `feat/website-eb3`, `fix/dashboard-routing-fix`. Nhánh bot `vercel/install-vercel-web-analytics-ry1auw` (16/04, commit `e3874434`) **không merge**: `@vercel/analytics` đã gắn trong `[locale]/layout.tsx` và `n400ready/layout.tsx`, nhánh này gắn thêm ở layout gốc → mỗi lượt xem trang có thể bị đếm hai lần.
 - [x] **Dọn code website** (2026-10-08): eslint trên `apps/website` không còn cảnh báo nào (6 biến/import chưa từng được dùng đã bỏ; cái thứ 7 là `useState` trong Sidebar, đã hết từ `9b5bd265`); `mobile-layout.test.ts` hết đỏ (bám số cột của trang Chi tiết, không bám khoảng cách nữa). Suite chạy đủ, không cần `--exclude`.
 
 > **Track scope:**
