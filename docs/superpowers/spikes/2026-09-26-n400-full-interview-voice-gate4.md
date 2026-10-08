@@ -14,8 +14,8 @@
 | 7 | Any | **Trắc nghiệm** run works exactly as before; the choice is remembered on the next visit | |
 | 8 | Mac Chrome (Incognito) | Items 1–3 and 5 | |
 | 9 | Facebook in-app iOS | The intro offers voice; both parts use the typed box | |
-| 10 | Any | DB: the Civics part's `n400_quiz_attempts.answer_mode` = voice and its `n400_question_attempts` rows have the words; the Speaking part's `n400_section_mock_results.answer_mode` = voice; a choice run writes neither | |
-| 11 | Any | Privacy Policy §8 (EN + VI): "civics and interview questions", "For Civics mock tests" | |
+| 10 | Any | DB: the Civics part's `n400_quiz_attempts.answer_mode` = voice and its `n400_question_attempts` rows have the words; the Speaking part's `n400_section_mock_results.answer_mode` = voice; a choice run writes neither | Not yet checkable (2026-10-07): no mock run of any kind since 2026-09-26. Re-run the query after the device pass |
+| 11 | Any | Privacy Policy §8 (EN + VI): "civics and interview questions", "For Civics mock tests" | ✅ Live on prod, EN + VI (/en and /vi privacy-policy, checked 2026-10-07) |
 
 ## Decision (owner)
 
