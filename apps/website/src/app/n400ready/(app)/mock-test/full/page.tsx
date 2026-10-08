@@ -287,11 +287,16 @@ export default function FullInterviewPage() {
     const answers = [...civicsAnswers.current];
     const submission = fullCivicsSubmission(runMode, civicsInputs.current);
     const startedAtIso = startedAt.current;
+    // This run's start, captured before anything is awaited: a restart replaces
+    // the refs, and a late retry must never finalize (or create) the next run's
+    // attempt.
+    const startPromise = attemptIdPromise.current;
+    const startArgs = pendingStart.current;
     let attemptId: string | null = null;
     const save = async () => {
       if (!attemptId) {
-        attemptId = attemptIdPromise.current ? await attemptIdPromise.current.catch(() => null) : null;
-        if (!attemptId && pendingStart.current) attemptId = (await startMockAttempt(pendingStart.current)).attemptId;
+        attemptId = startPromise ? await startPromise.catch(() => null) : null;
+        if (!attemptId && startArgs) attemptId = (await startMockAttempt(startArgs)).attemptId;
         if (!attemptId) throw new Error('n400: Full interview Civics attempt never registered');
       }
       const id = attemptId;

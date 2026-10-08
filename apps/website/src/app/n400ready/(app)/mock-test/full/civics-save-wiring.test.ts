@@ -20,7 +20,16 @@ describe('Full interview Civics part is graded by the server (spec §2.4)', () =
   });
 
   it('retries a failed background start once inside the save (Review Focus 1)', () => {
-    expect(page).toContain('(await startMockAttempt(pendingStart.current)).attemptId');
+    expect(page).toContain('(await startMockAttempt(startArgs)).attemptId');
+  });
+
+  it("a late save only ever uses its own run's start, never the next run's (final review #1)", () => {
+    const finish = page.slice(page.indexOf('const finishCivics = () => {'), page.indexOf("if (phase.kind === 'civics')"));
+    expect(finish).toContain('const startPromise = attemptIdPromise.current;');
+    expect(finish).toContain('const startArgs = pendingStart.current;');
+    const save = finish.slice(finish.indexOf('const save = async () => {'));
+    expect(save).not.toContain('attemptIdPromise.current');
+    expect(save).not.toContain('pendingStart.current');
   });
 
   it('ignores a save that settles after a newer run started (Review Focus 2)', () => {
