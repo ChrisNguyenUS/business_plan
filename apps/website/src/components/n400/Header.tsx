@@ -43,6 +43,7 @@ function buildTitles(dict: N400Dict): Record<string, { title: string; subtitle?:
       subtitle: dict.header.statisticSubtitle,
     },
     profile: { title: dict.header.profileTitle },
+    settings: { title: dict.header.settings },
     categories: {
       title: dict.header.categoriesTitle,
       subtitle: dict.header.categoriesSubtitle,
@@ -92,6 +93,7 @@ function buildMockSubroutes(dict: N400Dict): Record<string, { title: string; sub
  */
 const PARENT_MAP: Record<string, string> = {
   profile: '',
+  settings: '',
   categories: '',
   help: '',
   setup: '',

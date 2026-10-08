@@ -26,7 +26,6 @@ import {
   ClipboardCheck,
   GraduationCap,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import type { N400Dict } from '@/lib/n400/i18n/vi';
@@ -182,7 +181,7 @@ export function Sidebar() {
       <div className="p-4 border-t border-gray-100 space-y-4">
         <div className="flex items-center justify-between px-2 text-sm text-gray-500 pb-2">
           <Link
-            href={`${base}/profile`}
+            href={`${base}/settings`}
             className="flex items-center gap-2 hover:text-gray-800"
           >
             <Settings size={16} /> {dict.header.settings}

@@ -118,7 +118,7 @@ export function EditAddressModal({
         )}
 
         <form action={formAction} className="space-y-4">
-          <input type="hidden" name="from" value="profile" />
+          <input type="hidden" name="from" value="settings" />
           
           <div>
             <label htmlFor="street-autocomplete" className="block text-xs font-semibold text-slate-700 mb-1">

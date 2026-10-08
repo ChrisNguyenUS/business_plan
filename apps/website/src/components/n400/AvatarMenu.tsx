@@ -171,7 +171,7 @@ export function AvatarMenu() {
 
           {/* Utilities — desktop + mobile */}
           <Link
-            href={`${base}/profile`}
+            href={`${base}/settings`}
             role="menuitem"
             tabIndex={-1}
             onClick={close}
