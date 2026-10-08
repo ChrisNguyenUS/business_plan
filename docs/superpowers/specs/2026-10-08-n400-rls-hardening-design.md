@@ -88,7 +88,7 @@ export function civicsMockAnswerKey(slides: readonly CivicsMockSlide[]): { qid: 
 ### 2.2 `startMockAttempt({ kind, seed, stateCode, districtNumber })`
 
 - Xác thực user bằng `getUser()` (như hiện nay).
-- Kiểm tra đầu vào: `kind ∈ {'civics','full'}`; seed là chuỗi 1–64 ký tự; district là số nguyên hoặc `null` (như hiện nay); **mới:** `stateCode` phải có trong `STATES_BY_CODE`.
+- Kiểm tra đầu vào: `kind ∈ {'civics','full'}`; seed là chuỗi 1–64 ký tự; district là số nguyên hoặc `null` (như hiện nay); `stateCode` là chuỗi 1–8 ký tự. **Không** lọc `stateCode` theo `STATES_BY_CODE` (sửa 2026-10-08 khi viết plan): `profiles.state_code` lấy thẳng từ Geoapify, không được lọc khi lưu, và `buildOptions` có fallback cho mã lạ. Server phải dựng đáp án bằng **đúng** mã client đã dùng; nếu lọc thì user có mã lạ sẽ không bắt đầu thi được nữa.
 - Insert attempt bằng **service-role client** với `user_id` đã xác thực: `{ user_id, mode: 'mock_test', total_questions: key.length, slide_manifest: key, started_at }`. Sau `n400_37`, đây là **cách duy nhất** để có dòng `mock_test`.
 - Trả về `{ attemptId, startedAt }` như cũ.
 
