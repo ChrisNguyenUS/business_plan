@@ -8,6 +8,27 @@
 - [x] N400 Civics oral answers — answer civics questions by voice (Web Speech API, keyword grading against the taught answer). Practice [Trắc nghiệm | Tự nói] plus a voice mock that counts; iPhone uses one persistent session with 🔊 through Web Audio; typed fallback for in-app browsers; `n400_oral_answer` GA4 event; Privacy Policy voice section. Flags `voice_practice` + `voice_mock` ON 100%, `voice_android` OFF (specs/2026-09-24-n400-civics-oral-answers-design.md, rev 3.15)
 - [x] N400 RLS hardening — R1 `n400_35` (internal SECURITY DEFINER functions no longer callable by anon/clients: `n400_emit_growth_event` let anyone write growth events for any user), R3 every Civics mock graded and written by the server (standalone + the Full interview's Civics part via `startMockAttempt(kind)` with the service role; `n400_37` write lockdown closed four ways to forge a pass + CAPI; CAPI stays standalone-only), Reset really wipes progress (`n400_36` RPC), R2 `n400_38` every `n400_*` policy rewritten for one auth evaluation per query and one policy per action, FK indexes; access proven unchanged by a before/after matrix (specs/2026-10-08-n400-rls-hardening-design.md)
 
+## 📌 Việc cần làm (cập nhật 2026-10-08)
+
+**Bạn (owner) làm:**
+- [ ] **Gate S2** — luyện Speaking bằng giọng: còn các dòng 2, 3, 5, 6, 8, phần 🔊 chậm của dòng 4 và phần còn lại của dòng 7 → `docs/superpowers/spikes/2026-09-25-n400-speaking-practice-gate2.md`
+- [ ] **Gate S3** — Thi thử Speaking bằng giọng (9 dòng) → `docs/superpowers/spikes/2026-09-26-n400-speaking-mock-gate3.md`
+- [ ] **Gate S4** — Phỏng vấn đầy đủ "Toàn bộ bằng giọng": dòng 1–9 (dòng 10–11 đã xong) → `docs/superpowers/spikes/2026-09-26-n400-full-interview-voice-gate4.md`. Khi cả 3 gate đạt: thêm dòng ROADMAP cho Speaking + Full interview voice.
+- [ ] **Supabase Dashboard:** bật Facebook OAuth (chưa có tài khoản Facebook nào đăng nhập); bật Leaked password protection.
+- [ ] **GA4:** đăng ký custom dimensions cho sự kiện `n400_oral_answer` (nếu chưa làm).
+- [ ] **Máy tính:** dọn ổ đĩa (còn khoảng 370 MB trống; build và worktree dễ lỗi).
+- [ ] **EB-3, trước khi chạy quảng cáo:**
+  - duyệt câu chữ Privacy Policy về việc chia sẻ dữ liệu với đối tác/luật sư (không nêu tên đối tác; đã có bản nháp);
+  - chạy thử trên prod 1 lead VN + 1 lead US: kiểm tra row Supabase, email cho staff, Meta Test Events `Lead`, rồi xóa row thử;
+  - luật sư đối tác duyệt 3 câu chữ trong `messages/{vi,en}.json`: `eb3.faq[3]`, `eb3.where_us_desc`, `eb3.steps[1].desc`;
+  - phía kinh doanh: Messenger auto-reply cho `ref=eb3`; có người phụ trách cam kết "phản hồi trong 48h"; link quảng cáo gắn UTM `utm_campaign=eb3`.
+
+**Dev (mình làm khi bạn chọn):**
+- [ ] **Growth G4 v2** (`apps/internal_app/`): hộp yêu cầu tư vấn, Convert to Client, báo Sales-Ready.
+- [ ] **RLS cho internal_app và `profiles`:** advisor còn báo initplan và policy trùng; `is_ultimate_admin` (search_path chưa cố định, anon gọi được). Nằm ngoài phần RLS N400 đã làm.
+- [ ] **EB-3:** gửi số Zalo vào CAPI dạng số điện thoại (số VN dạng 0xx không có mã quốc gia, cần chuẩn hóa theo vị trí).
+- [ ] **Dọn code website:** 7 cảnh báo eslint (biến/import không dùng); test `mobile-layout.test.ts` đang fail sẵn (đọc source trang Tiến độ).
+
 > **Track scope:**
 > - **Track 1** — SDLC 8-phase framework, áp dụng cho **Internal App** (`apps/internal_app/`).
 > - **Track 2** — Feature rollout của **Website** (`apps/website/` = MannaOS.com).
