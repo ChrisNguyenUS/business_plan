@@ -12,7 +12,7 @@ import {
   N400_CATEGORY_LABELS,
   type N400CategoryKey,
 } from '@/lib/n400/questions-data';
-import { questionAudioUrl, answerAudioUrlFor, correctAnswersFor } from '@/lib/n400/quiz-engine';
+import { questionAudioUrl, correctAnswersFor } from '@/lib/n400/quiz-engine';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
 import { tFormat } from '@/lib/n400/i18n/format';
 

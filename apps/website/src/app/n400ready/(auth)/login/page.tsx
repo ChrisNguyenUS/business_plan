@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { useN400Lang } from '@/lib/n400/i18n/provider';
@@ -87,7 +87,6 @@ export default function N400LoginPage() {
 }
 
 function N400LoginScreen() {
-  const router = useRouter();
   const { signIn, signInWithOAuth } = useAuth();
   const { lang, dict } = useN400Lang();
   const t = dict.login;
