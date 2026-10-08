@@ -1,6 +1,6 @@
 # N400 Civics — Oral Answers (speech-to-text) Design
 
-**Date:** 2026-09-25 (rev 3.16 — stall phrases dropped from transcripts, negations never near-match (filler sweep); rev 3.15 — Slice 4: `not` never near-matches, `n400_oral_answer`, Privacy Policy voice section; rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
+**Date:** 2026-10-08 (rev 3.17 — Q37 alias `prevent powerful`: "to prevent the president from becoming too powerful" is correct (owner, D10); rev 3.16 — stall phrases dropped from transcripts, negations never near-match (filler sweep); rev 3.15 — Slice 4: `not` never near-matches, `n400_oral_answer`, Privacy Policy voice section; rev 3.14 — hub entry shows the mock intro when voice is available; rev 3.13 — practice always opens in Trắc nghiệm; rev 3.12 — 🔊 through Web Audio while an iOS mic session runs; rev 3.11 — typed fallback after 4 silent attempts (owner); rev 3.10 — mic runs through 🔊 (owner), auto-restart after lost capture; rev 3.9 — stop before 🔊 (rejected); rev 3.8 — keep after 🔊 (superseded); rev 3.7 — restart after 🔊 (withdrawn); rev 3.6 — warm up before 🔊 (replaced); rev 3.5 — iPhone persistent recognition session (D15), after on-device diagnosis; rev 3.4 — Slice 3 design: service-role finalize, mixed items, typed mock input; rev 3.3 — Gate 0 device-spike findings, see docs/superpowers/spikes/2026-09-24-n400-voice-spike-results.md; rev 3.2 — Gate 1 owner decisions after final code review; rev 3.1 — after two PO reviews + grading prototype on real data)
 **App:** `apps/website/` (N400Ready, `/n400ready`)
 **Status:** Approved in brainstorming; rev 3 approved for planning
 
@@ -107,6 +107,8 @@ Pure, deterministic, runs identically on client (practice) and server (mock).
 | 20 | Writes laws | I think the president writes laws | correct |
 | 37 | To keep the president from becoming too powerful | to keep him from being too powerful | correct |
 | 37 | To keep the president from becoming too powerful | so the president is not too powerful | near (only `powerful`; `president` is in the question) |
+| 37 | To keep the president from becoming too powerful | to prevent the president from becoming too powerful (alias, rev 3.17) | correct |
+| 37 | To keep the president from becoming too powerful | to prevent war | near (only `prevent`, like "to keep war") |
 | 38 | Donald Trump | trump | correct |
 | 16 | Congress, president, and the courts | congress and the president | near |
 | 16 | Congress, president, and the courts | congress congress congress | wrong |

@@ -20,6 +20,8 @@ describe('spec §3.3 reference table', () => {
     [20, 'I think the president writes laws', 'correct'],
     [37, 'to keep him from being too powerful', 'correct'],
     [37, 'so the president is not too powerful', 'near'],
+    [37, 'to prevent the president from becoming too powerful', 'correct'],
+    [37, 'to prevent war', 'near'],
     [38, 'trump', 'correct'],
     [16, 'congress and the president', 'near'],
     [16, 'congress congress congress', 'wrong'],

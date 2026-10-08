@@ -6,4 +6,6 @@
 export const ORAL_ALIASES: Readonly<Record<number, string[][]>> = {
   // Q4 — "self-government" is commonly explained as "people govern themselves"; `people` dropped by question-echo.
   4: [['govern themselves']],
+  // Q37 — "prevent … from becoming too powerful" is the everyday wording of the taught "keep … from"; owner-approved 2026-10-08 (D10).
+  37: [['prevent powerful']],
 };
