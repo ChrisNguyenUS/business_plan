@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, type ComponentType } from "react";
 import {
-  Save, CheckCircle, Type, Image as ImageIcon, LayoutGrid, DollarSign, ChevronUp, ChevronDown, Trash2, Plus, Info,
+  Save, CheckCircle, Type, Image as ImageIcon, LayoutGrid, DollarSign, ChevronUp, ChevronDown, Trash2, Plus,
   Globe, ShieldCheck, Award, Stamp, Star, Heart, Briefcase, Users, FileText, BadgeCheck, Scale, Building, TrendingUp, Handshake, Zap, Clock, MapPin
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";

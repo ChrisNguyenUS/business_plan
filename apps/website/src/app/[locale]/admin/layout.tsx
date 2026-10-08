@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { LayoutDashboard, Inbox, Users, Briefcase, FileText, Settings, Menu, X, ShieldAlert, GraduationCap } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
@@ -20,7 +20,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { profile, loading } = useAuth();
   const params = useParams();
   const pathname = usePathname();
-  const router = useRouter();
   const locale = params.locale as string;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

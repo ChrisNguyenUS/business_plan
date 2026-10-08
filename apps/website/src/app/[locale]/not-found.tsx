@@ -1,11 +1,7 @@
 import Link from "next/link";
-import type { Locale } from "@/lib/i18n/config";
-import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export default async function NotFound() {
+export default function NotFound() {
   // Default to English since we can't reliably get locale in not-found
-  const d = await getDictionary("en");
-
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
