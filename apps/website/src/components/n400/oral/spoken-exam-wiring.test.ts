@@ -100,7 +100,9 @@ describe('Phỏng vấn đầy đủ — voice run', () => {
   });
 
   it('records how each part was answered, and the Civics words (Review Focus 4)', () => {
-    expect(page).toContain('answerModeOf(civicsAnswers.current.map((a) => a.input))');
+    // The Civics part's answer_mode is now set by the voice finalize on the server
+    // (RLS hardening spec §2.4); the page sends the run's submission.
+    expect(page).toContain('fullCivicsSubmission(runMode, civicsInputs.current)');
     expect(page).toContain(
       "recordSectionMockResult('speaking', passed, correct, FULL_SPEAKING_COUNT, answerModeOf(speakingAnswers.current.map((a) => a.input)))",
     );

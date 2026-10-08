@@ -172,7 +172,7 @@ describe('N400 information architecture contracts', () => {
     expect(page).toContain('buildCivicsPhase');
     expect(page).toContain('buildSpeakingPhase');
     expect(page).toContain('buildWritingPhase');
-    expect(page).toContain('recordMockResult');
+    expect(page).toContain('noteMockResult(');
     expect(page).toContain("recordSectionMockResult('speaking'");
     expect(page).toContain("recordSectionMockResult('writing'");
   });

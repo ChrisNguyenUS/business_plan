@@ -926,6 +926,7 @@ export const en: N400Dict = {
       scoreSummary: 'You answered {score} out of {total} questions correctly.',
       sectionPassed: 'You passed this section',
       sectionRemaining: 'Need {remaining} more to pass',
+      civicsUnsaved: "Your Civics result couldn't be saved, so it won't appear in your history.",
       recommendCivicsTitle: 'Review {count} wrong Civics questions',
       recommendCivicsDescWithCategory:
         'Civics is your weakest section — most mistakes were in the {category} topic. Understand your mistakes before retaking.',

@@ -30,6 +30,7 @@ import ReviewAnswers, {
   type WritingAnswer,
 } from './ReviewAnswers';
 import { InterludeScreen } from './interview-chrome';
+import { finalizeMockAttempt, finalizeVoiceMockAttempt, startMockAttempt } from '../civics/actions';
 import { AnswerModeToggle, type PracticeAnswerMode } from '@/components/n400/oral/AnswerModeToggle';
 import type { ExamVoice } from '@/components/n400/oral/use-spoken-exam';
 import { answerModeOf } from '@/lib/n400/attempt-row';
@@ -38,6 +39,14 @@ import { useVoiceFlags } from '@/lib/n400/oral/use-voice-flags';
 import { captureOpen } from '@/lib/n400/oral/mock-voice-items';
 import { voiceInputFor } from '@/lib/n400/oral/voice-support';
 import { useN400UserState } from '@/lib/n400/user-state';
+import {
+  fullCivicsSubmission,
+  serverVerdicts,
+  startCivicsSave,
+  type CivicsSave,
+  type CivicsSaveStatus,
+  type FullCivicsInput,
+} from '@/lib/n400/full-civics-submit';
 import {
   FULL_CIVICS_COUNT,
   FULL_CIVICS_PASS,
@@ -69,16 +78,6 @@ type Phase =
   | { kind: 'writing' }
   | { kind: 'summary' }
   | { kind: 'review' };
-
-// Guarded id (same pattern as analytics' generateEventId): crypto.randomUUID
-// throws in non-secure contexts / older Safari, and this runs while the quiz
-// renders null — a throw there would strand the user on a blank screen.
-function generateAttemptId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
 
 const FULL_TOTAL_COUNT = FULL_CIVICS_COUNT + FULL_SPEAKING_COUNT + FULL_WRITING_COUNT;
 
@@ -150,7 +149,7 @@ function buildIntroRules(dict: N400Dict): { icon: LucideIcon; text: string }[] {
 export default function FullInterviewPage() {
   const { dict } = useN400Lang();
   const base = '/n400ready';
-  const { state, hydrated, recordMockResult, recordSectionMockResult } = useN400UserState();
+  const { state, hydrated, noteMockResult, recordSectionMockResult } = useN400UserState();
   const PARTS_COPY = buildPartsCopy(dict);
   const INTRO_CHIPS = buildIntroChips(dict);
   const INTRO_RULES = buildIntroRules(dict);
@@ -169,6 +168,15 @@ export default function FullInterviewPage() {
   const [speakingAnswerList, setSpeakingAnswerList] = useState<SpeakingAnswer[]>([]);
   const [writingAnswerList, setWritingAnswerList] = useState<WritingAnswer[]>([]);
   const startedAt = useRef<string>('');
+  // Server-graded Civics part (RLS hardening spec §2.4): the attempt registers
+  // at Bắt đầu and finalizes when the part ends. runToken tells a late save
+  // from an older run apart from the current one.
+  const civicsInputs = useRef<FullCivicsInput[]>([]);
+  const runToken = useRef(0);
+  const attemptIdPromise = useRef<Promise<string> | null>(null);
+  const pendingStart = useRef<Parameters<typeof startMockAttempt>[0] | null>(null);
+  const civicsSave = useRef<CivicsSave | null>(null);
+  const [civicsSaveStatus, setCivicsSaveStatus] = useState<CivicsSaveStatus | null>(null);
 
   // Voice (speaking spec §5.2): one choice at the start covers the Civics and
   // Speaking parts; Writing stays typed.
@@ -217,8 +225,14 @@ export default function FullInterviewPage() {
     // making the question set unpredictable across page loads. Randomizing only
     // here (in a client-side handler), not in useState, avoids SSR hydration
     // mismatch since the initial render stays deterministic at seed 0.
-    setSeed((s) => s + 1 + Math.floor(Math.random() * 1_000_000));
+    //
+    // The new value is computed here, not in a setSeed updater, because the
+    // Civics attempt registers with the same `full-${seed}` the quiz builds from.
+    const next = seed + 1 + Math.floor(Math.random() * 1_000_000);
+    setSeed(next);
+    runToken.current = next;
     civicsAnswers.current = [];
+    civicsInputs.current = [];
     setCivicsAnswerList([]);
     speakingAnswers.current = [];
     setSpeakingAnswerList([]);
@@ -229,6 +243,15 @@ export default function FullInterviewPage() {
     setCivics(null);
     setSpeaking(null);
     setWriting(null);
+    civicsSave.current = null;
+    setCivicsSaveStatus(null);
+    // Register the Civics attempt in the background; finishCivics awaits it and
+    // retries once if this call failed.
+    const args = { kind: 'full' as const, seed: `full-${next}`, stateCode, districtNumber };
+    pendingStart.current = args;
+    const p = startMockAttempt(args).then((r) => r.attemptId);
+    p.catch(() => {}); // surfaced when the part finalizes
+    attemptIdPromise.current = p;
     setPhase({ kind: 'civics' });
   };
 
@@ -257,6 +280,55 @@ export default function FullInterviewPage() {
     mic.noteAudioPlayed();
   };
 
+  // The part's result shows at once from the quiz; the server's verdicts replace
+  // it when the finalize lands, normally long before the summary (spec §2.4).
+  const finishCivics = () => {
+    const run = runToken.current;
+    const answers = [...civicsAnswers.current];
+    const submission = fullCivicsSubmission(runMode, civicsInputs.current);
+    const startedAtIso = startedAt.current;
+    let attemptId: string | null = null;
+    const save = async () => {
+      if (!attemptId) {
+        attemptId = attemptIdPromise.current ? await attemptIdPromise.current.catch(() => null) : null;
+        if (!attemptId && pendingStart.current) attemptId = (await startMockAttempt(pendingStart.current)).attemptId;
+        if (!attemptId) throw new Error('n400: Full interview Civics attempt never registered');
+      }
+      const id = attemptId;
+      const r =
+        submission.mode === 'voice'
+          ? await finalizeVoiceMockAttempt(id, submission.answers, 'full')
+          : await finalizeMockAttempt(id, submission.picks, 'full');
+      return { id, r };
+    };
+    civicsSave.current = startCivicsSave(save, (status, saved) => {
+      if (runToken.current !== run) return; // a newer run started
+      setCivicsSaveStatus(status);
+      if (status !== 'saved' || !saved) return;
+      const { id, r } = saved;
+      const verdicts = serverVerdicts(submission, r);
+      const reviewed = answers.map((a) => ({ ...a, wasCorrect: verdicts.get(a.questionId) ?? false }));
+      setCivics({ correct: r.score, total: r.total, passed: r.passed });
+      setCivicsAnswerList(reviewed);
+      noteMockResult(
+        {
+          id,
+          startedAt: startedAtIso,
+          completedAt: new Date().toISOString(),
+          score: r.score,
+          total: r.total,
+          passed: r.passed,
+          questionResults: reviewed.map(({ questionId, wasCorrect, transcript }) => ({
+            questionId,
+            wasCorrect,
+            ...(transcript !== undefined ? { transcript } : {}),
+          })),
+        },
+        { current: r.currentStreak, longest: r.longestStreak },
+      );
+    });
+  };
+
   if (phase.kind === 'civics') {
     return (
       <SectionMCQuiz
@@ -268,39 +340,27 @@ export default function FullInterviewPage() {
         mockMode="full"
         examSection={{ current: 1, total: 3, ...dict.mockTest.full.civicsSection }}
         examVoice={examVoice}
-        onAnswer={(itemId, ok, selected, _via, spoken) =>
+        onAnswer={(itemId, ok, selected, _via, spoken) => {
+          const questionId = Number(itemId.slice(4));
           civicsAnswers.current.push({
-            questionId: Number(itemId.slice(4)),
+            questionId,
             wasCorrect: ok,
             selectedEn: selected?.en,
             ...(spoken ? { transcript: spoken.transcript, input: spoken.input } : {}),
-          })
-        }
+          });
+          civicsInputs.current.push({
+            questionId,
+            ...(selected ? { selectedId: selected.id } : {}),
+            ...(spoken ? { spoken } : {}),
+          });
+        }}
         onComplete={({ correct }) => {
           const passed = correct >= FULL_CIVICS_PASS;
           setCivics({ correct, total: FULL_CIVICS_COUNT, passed });
           setCivicsAnswerList([...civicsAnswers.current]);
-          // Advance BEFORE recording so a recording throw can't strand the
-          // user on the quiz's null (skipSummary) render.
+          // Advance first; the server save runs in the background (spec §2.4).
           setPhase({ kind: 'interlude', next: 'speaking' });
-          void recordMockResult(
-            {
-              id: generateAttemptId(),
-              startedAt: startedAt.current,
-              completedAt: new Date().toISOString(),
-              score: correct,
-              total: FULL_CIVICS_COUNT,
-              passed,
-              // Persisted attempts keep the lean shape plus a voice answer's words
-              // (speaking spec §5.2) — selectedEn only feeds this session's review.
-              questionResults: civicsAnswers.current.map(({ questionId, wasCorrect, transcript }) => ({
-                questionId,
-                wasCorrect,
-                ...(transcript !== undefined ? { transcript } : {}),
-              })),
-            },
-            answerModeOf(civicsAnswers.current.map((a) => a.input)),
-          );
+          finishCivics();
         }}
         onExit={() => setPhase({ kind: 'intro' })}
         onRestart={begin}
@@ -361,6 +421,7 @@ export default function FullInterviewPage() {
           setWriting({ correct, total, passed });
           setWritingAnswerList(perItem);
           setPhase({ kind: 'summary' });
+          civicsSave.current?.retryIfFailed();
           void recordSectionMockResult('writing', passed, correct, total);
         }}
       />
@@ -390,6 +451,7 @@ export default function FullInterviewPage() {
         totalScore={totalScore}
         totalQuestions={totalQuestions}
         civicsAnswers={civicsAnswerList}
+        civicsUnsaved={civicsSaveStatus === 'unsaved'}
         onRetake={retake}
         onReviewAnswers={() => setPhase({ kind: 'review' })}
         basePath={base}

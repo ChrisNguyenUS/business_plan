@@ -925,6 +925,7 @@ export const vi = {
       scoreSummary: 'Bạn trả lời đúng {score} trên {total} câu hỏi.',
       sectionPassed: 'Đã vượt qua phần này',
       sectionRemaining: 'Cần thêm {remaining} câu để đạt',
+      civicsUnsaved: 'Chưa lưu được kết quả phần Civics, nên kết quả này sẽ không có trong lịch sử.',
       recommendCivicsTitle: 'Xem lại {count} câu Civics sai',
       recommendCivicsDescWithCategory:
         'Civics là phần yếu nhất của bạn — sai nhiều nhất ở chủ đề {category}. Hiểu rõ câu sai trước khi thi lại.',

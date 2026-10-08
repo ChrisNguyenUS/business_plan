@@ -38,6 +38,8 @@ interface MockTestResultProps {
   totalScore: number;
   totalQuestions: number;
   civicsAnswers: CivicsAnswer[];
+  /** The server could not save the Civics part (RLS hardening spec §2.4). */
+  civicsUnsaved?: boolean;
   onRetake: () => void;
   onReviewAnswers: () => void;
   basePath: string; // e.g. /n400ready
@@ -78,6 +80,7 @@ export default function MockTestResult({
   totalScore,
   totalQuestions,
   civicsAnswers,
+  civicsUnsaved = false,
   onRetake,
   onReviewAnswers,
   basePath,
@@ -219,6 +222,9 @@ export default function MockTestResult({
                     ? dict.mockTest.summary.sectionPassed
                     : tFormat(dict.mockTest.summary.sectionRemaining, { remaining })}
                 </p>
+                {key === 'civics' && civicsUnsaved ? (
+                  <p className="mt-1.5 text-xs font-medium text-orange-600">{dict.mockTest.summary.civicsUnsaved}</p>
+                ) : null}
               </div>
             );
           })}
