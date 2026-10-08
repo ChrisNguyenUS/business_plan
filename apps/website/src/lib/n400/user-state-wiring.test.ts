@@ -28,6 +28,11 @@ describe('user-state writes (RLS hardening spec §2.4, §2.6)', () => {
     expect(body).not.toContain('.delete()');
   });
 
+  it('Reset keeps the address and settings locally, as the RPC keeps them (final review #3)', () => {
+    const body = callback('resetAll');
+    expect(body).toContain('setState((s) => ({ ...DEFAULT_STATE, settings: s.settings, address: s.address }));');
+  });
+
   it('exposes noteMockResult', () => {
     expect(src).toMatch(/\n {4}noteMockResult,\n/);
   });

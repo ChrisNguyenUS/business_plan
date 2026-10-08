@@ -586,7 +586,8 @@ function useN400UserStateInternal() {
 
   const resetAll = useCallback(async () => {
     if (!user) return;
-    setState(DEFAULT_STATE);
+    // The RPC keeps the address and settings (audio, state), so local state does too.
+    setState((s) => ({ ...DEFAULT_STATE, settings: s.settings, address: s.address }));
     // One server-side wipe (n400_36): quiz attempts have no owner DELETE policy,
     // so the old table-by-table deletes silently kept the Civics history.
     const { error } = await supabase.rpc('n400_reset_my_progress');
