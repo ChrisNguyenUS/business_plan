@@ -556,20 +556,24 @@ function useN400UserStateInternal() {
     [user, state.streak]
   );
 
-  // Civics mock test finalizes server-side (finalize_mock_attempt_batch RPC
-  // stamps the streak in n400_user_profile), so this client context never
-  // sees the new value until the next full reload — the header kept showing
-  // the stale count. The mock page calls this with the RPC's returned streak
-  // to bring local state back in sync. lastActivityDate is stamped with the
-  // client-local today, matching what nextStreak would have produced.
-  const applyStreak = useCallback((current: number, longest: number) => {
-    if (current <= 0) return;
-    const today = TODAY_LOCAL();
-    setState((s) => ({
-      ...s,
-      streak: { current, longest: Math.max(longest, current), lastActivityDate: today },
-    }));
-  }, []);
+  // A Civics mock finalized server-side (the Full interview's Civics part, RLS
+  // hardening spec §2.4): the RPC already wrote the attempt and stamped the
+  // streak, so this only brings local state in line until the next full load.
+  // lastActivityDate takes the client-local today, as nextStreak would.
+  const noteMockResult = useCallback(
+    (result: MockResult, streak: { current: number; longest: number }) => {
+      const today = TODAY_LOCAL();
+      setState((s) => ({
+        ...s,
+        mockResults: [...s.mockResults, result].slice(-100),
+        streak:
+          streak.current > 0
+            ? { current: streak.current, longest: Math.max(streak.longest, streak.current), lastActivityDate: today }
+            : s.streak,
+      }));
+    },
+    []
+  );
 
   // Writing/Speaking mock test results — these two mock tests are
   // client-only (no per-question attempt table like civics mock_test), so
@@ -622,25 +626,10 @@ function useN400UserStateInternal() {
   const resetAll = useCallback(async () => {
     if (!user) return;
     setState(DEFAULT_STATE);
-    // Best-effort wipe. RLS scopes each delete to the current user.
-    await Promise.all([
-      supabase.from('n400_quiz_attempts').delete().eq('user_id', user.id),
-      supabase.from('n400_bookmarks').delete().eq('user_id', user.id),
-      supabase.from('n400_section_attempts').delete().eq('user_id', user.id),
-      supabase.from('n400_section_mock_results').delete().eq('user_id', user.id),
-      supabase
-        .from('n400_user_profile')
-        .upsert(
-          {
-            user_id: user.id,
-            current_streak: 0,
-            longest_streak: 0,
-            last_activity_date: null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id' }
-        ),
-    ]);
+    // One server-side wipe (n400_36): quiz attempts have no owner DELETE policy,
+    // so the old table-by-table deletes silently kept the Civics history.
+    const { error } = await supabase.rpc('n400_reset_my_progress');
+    if (error) console.error('n400: resetAll failed', error);
   }, [user]);
 
   return {
@@ -655,6 +644,7 @@ function useN400UserStateInternal() {
     recordSectionAnswer,
     setSectionKnown,
     recordMockResult,
+    noteMockResult,
     recordSectionMockResult,
     resetAll,
     user,
