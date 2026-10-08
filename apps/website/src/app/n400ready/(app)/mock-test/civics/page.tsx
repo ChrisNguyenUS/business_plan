@@ -176,6 +176,10 @@ function MockTestPageInner() {
     : voiceInput === 'none'
       ? 'unsupported'
       : 'available';
+  // Hold the picker's place while the flags load in a browser that can answer by
+  // voice, so it doesn't pop in above Bắt đầu (same recipe as the Full interview).
+  const browserCanVoice = voiceInputFor({ ua, apiPresent: mic.supported, enabled: true, androidOn: false }) !== 'none';
+  const pickerPending = !voiceFlags.loaded && browserCanVoice;
   const location = { stateCode: state.settings.stateCode, districtNumber: state.address.districtNumber };
 
   // Latch "mic lost" for the rest of the attempt (render-phase update, same
@@ -385,6 +389,7 @@ function MockTestPageInner() {
         mode={answerMode}
         onModeChange={onMockModeChange}
         voiceState={voiceState}
+        pickerPending={pickerPending}
         error={error}
         stats={mockStats}
         results={state.mockResults}
@@ -558,12 +563,15 @@ function Intro({
   mode,
   onModeChange,
   voiceState,
+  pickerPending,
 }: {
   onStart: () => void;
   starting: boolean;
   mode: PracticeAnswerMode;
   onModeChange: (m: PracticeAnswerMode) => void;
   voiceState: 'off' | 'unsupported' | 'available';
+  /** Flags still loading in a browser that can answer by voice: hold the picker's place. */
+  pickerPending: boolean;
   error: string | null;
   stats: MockStats | null;
   results: MockResult[];
@@ -672,14 +680,14 @@ function Intro({
               </div>
             ) : null}
 
-            {voiceState !== 'off' ? (
+            {voiceState !== 'off' || pickerPending ? (
               <div className="mt-7">
                 <p className="mb-2 text-sm font-semibold text-gray-700">{dict.oral.mockModeLabel}</p>
                 <AnswerModeToggle
                   mode={voiceState === 'available' ? mode : 'choice'}
                   onChange={onModeChange}
                   labels={{ choice: dict.oral.modeChoice, voice: dict.oral.mockModeVoice }}
-                  disabled={voiceState === 'unsupported'}
+                  disabled={voiceState === 'unsupported' || pickerPending}
                 />
                 {voiceState === 'unsupported' ? <VoiceUnsupportedNote /> : null}
               </div>

@@ -74,3 +74,12 @@ describe('Full interview picker', () => {
     expect(page).toContain('{voiceAvailable || pickerPending ? (');
   });
 });
+
+describe('Civics mock intro picker', () => {
+  it('holds its place, disabled, while the flags load in a browser that can answer by voice', () => {
+    const page = read('src/app/n400ready/(app)/mock-test/civics/page.tsx');
+    expect(page).toContain('const pickerPending = !voiceFlags.loaded && browserCanVoice;');
+    expect(page).toContain("{voiceState !== 'off' || pickerPending ? (");
+    expect(page).toContain("disabled={voiceState === 'unsupported' || pickerPending}");
+  });
+});
