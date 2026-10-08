@@ -19,7 +19,9 @@ export type FullCivicsSubmission =
 
 /** A voice run sends words (or a pick for questions without an oral config) to
  *  the voice finalize; a choice run sends picks. An item with neither is left
- *  out, so the server grades it wrong, like the standalone mock. */
+ *  out: the voice finalize grades every key item, so there it counts as wrong;
+ *  the choice finalize grades only the picks it receives, so there it would not
+ *  count at all (unreachable today: the exam needs a pick to move on). */
 export function fullCivicsSubmission(
   runMode: 'voice' | 'choice',
   inputs: readonly FullCivicsInput[],
