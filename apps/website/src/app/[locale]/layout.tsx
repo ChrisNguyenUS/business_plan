@@ -52,6 +52,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Manna One Solution",
+    images: [{ url: "/images/og-image.png", width: 1200, height: 630, alt: "Manna One Solution" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/images/og-image.png"],
   },
 };
 
