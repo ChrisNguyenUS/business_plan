@@ -20,7 +20,7 @@ interface BlogPost {
   created_at: string;
 }
 
-const CATEGORIES = ["all", "tax", "insurance", "immigration", "ai", "general"];
+const CATEGORIES = ["all", "immigration", "tax", "ai", "insurance", "general"];
 
 const CATEGORY_LABELS: Record<string, Record<string, string>> = {
   en: { all: "All", tax: "Tax", insurance: "Insurance", immigration: "Immigration", ai: "AI", general: "General" },
@@ -61,8 +61,8 @@ export default function BlogPage() {
           </h1>
           <p className="text-muted-foreground text-lg">
             {locale === "vi"
-              ? "Chuyên gia chia sẻ về thuế, bảo hiểm, di trú và tự động hóa doanh nghiệp"
-              : "Expert insights on tax, insurance, immigration, and business automation"}
+              ? "Chuyên gia chia sẻ về di trú, thuế, tự động hóa doanh nghiệp và bảo hiểm"
+              : "Expert insights on immigration, tax, business automation, and insurance"}
           </p>
         </div>
 

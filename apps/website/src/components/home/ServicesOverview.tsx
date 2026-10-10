@@ -13,20 +13,6 @@ interface ServicesOverviewProps {
 export default function ServicesOverview({ dictionary, locale }: ServicesOverviewProps) {
   const services = [
     {
-      key: "tax",
-      img: "/images/service-tax.png",
-      title: dictionary.services_tax_title,
-      desc: dictionary.services_tax_desc,
-      link: `/${locale}/services/tax`,
-    },
-    {
-      key: "insurance",
-      img: "/images/service-insurance.png",
-      title: dictionary.services_insurance_title,
-      desc: dictionary.services_insurance_desc,
-      link: `/${locale}/services/insurance`,
-    },
-    {
       key: "immigration",
       img: "/images/service-immigration.png",
       title: dictionary.services_immigration_title,
@@ -34,11 +20,25 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       link: `/${locale}/services/immigration`,
     },
     {
+      key: "tax",
+      img: "/images/service-tax.png",
+      title: dictionary.services_tax_title,
+      desc: dictionary.services_tax_desc,
+      link: `/${locale}/services/tax`,
+    },
+    {
       key: "ai",
       img: "/images/service-ai.png",
       title: dictionary.services_ai_title,
       desc: dictionary.services_ai_desc,
       link: `/${locale}/services/ai`,
+    },
+    {
+      key: "insurance",
+      img: "/images/service-insurance.png",
+      title: dictionary.services_insurance_title,
+      desc: dictionary.services_insurance_desc,
+      link: `/${locale}/services/insurance`,
     },
   ];
 

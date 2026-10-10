@@ -21,22 +21,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
 
   const services = [
     {
-      key: "tax",
-      img: "/images/service-tax.png",
-      title: dictionary.services_tax_title,
-      desc: dictionary.services_tax_desc,
-      link: `/${locale}/services/tax`,
-      pricing: "$50 – $800",
-    },
-    {
-      key: "insurance",
-      img: "/images/service-insurance.png",
-      title: dictionary.services_insurance_title,
-      desc: dictionary.services_insurance_desc,
-      link: `/${locale}/services/insurance`,
-      pricing: locale === "vi" ? "Tư Vấn Miễn Phí" : "Free Consultation",
-    },
-    {
       key: "immigration",
       img: "/images/service-immigration.png",
       title: dictionary.services_immigration_title,
@@ -45,12 +29,28 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       pricing: locale === "vi" ? "Theo Hồ Sơ" : "Case-Based",
     },
     {
+      key: "tax",
+      img: "/images/service-tax.png",
+      title: dictionary.services_tax_title,
+      desc: dictionary.services_tax_desc,
+      link: `/${locale}/services/tax`,
+      pricing: "$50 – $800",
+    },
+    {
       key: "ai",
       img: "/images/service-ai.png",
       title: dictionary.services_ai_title,
       desc: dictionary.services_ai_desc,
       link: `/${locale}/services/ai`,
       pricing: locale === "vi" ? "Báo Giá Riêng" : "Custom Pricing",
+    },
+    {
+      key: "insurance",
+      img: "/images/service-insurance.png",
+      title: dictionary.services_insurance_title,
+      desc: dictionary.services_insurance_desc,
+      link: `/${locale}/services/insurance`,
+      pricing: locale === "vi" ? "Tư Vấn Miễn Phí" : "Free Consultation",
     },
   ];
 

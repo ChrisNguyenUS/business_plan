@@ -26,23 +26,23 @@ export default function Footer({ dictionary, locale }: FooterProps) {
             <h4 className="font-semibold mb-3">{dictionary.footer_services}</h4>
             <ul className="space-y-2 text-sm text-white/60">
               <li>
-                <Link href={`/${locale}/services/tax`} className="hover:text-primary transition-colors">
-                  {dictionary.services_tax_title}
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/services/insurance`} className="hover:text-primary transition-colors">
-                  {dictionary.services_insurance_title}
-                </Link>
-              </li>
-              <li>
                 <Link href={`/${locale}/services/immigration`} className="hover:text-primary transition-colors">
                   {dictionary.services_immigration_title}
                 </Link>
               </li>
               <li>
+                <Link href={`/${locale}/services/tax`} className="hover:text-primary transition-colors">
+                  {dictionary.services_tax_title}
+                </Link>
+              </li>
+              <li>
                 <Link href={`/${locale}/services/ai`} className="hover:text-primary transition-colors">
                   {dictionary.services_ai_title}
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/services/insurance`} className="hover:text-primary transition-colors">
+                  {dictionary.services_insurance_title}
                 </Link>
               </li>
             </ul>

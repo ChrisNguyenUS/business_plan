@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     template: "%s | Manna One Solution",
   },
   description:
-    "Bilingual professional services for the Vietnamese community in Houston. Tax, insurance, immigration, and AI automation.",
+    "Bilingual professional services for the Vietnamese community in Houston. Immigration, tax & business, AI automation, and insurance & finance.",
   openGraph: {
     type: "website",
     siteName: "Manna One Solution",

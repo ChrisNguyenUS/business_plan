@@ -35,10 +35,10 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
   ];
 
   const serviceLinks = [
-    { label: dictionary.services_tax_title, href: `/${locale}/services/tax` },
-    { label: dictionary.services_insurance_title, href: `/${locale}/services/insurance` },
     { label: dictionary.services_immigration_title, href: `/${locale}/services/immigration` },
+    { label: dictionary.services_tax_title, href: `/${locale}/services/tax` },
     { label: dictionary.services_ai_title, href: `/${locale}/services/ai` },
+    { label: dictionary.services_insurance_title, href: `/${locale}/services/insurance` },
   ];
 
   const isActive = (href: string) => {

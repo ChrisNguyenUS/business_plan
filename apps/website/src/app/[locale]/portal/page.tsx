@@ -82,7 +82,7 @@ const SERVICE_META: Record<
   },
 };
 
-const ALL_SERVICES: ServiceType[] = ["immigration", "tax", "insurance", "ai"];
+const ALL_SERVICES: ServiceType[] = ["immigration", "tax", "ai", "insurance"];
 
 const EXPLORE_DESCRIPTIONS: Record<ServiceType, string> = {
   immigration: "Green cards, naturalization, work permits, family petitions, and more.",

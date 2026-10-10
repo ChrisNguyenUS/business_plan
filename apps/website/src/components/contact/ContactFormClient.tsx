@@ -169,10 +169,10 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
                   className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <option value="">{dictionary.contact_select_service}</option>
-                  <option value="tax">{dictionary.services_tax_title}</option>
-                  <option value="insurance">{dictionary.services_insurance_title}</option>
                   <option value="immigration">{dictionary.services_immigration_title}</option>
+                  <option value="tax">{dictionary.services_tax_title}</option>
                   <option value="ai">{dictionary.services_ai_title}</option>
+                  <option value="insurance">{dictionary.services_insurance_title}</option>
                   <option value="general">General</option>
                 </select>
               </div>
