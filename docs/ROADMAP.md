@@ -11,7 +11,7 @@
 ## 📌 Việc cần làm (cập nhật 2026-10-08)
 
 **Bạn (owner) làm:**
-- [ ] **Website — sau deploy 2026-10-10:** vào Facebook Sharing Debugger, Scrape Again `https://mannaos.com`, `/en`, `/vi` để Messenger bỏ ảnh Vercel cũ. Nhập lại bảng giá khi đã chốt (các câu FAQ AI và Terms "Fees & Pricing" vẫn còn nhắc giá).
+- [ ] **Website — sau deploy 2026-10-10:** vào Facebook Sharing Debugger, Scrape Again `https://mannaos.com`, `/en`, `/vi` để Messenger bỏ ảnh Vercel cũ. Nhập lại bảng giá khi đã chốt (mục Terms "Fees & Pricing" vẫn còn nhắc giá).
 - [ ] **Gate S2** — luyện Speaking bằng giọng: còn các dòng 2, 3, 5, 6, 8, phần 🔊 chậm của dòng 4 và phần còn lại của dòng 7 → `docs/superpowers/spikes/2026-09-25-n400-speaking-practice-gate2.md`
 - [ ] **Gate S3** — Thi thử Speaking bằng giọng (9 dòng) → `docs/superpowers/spikes/2026-09-26-n400-speaking-mock-gate3.md`
 - [ ] **Gate S4** — Phỏng vấn đầy đủ "Toàn bộ bằng giọng": dòng 1–9 (dòng 10–11 đã xong) → `docs/superpowers/spikes/2026-09-26-n400-full-interview-voice-gate4.md`. Khi cả 3 gate đạt: thêm dòng ROADMAP cho Speaking + Full interview voice.
