@@ -11,6 +11,7 @@
 ## 📌 Việc cần làm (cập nhật 2026-10-08)
 
 **Bạn (owner) làm:**
+- [ ] **Website — sau deploy 2026-10-10:** vào Facebook Sharing Debugger, Scrape Again `https://mannaos.com`, `/en`, `/vi` để Messenger bỏ ảnh Vercel cũ. Nhập lại bảng giá khi đã chốt (các câu FAQ AI và Terms "Fees & Pricing" vẫn còn nhắc giá).
 - [ ] **Gate S2** — luyện Speaking bằng giọng: còn các dòng 2, 3, 5, 6, 8, phần 🔊 chậm của dòng 4 và phần còn lại của dòng 7 → `docs/superpowers/spikes/2026-09-25-n400-speaking-practice-gate2.md`
 - [ ] **Gate S3** — Thi thử Speaking bằng giọng (9 dòng) → `docs/superpowers/spikes/2026-09-26-n400-speaking-mock-gate3.md`
 - [ ] **Gate S4** — Phỏng vấn đầy đủ "Toàn bộ bằng giọng": dòng 1–9 (dòng 10–11 đã xong) → `docs/superpowers/spikes/2026-09-26-n400-full-interview-voice-gate4.md`. Khi cả 3 gate đạt: thêm dòng ROADMAP cho Speaking + Full interview voice.
@@ -29,6 +30,7 @@
 - [ ] **EB-3:** gửi số Zalo vào CAPI dạng số điện thoại (số VN dạng 0xx không có mã quốc gia, cần chuẩn hóa theo vị trí).
 - [ ] **Dọn nhánh trên GitHub** (cần bạn OK — xóa nhánh remote không hoàn tác bằng một lệnh): 5 nhánh đã merge hết vào `main`, xóa không mất gì: `feat/flashcards-bookmark-merge`, `feat/n400-growth-g4-leads`, `feat/n400ready-i18n`, `feat/website-eb3`, `fix/dashboard-routing-fix`. Nhánh bot `vercel/install-vercel-web-analytics-ry1auw` (16/04, commit `e3874434`) **không merge**: `@vercel/analytics` đã gắn trong `[locale]/layout.tsx` và `n400ready/layout.tsx`, nhánh này gắn thêm ở layout gốc → mỗi lượt xem trang có thể bị đếm hai lần.
 - [x] **Dọn code website** (2026-10-08): eslint trên `apps/website` không còn cảnh báo nào (6 biến/import chưa từng được dùng đã bỏ; cái thứ 7 là `useState` trong Sidebar, đã hết từ `9b5bd265`); `mobile-layout.test.ts` hết đỏ (bám số cột của trang Chi tiết, không bám khoảng cách nữa). Suite chạy đủ, không cần `--exclude`.
+- [x] **Website: thứ tự dịch vụ, ẩn giá, ảnh preview** (2026-10-10): mọi nơi theo thứ tự Di trú → Thuế & Kinh doanh → AI → Bảo hiểm & Tài chính; toàn bộ pricing đã ẩn (dữ liệu giá còn trong từ điển, template vẫn nhận prop `pricing`); favicon mặc định của Next.js (tam giác Vercel) thay bằng chữ M của Manna, thêm `og:image` 1200×630 tại `public/images/og-image.png`.
 
 > **Track scope:**
 > - **Track 1** — SDLC 8-phase framework, áp dụng cho **Internal App** (`apps/internal_app/`).
