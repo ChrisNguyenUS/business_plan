@@ -15,7 +15,7 @@
 - [ ] **Gate S2** — luyện Speaking bằng giọng: còn các dòng 2, 3, 5, 6, 8, phần 🔊 chậm của dòng 4 và phần còn lại của dòng 7 → `docs/superpowers/spikes/2026-09-25-n400-speaking-practice-gate2.md`
 - [ ] **Gate S3** — Thi thử Speaking bằng giọng (9 dòng) → `docs/superpowers/spikes/2026-09-26-n400-speaking-mock-gate3.md`
 - [ ] **Gate S4** — Phỏng vấn đầy đủ "Toàn bộ bằng giọng": dòng 1–9 (dòng 10–11 đã xong) → `docs/superpowers/spikes/2026-09-26-n400-full-interview-voice-gate4.md`. Khi cả 3 gate đạt: thêm dòng ROADMAP cho Speaking + Full interview voice.
-- [ ] **Supabase Dashboard:** bật Facebook OAuth (chưa có tài khoản Facebook nào đăng nhập); bật Leaked password protection.
+- [ ] **Supabase Dashboard:** bật Facebook OAuth (chưa có tài khoản Facebook nào đăng nhập; nút Facebook đang ẩn từ 2026-10-10, khi làm lại thì bỏ comment dòng `facebook` trong `PROVIDERS` ở `n400ready/(auth)/login/page.tsx` và `components/auth/OAuthButtons.tsx`); bật Leaked password protection.
 - [ ] **GA4:** đăng ký custom dimensions cho sự kiện `n400_oral_answer` (nếu chưa làm).
 - [ ] **Máy tính:** dọn ổ đĩa (còn khoảng 370 MB trống; build và worktree dễ lỗi).
 - [ ] **EB-3, trước khi chạy quảng cáo:**

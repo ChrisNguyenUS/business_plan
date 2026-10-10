@@ -5,7 +5,8 @@ import { useAuth, type OAuthProvider } from "@/components/providers/AuthProvider
 
 const PROVIDERS: { id: OAuthProvider; label: string }[] = [
   { id: "google", label: "Continue with Google" },
-  { id: "facebook", label: "Continue with Facebook" },
+  // Facebook login hidden until the owner reworks it — restore this line to bring it back.
+  // { id: "facebook", label: "Continue with Facebook" },
   { id: "apple", label: "Continue with Apple" },
 ];
 
