@@ -26,7 +26,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       title: dictionary.services_immigration_title,
       desc: dictionary.services_immigration_desc,
       link: `/${locale}/services/immigration`,
-      pricing: locale === "vi" ? "Theo Hồ Sơ" : "Case-Based",
     },
     {
       key: "tax",
@@ -34,7 +33,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       title: dictionary.services_tax_title,
       desc: dictionary.services_tax_desc,
       link: `/${locale}/services/tax`,
-      pricing: "$50 – $800",
     },
     {
       key: "ai",
@@ -42,7 +40,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       title: dictionary.services_ai_title,
       desc: dictionary.services_ai_desc,
       link: `/${locale}/services/ai`,
-      pricing: locale === "vi" ? "Báo Giá Riêng" : "Custom Pricing",
     },
     {
       key: "insurance",
@@ -50,7 +47,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
       title: dictionary.services_insurance_title,
       desc: dictionary.services_insurance_desc,
       link: `/${locale}/services/insurance`,
-      pricing: locale === "vi" ? "Tư Vấn Miễn Phí" : "Free Consultation",
     },
   ];
 
@@ -84,12 +80,9 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
                 </div>
                 <div className="flex-1">
                   <h2 className="text-xl font-bold text-charcoal mb-2">{s.title}</h2>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-3">
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                     {s.desc}
                   </p>
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-teal-light text-primary text-xs font-semibold mb-4">
-                    {s.pricing}
-                  </div>
                   <div className="flex gap-3">
                     <Link href={s.link}>
                       <Button

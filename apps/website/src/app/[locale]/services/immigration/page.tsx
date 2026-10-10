@@ -26,9 +26,6 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
             {d.immigration_desc}
           </p>
-          <p className="text-primary font-semibold mt-2 text-sm">
-            Bắt đầu từ $50 · Tư vấn miễn phí / Starting from $50 · Free consultation
-          </p>
         </div>
 
         {/* Featured: EB-3 */}

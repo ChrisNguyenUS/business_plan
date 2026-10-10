@@ -25,12 +25,6 @@ export default async function InsurancePage({ params }: { params: Promise<{ loca
       title={d.insurance_title}
       desc={d.insurance_desc}
       services={Array.isArray(d.insurance_offerings) ? d.insurance_offerings.map(o => o.name) : []}
-      pricing={
-        Array.isArray(d.insurance_services)
-          ? d.insurance_services.map((s) => ({ service: s.name, price: s.price }))
-          : undefined
-      }
-      pricingNote={d.insurance_pricing_note}
       faqs={faqs}
       badgeText="Licensed Insurance Agent"
       ctaText={d.insurance_cta}

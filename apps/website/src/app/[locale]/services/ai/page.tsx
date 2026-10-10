@@ -21,16 +21,12 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
   ];
 
   const offerings = d.ai_offerings || [];
-  const services = d.ai_services || [];
 
   return (
     <ServicePageTemplate
       title={d.ai_title}
       desc={d.ai_desc}
       services={offerings.map(o => o.name)}
-      pricing={
-        services.map((s) => ({ service: s.name, price: s.price }))
-      }
       faqs={faqs}
       ctaText={d.ai_cta}
       dictionary={d}

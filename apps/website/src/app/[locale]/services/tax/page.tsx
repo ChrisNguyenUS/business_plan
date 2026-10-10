@@ -21,16 +21,12 @@ export default async function TaxPage({ params }: { params: Promise<{ locale: st
   ];
 
   const offerings = d.tax_offerings || [];
-  const services = d.tax_services || [];
 
   return (
     <ServicePageTemplate
       title={d.tax_title}
       desc={d.tax_desc}
       services={offerings.map(o => o.name)}
-      pricing={
-        services.map((s) => ({ service: s.name, price: s.price }))
-      }
       faqs={faqs}
       badgeText="EFIN Licensed"
       ctaText={d.services_cta}
