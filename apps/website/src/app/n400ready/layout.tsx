@@ -24,6 +24,15 @@ export const metadata: Metadata = {
   },
   description:
     'Luyện thi quốc tịch Mỹ N-400 — Civics, Speaking, Writing. Manna One Solution.',
+  openGraph: {
+    type: 'website',
+    siteName: 'N400 Ready',
+    images: [{ url: '/images/og-image.png', width: 1200, height: 630, alt: 'Manna One Solution' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/images/og-image.png'],
+  },
 };
 
 /**
