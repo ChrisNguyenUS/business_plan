@@ -23,6 +23,7 @@ function GoogleIcon() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for the Apple button (hidden for now)
 function AppleIcon() {
   return (
     <svg className={styles.providerIcon} viewBox="0 0 24 24" aria-hidden="true">
@@ -71,7 +72,8 @@ function StarIcon() {
 type OAuthId = 'google' | 'apple' | 'facebook';
 const PROVIDERS: { id: OAuthId; name: string; Icon: () => React.ReactElement }[] = [
   { id: 'google', name: 'Google', Icon: GoogleIcon },
-  { id: 'apple', name: 'Apple', Icon: AppleIcon },
+  // Apple login hidden until the owner reworks it — restore this line to bring it back.
+  // { id: 'apple', name: 'Apple', Icon: AppleIcon },
   // Facebook login hidden until the owner reworks it — restore this line to bring it back.
   // { id: 'facebook', name: 'Facebook', Icon: FacebookIcon },
 ];

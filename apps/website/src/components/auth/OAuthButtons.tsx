@@ -7,7 +7,8 @@ const PROVIDERS: { id: OAuthProvider; label: string }[] = [
   { id: "google", label: "Continue with Google" },
   // Facebook login hidden until the owner reworks it — restore this line to bring it back.
   // { id: "facebook", label: "Continue with Facebook" },
-  { id: "apple", label: "Continue with Apple" },
+  // Apple login hidden until the owner reworks it — restore this line to bring it back.
+  // { id: "apple", label: "Continue with Apple" },
 ];
 
 function ProviderIcon({ provider }: { provider: OAuthProvider }) {
