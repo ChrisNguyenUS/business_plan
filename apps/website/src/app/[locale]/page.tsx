@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 import HeroSection from "@/components/home/HeroSection";
 import ServicesOverview from "@/components/home/ServicesOverview";
 import WhyManna from "@/components/home/WhyManna";
@@ -14,12 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       ? "Manna One Solution — Một Nơi, Mọi Giải Pháp"
       : "Manna One Solution — One Stop, All Solutions",
     description: dictionary.hero_desc,
-    alternates: {
-      languages: {
-        en: "/en",
-        vi: "/vi",
-      },
-    },
+    alternates: localeAlternates(locale as Locale, ""),
   };
 }
 

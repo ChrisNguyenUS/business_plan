@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -11,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: dictionary.services_page_title,
     description: dictionary.services_page_subtitle,
-    alternates: { languages: { en: "/en/services", vi: "/vi/services" } },
+    alternates: localeAlternates(locale as Locale, "/services"),
   };
 }
 

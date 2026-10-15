@@ -8,6 +8,7 @@ import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import MetaPixel from '@/components/analytics/MetaPixel';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { getN400Lang } from '@/lib/n400/i18n/server';
+import { SITE_URL } from '@/lib/seo/site';
 import { N400UserStateProvider } from '@/lib/n400/user-state';
 
 const inter = Inter({
@@ -17,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mannaos.com'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'N400 Ready',
     template: '%s | N400 Ready',

@@ -3,11 +3,12 @@ import { ArrowRight, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
-  return { title: d.immigration_title, description: d.immigration_desc, alternates: { languages: { en: "/en/services/immigration", vi: "/vi/services/immigration" } } };
+  return { title: d.immigration_title, description: d.immigration_desc, alternates: localeAlternates(locale as Locale, "/services/immigration") };
 }
 
 export default async function ImmigrationPage({ params }: { params: Promise<{ locale: string }> }) {

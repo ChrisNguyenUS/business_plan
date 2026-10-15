@@ -4,11 +4,12 @@ import { ShieldCheck, FileCheck, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
-  return { title: d.about_title, description: d.about_mission, alternates: { languages: { en: "/en/about", vi: "/vi/about" } } };
+  return { title: d.about_title, description: d.about_mission, alternates: localeAlternates(locale as Locale, "/about") };
 }
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {

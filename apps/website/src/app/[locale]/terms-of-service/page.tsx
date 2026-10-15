@@ -1,5 +1,9 @@
-export async function generateMetadata() {
-  return { title: "Terms of Service", alternates: { languages: { en: "/en/terms-of-service", vi: "/vi/terms-of-service" } } };
+import type { Locale } from "@/lib/i18n/config";
+import { localeAlternates } from "@/lib/seo/alternates";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return { title: "Terms of Service", alternates: localeAlternates(locale as Locale, "/terms-of-service") };
 }
 
 export default function TermsOfServicePage() {

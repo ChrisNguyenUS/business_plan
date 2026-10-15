@@ -1,5 +1,9 @@
-export async function generateMetadata() {
-  return { title: "Privacy Policy", alternates: { languages: { en: "/en/privacy-policy", vi: "/vi/privacy-policy" } } };
+import type { Locale } from "@/lib/i18n/config";
+import { localeAlternates } from "@/lib/seo/alternates";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return { title: "Privacy Policy", alternates: localeAlternates(locale as Locale, "/privacy-policy") };
 }
 
 export default function PrivacyPolicyPage() {

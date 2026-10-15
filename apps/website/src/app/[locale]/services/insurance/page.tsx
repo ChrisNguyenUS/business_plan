@@ -1,11 +1,12 @@
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 import ServicePageTemplate from "@/components/services/ServicePageTemplate";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
-  return { title: d.insurance_title, description: d.insurance_desc, alternates: { languages: { en: "/en/services/insurance", vi: "/vi/services/insurance" } } };
+  return { title: d.insurance_title, description: d.insurance_desc, alternates: localeAlternates(locale as Locale, "/services/insurance") };
 }
 
 export default async function InsurancePage({ params }: { params: Promise<{ locale: string }> }) {

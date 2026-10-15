@@ -1,6 +1,7 @@
 import { CheckCircle, MapPin, Plane } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 import Eb3MessengerButton from "@/components/services/Eb3MessengerButton";
 import Eb3ScreeningForm from "@/components/services/Eb3ScreeningForm";
 
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: eb3.meta_title,
     description: eb3.meta_desc,
-    alternates: { languages: { en: `/en${PATH}`, vi: `/vi${PATH}` } },
+    alternates: localeAlternates(locale as Locale, PATH),
   };
 }
 

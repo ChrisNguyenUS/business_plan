@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { isValidLocale } from "@/lib/i18n/config";
+import { SITE_URL } from "@/lib/seo/site";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -42,7 +43,7 @@ const organizationJsonLd = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mannaos.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Manna One Solution — One Stop, All Solutions",
     template: "%s | Manna One Solution",

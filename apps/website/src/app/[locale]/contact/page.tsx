@@ -1,11 +1,12 @@
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeAlternates } from "@/lib/seo/alternates";
 import ContactFormClient from "@/components/contact/ContactFormClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
-  return { title: d.contact_page_title, description: d.contact_page_desc, alternates: { languages: { en: "/en/contact", vi: "/vi/contact" } } };
+  return { title: d.contact_page_title, description: d.contact_page_desc, alternates: localeAlternates(locale as Locale, "/contact") };
 }
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
