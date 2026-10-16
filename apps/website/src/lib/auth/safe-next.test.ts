@@ -15,4 +15,11 @@ describe('safeNextPath', () => {
     expect(safeNextPath('')).toBeNull();
     expect(safeNextPath(null)).toBeNull();
   });
+
+  it('rejects control characters and backslashes the URL parser would strip or rewrite', () => {
+    expect(safeNextPath('/\t/evil.com')).toBeNull();
+    expect(safeNextPath('/\n\\evil.com')).toBeNull();
+    expect(safeNextPath('/\r/evil.com')).toBeNull();
+    expect(safeNextPath('/n400ready\\x')).toBeNull();
+  });
 });
