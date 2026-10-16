@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-16
 **App:** `apps/website/` only. No database migration.
-**Status:** Draft spec for owner review. Owner answered 2026-10-16: both Vietnamese and English versions; no PDF. Decisions 1, 4, 5, 6 in §14 are still open. Nothing is built yet.
+**Status:** Approved by owner 2026-10-16 (all six decisions in §14 answered). Next: implementation plan.
 **Path:** Architectural (new public route tree, middleware change, new SEO surface).
 **Follows:** SEO/GEO technical fixes (2026-10-15) and the SEO blog with six Vietnamese N-400 articles, live 2026-10-16 (`specs/2026-10-15-website-seo-blog-design.md`).
 
@@ -198,12 +198,12 @@ Example: `/vi/n400ready/states/texas`.
 
 ## 14. Owner decisions
 
-1. **Approach A** (blog keeps the 128 list; new pages = landing + states)? Recommended: yes.
+1. ✅ **Answered 2026-10-16: approach A.** Blog #2 keeps the 128 list; the new pages are the landing page plus the state pages.
 2. ✅ **Answered 2026-10-16: both languages.** Every page ships as one Vietnamese version and one English version (`/vi/…` + `/en/…`, hreflang pairs).
 3. ✅ **Answered 2026-10-16: no PDF.** Not built. The "…pdf" searches are not targeted.
-4. **Screenshots on the landing page:** use one or two real app screenshots (you choose which screens), or text only? Recommended: two screenshots (Civics practice + state personalization).
-5. **DC governor / territory capitals (§3.1):** OK to change the app's taught answers to match the USCIS notes? This changes what learners in DC and territories see and hear (audio for "no governor" may not exist; the app would show text only for those rows).
-6. **Blog #2/#3 edits:** OK to add the state-page and landing links to the two live posts (wording shown to you before saving)?
+4. ✅ **Answered 2026-10-16: two real app screenshots** on the landing page (Civics practice + state personalization).
+5. ✅ **Answered 2026-10-16: fix them to match USCIS.** The app's taught answers for DC and the territories change too. Rows with no matching audio show text only.
+6. ✅ **Answered 2026-10-16: yes.** Add the landing and state-page links to the two live posts. The exact wording is shown to the owner before saving.
 
 ## 15. Testing
 
@@ -216,7 +216,7 @@ Example: `/vi/n400ready/states/texas`.
 
 ## 16. Rollout (each outward step needs the owner's OK at that moment)
 
-1. Owner approves this spec (§14 answered) → writing-plans.
+1. ✅ Owner approved this spec 2026-10-16 → writing-plans.
 2. S1 on a branch → tests → push → verify live → GSC request indexing.
 3. S2 on a branch → tests → push → verify 3 sample state pages live → owner approves blog #2/#3 link edits → apply.
 4. About 8 weeks after S2: read GSC queries and clicks for `/vi/n400ready*` vs blog #2, then decide on approaches B/C and the quiz.
