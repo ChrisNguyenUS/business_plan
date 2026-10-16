@@ -105,7 +105,7 @@ function StepRow({ step }: { step: JobStepRow }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Client note (the client sees this)
+                Client note (shown to the client in the portal)
               </span>
               <textarea
                 value={clientNote}
