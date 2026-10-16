@@ -44,8 +44,9 @@ export function isUuid(value: unknown): value is string {
  * becoming $1.50.
  */
 export function parseFee(raw: string): Result<number> {
-  const text = raw.trim().replace(/^\$\s*/, '')
-  if (text === '') return { ok: true, value: 0 }
+  const trimmed = raw.trim()
+  if (trimmed === '') return { ok: true, value: 0 }
+  const text = trimmed.replace(/^\$\s*/, '')
   if (!FEE_PLAIN_RE.test(text) && !FEE_GROUPED_RE.test(text)) {
     return {
       ok: false,

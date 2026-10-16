@@ -64,6 +64,12 @@ describe('parseFee', () => {
     expect(result.ok).toBe(false)
   })
 
+  it.each([['$'], [' $ '], ['$   ']])('refuses a lone dollar sign %p', (raw) => {
+    const result = parseFee(raw)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/^Fee must be a dollar amount/)
+  })
+
   it('refuses an amount that would overflow numeric(10,2)', () => {
     expect(parseFee('100000000')).toEqual({ ok: false, error: 'Fee is too large.' })
   })
