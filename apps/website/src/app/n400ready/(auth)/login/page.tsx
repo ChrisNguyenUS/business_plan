@@ -365,7 +365,7 @@ function N400LoginScreen() {
                 >
                   {t.forgotPassword}
                 </button>
-                <Link href={`/${lang}/signup`} className={styles.linkBold}>
+                <Link href={`/${lang}/signup?next=%2Fn400ready`} className={styles.linkBold}>
                   {t.createAccount}
                 </Link>
               </div>

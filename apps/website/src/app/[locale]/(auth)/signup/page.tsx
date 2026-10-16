@@ -13,6 +13,7 @@ import {
   PasswordStrengthMeter,
 } from "@/components/auth/PasswordFields";
 import { meetsPasswordPolicy } from "@/lib/auth/password-policy";
+import { safeNextPath } from "@/lib/auth/safe-next";
 
 export default function SignUpPage() {
   const params = useParams();
@@ -51,7 +52,10 @@ export default function SignUpPage() {
     // Email confirmation is off in Supabase: the account is already active and
     // signed in, so go straight in. Full reload so middleware sees the cookie.
     if (hasSession) {
-      window.location.href = `/${locale}/portal`;
+      // N400 Ready links here with ?next=/n400ready; read it at submit time
+      // (not during render) so the page needs no Suspense boundary.
+      const next = safeNextPath(new URLSearchParams(window.location.search).get("next"));
+      window.location.href = next ?? `/${locale}/portal`;
       return;
     }
 
