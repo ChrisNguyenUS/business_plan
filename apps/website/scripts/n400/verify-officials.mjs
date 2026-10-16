@@ -11,6 +11,11 @@ const lastName = (full) => norm(full.trim().split(/\s+/).pop());
 const sameName = (official, ours) => !!ours && (official === ours || official.endsWith(ours));
 // clerk.house.gov uses AQ for American Samoa.
 const HOUSE_STATE = { AQ: 'AS' };
+async function fetchText(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+  return res.text();
+}
 const tag = (chunk, name) => chunk.match(new RegExp(`<${name}>([^<]*)</${name}>`))?.[1] ?? '';
 
 const stateSrc = readFileSync('src/lib/n400/state-data.ts', 'utf8');
@@ -25,7 +30,7 @@ for (const m of repsSrc.matchAll(/stateCode: "([A-Z]{2})" as StateCode, district
   ourReps[`${m[1]}-${Number(m[2])}`] = lastName(m[3]);
 }
 
-const senXml = await (await fetch('https://www.senate.gov/general/contact_information/senators_cfm.xml')).text();
+const senXml = await fetchText('https://www.senate.gov/general/contact_information/senators_cfm.xml');
 const offSenators = {};
 for (const chunk of senXml.split('</member>')) {
   const last = tag(chunk, 'last_name');
@@ -35,13 +40,21 @@ for (const chunk of senXml.split('</member>')) {
 
 // One <member> at a time: a vacant seat has an empty <lastname> and must not
 // borrow the next member's.
-const houseXml = await (await fetch('https://clerk.house.gov/xml/lists/MemberData.xml')).text();
+const houseXml = await fetchText('https://clerk.house.gov/xml/lists/MemberData.xml');
 const offReps = {};
 for (const chunk of houseXml.split('</member>')) {
   const sd = tag(chunk, 'statedistrict').match(/^([A-Z]{2})(\d{2})$/);
   if (!sd) continue;
   const last = tag(chunk, 'lastname');
   offReps[`${HOUSE_STATE[sd[1]] ?? sd[1]}-${Number(sd[2])}`] = last ? norm(last) : null;
+}
+
+// An error or block page parses to nothing: never report that as "all match".
+const senatorCount = Object.values(offSenators).flat().length;
+const seatCount = Object.keys(offReps).length;
+if (senatorCount !== 100 || seatCount < 435) {
+  console.error(`Official lists look incomplete: ${senatorCount} senators, ${seatCount} House seats.`);
+  process.exit(2);
 }
 
 const problems = [];
@@ -53,6 +66,10 @@ for (const [st, names] of Object.entries(offSenators)) {
 for (const [key, name] of Object.entries(offReps)) {
   if (name === null) problems.push(`House ${key}: vacant on clerk.house.gov, ours ${ourReps[key] ?? '(none)'}`);
   else if (!sameName(name, ourReps[key])) problems.push(`House ${key}: ours ${ourReps[key] ?? '(none)'} vs official ${name}`);
+}
+// Seats we teach that the official list does not have at all.
+for (const key of Object.keys(ourReps)) {
+  if (!(key in offReps)) problems.push(`House ${key}: ours ${ourReps[key]}, not on clerk.house.gov`);
 }
 console.log(problems.length ? problems.join('\n') : 'All senators and House members match.');
 process.exit(problems.length ? 1 : 0);
