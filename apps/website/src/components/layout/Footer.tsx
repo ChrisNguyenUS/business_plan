@@ -45,6 +45,11 @@ export default function Footer({ dictionary, locale }: FooterProps) {
                   {dictionary.services_insurance_title}
                 </Link>
               </li>
+              <li>
+                <Link href={`/${locale}/n400ready`} className="hover:text-primary transition-colors">
+                  N400 Ready
+                </Link>
+              </li>
             </ul>
           </div>
 
