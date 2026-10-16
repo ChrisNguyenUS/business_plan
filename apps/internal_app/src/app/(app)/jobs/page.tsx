@@ -1,24 +1,14 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { getJobs } from '@/actions/jobs'
+import JobProgressBar from '@/components/jobs/JobProgressBar'
+import JobStatusBadge from '@/components/jobs/JobStatusBadge'
+import { deriveProgress } from '@/lib/jobs/progress'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 export default async function JobsPage() {
-  const supabase = await createClient()
-
-  const { data: jobs } = await supabase
-    .from('jobs')
-    .select('*, client:clients(first_name, last_name)')
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  const items = jobs ?? []
-
-  const statusColor: Record<string, string> = {
-    open: 'bg-blue-50 text-blue-700',
-    in_progress: 'bg-amber-50 text-amber-700',
-    complete: 'bg-green-50 text-green-700',
-  }
+  const jobs = await getJobs()
 
   return (
     <div className="space-y-6">
@@ -26,7 +16,9 @@ export default async function JobsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Jobs</h2>
-          <p className="text-sm text-slate-400 mt-0.5">Tax, insurance, AI services</p>
+          <p className="text-sm text-slate-400 mt-0.5">
+            Business services, tax, insurance and AI: steps and progress per client
+          </p>
         </div>
         <Link
           href="/jobs/new"
@@ -38,7 +30,7 @@ export default async function JobsPage() {
         </Link>
       </div>
 
-      {items.length === 0 ? (
+      {jobs.length === 0 ? (
         <div
           className="bg-white rounded-xl p-16 text-center"
           style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
@@ -54,7 +46,7 @@ export default async function JobsPage() {
           <table className="w-full text-left">
             <thead className="bg-[#f7f9ff]/60 border-b border-[#ebeef3]">
               <tr>
-                {['Client', 'Service', 'Description', 'Fee', 'Status', 'Deadline'].map((h) => (
+                {['Client', 'Job', 'Progress', 'Fee', 'Status', 'Deadline'].map((h) => (
                   <th
                     key={h}
                     className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
@@ -65,49 +57,45 @@ export default async function JobsPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map((job: any) => (
+              {jobs.map((job) => (
                 <tr
                   key={job.id}
                   className="border-t border-[#f1f4f9] hover:bg-[#f7f9ff]/40 transition-colors"
                 >
                   <td className="px-6 py-4">
                     <p className="text-sm font-semibold text-slate-700">
-                      {job.client
-                        ? `${job.client.last_name}, ${job.client.first_name}`
-                        : '—'}
+                      {job.client ? `${job.client.last_name}, ${job.client.first_name}` : '—'}
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-xs font-bold capitalize px-2 py-0.5 rounded bg-[#f1f4f9] text-slate-600">
-                      {job.service_type}
-                    </span>
+                    <Link
+                      href={`/jobs/${job.id}`}
+                      className="text-sm font-semibold text-slate-700 hover:underline"
+                    >
+                      {job.description || 'Untitled job'}
+                    </Link>
+                    <p className="mt-0.5">
+                      <span className="text-[10px] font-bold capitalize px-2 py-0.5 rounded bg-[#f1f4f9] text-slate-600">
+                        {job.service_type}
+                      </span>
+                    </p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm text-slate-600 max-w-xs truncate">{job.description}</p>
+                    <JobProgressBar
+                      progress={deriveProgress(job.steps)}
+                      stepCount={job.steps.length}
+                    />
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm font-semibold text-slate-700">
-                      ${job.fee.toLocaleString()}
+                      {formatCurrency(job.fee)}
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                        statusColor[job.status] ?? 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {job.status.replace(/_/g, ' ')}
-                    </span>
+                    <JobStatusBadge status={job.status} />
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-xs text-slate-500">
-                      {job.deadline
-                        ? new Date(job.deadline).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '—'}
-                    </p>
+                    <p className="text-xs text-slate-500">{formatDate(job.deadline) || '—'}</p>
                   </td>
                 </tr>
               ))}
