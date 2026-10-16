@@ -3,30 +3,20 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Eye, EyeOff, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
+import { slugify } from "@/lib/blog/slugify";
+import { publishBlocker } from "@/lib/blog/publish-guard";
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  title_en: string | null;
-  title_vi: string | null;
-  excerpt_en: string | null;
-  excerpt_vi: string | null;
-  content_en: string | null;
-  content_vi: string | null;
-  cover_image_url: string | null;
-  category: string;
-  post_type: string;
-  published: boolean;
-  created_at: string;
-}
+type BlogPost = BlogPostRow;
 
 const CATEGORIES = ["tax", "insurance", "immigration", "ai", "general"];
 const POST_TYPES = ["article", "guide", "news", "faq"];
+const DEFAULT_AUTHOR = "Manna One Solution";
 
 const EMPTY_POST: Partial<BlogPost> = {
-  slug: "", title_en: "", title_vi: "", excerpt_en: "", excerpt_vi: "",
-  content_en: "", content_vi: "", cover_image_url: "", category: "general",
-  post_type: "article", published: false,
+  slug_en: "", slug_vi: "", title_en: "", title_vi: "", excerpt_en: "", excerpt_vi: "",
+  content_en: "", content_vi: "", faq_en: [], faq_vi: [], author_name: DEFAULT_AUTHOR,
+  cover_image_url: "", category: "immigration", post_type: "article", published: false,
 };
 
 export default function AdminBlog() {
@@ -35,7 +25,8 @@ export default function AdminBlog() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<BlogPost> | null>(null);
   const [saving, setSaving] = useState(false);
-  const [langTab, setLangTab] = useState<"en" | "vi">("en");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [langTab, setLangTab] = useState<"en" | "vi">("vi");
 
   const load = async () => {
     const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
@@ -62,46 +53,71 @@ export default function AdminBlog() {
     (p.title_vi || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  function generateSlug(title: string) {
-    return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  function openEditor(post: Partial<BlogPost>) {
+    setEditing(post);
+    setSaveError(null);
+    setLangTab("vi");
   }
 
   async function savePost() {
     if (!editing) return;
+    if (editing.published) {
+      const blocker = publishBlocker(editing);
+      if (blocker) { setSaveError(blocker); return; }
+    }
     setSaving(true);
+    setSaveError(null);
 
-    const slug = editing.slug || generateSlug(editing.title_en || "untitled");
     const payload = {
-      slug,
+      slug_en: editing.slug_en || null,
+      slug_vi: editing.slug_vi || null,
       title_en: editing.title_en || null,
       title_vi: editing.title_vi || null,
       excerpt_en: editing.excerpt_en || null,
       excerpt_vi: editing.excerpt_vi || null,
       content_en: editing.content_en || null,
       content_vi: editing.content_vi || null,
+      faq_en: (editing.faq_en ?? []).filter((f) => f.q.trim() && f.a.trim()),
+      faq_vi: (editing.faq_vi ?? []).filter((f) => f.q.trim() && f.a.trim()),
+      author_name: editing.author_name?.trim() || DEFAULT_AUTHOR,
       cover_image_url: editing.cover_image_url || null,
       category: editing.category || "general",
       post_type: editing.post_type || "article",
       published: editing.published ?? false,
     };
 
-    if (editing.id) {
-      await supabase.from("blog_posts").update(payload).eq("id", editing.id);
-    } else {
-      await supabase.from("blog_posts").insert(payload);
-    }
+    const { error } = editing.id
+      ? await supabase.from("blog_posts").update(payload).eq("id", editing.id)
+      : await supabase.from("blog_posts").insert(payload);
 
     setSaving(false);
+    if (error) {
+      setSaveError(error.code === "23505" ? "Slug này đã được dùng cho bài khác." : error.message);
+      return;
+    }
     setEditing(null);
     load();
   }
+
+  // The slug follows the title until someone types their own.
+  function setTitle(lang: "en" | "vi", value: string) {
+    if (!editing) return;
+    const titleKey = lang === "vi" ? "title_vi" : "title_en";
+    const slugKey = lang === "vi" ? "slug_vi" : "slug_en";
+    const current = editing[slugKey] || "";
+    const auto = !current || current === slugify(editing[titleKey] || "");
+    setEditing({ ...editing, [titleKey]: value, [slugKey]: auto ? slugify(value) : current });
+  }
+
+  const lang = langTab;
+  const excerpt = (lang === "vi" ? editing?.excerpt_vi : editing?.excerpt_en) || "";
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-charcoal">Blog Posts</h1>
         <button
-          onClick={() => { setEditing({ ...EMPTY_POST }); setLangTab("en"); }}
+          onClick={() => openEditor({ ...EMPTY_POST })}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-teal-dark transition-colors"
         >
           <Plus className="h-4 w-4" />
@@ -131,10 +147,22 @@ export default function AdminBlog() {
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><EyeOff className="h-3 w-3" /> Draft</span>
                   )}
                 </div>
-                <p className="font-semibold text-charcoal text-sm truncate">{p.title_en || p.title_vi || "Untitled"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</p>
+                <p className="font-semibold text-charcoal text-sm truncate">{p.title_vi || p.title_en || "Untitled"}</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</p>
+                  {p.published && (p.slug_vi || p.slug_en) && (
+                    <a
+                      href={p.slug_vi ? `/vi/blog/${p.slug_vi}` : `/en/blog/${p.slug_en}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary"
+                    >
+                      Xem bài
+                    </a>
+                  )}
+                </div>
               </div>
-              <button onClick={() => { setEditing(p); setLangTab("en"); }} className="ml-4 p-2 rounded-lg hover:bg-muted transition-colors"><Edit className="h-4 w-4 text-muted-foreground" /></button>
+              <button onClick={() => openEditor(p)} className="ml-4 p-2 rounded-lg hover:bg-muted transition-colors"><Edit className="h-4 w-4 text-muted-foreground" /></button>
             </div>
           ))}
         </div>
@@ -151,33 +179,48 @@ export default function AdminBlog() {
 
             {/* Language Tabs */}
             <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4">
-              <button onClick={() => setLangTab("en")} className={`flex-1 py-1.5 rounded-md text-sm font-medium ${langTab === "en" ? "bg-white shadow-sm text-charcoal" : "text-muted-foreground"}`}>English</button>
               <button onClick={() => setLangTab("vi")} className={`flex-1 py-1.5 rounded-md text-sm font-medium ${langTab === "vi" ? "bg-white shadow-sm text-charcoal" : "text-muted-foreground"}`}>Vietnamese</button>
+              <button onClick={() => setLangTab("en")} className={`flex-1 py-1.5 rounded-md text-sm font-medium ${langTab === "en" ? "bg-white shadow-sm text-charcoal" : "text-muted-foreground"}`}>English</button>
             </div>
 
             <div className="space-y-4">
-              {langTab === "en" ? (
-                <>
-                  <FormField label="Title (EN)" value={editing.title_en || ""} onChange={(v) => setEditing({ ...editing, title_en: v, slug: editing.slug || generateSlug(v) })} />
-                  <FormField label="Excerpt (EN)" value={editing.excerpt_en || ""} onChange={(v) => setEditing({ ...editing, excerpt_en: v })} />
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-1">Content (EN)</label>
-                    <textarea value={editing.content_en || ""} onChange={(e) => setEditing({ ...editing, content_en: e.target.value })} rows={8} className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono" placeholder="Markdown or HTML content..." />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <FormField label="Title (VI)" value={editing.title_vi || ""} onChange={(v) => setEditing({ ...editing, title_vi: v })} />
-                  <FormField label="Excerpt (VI)" value={editing.excerpt_vi || ""} onChange={(v) => setEditing({ ...editing, excerpt_vi: v })} />
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-1">Content (VI)</label>
-                    <textarea value={editing.content_vi || ""} onChange={(e) => setEditing({ ...editing, content_vi: e.target.value })} rows={8} className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono" placeholder="Nội dung Markdown hoặc HTML..." />
-                  </div>
-                </>
-              )}
+              <FormField
+                label={`Title (${lang.toUpperCase()})`}
+                value={(lang === "vi" ? editing.title_vi : editing.title_en) || ""}
+                onChange={(v) => setTitle(lang, v)}
+              />
+              <FormField
+                label={`Slug (${lang.toUpperCase()})`}
+                value={(lang === "vi" ? editing.slug_vi : editing.slug_en) || ""}
+                onChange={(v) => setEditing({ ...editing, [lang === "vi" ? "slug_vi" : "slug_en"]: v })}
+              />
+              <div>
+                <FormField
+                  label={`Excerpt / meta description (${lang.toUpperCase()})`}
+                  value={excerpt}
+                  onChange={(v) => setEditing({ ...editing, [lang === "vi" ? "excerpt_vi" : "excerpt_en"]: v })}
+                />
+                <p className={excerpt.length > 160 ? "text-xs text-red-600 mt-1" : "text-xs text-muted-foreground mt-1"}>{excerpt.length}/160</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-1">Content ({lang.toUpperCase()})</label>
+                <textarea
+                  value={(lang === "vi" ? editing.content_vi : editing.content_en) || ""}
+                  onChange={(e) => setEditing({ ...editing, [lang === "vi" ? "content_vi" : "content_en"]: e.target.value })}
+                  rows={14}
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono"
+                  placeholder="Markdown"
+                />
+              </div>
+              <FaqEditor
+                value={(lang === "vi" ? editing.faq_vi : editing.faq_en) ?? []}
+                onChange={(faq) => setEditing({ ...editing, [lang === "vi" ? "faq_vi" : "faq_en"]: faq })}
+              />
 
-              <FormField label="Slug" value={editing.slug || ""} onChange={(v) => setEditing({ ...editing, slug: v })} />
-              <FormField label="Cover Image URL" value={editing.cover_image_url || ""} onChange={(v) => setEditing({ ...editing, cover_image_url: v })} />
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Author" value={editing.author_name || ""} onChange={(v) => setEditing({ ...editing, author_name: v })} />
+                <FormField label="Cover Image URL" value={editing.cover_image_url || ""} onChange={(v) => setEditing({ ...editing, cover_image_url: v })} />
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <SelectFormField label="Category" value={editing.category || "general"} options={CATEGORIES} onChange={(v) => setEditing({ ...editing, category: v })} />
@@ -194,6 +237,8 @@ export default function AdminBlog() {
                 <span className="text-sm font-medium text-charcoal">{editing.published ? "Published" : "Draft"}</span>
               </div>
             </div>
+
+            {saveError && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{saveError}</p>}
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setEditing(null)} className="flex-1 h-10 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors">Cancel</button>
@@ -224,6 +269,25 @@ function SelectFormField({ label, value, options, onChange }: { label: string; v
       <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full h-10 rounded-lg border border-border px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ring">
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
+    </div>
+  );
+}
+
+function FaqEditor({ value, onChange }: { value: FaqItem[]; onChange: (v: FaqItem[]) => void }) {
+  const set = (i: number, patch: Partial<FaqItem>) => onChange(value.map((f, j) => (j === i ? { ...f, ...patch } : f)));
+  return (
+    <div>
+      <label className="block text-sm font-medium text-charcoal mb-1">FAQ</label>
+      <div className="space-y-2">
+        {value.map((f, i) => (
+          <div key={i} className="rounded-lg border border-border p-2 space-y-1">
+            <input value={f.q} onChange={(e) => set(i, { q: e.target.value })} placeholder="Câu hỏi" className="w-full h-9 rounded-md border border-border px-2 text-sm" />
+            <textarea value={f.a} onChange={(e) => set(i, { a: e.target.value })} placeholder="Trả lời" rows={2} className="w-full rounded-md border border-border px-2 py-1 text-sm" />
+            <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-xs text-red-600">Xóa</button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onChange([...value, { q: "", a: "" }])} className="mt-2 text-sm text-primary font-medium">+ Thêm câu hỏi</button>
     </div>
   );
 }
