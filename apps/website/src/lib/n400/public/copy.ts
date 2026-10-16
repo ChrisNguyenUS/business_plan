@@ -33,6 +33,31 @@ export interface PublicCopy {
     faqTitle: string;
     faq: FaqItem[];
   };
+  state: {
+    metaTitle: (name: string) => string;
+    metaDescription: (p: { name: string; senators: string[]; governor: string; capital: string | null }) => string;
+    metaDescriptionShort: (name: string) => string;
+    h1: (name: string) => string;
+    lead: (name: string, checkedOn: string) => string;
+    questionLabel: (id: number) => string;
+    q29StateAnswer: string;
+    q29TerritoryNote: string;
+    districtHeader: string;
+    representativeHeader: string;
+    findDistrictCta: string;
+    houseFinderLabel: string;
+    starNote: string;
+    starLink: LinkItem;
+    dataTitle: string;
+    dataChecked: (date: string) => string;
+    electionNotice: string;
+    sourcesLabel: string;
+    ctaTitle: (name: string) => string;
+    relatedTitle: string;
+    fullListLink: LinkItem;
+    gridTitle: string;
+    gridBody: string;
+  };
 }
 
 const USCIS_TEST_PAGE = 'https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test';
@@ -98,6 +123,33 @@ export const PUBLIC_COPY: Record<Locale, PublicCopy> = {
         },
       ],
     },
+    state: {
+      metaTitle: (n) => `Thi quốc tịch Mỹ ${n}: thượng nghị sĩ, dân biểu, thống đốc, thủ phủ`,
+      metaDescription: ({ name, senators, governor, capital }) =>
+        `Đáp án thi quốc tịch Mỹ cho ${name}: thượng nghị sĩ ${senators.join(' và ')}; thống đốc ${governor}${capital ? `; thủ phủ ${capital}` : ''}.`,
+      metaDescriptionShort: (n) => `Đáp án 4 câu hỏi theo nơi sống cho ${n} trong bài thi quốc tịch Mỹ 2025: thượng nghị sĩ, dân biểu, thống đốc, thủ phủ.`,
+      h1: (n) => `Thi quốc tịch Mỹ ở ${n}: đáp án 4 câu hỏi theo nơi sống`,
+      lead: (n, d) =>
+        `Trong bài thi công dân 2025, câu 23, 29, 61 và 62 có đáp án tùy nơi bạn sống. Đây là đáp án cho ${n}, kiểm tra ngày ${d}. Hãy trả lời theo người đang giữ chức vào ngày phỏng vấn.`,
+      questionLabel: (id) => `Câu ${id}`,
+      q29StateAnswer: 'Tùy khu bầu cử (congressional district) của bạn — xem bảng dưới.',
+      q29TerritoryNote: 'Theo USCIS, bạn cũng có thể trả lời rằng vùng lãnh thổ không có dân biểu có quyền biểu quyết.',
+      districtHeader: 'Khu bầu cử',
+      representativeHeader: 'Dân biểu',
+      findDistrictCta: 'Không biết mình ở khu nào? Đăng ký N400 Ready và nhập địa chỉ, ứng dụng sẽ tìm giúp bạn.',
+      houseFinderLabel: 'Hoặc tra trên house.gov',
+      starNote: 'Câu có dấu ★ thuộc 20 câu dành cho người từ 65 tuổi có thẻ xanh từ 20 năm (diện 65/20).',
+      starLink: { label: 'Thi quốc tịch Mỹ cho người trên 65 tuổi', href: '/vi/blog/thi-quoc-tich-my-cho-nguoi-tren-65-tuoi' },
+      dataTitle: 'Dữ liệu cập nhật',
+      dataChecked: (d) => `Kiểm tra ngày ${d}.`,
+      electionNotice: 'Bầu cử Quốc hội và thống đốc diễn ra ngày 3/11/2026; người đắc cử nhậm chức vào tháng 1/2027.',
+      sourcesLabel: 'Nguồn',
+      ctaTitle: (n) => `Luyện 128 câu với đáp án ${n} đã điền sẵn`,
+      relatedTitle: 'Tiểu bang khác',
+      fullListLink: { label: 'Xem đủ 128 câu hỏi', href: '/vi/blog/128-cau-hoi-thi-quoc-tich-my' },
+      gridTitle: 'Chọn tiểu bang của bạn',
+      gridBody: 'Xem đáp án câu 23, 29, 61 và 62 cho nơi bạn sống.',
+    },
   },
   en: {
     home: 'Home',
@@ -157,9 +209,43 @@ export const PUBLIC_COPY: Record<Locale, PublicCopy> = {
         },
       ],
     },
+    state: {
+      metaTitle: (n) => `${n} citizenship test answers: senators, representative, governor, capital`,
+      metaDescription: ({ name, senators, governor, capital }) =>
+        `U.S. citizenship test answers for ${name}: senators ${senators.join(' and ')}; governor ${governor}${capital ? `; capital ${capital}` : ''}.`,
+      metaDescriptionShort: (n) => `Answers to the 4 location-based questions of the 2025 U.S. citizenship test for ${n}: senators, representative, governor, capital.`,
+      h1: (n) => `U.S. citizenship test in ${n}: answers to the 4 location-based questions`,
+      lead: (n, d) =>
+        `On the 2025 civics test, questions 23, 29, 61 and 62 depend on where you live. Here are the answers for ${n}, checked on ${d}. Answer with whoever holds the office on your interview day.`,
+      questionLabel: (id) => `Question ${id}`,
+      q29StateAnswer: 'Depends on your congressional district — see the table below.',
+      q29TerritoryNote: 'USCIS also accepts saying that the territory has no voting representative in Congress.',
+      districtHeader: 'District',
+      representativeHeader: 'Representative',
+      findDistrictCta: 'Not sure which district you are in? Sign up for N400 Ready and enter your address; the app finds it for you.',
+      houseFinderLabel: 'Or look it up on house.gov',
+      starNote: 'Questions marked ★ are among the 20 questions for applicants 65 or older with a green card for 20 years (65/20).',
+      starLink: { label: 'USCIS: exceptions and accommodations', href: USCIS_TEST_PAGE },
+      dataTitle: 'Data freshness',
+      dataChecked: (d) => `Checked on ${d}.`,
+      electionNotice: 'Congressional and governor elections are on November 3, 2026; winners take office in January 2027.',
+      sourcesLabel: 'Sources',
+      ctaTitle: (n) => `Practice all 128 questions with the ${n} answers filled in`,
+      relatedTitle: 'Other states',
+      fullListLink: { label: 'USCIS 2025 civics test questions (PDF)', href: USCIS_128_PDF },
+      gridTitle: 'Choose your state',
+      gridBody: 'See the answers to questions 23, 29, 61 and 62 for where you live.',
+    },
   },
 };
 
 export function ctaHref(locale: Locale): string {
   return `/n400ready/login?lang=${locale}`;
+}
+
+export function formatCheckedOn(iso: string, locale: Locale): string {
+  const d = new Date(`${iso}T12:00:00Z`);
+  return locale === 'vi'
+    ? d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
+    : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
