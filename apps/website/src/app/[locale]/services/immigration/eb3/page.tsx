@@ -2,6 +2,8 @@ import { CheckCircle, MapPin, Plane } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { localeAlternates } from "@/lib/seo/alternates";
+import { ORGANIZATION_ID } from "@/lib/seo/json-ld";
+import { SITE_URL } from "@/lib/seo/site";
 import Eb3MessengerButton from "@/components/services/Eb3MessengerButton";
 import Eb3ScreeningForm from "@/components/services/Eb3ScreeningForm";
 
@@ -28,12 +30,12 @@ export default async function Eb3Page({ params }: { params: Promise<{ locale: st
       name: eb3.hero_title,
       description: eb3.meta_desc,
       serviceType: "EB-3 Other Workers immigration case support",
-      provider: { "@type": "Organization", name: "Manna One Solution", url: "https://mannaos.com" },
+      provider: { "@type": "Organization", "@id": ORGANIZATION_ID, name: "Manna One Solution", url: SITE_URL },
       areaServed: [
         { "@type": "Country", name: "Vietnam" },
         { "@type": "Country", name: "United States" },
       ],
-      url: `https://mannaos.com/${locale}${PATH}`,
+      url: `${SITE_URL}/${locale}${PATH}`,
     },
     {
       "@context": "https://schema.org",

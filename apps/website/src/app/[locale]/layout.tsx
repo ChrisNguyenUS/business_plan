@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { isValidLocale } from "@/lib/i18n/config";
+import { siteJsonLd } from "@/lib/seo/json-ld";
 import { SITE_URL } from "@/lib/seo/site";
 import { notFound } from "next/navigation";
 import "../globals.css";
@@ -21,26 +22,6 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
-
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": ["Organization", "LocalBusiness"],
-  name: "Manna One Solution",
-  url: "https://mannaos.com",
-  logo: "https://mannaos.com/images/logo.png",
-  telephone: "+13468524454",
-  email: "Chris@mannaos.com",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Bellaire Blvd",
-    addressLocality: "Houston",
-    addressRegion: "TX",
-    postalCode: "77036",
-    addressCountry: "US",
-  },
-  sameAs: ["https://facebook.com/mannaonesolution"],
-  areaServed: { "@type": "State", name: "Texas" },
-};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -95,7 +76,7 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col font-[var(--font-inter)]">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
         />
         <AuthProvider>
           <ConditionalChrome
