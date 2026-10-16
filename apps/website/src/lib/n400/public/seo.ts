@@ -6,6 +6,10 @@ import { localeAlternates } from '@/lib/seo/alternates';
 import { ORGANIZATION_ID } from '@/lib/seo/json-ld';
 import { SITE_URL } from '@/lib/seo/site';
 import { PUBLIC_COPY, type FaqItem } from './copy';
+import { STATES_BY_CODE, type StateCode } from '../state-data';
+import { NON_STATE_CODES } from '../location-rules';
+import { stateSlug } from './state-slugs';
+import type { StatePageData } from './state-page';
 
 export function breadcrumbJsonLd(items: { name: string; path: string }[]): Record<string, unknown> {
   return {
@@ -54,4 +58,47 @@ export function landingJsonLd(locale: Locale): Record<string, unknown> {
       faqJsonLd(c.landing.faq),
     ],
   };
+}
+
+export function stateMetadata(code: StateCode, locale: Locale): Metadata {
+  const info = STATES_BY_CODE[code];
+  const c = PUBLIC_COPY[locale].state;
+  const name = locale === 'vi' ? info.nameVi : info.nameEn;
+  const full = NON_STATE_CODES.has(code)
+    ? null
+    : c.metaDescription({ name, senators: info.senators, governor: info.governor, capital: info.capital });
+  const description = full && full.length <= 160 ? full : c.metaDescriptionShort(name);
+  const path = `/n400ready/states/${stateSlug(code)}`;
+  return {
+    title: { absolute: c.metaTitle(name) },
+    description,
+    alternates: localeAlternates(locale, path),
+    openGraph: { type: 'website', url: `/${locale}${path}`, title: c.metaTitle(name), description },
+  };
+}
+
+export function stateJsonLd(data: StatePageData, locale: Locale): Record<string, unknown> {
+  const c = PUBLIC_COPY[locale];
+  const faq = data.answers.map((a) => ({
+    q: a.question,
+    a: [...(a.answers.length > 0 ? a.answers : data.districts.map((d) => `${d.label}: ${d.name}`)), a.note]
+      .filter(Boolean)
+      .join('; '),
+  }));
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      breadcrumbJsonLd([
+        { name: c.home, path: `/${locale}` },
+        { name: 'N400 Ready', path: `/${locale}/n400ready` },
+        { name: data.name, path: `/${locale}/n400ready/states/${data.slug}` },
+      ]),
+      faqJsonLd(faq),
+    ],
+  };
+}
+
+const ELECTION_NOTICE_UNTIL = Date.parse('2027-02-01T00:00:00Z');
+export function electionNoticeActive(now: Date): boolean {
+  return now.getTime() < ELECTION_NOTICE_UNTIL;
 }

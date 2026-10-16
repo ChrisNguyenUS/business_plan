@@ -5,6 +5,7 @@ import { blogPostPath, postSlugs } from "@/lib/blog/post-locale";
 import { languageAlternates } from "@/lib/blog/post-seo";
 import type { BlogPostRow } from "@/lib/blog/types";
 import { SITE_URL } from "@/lib/seo/site";
+import { ALL_STATE_SLUGS } from "@/lib/n400/public/state-slugs";
 
 // sitemap.ts sits outside [locale] and would otherwise be built once per deploy;
 // regenerate hourly so posts published from the admin show up without a redeploy.
@@ -78,6 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...urls("/services/ai", 0.9, "monthly"),
     ...urls("/services/insurance", 0.9, "monthly"),
     ...urls("/n400ready", 0.9, "monthly"),
+    ...ALL_STATE_SLUGS.flatMap((slug) => urls(`/n400ready/states/${slug}`, 0.6, "monthly")),
     ...urls("/about", 0.8, "monthly"),
     ...urls("/contact", 0.8, "weekly"),
     ...blogIndex,

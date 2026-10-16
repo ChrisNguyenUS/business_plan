@@ -8,6 +8,9 @@ import { CtaBlock } from '@/components/n400-public/CtaBlock';
 import { Disclosure } from '@/components/n400-public/Disclosure';
 import { FaqList } from '@/components/n400-public/FaqList';
 import { ModuleList } from '@/components/n400-public/ModuleList';
+import { StateGrid } from '@/components/n400-public/StateGrid';
+import { STATES } from '@/lib/n400/state-data';
+import { stateSlug } from '@/lib/n400/public/state-slugs';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -43,6 +46,13 @@ export default async function N400ReadyLandingPage({ params }: Props) {
           <h2 className="text-2xl font-bold text-charcoal mb-4">{l.personalTitle}</h2>
           <p className="text-muted-foreground">{l.personalBody}</p>
         </section>
+
+        <StateGrid
+          locale={locale}
+          title={c.state.gridTitle}
+          body={c.state.gridBody}
+          states={STATES.map((s) => ({ slug: stateSlug(s.code), name: locale === 'vi' ? s.nameVi : s.nameEn }))}
+        />
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-charcoal mb-4">{l.whichTestTitle}</h2>

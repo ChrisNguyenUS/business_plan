@@ -13,6 +13,7 @@ describe('/[locale]/n400ready', () => {
     expect(h).toContain('luyện thi quốc tịch Mỹ miễn phí');
     expect(h).toContain('/n400ready/login?lang=vi');
     expect(h).toContain('/vi/blog/128-cau-hoi-thi-quoc-tich-my');
+    expect(h).toContain('/vi/n400ready/states/texas');
     expect(h).toContain('không phải hãng luật');
     expect(h).toContain('application/ld+json');
   });

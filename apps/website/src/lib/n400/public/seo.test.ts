@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PUBLIC_COPY } from './copy';
-import { landingJsonLd, landingMetadata } from './seo';
+import { electionNoticeActive, landingJsonLd, landingMetadata, stateJsonLd, stateMetadata } from './seo';
+import { STATES } from '../state-data';
+import { buildStatePage } from './state-page';
 
 describe('landing metadata', () => {
   it('has its own title, a description of at most 160 characters, canonical and hreflang', () => {
@@ -40,5 +42,54 @@ describe('landing JSON-LD', () => {
   it('has a two-step breadcrumb with absolute URLs', () => {
     const items = byType('BreadcrumbList').itemListElement as { position: number; item: string }[];
     expect(items.map((i) => i.item)).toEqual(['https://www.mannaos.com/vi', 'https://www.mannaos.com/vi/n400ready']);
+  });
+});
+
+describe('state metadata', () => {
+  it('keeps every description at 160 characters or fewer', () => {
+    for (const s of STATES) {
+      for (const locale of ['vi', 'en'] as const) {
+        const d = stateMetadata(s.code, locale).description ?? '';
+        expect(d.length, `${s.code} ${locale}: ${d}`).toBeLessThanOrEqual(160);
+        expect(d).not.toMatch(/null|undefined/);
+      }
+    }
+  });
+
+  it('has canonical + hreflang for the state URL', () => {
+    expect(stateMetadata('TX', 'vi').alternates).toEqual({
+      canonical: '/vi/n400ready/states/texas',
+      languages: { en: '/en/n400ready/states/texas', vi: '/vi/n400ready/states/texas', 'x-default': '/en/n400ready/states/texas' },
+    });
+    expect(stateMetadata('TX', 'vi').title).toEqual({ absolute: 'Thi quốc tịch Mỹ Texas: thượng nghị sĩ, dân biểu, thống đốc, thủ phủ' });
+  });
+
+  it('names the officials in the description when it fits, and never for D.C./territories', () => {
+    expect(stateMetadata('TX', 'en').description).toContain('Cornyn');
+    expect(stateMetadata('DC', 'en').description).not.toContain('Bowser');
+  });
+});
+
+describe('state JSON-LD', () => {
+  it('marks up the four visible Q/A pairs and a three-step breadcrumb', () => {
+    const data = buildStatePage('TX', 'vi');
+    const graph = stateJsonLd(data, 'vi')['@graph'] as Record<string, unknown>[];
+    const faq = graph.find((n) => n['@type'] === 'FAQPage')!.mainEntity as { name: string; acceptedAnswer: { text: string } }[];
+    expect(faq.map((f) => f.name)).toEqual(data.answers.map((a) => a.question));
+    expect(faq[1].acceptedAnswer.text).toContain(data.districts[0].name);
+    const crumbs = graph.find((n) => n['@type'] === 'BreadcrumbList')!.itemListElement as { item: string }[];
+    expect(crumbs.map((c) => c.item)).toEqual([
+      'https://www.mannaos.com/vi',
+      'https://www.mannaos.com/vi/n400ready',
+      'https://www.mannaos.com/vi/n400ready/states/texas',
+    ]);
+  });
+});
+
+describe('electionNoticeActive', () => {
+  it('shows until the end of January 2027', () => {
+    expect(electionNoticeActive(new Date('2026-10-16T00:00:00Z'))).toBe(true);
+    expect(electionNoticeActive(new Date('2027-01-31T23:00:00Z'))).toBe(true);
+    expect(electionNoticeActive(new Date('2027-02-01T00:00:00Z'))).toBe(false);
   });
 });
