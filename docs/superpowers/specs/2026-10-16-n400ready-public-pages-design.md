@@ -220,3 +220,16 @@ Example: `/vi/n400ready/states/texas`.
 2. S1 on a branch → tests → push → verify live → GSC request indexing.
 3. S2 on a branch → tests → push → verify 3 sample state pages live → owner approves blog #2/#3 link edits → apply.
 4. About 8 weeks after S2: read GSC queries and clicks for `/vi/n400ready*` vs blog #2, then decide on approaches B/C and the quiz.
+
+## 17. Changes found while planning (2026-10-16)
+
+The plan (`docs/superpowers/plans/2026-10-16-n400ready-public-pages.md`) follows this spec with these corrections:
+
+1. **CTA target.** `/{locale}/signup` sends a new email account to the client portal (`/{locale}/portal`), not N400 Ready. CTAs therefore go to `/n400ready/login?lang=vi|en`: the middleware stores the language cookie and drops the parameter. The login page offers Google sign-in plus "Tạo tài khoản", and that link now carries `?next=/n400ready`, which sign-up honors through a same-origin check. Email sign-ups still do not record attribution (only the OAuth callback does). This is listed as a follow-up.
+2. **Modules (§7.4).** N400 Ready has no reading module. The five items are Civics, Speaking, Writing, answering out loud (voice), and mock tests.
+3. **English landing links.** There are no English blog posts, so the English page links to uscis.gov (the test page and the 128-question PDF) where the Vietnamese page links to blog #1, #2 and #3.
+4. **Election notice (§8.5).** Shown from now until 2027-01-31, not only after election day, because it matters before the vote too.
+5. **Sources (§8.5).** Each state's official website is left out, since the data has no URL for it. The sources are uscis.gov/citizenship/testupdates, senate.gov and house.gov.
+6. **Slices (§12).** The state grid on the landing page ships with S2, together with the pages it links to, so S1 has no broken links.
+7. **Officials check.** Before `N400_OFFICIALS_CHECKED_ON` is set, a new script (`scripts/n400/verify-officials.mjs`) compares senators and House members with senate.gov and clerk.house.gov XML. Governors are checked by hand against the NGA list.
+8. **D.C./territory fix scope (§3.1, owner decision 5).** One `location-rules.ts` feeds the app's taught answers, multiple-choice options, flashcards, the onboarding summary card, voice grading and audio (D.C. governor audio and territory capital audio return none), and the public pages.
