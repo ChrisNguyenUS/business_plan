@@ -162,11 +162,15 @@ export default function NewCasePage() {
           </h3>
           <div className="space-y-4">
             <ClientLookup
+              title="Identify the Client"
+              description="Search for an existing client in the MOS database or create a new profile to continue."
               value={primaryClientId}
               onChange={(id: string) => setPrimaryClientId(id)}
             />
             {caseType === 'package' && (
               <ClientLookup
+                title="Identify the Client"
+                description="Search for an existing client in the MOS database or create a new profile to continue."
                 value={secondaryClientId}
                 onChange={(id: string) => setSecondaryClientId(id)}
               />

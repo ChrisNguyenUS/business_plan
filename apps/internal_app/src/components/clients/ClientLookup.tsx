@@ -11,18 +11,26 @@ interface ClientSearchResult {
 }
 
 /**
- * Search box that picks one existing client. Extracted unchanged from
- * cases/new/page.tsx when New Job became its third user.
+ * Search box that picks one existing client. Extracted from
+ * cases/new/page.tsx when New Job became another user, with the
+ * setState-in-effect lint error removed and initialName, title and
+ * description added.
  */
 export default function ClientLookup({
   value,
   onChange,
   initialName = '',
+  title,
+  description,
 }: {
   value: string
   onChange: (id: string, name: string) => void
   /** Shown while `value` is already set on first render, for example from a URL. */
   initialName?: string
+  /** Heading above the search box; omitted when not given. */
+  title?: string
+  /** Paragraph under the heading; omitted when not given. */
+  description?: string
 }) {
   const [search, setSearch] = useState('')
   const [results, setResults] = useState<ClientSearchResult[]>([])
@@ -53,8 +61,8 @@ export default function ClientLookup({
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
-      <h2 className="text-2xl font-bold text-slate-800 tracking-tight mb-2">Identify the Client</h2>
-      <p className="text-sm text-slate-500 mb-8">Search for an existing client in the MOS database or create a new profile to continue.</p>
+      {title && <h2 className="text-2xl font-bold text-slate-800 tracking-tight mb-2">{title}</h2>}
+      {description && <p className="text-sm text-slate-500 mb-8">{description}</p>}
 
       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex justify-between">
         <span>Client Name or A-Number</span>
