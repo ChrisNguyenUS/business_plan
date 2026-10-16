@@ -65,5 +65,7 @@ create policy blog_posts_update_admin on public.blog_posts
 create policy blog_posts_delete_admin on public.blog_posts
   for delete to authenticated using ((select public.is_admin()));
 
+grant select on public.blog_posts to anon, authenticated;
+grant insert, update, delete on public.blog_posts to authenticated;
 revoke insert, update, delete, truncate, references, trigger on public.blog_posts from anon;
 revoke truncate, references, trigger on public.blog_posts from authenticated;
