@@ -2,6 +2,7 @@ import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question, type N400Categ
 import { N400_DISTRACTORS } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
+import { NON_STATE_CODES, locationRuleAnswer } from './location-rules';
 import type { QuestionAttempt, QuizMode } from './storage';
 import type { N400Dict } from './i18n/vi';
 
@@ -53,14 +54,15 @@ export function senatorAudioUrl(stateCode: StateCode, senator: string): string |
 
 export function governorAudioUrl(stateCode: StateCode): string | null {
   const info = STATES_BY_CODE[stateCode];
-  if (!info) return null;
+  if (!info || info.governorAudioMissing || locationRuleAnswer(61, stateCode)) return null;
   const file = audioFileSlug(info.governor) + '.mp3';
   return `/n400-audio/State/${encodeURIComponent(info.nameEn)}/Governor/${encodeURIComponent(file)}`;
 }
 
 export function capitalAudioUrl(stateCode: StateCode): string | null {
   const info = STATES_BY_CODE[stateCode];
-  if (!info || !info.capital) return null;
+  // No capital recordings exist for D.C. or the territories.
+  if (!info || !info.capital || NON_STATE_CODES.has(stateCode)) return null;
   return `/n400-audio/State/${encodeURIComponent(info.nameEn)}/Capital/capital-${stateCode}.mp3`;
 }
 
@@ -69,7 +71,8 @@ export function representativeAudioUrl(
   districtNumber: number | null
 ): string | null {
   const rep = repForDistrict(stateCode, districtNumber);
-  return rep?.audioUrl ?? null;
+  // A representative changed since the recordings has no audio ('').
+  return rep?.audioUrl || null;
 }
 
 /**
@@ -108,6 +111,9 @@ export function correctAnswersFor(
   }
   const info = STATES_BY_CODE[stateCode];
   if (!info) return [];
+  // D.C./territory answers from the USCIS notes (no senators, no D.C. governor/capital).
+  const rule = locationRuleAnswer(question.id, stateCode);
+  if (rule) return [{ en: rule.en, vi: rule.vi }];
 
   // Q23: senators
   if (question.id === 23) {

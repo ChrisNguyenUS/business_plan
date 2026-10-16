@@ -21,6 +21,9 @@ import {
   gradedOnly,
   lastWrongQuestionIds,
   masteredQuestionIds,
+  governorAudioUrl,
+  capitalAudioUrl,
+  representativeAudioUrl,
 } from './quiz-engine';
 import type { QuizMode } from './storage';
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
@@ -440,5 +443,61 @@ describe('masteredQuestionIds', () => {
         a(1, false, 'practice', '2026-07-02T00:00:00Z'),
       ]),
     ).toEqual([]);
+  });
+});
+
+describe('D.C. and territories (USCIS notes)', () => {
+  const q = (id: number) => N400_QUESTIONS_BY_ID.get(id)!;
+
+  it('teaches the rule sentence instead of a name or nothing', () => {
+    expect(correctAnswersFor(q(23), 'DC')).toEqual([{ en: 'D.C. has no U.S. senators', vi: 'D.C. không có thượng nghị sĩ Hoa Kỳ' }]);
+    expect(correctAnswersFor(q(61), 'DC')).toEqual([{ en: 'D.C. does not have a governor', vi: 'D.C. không có thống đốc' }]);
+    expect(correctAnswersFor(q(62), 'DC')).toEqual([
+      { en: 'D.C. is not a state and does not have a capital', vi: 'D.C. không phải tiểu bang nên không có thủ phủ' },
+    ]);
+    expect(correctAnswersFor(q(62), 'GU')).toEqual([{ en: 'Hagåtña', vi: 'Hagåtña' }]);
+    expect(correctAnswersFor(q(61), 'PR')[0].en).toBe('Jenniffer González-Colón');
+  });
+
+  it('builds 4 options with exactly one correct for every D.C./territory location question', () => {
+    for (const code of ['AS', 'DC', 'GU', 'MP', 'PR', 'VI'] as const) {
+      for (const id of [23, 61, 62]) {
+        const opts = buildOptions(q(id), code, `rule-${id}-${code}`);
+        expect(opts).toHaveLength(4);
+        expect(opts.filter((o) => o.isCorrect)).toHaveLength(1);
+      }
+    }
+  });
+
+  it('plays no name audio that contradicts the rule', () => {
+    expect(governorAudioUrl('DC')).toBeNull();
+    expect(governorAudioUrl('GU')).not.toBeNull();
+    expect(capitalAudioUrl('GU')).toBeNull();
+    expect(capitalAudioUrl('DC')).toBeNull();
+    expect(capitalAudioUrl('TX')).not.toBeNull();
+  });
+});
+
+describe('House seats changed since the 2025 recordings (clerk.house.gov, 2026-10-16)', () => {
+  it('teaches the current representative', () => {
+    const q29 = N400_QUESTIONS_BY_ID.get(29)!;
+    expect(correctAnswersFor(q29, 'CA', 1)).toEqual([{ en: 'James Gallagher', vi: 'James Gallagher' }]);
+    expect(correctAnswersFor(q29, 'CA', 14)).toEqual([{ en: 'Aisha Wahab', vi: 'Aisha Wahab' }]);
+    expect(correctAnswersFor(q29, 'GA', 13)).toEqual([{ en: 'Everton Blair', vi: 'Everton Blair' }]);
+  });
+
+  it('plays no audio for a representative without a recording', () => {
+    expect(representativeAudioUrl('CA', 1)).toBeNull();
+    expect(representativeAudioUrl('CA', 2)).not.toBeNull();
+  });
+});
+
+describe('Territory governors changed since the recordings (NGA, 2026-10-16)', () => {
+  it('teaches the current governor and plays no stale recording', () => {
+    const q61 = N400_QUESTIONS_BY_ID.get(61)!;
+    expect(correctAnswersFor(q61, 'AS')[0].en).toBe("Pula'ali'i Nikolao Pula");
+    expect(correctAnswersFor(q61, 'MP')[0].en).toBe('David M. Apatang');
+    expect(governorAudioUrl('AS')).toBeNull();
+    expect(governorAudioUrl('MP')).toBeNull();
   });
 });

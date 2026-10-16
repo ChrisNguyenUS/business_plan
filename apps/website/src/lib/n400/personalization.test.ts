@@ -54,3 +54,11 @@ describe('districtLabel', () => {
     expect(districtLabel(null, 'District')).toBeNull();
   });
 });
+
+describe('buildCivicsPersonalization for D.C. and territories', () => {
+  it('shows the USCIS rule instead of a D.C. governor', () => {
+    expect(buildCivicsPersonalization('DC', 0, 'vi')!.governor).toBe('D.C. không có thống đốc');
+    expect(buildCivicsPersonalization('DC', 0, 'en')!.governor).toBe('D.C. does not have a governor');
+    expect(buildCivicsPersonalization('GU', 0, 'en')!.capital).toBe('Hagåtña');
+  });
+});
