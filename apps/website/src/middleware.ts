@@ -9,6 +9,7 @@ import {
   hasAttributionSignal,
   mergeAttributionCookie,
 } from '@/lib/n400/growth/attribution';
+import { anonN400Destination, loginLangSwitch } from '@/lib/n400/public/anon-redirect';
 
 const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
 const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
@@ -100,6 +101,21 @@ export async function middleware(request: NextRequest) {
 
   // N400 public pages (e.g. /n400app/login) skip auth entirely.
   if (isN400Public) {
+    // Public pages link to /n400ready/login?lang=xx so the form opens in the
+    // reader's language: store it in the app cookie and drop the param.
+    const langSwitch = loginLangSwitch(pathname, request.nextUrl.searchParams);
+    if (langSwitch) {
+      const url = request.nextUrl.clone();
+      url.search = langSwitch.search;
+      const res = NextResponse.redirect(url);
+      res.cookies.set(N400_LANG_COOKIE, langSwitch.lang, {
+        path: '/',
+        maxAge: N400_LANG_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+      return res;
+    }
     return captureAttribution(request, NextResponse.next());
   }
 
@@ -135,7 +151,14 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     if (isN400Path) {
-      return NextResponse.redirect(new URL('/n400ready/login', request.url));
+      // The app root shows anonymous visitors (and crawlers) the public
+      // landing page; deeper app paths still need a session.
+      const to = anonN400Destination(
+        pathname,
+        request.cookies.get(N400_LANG_COOKIE)?.value,
+        request.headers.get('accept-language') ?? ''
+      );
+      return NextResponse.redirect(new URL(to, request.url));
     }
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
