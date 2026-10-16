@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-16
 **App:** `apps/website/` only. No database migration.
-**Status:** Draft spec for owner review. Owner decisions are listed in §14. Nothing is built yet.
+**Status:** Draft spec for owner review. Owner answered 2026-10-16: both Vietnamese and English versions; no PDF. Decisions 1, 4, 5, 6 in §14 are still open. Nothing is built yet.
 **Path:** Architectural (new public route tree, middleware change, new SEO surface).
 **Follows:** SEO/GEO technical fixes (2026-10-15) and the SEO blog with six Vietnamese N-400 articles, live 2026-10-16 (`specs/2026-10-15-website-seo-blog-design.md`).
 
@@ -60,7 +60,7 @@ Rule: **one main search target per URL**. The blog already owns the list-style s
 |---|---|---|
 | 128 câu hỏi thi quốc tịch mỹ 2026 / tiếng việt | **Blog #2** (live) | Already a full reference list with official answers. A second list page would split the ranking. |
 | thi quốc tịch mỹ cho người trên 65 tuổi | **Blog #3** (live) | Already covers 65/20, 50/20, 55/15 and N-648. |
-| 128 câu hỏi … tiếng việt **pdf** | **Blog #2 + downloadable PDF** (§12, slice 3, owner decision) | The search wants a file. The PDF is linked from #2. |
+| 128 câu hỏi … tiếng việt **pdf** | **Blog #2** (no PDF: owner decision 2026-10-16) | Not targeted. The search wants a file, and none will be built. |
 | app / ứng dụng luyện thi quốc tịch mỹ miễn phí; luyện thi quốc tịch mỹ online* | **`/vi/n400ready`** (new) | Product intent. The blog can't rank here. |
 | thi quốc tịch mỹ [Texas / California …]; thượng nghị sĩ tiểu bang … thi quốc tịch; dân biểu của tôi là ai* | **`/vi/n400ready/states/[state]`** (new) | Each page has unique, location-specific facts. The blog can't list 56 × 4 answers. |
 
@@ -106,7 +106,7 @@ Order (Vietnamese copy shown; English mirrors it):
 4. **"Luyện những gì":** five short items matching the app's real modules (Civics 128 câu; Đọc; Viết; Nói / Speaking; Phỏng vấn thử đầy đủ). Each is one sentence. No feature the app doesn't have.
 5. **"Đáp án theo nơi bạn sống":** explains that 4 of the 128 questions depend on your state and district, and that the app fills them in from your address. Then the **state grid** (`id="states"`): 56 links, states A–Z, then DC and territories. This is the internal-link hub for §8.
 6. **"Thi bài 2025 hay 2008? Trên 65 tuổi?":** two sentences each, linking blog #1 and #3. No rules repeated.
-7. **"Danh sách đầy đủ 128 câu":** one sentence plus a link to blog #2 (and the PDF if slice 3 ships).
+7. **"Danh sách đầy đủ 128 câu":** one sentence plus a link to blog #2.
 8. **FAQ** (5–6 entries, visible): Có thật miễn phí không? Có cần tiếng Anh giỏi không? Dùng trên điện thoại được không? Đáp án tiểu bang lấy ở đâu? N400 Ready có phải của USCIS không? (No.) Có tư vấn pháp lý không? (No: non-attorney disclosure, with a pointer to a licensed attorney and to `/[locale]/services/immigration` and its state caveat.)
 9. **Disclosure footer:** non-attorney + not affiliated with USCIS + "Danh sách chính thức trên uscis.gov là chuẩn."
 
@@ -184,7 +184,7 @@ Example: `/vi/n400ready/states/texas`.
 
 1. **S1: landing + anon redirect.** Landing (vi/en), `anonN400Redirect`, login noindex, sitemap/llms.txt entries for the landing, footer/service links. Shippable alone.
 2. **S2: state pages.** State data fixes (§3.1) + 56 × 2 pages + sitemap + blog #2/#3 link edits (owner OK on wording).
-3. **S3 (owner decision): 128-question bilingual PDF.** Generated at build by a script from `questions-data.ts` into `public/downloads/n400-128-cau-hoi-2025.pdf`. The middleware matcher must skip `/downloads`, otherwise the locale redirect catches it. Each page footer carries "Luyện miễn phí: mannaos.com/vi/n400ready". Location questions say "xem đáp án theo tiểu bang tại …". Note that the file has **one** taught answer per question, so it says the official USCIS list has more acceptable answers and links it. Linked from blog #2 and the landing page. Free, not behind sign-up (recommended), because a sign-up gate stops the PDF from ranking for the "pdf" search.
+(A third slice, a downloadable 128-question PDF, was dropped by the owner on 2026-10-16.)
 
 ## 13. Out of scope (later)
 
@@ -194,12 +194,13 @@ Example: `/vi/n400ready/states/texas`.
 - A public address → district lookup (Geocodio cost and abuse for anonymous users). The app's onboarding already does this after sign-up.
 - Moving the 128 list from blog #2 into the app (approach B).
 - English blog articles.
+- A downloadable 128-question PDF (owner said no, 2026-10-16).
 
-## 14. Owner decisions needed
+## 14. Owner decisions
 
 1. **Approach A** (blog keeps the 128 list; new pages = landing + states)? Recommended: yes.
-2. **English pages too**, or Vietnamese only for now? Recommended: both, because they cost almost nothing (same data, hreflang pairs) and the app is bilingual. If Vietnamese only, English URLs return 404 and hreflang is dropped.
-3. **PDF (S3):** build it? Free download or sign-up required? Recommended: build it, free.
+2. ✅ **Answered 2026-10-16: both languages.** Every page ships as one Vietnamese version and one English version (`/vi/…` + `/en/…`, hreflang pairs).
+3. ✅ **Answered 2026-10-16: no PDF.** Not built. The "…pdf" searches are not targeted.
 4. **Screenshots on the landing page:** use one or two real app screenshots (you choose which screens), or text only? Recommended: two screenshots (Civics practice + state personalization).
 5. **DC governor / territory capitals (§3.1):** OK to change the app's taught answers to match the USCIS notes? This changes what learners in DC and territories see and hear (audio for "no governor" may not exist; the app would show text only for those rows).
 6. **Blog #2/#3 edits:** OK to add the state-page and landing links to the two live posts (wording shown to you before saving)?
@@ -218,5 +219,4 @@ Example: `/vi/n400ready/states/texas`.
 1. Owner approves this spec (§14 answered) → writing-plans.
 2. S1 on a branch → tests → push → verify live → GSC request indexing.
 3. S2 on a branch → tests → push → verify 3 sample state pages live → owner approves blog #2/#3 link edits → apply.
-4. S3 if approved.
-5. About 8 weeks after S2: read GSC queries and clicks for `/vi/n400ready*` vs blog #2, then decide on approaches B/C and the quiz.
+4. About 8 weeks after S2: read GSC queries and clicks for `/vi/n400ready*` vs blog #2, then decide on approaches B/C and the quiz.
