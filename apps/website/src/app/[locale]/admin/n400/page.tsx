@@ -1,54 +1,18 @@
-// Phase 7 Task 1 — Admin N400 questions index.
+// Admin N400 questions index — read-only.
 //
-// Server-rendered list of all 128 questions. Each row links to
-// /[locale]/admin/n400/<id> for editing. Audio + location indicators
-// surface "missing audio" / "location-based" at a glance so the
-// operator can prioritize edits without opening every row.
-//
-// The admin layout (`src/app/[locale]/admin/layout.tsx`) already gates
-// every /admin/* route on `profile.role === 'admin'`, so this server
-// component just reads with the user's session — RLS on n400_questions
-// permits SELECT for admins via the `n400 questions admin write` ALL
-// policy. Cache disabled so saves reflect immediately.
+// Lists the 128 questions exactly as learners see them: text comes from
+// src/lib/n400/questions-data.ts (the single source of truth), not from the
+// n400_questions table, which is only an id registry for FKs. Changing a
+// question means editing questions-data.ts in code (plus a sync migration —
+// see resync-question-bank-migration.test.ts). The admin layout already
+// gates every /admin/* route on `profile.role === 'admin'`.
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
-
-export const revalidate = 0;
-
-interface QuestionRow {
-  id: number;
-  question_en: string;
-  category: string | null;
-  question_audio_url: string | null;
-  is_location_based: boolean | null;
-}
-
-async function getQuestions(): Promise<QuestionRow[]> {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    },
-  );
-  const { data } = await supabase
-    .from('n400_questions')
-    .select('id, question_en, category, question_audio_url, is_location_based')
-    .is('deleted_at', null)
-    .order('id');
-  return (data ?? []) as QuestionRow[];
-}
+import { adminQuestionRows } from '@/lib/n400/admin-question-view';
 
 export default async function AdminN400Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const questions = await getQuestions();
-  const missingAudio = questions.filter((q) => !q.question_audio_url).length;
+  const questions = adminQuestionRows();
 
   return (
     <div>
@@ -56,7 +20,7 @@ export default async function AdminN400Page({ params }: { params: Promise<{ loca
         <div>
           <h1 className="text-2xl font-bold text-charcoal">N400 Questions</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {questions.length} questions • {missingAudio} missing audio
+            {questions.length} questions • read-only, as learners see them (questions-data.ts)
           </p>
         </div>
         <div className="flex gap-3">
@@ -86,32 +50,16 @@ export default async function AdminN400Page({ params }: { params: Promise<{ loca
               #{q.id}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-charcoal truncate">{q.question_en}</p>
-              <p className="text-xs text-muted-foreground truncate">{q.category ?? '—'}</p>
+              <p className="text-sm font-medium text-charcoal truncate">{q.questionEn}</p>
+              <p className="text-xs text-muted-foreground truncate">{q.category}</p>
             </div>
-            <div className="flex gap-2 shrink-0">
-              {q.is_location_based ? (
-                <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                  location
-                </span>
-              ) : null}
-              {q.question_audio_url ? (
-                <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">
-                  🔊 audio
-                </span>
-              ) : (
-                <span className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded">
-                  no audio
-                </span>
-              )}
-            </div>
+            {q.isLocationBased ? (
+              <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded shrink-0">
+                location
+              </span>
+            ) : null}
           </Link>
         ))}
-        {questions.length === 0 ? (
-          <p className="px-6 py-12 text-center text-muted-foreground text-sm">
-            No questions yet. Run `seed-questions.ts` first.
-          </p>
-        ) : null}
       </div>
     </div>
   );
