@@ -22,7 +22,7 @@ export default function JobProgressBar({
           style={{ width: `${progress.percent}%`, backgroundColor: '#3AAFB9' }}
         />
       </div>
-      <span className="w-16 text-right text-xs font-semibold text-slate-500 tabular-nums">
+      <span className="min-w-16 whitespace-nowrap text-right text-xs font-semibold text-slate-500 tabular-nums">
         {formatProgressLabel(progress, stepCount)}
       </span>
     </div>
