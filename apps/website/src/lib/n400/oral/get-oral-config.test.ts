@@ -64,3 +64,28 @@ describe('getOralAnswerConfig — accented names', () => {
     expect(gradeOralAnswer('Gonzalez Colon', getOralAnswerConfig(61, pr)!).verdict).toBe('correct');
   });
 });
+
+const grade = (qid: number, code: 'DC' | 'GU' | 'TX', said: string) =>
+  gradeOralAnswer(said, getOralAnswerConfig(qid, { stateCode: code, districtNumber: 0 })!).verdict;
+
+describe('oral grading for D.C. and territory rule answers', () => {
+  it('accepts the USCIS rule said out loud', () => {
+    expect(grade(23, 'DC', 'D.C. has no senators')).toBe('correct');
+    expect(grade(23, 'GU', 'Guam does not have senators')).toBe('correct');
+    expect(grade(61, 'DC', 'Washington D.C. does not have a governor')).toBe('correct');
+    expect(grade(62, 'DC', 'D.C. is not a state')).toBe('correct');
+  });
+
+  it('rejects the old taught name and the opposite statement', () => {
+    expect(grade(61, 'DC', 'Muriel Bowser')).not.toBe('correct');
+    expect(grade(23, 'DC', 'D.C. has two senators')).not.toBe('correct');
+  });
+
+  it('accepts a territory capital said without diacritics', () => {
+    expect(grade(62, 'GU', 'Hagatna')).toBe('correct');
+  });
+
+  it('keeps state answers unchanged', () => {
+    expect(grade(62, 'TX', 'Austin')).toBe('correct');
+  });
+});

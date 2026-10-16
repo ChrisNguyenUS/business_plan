@@ -1,6 +1,7 @@
 // Resolves the OralAnswerConfig for one question: generated config + aliases,
 // or — for location-based questions — the learner's personal answers.
 
+import { locationRuleAnswer } from '../location-rules';
 import { N400_QUESTIONS_BY_ID } from '../questions-data';
 import { correctAnswersFor } from '../quiz-engine';
 import type { StateCode } from '../state-data';
@@ -23,6 +24,10 @@ export function getOralAnswerConfig(qid: number, location?: OralLocation): OralA
 
   if (q.isLocationBased) {
     if (!location) return null;
+    // D.C./territory rule sentences are graded on their key words ("no senator"),
+    // not on a surname like the people answers.
+    const rule = locationRuleAnswer(qid, location.stateCode);
+    if (rule) return { type: 'single', alternatives: rule.oral };
     const answers = correctAnswersFor(q, location.stateCode, location.districtNumber);
     if (answers.length === 0) return null;
     const alternatives = answers
