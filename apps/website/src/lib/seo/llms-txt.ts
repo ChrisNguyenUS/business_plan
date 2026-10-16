@@ -35,6 +35,7 @@ export function buildLlmsTxt(): string {
 - [Dịch vụ di trú](${vi("/services/immigration")})
 - [Định cư Mỹ diện EB-3](${vi("/services/immigration/eb3")})
 - [Thuế & doanh nghiệp](${vi("/services/tax")})
+- [Bài viết: quốc tịch, di trú, thuế](${vi("/blog")})
 - [Liên hệ](${vi("/contact")})
 
 ## Optional

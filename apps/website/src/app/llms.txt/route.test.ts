@@ -1,4 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// One published Vietnamese post, so /vi/blog is a live sitemap URL.
+vi.mock("@/lib/blog/queries", () => ({
+  listPublishedPosts: async () => [
+    {
+      id: "p1", slug_en: null, slug_vi: "bai", title_en: null, title_vi: "Bài", excerpt_en: null, excerpt_vi: "x",
+      content_en: null, content_vi: "c", faq_en: [], faq_vi: [], author_name: "Manna One Solution",
+      cover_image_url: null, category: "immigration", post_type: "article", published: true,
+      published_at: "2026-10-20T15:00:00Z", created_at: "2026-10-20T15:00:00Z", updated_at: "2026-10-20T15:00:00Z",
+    },
+  ],
+}));
+
 import sitemap from "../sitemap";
 import { GET } from "./route";
 
@@ -21,7 +34,7 @@ describe("/llms.txt", () => {
   });
 
   it("links only to live canonical pages", async () => {
-    const livePages = new Set(sitemap().map((e) => e.url));
+    const livePages = new Set((await sitemap()).map((e) => e.url));
     livePages.add("https://www.mannaos.com/n400ready");
     const links = [...(await body()).matchAll(/\]\((https?:[^)\s]+)\)/g)].map((m) => m[1]);
     expect(links.length).toBeGreaterThan(5);
