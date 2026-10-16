@@ -10,6 +10,7 @@ import {
   listJobs,
   updateStep,
 } from '@/lib/jobs/jobs-db'
+import { parseJobFilters, type JobFilters } from '@/lib/jobs/filters'
 import { isUuid, parseNewJobInput, parseStepPatch } from '@/lib/jobs/validation'
 import type {
   ClientBrief,
@@ -23,8 +24,9 @@ import type {
 // Thin Next.js boundary over src/lib/jobs/jobs-db.ts: build the Supabase
 // client, validate, call, revalidate. Access is decided by RLS (admin-only).
 
-export async function getJobs(): Promise<JobListRow[]> {
-  return listJobs(await createClient())
+export async function getJobs(filters: JobFilters = {}): Promise<JobListRow[]> {
+  // Re-validate: a server action can be called with anything.
+  return listJobs(await createClient(), { filters: parseJobFilters(filters) })
 }
 
 export async function getJobsForClient(clientId: string): Promise<JobListRow[]> {

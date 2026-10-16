@@ -1,5 +1,6 @@
 import {
   createJobFromTemplateRpc,
+  listJobs,
   toJobTemplateSummary,
   updateStep,
   type Db,
@@ -113,5 +114,54 @@ describe('toJobTemplateSummary', () => {
   it('treats a missing count as zero steps', () => {
     expect(toJobTemplateSummary({ ...base, steps: null }).step_count).toBe(0)
     expect(toJobTemplateSummary({ ...base, steps: [] }).step_count).toBe(0)
+  })
+})
+
+describe('listJobs filters', () => {
+  function listDb(result: { data: unknown; error: { message: string } | null }) {
+    const query: Record<string, jest.Mock> & { then?: unknown } = {}
+    query.select = jest.fn(() => query)
+    query.order = jest.fn(() => query)
+    query.limit = jest.fn(() => query)
+    query.eq = jest.fn(() => query)
+    query.then = (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve)
+    const from = jest.fn(() => query)
+    return { db: { from } as unknown as Db, query }
+  }
+
+  it('adds no eq call when no filter is set', async () => {
+    const { db, query } = listDb({ data: [], error: null })
+    await listJobs(db)
+    expect(query.eq).not.toHaveBeenCalled()
+    expect(query.limit).toHaveBeenCalledWith(50)
+  })
+
+  it('filters by status only when set', async () => {
+    const { db, query } = listDb({ data: [], error: null })
+    await listJobs(db, { filters: { status: 'open' } })
+    expect(query.eq).toHaveBeenCalledTimes(1)
+    expect(query.eq).toHaveBeenCalledWith('status', 'open')
+  })
+
+  it('filters by service_type only when set', async () => {
+    const { db, query } = listDb({ data: [], error: null })
+    await listJobs(db, { filters: { service: 'business' } })
+    expect(query.eq).toHaveBeenCalledTimes(1)
+    expect(query.eq).toHaveBeenCalledWith('service_type', 'business')
+  })
+
+  it('applies both filters together', async () => {
+    const { db, query } = listDb({ data: [], error: null })
+    await listJobs(db, { filters: { status: 'complete', service: 'tax' } })
+    expect(query.eq).toHaveBeenCalledWith('status', 'complete')
+    expect(query.eq).toHaveBeenCalledWith('service_type', 'tax')
+    expect(query.eq).toHaveBeenCalledTimes(2)
+  })
+
+  it('still throws on a database error', async () => {
+    const { db } = listDb({ data: null, error: { message: 'boom' } })
+    await expect(listJobs(db, { filters: { status: 'open' } })).rejects.toEqual({
+      message: 'boom',
+    })
   })
 })

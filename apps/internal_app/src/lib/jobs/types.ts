@@ -3,7 +3,7 @@ import type { JobStatus, StepOwner, StepStatus } from './progress'
 /** Outcome of an operation that can fail on user input or at the database. */
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string }
 
-export type JobServiceType = 'immigration' | 'tax' | 'insurance' | 'ai'
+export type JobServiceType = 'immigration' | 'tax' | 'insurance' | 'ai' | 'business'
 
 export interface ClientBrief {
   id: string

@@ -2,13 +2,53 @@ import Link from 'next/link'
 import { getJobs } from '@/actions/jobs'
 import JobProgressBar from '@/components/jobs/JobProgressBar'
 import JobStatusBadge from '@/components/jobs/JobStatusBadge'
+import {
+  JOB_SERVICE_TYPES,
+  SERVICE_LABELS,
+  buildJobsHref,
+  parseJobFilters,
+  type JobFilters,
+} from '@/lib/jobs/filters'
 import { deriveProgress } from '@/lib/jobs/progress'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
-export default async function JobsPage() {
-  const jobs = await getJobs()
+const STATUS_CHIPS: Array<{ label: string; value: JobFilters['status'] }> = [
+  { label: 'All', value: undefined },
+  { label: 'Open', value: 'open' },
+  { label: 'In progress', value: 'in_progress' },
+  { label: 'Complete', value: 'complete' },
+]
+
+const SERVICE_CHIPS: Array<{ label: string; value: JobFilters['service'] }> = [
+  { label: 'All', value: undefined },
+  ...JOB_SERVICE_TYPES.map((value) => ({ label: SERVICE_LABELS[value], value })),
+]
+
+function FilterChip({ href, active, label }: { href: string; active: boolean; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${
+        active ? 'text-white' : 'bg-[#f1f4f9] text-slate-600 hover:bg-[#e4e9f0]'
+      }`}
+      style={active ? { background: 'linear-gradient(135deg, #006970 0%, #3AAFB9 100%)' } : undefined}
+    >
+      {label}
+    </Link>
+  )
+}
+
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string | string[]; service?: string | string[] }>
+}) {
+  const filters = parseJobFilters(await searchParams)
+  const hasFilters = Boolean(filters.status || filters.service)
+  const jobs = await getJobs(filters)
 
   return (
     <div className="space-y-6">
@@ -30,13 +70,54 @@ export default async function JobsPage() {
         </Link>
       </div>
 
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-16 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Status
+          </span>
+          {STATUS_CHIPS.map((chip) => (
+            <FilterChip
+              key={chip.label}
+              label={chip.label}
+              href={buildJobsHref({ ...filters, status: chip.value })}
+              active={filters.status === chip.value}
+            />
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-16 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Service
+          </span>
+          {SERVICE_CHIPS.map((chip) => (
+            <FilterChip
+              key={chip.label}
+              label={chip.label}
+              href={buildJobsHref({ ...filters, service: chip.value })}
+              active={filters.service === chip.value}
+            />
+          ))}
+        </div>
+      </div>
+
       {jobs.length === 0 ? (
         <div
           className="bg-white rounded-xl p-16 text-center"
           style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
         >
           <span className="material-symbols-outlined text-5xl text-slate-200">work</span>
-          <p className="mt-4 text-slate-500 font-medium">No jobs yet</p>
+          {hasFilters ? (
+            <>
+              <p className="mt-4 text-slate-500 font-medium">No jobs match these filters.</p>
+              <Link
+                href="/jobs"
+                className="mt-2 inline-block text-sm font-semibold text-[#006970] hover:underline"
+              >
+                Clear filters
+              </Link>
+            </>
+          ) : (
+            <p className="mt-4 text-slate-500 font-medium">No jobs yet</p>
+          )}
         </div>
       ) : (
         <div
@@ -76,7 +157,7 @@ export default async function JobsPage() {
                     </Link>
                     <p className="mt-0.5">
                       <span className="text-[10px] font-bold capitalize px-2 py-0.5 rounded bg-[#f1f4f9] text-slate-600">
-                        {job.service_type}
+                        {SERVICE_LABELS[job.service_type]}
                       </span>
                     </p>
                   </td>

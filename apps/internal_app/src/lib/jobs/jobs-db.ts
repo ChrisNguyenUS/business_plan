@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { JobFilters } from './filters'
 import type { NewJobInput, StepPatch } from './validation'
 import type {
   ClientBrief,
@@ -31,10 +32,10 @@ function withNumericFee<T extends { fee: unknown }>(row: T): Omit<T, 'fee'> & { 
   return { ...row, fee: Number(row.fee) }
 }
 
-/** Most recently touched first. Pass clientId to see one client's jobs. */
+/** Most recently touched first. Pass clientId to see one client's jobs; filters narrow by status / service. */
 export async function listJobs(
   db: Db,
-  opts: { clientId?: string; limit?: number } = {}
+  opts: { clientId?: string; limit?: number; filters?: JobFilters } = {}
 ): Promise<JobListRow[]> {
   let query = db
     .from('jobs')
@@ -42,6 +43,8 @@ export async function listJobs(
     .order('updated_at', { ascending: false })
     .limit(opts.limit ?? JOBS_LIST_LIMIT)
   if (opts.clientId) query = query.eq('client_id', opts.clientId)
+  if (opts.filters?.status) query = query.eq('status', opts.filters.status)
+  if (opts.filters?.service) query = query.eq('service_type', opts.filters.service)
 
   const { data, error } = await query
   // Throw rather than return []: an RLS-filtered result and a genuinely empty
