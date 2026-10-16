@@ -164,6 +164,13 @@ BEGIN
     v_job := NEW.job_id;
   END IF;
 
+  -- Take the job row lock before counting, so a concurrent writer of another
+  -- step of this job waits here and then counts with our change visible.
+  -- NO KEY UPDATE, not UPDATE: a step insert already holds KEY SHARE on the job
+  -- (foreign key check), and two inserts escalating to UPDATE would deadlock.
+  -- A job that is already deleted matches no row and locks nothing.
+  PERFORM 1 FROM public.jobs WHERE id = v_job FOR NO KEY UPDATE;
+
   SELECT count(*),
          count(*) FILTER (WHERE status IN ('done', 'skipped')),
          count(*) FILTER (WHERE status IN ('in_progress', 'waiting_client', 'done'))
