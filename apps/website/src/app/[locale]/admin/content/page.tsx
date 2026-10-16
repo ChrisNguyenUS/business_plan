@@ -128,7 +128,7 @@ const DEFAULT_IMMIGRATION_OFFERINGS = [
   { id: "1", name: "N-400 Citizenship Application" },
   { id: "2", name: "Green Card Applications" },
   { id: "3", name: "Visa Renewal" },
-  { id: "4", name: "Immigration Consultation" }
+  { id: "4", name: "Document Review Appointment" }
 ];
 
 const DEFAULT_AI_OFFERINGS = [
@@ -172,12 +172,12 @@ const SERVICE_CONTENT_CONFIG: Array<{
     slug: "immigration",
     title: "Immigration",
     cardSummary: {
-      en: "N-400 citizenship, green card, visa renewal, and expert immigration consultation.",
-      vi: "Quốc tịch N-400, thẻ xanh, gia hạn visa và tư vấn di trú chuyên nghiệp.",
+      en: "N-400 citizenship, green card, and renewal form preparation — in Vietnamese and English.",
+      vi: "Soạn hồ sơ quốc tịch N-400, thẻ xanh, gia hạn giấy tờ — song ngữ Việt–Anh.",
     },
     detailIntro: {
-      en: "Professional Vietnamese-language USCIS document preparation and consultation services. Bilingual support to help you navigate your immigration journey with confidence.",
-      vi: "Dịch vụ chuẩn bị hồ sơ USCIS và tư vấn di trú bằng tiếng Việt. Hỗ trợ song ngữ để bạn tự tin trong hành trình di trú.",
+      en: "Bilingual immigration form preparation — N-400, green card, travel documents. We help you get your paperwork complete and on the right USCIS forms. We are not attorneys and do not give legal advice.",
+      vi: "Hỗ trợ soạn và điền hồ sơ di trú bằng tiếng Việt — N-400, thẻ xanh, giấy phép đi lại. Chúng tôi giúp bạn chuẩn bị giấy tờ đầy đủ, đúng mẫu USCIS. Chúng tôi không phải luật sư và không tư vấn pháp lý.",
     },
   },
   {
