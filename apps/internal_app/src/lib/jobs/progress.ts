@@ -43,6 +43,8 @@ export function deriveJobStatus(steps: ReadonlyArray<ProgressStep>): JobStatus |
 /**
  * Done steps over the steps that are not skipped. floor, not round, so 199 of
  * 200 never shows 100% while a step is left; 100% means the job is complete.
+ * done * 100 / total, not done / total * 100: the second form is not exact in
+ * floating point (29 of 100 gives 28.999999999999996 and floors to 28).
  */
 export function deriveProgress(steps: ReadonlyArray<ProgressStep>): Progress {
   if (steps.length === 0) return { done: 0, total: 0, percent: 0 }
@@ -50,7 +52,7 @@ export function deriveProgress(steps: ReadonlyArray<ProgressStep>): Progress {
   const done = steps.filter((s) => s.status === 'done').length
   // Every step skipped: nothing is left to do, which is what 'complete' means.
   if (total === 0) return { done: 0, total: 0, percent: 100 }
-  return { done, total, percent: Math.floor((done / total) * 100) }
+  return { done, total, percent: Math.floor((done * 100) / total) }
 }
 
 /** "3/8", or a dash for a job without steps, so it never reads "0/0". */

@@ -79,6 +79,23 @@ describe('deriveProgress', () => {
     expect(deriveProgress(almost).percent).toBe(99)
   })
 
+  it('is exact where floating point division is not (29 of 100 is 29, not 28)', () => {
+    const pairs: Array<[done: number, total: number, percent: number]> = [
+      [29, 50, 58],
+      [29, 100, 29],
+      [57, 100, 57],
+      [58, 100, 58],
+      [87, 150, 58],
+      [58, 200, 29],
+      [114, 200, 57],
+      [116, 200, 58],
+    ]
+    for (const [done, total, percent] of pairs) {
+      const list = [...repeat('done', done), ...repeat('todo', total - done)]
+      expect(deriveProgress(list).percent).toBe(percent)
+    }
+  })
+
   it('is 100 when every counted step is done', () => {
     expect(deriveProgress(steps('done', 'done'))).toEqual({ done: 2, total: 2, percent: 100 })
   })
