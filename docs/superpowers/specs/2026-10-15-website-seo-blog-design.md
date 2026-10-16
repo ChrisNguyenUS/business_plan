@@ -3,7 +3,7 @@
 **Date:** 2026-10-15
 **App:** `apps/website/` only (plus one Supabase migration and owner-approved content inserts)
 **Branch:** `worktree-website-seo-fixes` (worktree `.claude/worktrees/website-seo-fixes`)
-**Status:** Design approved in chat (2026-10-15) — awaiting written-spec review
+**Status:** Written spec approved by owner (2026-10-15)
 **Follows:** the SEO/GEO technical fixes shipped the same day (canonical + hreflang on www, `/llms.txt`, robots/sitemap, site JSON-LD — ROADMAP "Website SEO/GEO nền kỹ thuật")
 
 ## 1. Goal
@@ -190,8 +190,8 @@ Linking: every cluster links to the pillar and to at least two siblings; the pil
 - The four Vietnamese service pages showing English descriptions (`site_content` override).
 - SEO checklist in the admin editor, cover image upload, RSS feed.
 
-## 12. Open questions for the owner
+## 12. Owner answers (2026-10-15)
 
-1. **Byline:** publish under a person (e.g. the owner's name — a named author with a short bio helps E-E-A-T) or under "Manna One Solution"?
-2. **N400 Ready "miễn phí":** may articles call N400 Ready free?
-3. **Cover images:** none for now (site OG image is used), or does the owner want to supply some?
+1. **Byline:** "Manna One Solution" (the default `author_name`; JSON-LD author = the Organization `@id`).
+2. **N400 Ready "miễn phí":** yes — articles may call N400 Ready free.
+3. **Cover images:** none for now; the site OG image is used.
