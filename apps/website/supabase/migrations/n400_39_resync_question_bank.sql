@@ -12,10 +12,12 @@
 -- the public/n400-audio files learners already hear for that id.
 --
 -- Answers: a question whose live answer set differs from the static file has
--- its live rows soft-deleted (deleted_at, recoverable) and the static set
--- inserted — correct answers at display_order 0.., distractors at 100..; the
--- old first correct answer's audio URL moves to the new display_order 0 row.
--- Re-running is a no-op: only rows that differ are touched.
+-- its live rows soft-deleted (deleted_at, recoverable; each keeps its own
+-- answer_audio_url) and the static set inserted — correct answers at
+-- display_order 0.., distractors at 100... No audio file is added or replaced
+-- and no recording is pointed at new text: the new display_order 0 row reuses
+-- the old first answer's URL only when its answer_en is exactly the same text;
+-- otherwise it has no audio URL. Re-running is a no-op.
 
 CREATE TEMP TABLE n400_39_q (
   id INT PRIMARY KEY, category TEXT, question_en TEXT, question_vi TEXT, is_location_based BOOLEAN
@@ -934,13 +936,10 @@ WHERE q.id = s.id
   AND (q.category, q.question_en, q.question_vi, q.is_location_based)
       IS DISTINCT FROM (s.category, s.question_en, s.question_vi, s.is_location_based);
 
--- (2) Answers: questions whose live set differs, with the audio to carry over.
+-- (2) Answers: questions whose live set differs, with the old first correct
+--     answer's recording (URL + the text it was recorded for).
 CREATE TEMP TABLE n400_39_changed AS
-SELECT s.question_id,
-       (SELECT a.answer_audio_url FROM public.n400_answers a
-        WHERE a.question_id = s.question_id AND a.deleted_at IS NULL
-          AND a.is_correct AND a.answer_audio_url IS NOT NULL
-        ORDER BY a.display_order LIMIT 1) AS audio_url
+SELECT s.question_id, o.answer_audio_url AS audio_url, o.answer_en AS audio_answer_en
 FROM (SELECT question_id,
              string_agg(concat_ws(E'\x1f', is_correct::text, display_order::text, answer_en, answer_vi),
                         E'\x1e' ORDER BY is_correct DESC, display_order) AS sig
@@ -950,6 +949,10 @@ LEFT JOIN (SELECT question_id,
                              E'\x1e' ORDER BY is_correct DESC, display_order) AS sig
            FROM public.n400_answers WHERE deleted_at IS NULL GROUP BY question_id) d
   USING (question_id)
+LEFT JOIN LATERAL (SELECT a.answer_audio_url, a.answer_en FROM public.n400_answers a
+                   WHERE a.question_id = s.question_id AND a.deleted_at IS NULL
+                     AND a.is_correct AND a.answer_audio_url IS NOT NULL
+                   ORDER BY a.display_order LIMIT 1) o ON TRUE
 WHERE d.sig IS DISTINCT FROM s.sig;
 
 UPDATE public.n400_answers a
@@ -959,7 +962,8 @@ WHERE a.question_id = c.question_id AND a.deleted_at IS NULL;
 
 INSERT INTO public.n400_answers (question_id, answer_en, answer_vi, is_correct, display_order, answer_audio_url)
 SELECT s.question_id, s.answer_en, s.answer_vi, s.is_correct, s.display_order,
-       CASE WHEN s.is_correct AND s.display_order = 0 THEN c.audio_url END
+       CASE WHEN s.is_correct AND s.display_order = 0 AND s.answer_en = c.audio_answer_en
+            THEN c.audio_url END
 FROM n400_39_a s
 JOIN n400_39_changed c USING (question_id);
 

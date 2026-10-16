@@ -28,10 +28,12 @@ describe('n400_39_resync_question_bank', () => {
     expect(valueRows('n400_39_a').map((l) => l.trim().replace(/,$/, ''))).toEqual(expected);
   });
 
-  it('keeps ids and audio, soft-deletes replaced answers, never hard-deletes', () => {
+  it('keeps ids and audio files, soft-deletes replaced answers, never hard-deletes', () => {
     const code = sql.replace(/--.*$/gm, '');
     expect(code).not.toMatch(/DELETE FROM|TRUNCATE|question_audio_url\s*=/);
     expect(code).toContain('SET deleted_at = NOW()');
-    expect(code).toContain('CASE WHEN s.is_correct AND s.display_order = 0 THEN c.audio_url END');
+    // A recording is only reused for the exact text it was recorded for.
+    expect(code).toMatch(/CASE WHEN s\.is_correct AND s\.display_order = 0 AND s\.answer_en = c\.audio_answer_en\s+THEN c\.audio_url END/);
+    expect(code).not.toMatch(/answer_audio_url\s*=/);
   });
 });
