@@ -178,10 +178,15 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             ];
           }
           
-          if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
-          if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
-          if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
-          if (content.ai_desc) dbDict.ai_desc = content.ai_desc;
+          // Legacy single-language *_desc keys hold English copy, so they only
+          // override the English dictionary. Vietnamese keeps vi.json unless
+          // service_content provides a vi detail_intro below.
+          if (locale === "en") {
+            if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
+            if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
+            if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
+            if (content.ai_desc) dbDict.ai_desc = content.ai_desc;
+          }
 
           if (content.service_content) {
             const serviceContent = content.service_content as ServiceContent;
