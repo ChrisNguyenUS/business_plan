@@ -15,6 +15,9 @@ export interface OralAnswerConfig {
   /** Word sequences, stopwords included, that count as a full answer ("not have to").
    *  For definitions made of stopwords (speaking Gate S1, What-mean #52). */
   phrases?: string[];
+  /** No `near` from matching only some keywords: for D.C./territory rule answers,
+   *  "governor" alone is the misconception the rule corrects, not half an answer. */
+  noPartialCredit?: boolean;
 }
 
 export type OralVerdict = 'correct' | 'near' | 'wrong';

@@ -44,6 +44,11 @@ describe('buildOralConfig — rules', () => {
     expect(echoExceptionIds()).toEqual([6, 76]);
   });
 
+  it('surnameOf keeps a surname that repeats an earlier name part', () => {
+    expect(surnameOf("Pula'ali'i Nikolao Pula")).toBe('pula');
+    expect(surnameOf('Jenniffer González-Colón')).toBe('colon');
+  });
+
   it('surnameOf strips suffixes', () => {
     expect(surnameOf('Martin Luther King, Jr.')).toBe('king');
     expect(surnameOf('JD Vance')).toBe('vance');

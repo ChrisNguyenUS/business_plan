@@ -89,3 +89,17 @@ describe('oral grading for D.C. and territory rule answers', () => {
     expect(grade(62, 'TX', 'Austin')).toBe('correct');
   });
 });
+
+describe('D.C./territory rule answers give no partial credit for the question word', () => {
+  it('grades the misconception wrong, not near', () => {
+    expect(grade(61, 'DC', 'The governor is Muriel Bowser')).toBe('wrong');
+    expect(grade(23, 'DC', 'My senator is Eleanor Norton')).toBe('wrong');
+    expect(grade(62, 'DC', 'The capital is Washington')).toBe('wrong');
+  });
+});
+
+describe('American Samoa governor is graded on his surname', () => {
+  it('accepts "Governor Pula"', () => {
+    expect(gradeOralAnswer('Governor Pula', getOralAnswerConfig(61, { stateCode: 'AS', districtNumber: 0 })!).verdict).toBe('correct');
+  });
+});
