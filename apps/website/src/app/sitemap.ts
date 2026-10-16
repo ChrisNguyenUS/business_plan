@@ -1,15 +1,22 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo/site";
 
-const BASE = "https://mannaos.com";
 const locales = ["en", "vi"] as const;
 
+// No lastModified: stamping the build time on every page tells crawlers that
+// everything changed on each deploy, so they learn to ignore the field.
 function urls(path: string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]): MetadataRoute.Sitemap {
   return locales.map((locale) => ({
-    url: `${BASE}/${locale}${path}`,
-    lastModified: new Date(),
+    url: `${SITE_URL}/${locale}${path}`,
     changeFrequency,
     priority,
-    alternates: { languages: { en: `${BASE}/en${path}`, vi: `${BASE}/vi${path}` } },
+    alternates: {
+      languages: {
+        en: `${SITE_URL}/en${path}`,
+        vi: `${SITE_URL}/vi${path}`,
+        "x-default": `${SITE_URL}/en${path}`,
+      },
+    },
   }));
 }
 

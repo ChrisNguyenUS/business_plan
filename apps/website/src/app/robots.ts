@@ -1,8 +1,14 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/" },
-    sitemap: "https://mannaos.com/sitemap.xml",
+    // AI search crawlers (OAI-SearchBot, PerplexityBot, ClaudeBot, …) match "*" too.
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/api/", "/en/admin", "/vi/admin", "/en/portal", "/vi/portal"],
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }
