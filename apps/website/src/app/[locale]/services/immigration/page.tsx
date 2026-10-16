@@ -27,6 +27,9 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
             {d.immigration_desc}
           </p>
+          <p className="mt-4 max-w-2xl rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground leading-relaxed">
+            {d.immigration_scope_note}
+          </p>
         </div>
 
         {/* Featured: EB-3 */}
