@@ -6,6 +6,10 @@ import { languageAlternates } from "@/lib/blog/post-seo";
 import type { BlogPostRow } from "@/lib/blog/types";
 import { SITE_URL } from "@/lib/seo/site";
 
+// sitemap.ts sits outside [locale] and would otherwise be built once per deploy;
+// regenerate hourly so posts published from the admin show up without a redeploy.
+export const revalidate = 3600;
+
 const locales = ["en", "vi"] as const;
 
 // No lastModified on static pages: stamping the build time on every page tells

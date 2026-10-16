@@ -37,6 +37,11 @@ const website = {
   publisher: { "@id": ORGANIZATION_ID },
 };
 
+/** JSON for a <script type="application/ld+json"> body: "<" escaped so text can't close the tag. */
+export function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 export const siteJsonLd = {
   "@context": "https://schema.org",
   "@graph": [organization, website] as Array<Record<string, unknown>>,

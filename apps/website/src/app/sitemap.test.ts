@@ -62,6 +62,12 @@ describe("sitemap.xml", () => {
     expect(entries.some((e) => e.url === "https://www.mannaos.com/en/blog")).toBe(false);
   });
 
+  it("is regenerated periodically so newly published posts appear without a deploy", async () => {
+    const mod = await import("./sitemap");
+    expect(mod.revalidate).toBeGreaterThan(0);
+    expect(mod.revalidate).toBeLessThanOrEqual(3600);
+  });
+
   it("still returns the site's pages when the blog query fails", async () => {
     listPublishedPosts.mockImplementation(async () => {
       throw new Error("db down");

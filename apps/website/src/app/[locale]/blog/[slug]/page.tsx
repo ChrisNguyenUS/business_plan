@@ -7,6 +7,7 @@ import { findPublishedPostsBySlug } from "@/lib/blog/queries";
 import { resolvePostRoute } from "@/lib/blog/post-locale";
 import { postJsonLd, postMetadata } from "@/lib/blog/post-seo";
 import { BLOG_LABELS, formatPostDate } from "@/lib/blog/labels";
+import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { PostBody } from "@/components/blog/PostBody";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
@@ -33,7 +34,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="py-16 lg:py-24">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd(post)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(postJsonLd(post)) }} />
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-6">
           <Link href={`/${locale}`} className="hover:text-primary">{t.home}</Link>

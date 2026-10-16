@@ -1,7 +1,16 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { siteJsonLd } from "./json-ld";
+import { serializeJsonLd, siteJsonLd } from "./json-ld";
+
+describe("serializeJsonLd", () => {
+  it("cannot close the surrounding <script> tag", () => {
+    const value = { headline: "a </script><script>alert(1)</script>" };
+    const out = serializeJsonLd(value);
+    expect(out).not.toContain("</script>");
+    expect(JSON.parse(out)).toEqual(value);
+  });
+});
 
 const ORG_ID = "https://www.mannaos.com/#organization";
 
