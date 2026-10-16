@@ -153,6 +153,8 @@ This section is the **single source of truth** for which work ships first. Every
 
 ### Geographic Scope
 
+> **Decision update 2026-10-15 (owner):** MannaOS now serves clients **online across the United States** (tax, online notary, AI automation, document preparation). Immigration document preparation is presented as "online nationwide, depending on the state": some states require non-attorney immigration document preparers to register and post a bond (e.g. California: Secretary of State registration + $100,000 bond), so the client's state is confirmed before a case is accepted; the owner is checking state rules with an attorney. Insurance stays Texas-only (Texas licenses). Educational content (blog, N400 Ready) targets the whole U.S. Schema `areaServed` is now United States. The Texas-only text below is the April 2026 baseline, kept for context.
+
 **V1 is Texas-only for immigration services.** This is a deliberate regulatory and strategic decision, not a growth ceiling. Tax, Insurance, and AI services are constrained separately — see §1 Regulatory Constraints and the per-service notes below.
 
 ```
