@@ -44,7 +44,12 @@ const dropUnits = (kws: string[]): string[] =>
   kws.filter((k, i) => !(UNIT_WORDS.has(k) && i > 0 && isDigits(kws[i - 1])));
 
 export function surnameOf(name: string): string {
-  const kws = keywordsOf(name.replace(NAME_SUFFIX_RE, ' '));
+  const stripped = name.replace(NAME_SUFFIX_RE, ' ').trim();
+  // Keywords of the last word only: keywordsOf de-duplicates, so a surname that
+  // repeats an earlier name part ("Pula'ali'i Nikolao Pula") would vanish.
+  const last = keywordsOf(stripped.split(/\s+/).pop() ?? '');
+  if (last.length > 0) return last[last.length - 1];
+  const kws = keywordsOf(stripped);
   return kws[kws.length - 1] ?? '';
 }
 

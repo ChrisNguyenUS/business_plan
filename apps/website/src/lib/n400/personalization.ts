@@ -8,6 +8,7 @@
 
 import { STATES_BY_CODE, type StateCode, type StateInfo } from './state-data';
 import { repForDistrict } from './reps-data';
+import { locationRuleAnswer } from './location-rules';
 import type { N400Lang } from './i18n/config';
 
 export interface CivicsPersonalization {
@@ -33,11 +34,12 @@ export function buildCivicsPersonalization(
   if (!info) return null;
 
   const rep = repForDistrict(info.code, districtNumber);
+  const governorRule = locationRuleAnswer(61, info.code);
 
   return {
     stateCode: info.code,
     stateName: lang === 'vi' ? info.nameVi : info.nameEn,
-    governor: info.governor,
+    governor: governorRule ? governorRule[lang] : info.governor,
     capital: info.capital,
     senators: info.senators,
     representative: rep?.name ?? null,

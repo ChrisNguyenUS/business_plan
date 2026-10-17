@@ -27,7 +27,7 @@ export function buildLlmsTxt(): string {
 
 ## Tools
 
-- [N400 Ready](${SITE_URL}/n400ready): bilingual practice for the U.S. naturalization interview: the 2025 civics test (128 questions), speaking and writing practice, and full mock interviews.
+- [N400 Ready](${en("/n400ready")}): bilingual practice for the U.S. naturalization interview: the 2025 civics test (128 questions), speaking and writing practice, and full mock interviews.
 
 ## Tiếng Việt
 
@@ -36,6 +36,7 @@ export function buildLlmsTxt(): string {
 - [Định cư Mỹ diện EB-3](${vi("/services/immigration/eb3")})
 - [Thuế & doanh nghiệp](${vi("/services/tax")})
 - [Bài viết: quốc tịch, di trú, thuế](${vi("/blog")})
+- [N400 Ready: luyện thi quốc tịch Mỹ miễn phí](${vi("/n400ready")})
 - [Liên hệ](${vi("/contact")})
 
 ## Optional

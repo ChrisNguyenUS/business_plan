@@ -98,8 +98,9 @@ export function gradeOralAnswer(transcript: string, config: OralAnswerConfig): O
     }
 
     // Enumerations count named items; single/phrase count keywords (spec §3.2 rule 7, rev 3.2).
-    const partial =
-      config.type === 'enumeration' ? partsLoose > 0 && partsLoose * 2 >= parts.length : hits > 0 && hits * 2 >= total;
+    const partial = config.noPartialCredit
+      ? false
+      : config.type === 'enumeration' ? partsLoose > 0 && partsLoose * 2 >= parts.length : hits > 0 && hits * 2 >= total;
     const verdict: OralVerdict = allExact && !excluded ? 'correct' : allLoose || partial ? 'near' : 'wrong';
     const rank = RANK[verdict];
     if (!best || rank > best.rank || (rank === best.rank && hits > best.hits)) {

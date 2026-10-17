@@ -2,8 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getClient } from '@/actions/clients'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getInitials, formatDate } from '@/lib/utils'
+import { getInitials, formatDate, timeAgo } from '@/lib/utils'
 import type { ServiceTag } from '@/types'
+import { getJobsForClient } from '@/actions/jobs'
+import JobProgressBar from '@/components/jobs/JobProgressBar'
+import JobStatusBadge from '@/components/jobs/JobStatusBadge'
+import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
+import { deriveProgress } from '@/lib/jobs/progress'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +49,10 @@ export default async function ClientProfilePage({
     .or(`primary_client_id.eq.${id},secondary_client_id.eq.${id}`)
     .order('created_at', { ascending: false })
     .limit(5)
+
+  // Jobs are admin-only in v1 (2026-04-16 roles plan): staff never see this section.
+  const isAdmin = await isCurrentUserAdmin()
+  const jobs = isAdmin ? await getJobsForClient(id) : []
 
   const addr = client.address as Record<string, string> | null
   const addressStr = addr
@@ -214,6 +223,54 @@ export default async function ClientProfilePage({
           </div>
         )}
       </div>
+
+      {/* Business services (admin only) */}
+      {isAdmin && (
+        <div
+          className="bg-white rounded-xl p-6"
+          style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
+        >
+          <div className="flex justify-between items-center mb-4 pb-3 border-b border-[#ebeef3]">
+            <h3 className="text-base font-semibold text-slate-800">Business services</h3>
+            <Link
+              href={`/jobs/new?client_id=${client.id}`}
+              className="text-xs font-semibold flex items-center gap-1"
+              style={{ color: '#3AAFB9' }}
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              New Job
+            </Link>
+          </div>
+
+          {jobs.length === 0 ? (
+            <p className="text-sm text-slate-400 py-4 text-center">No business services yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {jobs.map((job) => (
+                <Link
+                  key={job.id}
+                  href={`/jobs/${job.id}`}
+                  className="flex items-center justify-between gap-4 p-4 rounded-lg hover:bg-[#f7f9ff] transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-700 truncate">
+                      {job.description || 'Untitled job'}
+                    </p>
+                    <p className="text-[11px] text-slate-400">Updated {timeAgo(job.updated_at)}</p>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <JobProgressBar
+                      progress={deriveProgress(job.steps)}
+                      stepCount={job.steps.length}
+                    />
+                    <JobStatusBadge status={job.status} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

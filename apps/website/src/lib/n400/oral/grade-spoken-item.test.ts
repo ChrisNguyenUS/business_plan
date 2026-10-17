@@ -26,9 +26,14 @@ describe('canSpeak (Review Focus 4)', () => {
     expect(canSpeak({ kind: 'yesno', id: 'yn-1' }, TX)).toBe(true);
   });
 
-  it('is false for a location question without a spoken answer (DC senators / capital)', () => {
-    expect(canSpeak({ kind: 'civics', qid: 23 }, DC)).toBe(false);
-    expect(canSpeak({ kind: 'civics', qid: 62 }, DC)).toBe(false);
+  it('is true for D.C. senators / capital now that the USCIS rule answers are taught', () => {
+    expect(canSpeak({ kind: 'civics', qid: 23 }, DC)).toBe(true);
+    expect(canSpeak({ kind: 'civics', qid: 62 }, DC)).toBe(true);
+  });
+
+  it('is false for a location question without a spoken answer (unknown state code)', () => {
+    const unknown = { stateCode: 'ZZ' as unknown as typeof DC.stateCode, districtNumber: null };
+    expect(canSpeak({ kind: 'civics', qid: 23 }, unknown)).toBe(false);
   });
 });
 

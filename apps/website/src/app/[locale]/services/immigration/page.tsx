@@ -65,6 +65,13 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
           </div>
         )}
 
+        <p className="mb-8 text-center text-muted-foreground">
+          <Link href={`/${locale}/n400ready`} className="text-primary font-semibold hover:underline">
+            N400 Ready
+          </Link>
+          {locale === "vi" ? ": luyện thi quốc tịch Mỹ miễn phí bằng tiếng Việt." : ": free U.S. citizenship test practice."}
+        </p>
+
         {/* CTA */}
         <div className="text-center p-10 rounded-2xl bg-charcoal">
           <h3 className="text-2xl font-bold text-white mb-2">

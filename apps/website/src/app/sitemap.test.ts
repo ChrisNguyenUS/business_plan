@@ -68,6 +68,27 @@ describe("sitemap.xml", () => {
     expect(mod.revalidate).toBeLessThanOrEqual(3600);
   });
 
+  it("lists the N400 Ready landing page in both languages", async () => {
+    const landing = (await sitemap()).find((e) => e.url === "https://www.mannaos.com/vi/n400ready");
+    expect(landing?.alternates?.languages).toEqual({
+      en: "https://www.mannaos.com/en/n400ready",
+      vi: "https://www.mannaos.com/vi/n400ready",
+      "x-default": "https://www.mannaos.com/en/n400ready",
+    });
+    expect(landing?.lastModified).toBeUndefined();
+  });
+
+  it("lists all 56 N400 Ready state pages in both languages", async () => {
+    const entries = await sitemap();
+    const states = entries.filter((e) => e.url.includes("/n400ready/states/"));
+    expect(states).toHaveLength(112);
+    expect(states.find((e) => e.url === "https://www.mannaos.com/vi/n400ready/states/texas")?.alternates?.languages).toEqual({
+      en: "https://www.mannaos.com/en/n400ready/states/texas",
+      vi: "https://www.mannaos.com/vi/n400ready/states/texas",
+      "x-default": "https://www.mannaos.com/en/n400ready/states/texas",
+    });
+  });
+
   it("still returns the site's pages when the blog query fails", async () => {
     listPublishedPosts.mockImplementation(async () => {
       throw new Error("db down");

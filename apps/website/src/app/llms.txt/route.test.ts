@@ -35,12 +35,18 @@ describe("/llms.txt", () => {
 
   it("links only to live canonical pages", async () => {
     const livePages = new Set((await sitemap()).map((e) => e.url));
-    livePages.add("https://www.mannaos.com/n400ready");
     const links = [...(await body()).matchAll(/\]\((https?:[^)\s]+)\)/g)].map((m) => m[1]);
     expect(links.length).toBeGreaterThan(5);
     for (const link of links) {
       expect(livePages.has(link), link).toBe(true);
     }
+  });
+
+  it("points crawlers at the public N400 Ready pages, not the login-gated app", async () => {
+    const text = await body();
+    expect(text).toContain("https://www.mannaos.com/en/n400ready");
+    expect(text).toContain("https://www.mannaos.com/vi/n400ready");
+    expect(text).not.toContain("https://www.mannaos.com/n400ready)");
   });
 
   it("states that Manna One Solution is not a law firm", async () => {

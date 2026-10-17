@@ -64,3 +64,42 @@ describe('getOralAnswerConfig — accented names', () => {
     expect(gradeOralAnswer('Gonzalez Colon', getOralAnswerConfig(61, pr)!).verdict).toBe('correct');
   });
 });
+
+const grade = (qid: number, code: 'DC' | 'GU' | 'TX', said: string) =>
+  gradeOralAnswer(said, getOralAnswerConfig(qid, { stateCode: code, districtNumber: 0 })!).verdict;
+
+describe('oral grading for D.C. and territory rule answers', () => {
+  it('accepts the USCIS rule said out loud', () => {
+    expect(grade(23, 'DC', 'D.C. has no senators')).toBe('correct');
+    expect(grade(23, 'GU', 'Guam does not have senators')).toBe('correct');
+    expect(grade(61, 'DC', 'Washington D.C. does not have a governor')).toBe('correct');
+    expect(grade(62, 'DC', 'D.C. is not a state')).toBe('correct');
+  });
+
+  it('rejects the old taught name and the opposite statement', () => {
+    expect(grade(61, 'DC', 'Muriel Bowser')).not.toBe('correct');
+    expect(grade(23, 'DC', 'D.C. has two senators')).not.toBe('correct');
+  });
+
+  it('accepts a territory capital said without diacritics', () => {
+    expect(grade(62, 'GU', 'Hagatna')).toBe('correct');
+  });
+
+  it('keeps state answers unchanged', () => {
+    expect(grade(62, 'TX', 'Austin')).toBe('correct');
+  });
+});
+
+describe('D.C./territory rule answers give no partial credit for the question word', () => {
+  it('grades the misconception wrong, not near', () => {
+    expect(grade(61, 'DC', 'The governor is Muriel Bowser')).toBe('wrong');
+    expect(grade(23, 'DC', 'My senator is Eleanor Norton')).toBe('wrong');
+    expect(grade(62, 'DC', 'The capital is Washington')).toBe('wrong');
+  });
+});
+
+describe('American Samoa governor is graded on his surname', () => {
+  it('accepts "Governor Pula"', () => {
+    expect(gradeOralAnswer('Governor Pula', getOralAnswerConfig(61, { stateCode: 'AS', districtNumber: 0 })!).verdict).toBe('correct');
+  });
+});

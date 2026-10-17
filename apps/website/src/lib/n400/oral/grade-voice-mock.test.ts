@@ -15,6 +15,11 @@ const spoken = (qid: number, transcript: string, input: 'mic' | 'typed' = 'mic')
 });
 
 describe('gradeVoiceMock (spec §6, rev 3.4)', () => {
+  it('grades the D.C. USCIS rule answer said out loud', () => {
+    const { results } = gradeVoiceMock([spoken(23, 'D.C. has no senators')], [{ qid: 23, correct: 'A' as const }], DC);
+    expect(results[0]).toEqual({ qid: 23, was_correct: true, transcript: 'D.C. has no senators' });
+  });
+
   it('grades transcripts on the server; near counts as wrong', () => {
     const { results } = gradeVoiceMock([spoken(2, 'the constitution'), spoken(7, 'twenty six')], manifest, TX);
     expect(results).toEqual([
@@ -30,11 +35,14 @@ describe('gradeVoiceMock (spec §6, rev 3.4)', () => {
   });
 
   it('questions with no oral config are answered by choice against the manifest', () => {
+    // Every question has an oral config for a real location since D.C./territory
+    // rule answers exist; an unknown state code still has none.
+    const unknown = { stateCode: 'ZZ' as unknown as typeof DC.stateCode, districtNumber: null };
     const dcManifest = [{ qid: 62, correct: 'C' as const }, { qid: 23, correct: 'A' as const }];
     const { results } = gradeVoiceMock(
       [{ qid: 62, selected: 'C' }, spoken(23, 'none')],
       dcManifest,
-      DC,
+      unknown,
     );
     expect(results).toEqual([
       { qid: 62, was_correct: true, transcript: null },

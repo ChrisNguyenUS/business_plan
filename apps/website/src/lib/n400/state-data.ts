@@ -15,10 +15,18 @@ export interface StateInfo {
   governor: string;
   capital: string | null;
   senators: string[];
+  /** The governor changed after the recordings were made: no audio file exists. */
+  governorAudioMissing?: true;
 }
 
 // Source: docs/superpowers/plans/2026-05-13-n400app-phase-1-db-schema.md (Task 7)
 // Folder names match apps/website/public/n400-audio/State/<nameEn>/
+// Date the senators, representatives and governors below (and reps-data.ts)
+// were last checked against senate.gov, clerk.house.gov and the states'
+// official sites. Shown on the public state pages. Re-check after the
+// 2026-11-03 election, once the winners take office (January 2027).
+export const N400_OFFICIALS_CHECKED_ON = '2026-10-16';
+
 export const STATES: StateInfo[] = [
   { code: 'AL', nameEn: 'Alabama', nameVi: 'Alabama', governor: 'Kay Ivey', capital: 'Montgomery', senators: ['Tommy Tuberville', 'Katie Britt'] },
   { code: 'AK', nameEn: 'Alaska', nameVi: 'Alaska', governor: 'Mike Dunleavy', capital: 'Juneau', senators: ['Lisa Murkowski', 'Dan Sullivan'] },
@@ -70,12 +78,12 @@ export const STATES: StateInfo[] = [
   { code: 'WV', nameEn: 'West Virginia', nameVi: 'West Virginia', governor: 'Patrick Morrisey', capital: 'Charleston', senators: ['Jim Justice', 'Shelley Moore Capito'] },
   { code: 'WI', nameEn: 'Wisconsin', nameVi: 'Wisconsin', governor: 'Tony Evers', capital: 'Madison', senators: ['Tammy Baldwin', 'Ron Johnson'] },
   { code: 'WY', nameEn: 'Wyoming', nameVi: 'Wyoming', governor: 'Mark Gordon', capital: 'Cheyenne', senators: ['John Barrasso', 'Cynthia Lummis'] },
-  { code: 'AS', nameEn: 'American Samoa', nameVi: 'Samoa thuộc Mỹ', governor: 'Lemanu Peleti Mauga', capital: null, senators: [] },
+  { code: 'AS', nameEn: 'American Samoa', nameVi: 'Samoa thuộc Mỹ', governor: "Pula'ali'i Nikolao Pula", governorAudioMissing: true, capital: 'Pago Pago', senators: [] },
   { code: 'DC', nameEn: 'District of Columbia', nameVi: 'Washington, D.C.', governor: 'Muriel Bowser', capital: null, senators: [] },
-  { code: 'GU', nameEn: 'Guam', nameVi: 'Guam', governor: 'Lou Leon Guerrero', capital: null, senators: [] },
-  { code: 'MP', nameEn: 'Northern Mariana Islands', nameVi: 'Quần đảo Bắc Mariana', governor: 'Arnold Palacios', capital: null, senators: [] },
-  { code: 'PR', nameEn: 'Puerto Rico', nameVi: 'Puerto Rico', governor: 'Jenniffer González-Colón', capital: null, senators: [] },
-  { code: 'VI', nameEn: 'Virgin Islands', nameVi: 'Quần đảo Virgin Mỹ', governor: 'Albert Bryan', capital: null, senators: [] },
+  { code: 'GU', nameEn: 'Guam', nameVi: 'Guam', governor: 'Lou Leon Guerrero', capital: 'Hagåtña', senators: [] },
+  { code: 'MP', nameEn: 'Northern Mariana Islands', nameVi: 'Quần đảo Bắc Mariana', governor: 'David M. Apatang', governorAudioMissing: true, capital: 'Saipan', senators: [] },
+  { code: 'PR', nameEn: 'Puerto Rico', nameVi: 'Puerto Rico', governor: 'Jenniffer González-Colón', capital: 'San Juan', senators: [] },
+  { code: 'VI', nameEn: 'Virgin Islands', nameVi: 'Quần đảo Virgin Mỹ', governor: 'Albert Bryan', capital: 'Charlotte Amalie', senators: [] },
 ];
 
 export const STATES_BY_CODE: Record<StateCode, StateInfo> = STATES.reduce(

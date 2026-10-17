@@ -20,7 +20,8 @@ describe('N400 Ready public entry points and branding', () => {
     const hero = source('src/components/home/HeroSection.tsx');
 
     expect(hero).toContain('N400 Ready App');
-    expect(hero).toContain('href="/n400ready"');
+    // The hero sends visitors to the public landing page in their language.
+    expect(hero).toContain('href={`/${locale}/n400ready`}');
   });
 
   test('N400 app shell uses N400 Ready branding', () => {
