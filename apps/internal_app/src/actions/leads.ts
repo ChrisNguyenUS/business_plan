@@ -10,6 +10,7 @@ import {
   type TimelineRow,
   type WeakSection,
 } from '@/lib/n400/leads-shape'
+import type { PromptDefinitionRow, PromptStateRow } from '@/lib/n400/profiling-status'
 
 /**
  * One page of leads, highest effective score first.
@@ -94,4 +95,28 @@ export async function getLeadWeakSection(userId: string): Promise<WeakSection | 
   if (error) throw error
   const rows = (data ?? []) as WeakSection[]
   return rows[0] ?? null
+}
+
+/** Profiling question definitions (staff-readable) and this lead's history with them. */
+export async function getLeadProfiling(
+  userId: string,
+): Promise<{ definitions: PromptDefinitionRow[]; states: PromptStateRow[] }> {
+  const supabase = await createClient()
+  const [defs, states] = await Promise.all([
+    supabase
+      .from('n400_prompt_definitions')
+      .select('question_key, variant, text_en, options, trigger, depends_on, sort_order')
+      .eq('enabled', true),
+    supabase
+      .from('n400_profile_prompts')
+      .select('question_key, shown_count, last_shown_at, answered_at, skipped_at')
+      // Explicit user filter — the staff read policy is not a scope filter.
+      .eq('user_id', userId),
+  ])
+  if (defs.error) throw defs.error
+  if (states.error) throw states.error
+  return {
+    definitions: (defs.data ?? []) as unknown as PromptDefinitionRow[],
+    states: (states.data ?? []) as unknown as PromptStateRow[],
+  }
 }
