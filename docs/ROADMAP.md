@@ -101,7 +101,7 @@
 | 7 | Fee Schedule Manager | ⬜ | Chưa có màn hình; `fee_schedule` 0 dòng, 0 policy |
 | 8 | Payments theo milestone | ⬜ | Chưa có UI; `payments` 0 dòng, 0 policy; chưa có bảng `payment_schedules` (PRD §6) |
 | 9 | Expenses | ⬜ | Chưa có UI; `expenses` 0 dòng, 0 policy |
-| 10 | Jobs (Tax/Insurance/AI) | 🟡 | Business Progress Tracker lát 1 (2026-10-16): tạo job từ mẫu, các bước, tiến độ, admin-only. Còn thiếu: email cho khách (lát 2), portal (lát 3), staff dùng Jobs |
+| 10 | Jobs (Tax/Insurance/AI) | 🟡 | Business Progress Tracker lát 1 (2026-10-16): tạo job từ mẫu, các bước, tiến độ, admin-only. Lát 2 (code xong, chờ smoke test): nút Save & email gửi 1 mail song ngữ VI/EN qua Resend + log `job_notifications` (migration 012 đã áp prod). Còn thiếu: portal (lát 3), staff dùng Jobs |
 | 11 | Finance dashboard (admin) | ⬜ | Dashboard hiện đếm clients/cases (đang xử lý, RFE, hoàn tất trong tháng) + Recent Cases + cảnh báo USCIS + cross-sell; chưa có doanh thu, biểu đồ, 4 service cards |
 | 12 | Export CSV tài chính | ⬜ | Chưa có |
 | 13 | Audit trail | ⬜ | Không có code ghi `audit_log`; bảng 0 dòng, 0 policy |
