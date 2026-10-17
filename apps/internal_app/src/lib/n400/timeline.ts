@@ -21,6 +21,15 @@ function num(payload: Record<string, unknown>, key: string): number | null {
   return typeof v === 'number' ? v : null
 }
 
+/** 's6_speaking_help' → 'Speaking help'. The sN_ scenario prefix is an
+ *  internal ordering tag, not something staff need to read. */
+function ctaName(payload: Record<string, unknown>): string {
+  const id = str(payload, 'cta_id')
+  if (!id) return 'unknown'
+  const words = id.replace(/^s\d+_/, '').replace(/_/g, ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
 function joinDot(parts: (string | null)[]): string | null {
   const kept = parts.filter((p): p is string => p !== null && p.length > 0)
   return kept.length > 0 ? kept.join(' · ') : null
@@ -101,21 +110,21 @@ export function describeEvent(
     case 'cta_shown':
       return {
         icon: 'campaign',
-        title: `CTA shown: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA shown: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 
     case 'cta_clicked':
       return {
         icon: 'ads_click',
-        title: `CTA clicked: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA clicked: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 
     case 'cta_dismissed':
       return {
         icon: 'do_not_disturb_on',
-        title: `CTA dismissed: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA dismissed: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 

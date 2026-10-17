@@ -52,8 +52,14 @@ describe('describeEvent', () => {
     const entry = describeEvent('cta_clicked', {
       cta_id: 's10_document_prep', variant: 'a', surface: 'dashboard', group: 'consultation',
     })
-    expect(entry.title).toBe('CTA clicked: s10_document_prep')
+    expect(entry.title).toBe('CTA clicked: Document prep')
     expect(entry.detail).toBe('dashboard')
+  })
+
+  it('humanizes a CTA id with no scenario prefix too', () => {
+    expect(describeEvent('cta_shown', { cta_id: 'speaking_help' }).title).toBe(
+      'CTA shown: Speaking help',
+    )
   })
 
   it('degrades to the raw type for an event type it has never seen', () => {
