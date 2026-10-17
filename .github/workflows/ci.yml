@@ -46,13 +46,8 @@ jobs:
       - name: Type check
         run: pnpm type-check
 
-      # Lint is non-blocking for now — Next 16's stricter rule set
-      # surfaces 29 pre-existing react-hooks/set-state-in-effect errors
-      # across the n400 codebase. Tracked as cleanup; once those are
-      # fixed, drop continue-on-error so lint becomes a hard gate.
-      - name: Lint (non-blocking)
+      - name: Lint
         run: pnpm lint
-        continue-on-error: true
 
       - name: Unit tests
         run: pnpm test
