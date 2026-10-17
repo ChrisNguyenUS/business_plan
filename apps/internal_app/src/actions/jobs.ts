@@ -8,8 +8,11 @@ import {
   findJob,
   listJobTemplates,
   listJobs,
+  listNotifications,
   updateStep,
 } from '@/lib/jobs/jobs-db'
+import { sendWithResend } from '@/lib/jobs/mailer'
+import { sendStepEmail } from '@/lib/jobs/notify'
 import { parseJobFilters, type JobFilters } from '@/lib/jobs/filters'
 import { isUuid, parseNewJobInput, parseStepPatch } from '@/lib/jobs/validation'
 import type {
@@ -18,6 +21,7 @@ import type {
   JobListRow,
   JobStepRow,
   JobTemplateSummary,
+  NotificationRow,
   Result,
 } from '@/lib/jobs/types'
 
@@ -74,5 +78,25 @@ export async function updateJobStep(
     revalidatePath(`/jobs/${result.value.job_id}`)
     revalidatePath('/jobs')
   }
+  return result
+}
+
+export async function getJobNotifications(jobId: string): Promise<NotificationRow[]> {
+  if (!isUuid(jobId)) return []
+  return listNotifications(await createClient(), jobId)
+}
+
+/**
+ * Emails the client about a step that is already saved. It reads the step
+ * again from the database, so it never sends what the browser only thinks it
+ * saved; RLS makes that read (and so the send) admin-only.
+ */
+export async function emailStepUpdate(stepId: string): Promise<Result<{ to: string }>> {
+  if (!isUuid(stepId)) return { ok: false, error: 'Unknown step.' }
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getUser()
+  const result = await sendStepEmail(supabase, sendWithResend, stepId, data.user?.id ?? null)
+  // The send log changed whether or not the email went out.
+  revalidatePath('/jobs/[id]', 'page')
   return result
 }
