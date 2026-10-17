@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getLead, getLeadTimeline, getLeadWeakSection } from '@/actions/leads'
 import LeadTimeline from '@/components/leads/LeadTimeline'
 import LeadSummaryPanel from '@/components/leads/LeadSummaryPanel'
+import LeadKpis from '@/components/leads/LeadKpis'
+import LeadActivityChart from '@/components/leads/LeadActivityChart'
+import { groupTimeline, summarizeActivity } from '@/lib/n400/activity'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +25,9 @@ export default async function LeadDetailPage({
     getLeadWeakSection(userId),
   ])
 
+  const summary = summarizeActivity(timeline.events)
+  const days = groupTimeline(timeline.events)
+
   return (
     <div className="space-y-6">
       <div>
@@ -38,9 +44,12 @@ export default async function LeadDetailPage({
         <p className="text-sm text-slate-400 mt-0.5">{lead.email ?? '—'}</p>
       </div>
 
+      <LeadKpis summary={summary} />
+      <LeadActivityChart daily={summary.daily} />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2">
-          <LeadTimeline events={timeline.events} total={timeline.total} />
+          <LeadTimeline days={days} shown={timeline.events.length} total={timeline.total} />
         </div>
         <LeadSummaryPanel lead={lead} weakSection={weakSection} />
       </div>
