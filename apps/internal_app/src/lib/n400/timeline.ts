@@ -1,4 +1,5 @@
 import type { GrowthEventType } from '@mannaos/n400-growth'
+import type { PromptDefinitionRow } from '@/lib/n400/profiling-status'
 
 /** One rendered row of the lead timeline. */
 export interface TimelineEntry {
@@ -56,7 +57,16 @@ function attemptDetail(payload: Record<string, unknown>): string | null {
 export function describeEvent(
   type: GrowthEventType,
   payload: Record<string, unknown>,
+  /** Profiling definitions by question_key; without them prompts show raw keys. */
+  questions?: ReadonlyMap<string, PromptDefinitionRow>,
 ): TimelineEntry {
+  const key = str(payload, 'question_key')
+  const question = (key && questions?.get(key)?.text_en) ?? key ?? 'unknown'
+  const rawAnswer = str(payload, 'answer')
+  const answer =
+    (key && rawAnswer && questions?.get(key)?.options.find((o) => o.value === rawAnswer)?.label_en) ??
+    rawAnswer
+
   switch (type) {
     case 'account_created':
       return { icon: 'person_add', title: 'Signed up', detail: null }
@@ -89,21 +99,21 @@ export function describeEvent(
     case 'prompt_shown':
       return {
         icon: 'help',
-        title: `Asked: ${str(payload, 'question_key') ?? 'unknown'}`,
+        title: `Asked: ${question}`,
         detail: str(payload, 'surface'),
       }
 
     case 'prompt_answered':
       return {
         icon: 'check_circle',
-        title: `Answered: ${str(payload, 'question_key') ?? 'unknown'}`,
-        detail: joinDot([str(payload, 'answer'), str(payload, 'surface')]),
+        title: `Answered: ${question}`,
+        detail: joinDot([answer, str(payload, 'surface')]),
       }
 
     case 'prompt_skipped':
       return {
         icon: 'cancel',
-        title: `Skipped: ${str(payload, 'question_key') ?? 'unknown'}`,
+        title: `Skipped: ${question}`,
         detail: str(payload, 'surface'),
       }
 

@@ -75,11 +75,9 @@ export default function LeadSummaryPanel({
             </span>
           }
         />
+        {/* Filed / timeline / guidance / interview answers live in the
+            Profiling questions card, with whether each was asked at all. */}
         <Row label="Stage" value={lead.journey_stage?.replace(/_/g, ' ') ?? '—'} />
-        <Row label="Filed" value={lead.n400_filed === null ? '—' : lead.n400_filed ? 'Yes' : 'Not yet'} />
-        <Row label="Timeline" value={lead.filing_timeline ?? '—'} />
-        <Row label="Wants guidance" value={lead.wants_guidance ?? '—'} />
-        <Row label="Interview" value={formatDate(lead.interview_date)} />
         <Row
           label="Interests"
           value={lead.service_interest?.length ? lead.service_interest.join(', ') : '—'}

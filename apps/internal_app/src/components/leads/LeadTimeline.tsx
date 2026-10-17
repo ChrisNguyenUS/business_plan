@@ -1,5 +1,8 @@
 import { describeEvent } from '@/lib/n400/timeline'
 import { LEAD_TIME_ZONE, type ActivityDay, type ActivityItem } from '@/lib/n400/activity'
+import type { PromptDefinitionRow } from '@/lib/n400/profiling-status'
+
+type Questions = ReadonlyMap<string, PromptDefinitionRow>
 
 function formatTime(value: string): string {
   return new Date(value).toLocaleTimeString('en-US', {
@@ -32,7 +35,7 @@ function Icon({ name }: { name: string }) {
   )
 }
 
-function Item({ item }: { item: ActivityItem }) {
+function Item({ item, questions }: { item: ActivityItem; questions: Questions }) {
   if (item.kind === 'practice') {
     const pct = Math.round((item.correct / item.count) * 100)
     const time =
@@ -60,7 +63,7 @@ function Item({ item }: { item: ActivityItem }) {
     )
   }
 
-  const entry = describeEvent(item.event.event_type, item.event.payload ?? {})
+  const entry = describeEvent(item.event.event_type, item.event.payload ?? {}, questions)
   return (
     <li className="flex items-center gap-4 py-2.5">
       <Icon name={entry.icon} />
@@ -79,8 +82,10 @@ export default function LeadTimeline({
   days,
   shown,
   total,
+  questions,
 }: {
   days: ActivityDay[]
+  questions: Questions
   /** Raw events loaded — may be fewer than total for a very active lead. */
   shown: number
   total: number
@@ -119,7 +124,11 @@ export default function LeadTimeline({
             </h4>
             <ol>
               {day.items.map((item) => (
-                <Item key={item.kind === 'practice' ? item.id : item.event.id} item={item} />
+                <Item
+                  key={item.kind === 'practice' ? item.id : item.event.id}
+                  item={item}
+                  questions={questions}
+                />
               ))}
             </ol>
           </section>
