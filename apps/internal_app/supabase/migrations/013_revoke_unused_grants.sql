@@ -3,7 +3,9 @@
 -- Defense in depth, no behavior change. Verified 2026-10-16 on prod:
 --  * audit_log, checklist_templates, expenses, fee_schedule, notifications,
 --    payments and users have RLS enabled and no policy (everything is already
---    denied), and no app code reads or writes them. But anon and authenticated
+--    denied). Only checklist_templates (actions/cases.ts) and notifications
+--    (/notifications page) are read by app code, and both already got 0 rows;
+--    nothing writes any of the seven. But anon and authenticated
 --    still held full table privileges, including TRUNCATE, which RLS does not
 --    govern. Take them away; policies and grants come back with the feature
 --    that needs each table.
