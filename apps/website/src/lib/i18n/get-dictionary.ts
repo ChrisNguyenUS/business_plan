@@ -149,8 +149,18 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             { id: "3", name: dbDict.insurance_s3 }
           ];
 
-          if (content.immigration_offerings && content.immigration_offerings.length > 0) dbDict.immigration_offerings = content.immigration_offerings;
-          else dbDict.immigration_offerings = [
+          if (content.immigration_offerings && content.immigration_offerings.length > 0) {
+            // Each item may carry an optional Vietnamese name_vi alongside
+            // the required (English) name, since the admin editor only
+            // backfilled English text historically. Fall back to the
+            // English name when no translation exists yet.
+            dbDict.immigration_offerings = content.immigration_offerings.map(
+              (item: { id: string; name: string; name_vi?: string }) => ({
+                id: item.id,
+                name: locale === "vi" && item.name_vi?.trim() ? item.name_vi : item.name,
+              }),
+            );
+          } else dbDict.immigration_offerings = [
             { id: "1", name: dbDict.immigration_s1 },
             { id: "2", name: dbDict.immigration_s2 },
             { id: "3", name: dbDict.immigration_s3 },
@@ -178,10 +188,15 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             ];
           }
           
-          if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
-          if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
-          if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
-          if (content.ai_desc) dbDict.ai_desc = content.ai_desc;
+          // Legacy single-language *_desc keys hold English copy, so they only
+          // override the English dictionary. Vietnamese keeps vi.json unless
+          // service_content provides a vi detail_intro below.
+          if (locale === "en") {
+            if (content.tax_desc) dbDict.tax_desc = content.tax_desc;
+            if (content.insurance_desc) dbDict.insurance_desc = content.insurance_desc;
+            if (content.immigration_desc) dbDict.immigration_desc = content.immigration_desc;
+            if (content.ai_desc) dbDict.ai_desc = content.ai_desc;
+          }
 
           if (content.service_content) {
             const serviceContent = content.service_content as ServiceContent;
