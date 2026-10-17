@@ -149,8 +149,18 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
             { id: "3", name: dbDict.insurance_s3 }
           ];
 
-          if (content.immigration_offerings && content.immigration_offerings.length > 0) dbDict.immigration_offerings = content.immigration_offerings;
-          else dbDict.immigration_offerings = [
+          if (content.immigration_offerings && content.immigration_offerings.length > 0) {
+            // Each item may carry an optional Vietnamese name_vi alongside
+            // the required (English) name, since the admin editor only
+            // backfilled English text historically. Fall back to the
+            // English name when no translation exists yet.
+            dbDict.immigration_offerings = content.immigration_offerings.map(
+              (item: { id: string; name: string; name_vi?: string }) => ({
+                id: item.id,
+                name: locale === "vi" && item.name_vi?.trim() ? item.name_vi : item.name,
+              }),
+            );
+          } else dbDict.immigration_offerings = [
             { id: "1", name: dbDict.immigration_s1 },
             { id: "2", name: dbDict.immigration_s2 },
             { id: "3", name: dbDict.immigration_s3 },

@@ -125,10 +125,10 @@ const DEFAULT_INSURANCE_OFFERINGS = [
 ];
 
 const DEFAULT_IMMIGRATION_OFFERINGS = [
-  { id: "1", name: "N-400 Citizenship Application" },
-  { id: "2", name: "Green Card Applications" },
-  { id: "3", name: "Visa Renewal" },
-  { id: "4", name: "Document Review Appointment" }
+  { id: "1", name: "N-400 Citizenship Application", name_vi: "Hồ sơ Quốc tịch N-400" },
+  { id: "2", name: "Green Card Applications", name_vi: "Hồ sơ Thẻ Xanh" },
+  { id: "3", name: "Visa Renewal", name_vi: "Hồ sơ Gia hạn Visa" },
+  { id: "4", name: "Document Review Appointment", name_vi: "Hẹn kiểm tra hồ sơ" }
 ];
 
 const DEFAULT_AI_OFFERINGS = [
@@ -514,6 +514,7 @@ export default function AdminContent() {
                   headerColor="bg-slate-100"
                   borderColor="border-slate-200"
                   hasPrice={false}
+                  hasNameVi
                 />
                 <ServiceCategoryPanel
                   title="Other Pricing (Bottom Table)"
@@ -609,7 +610,7 @@ function ServiceContentFields({
   );
 }
 
-function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor, hasPrice = true }: { title: string; items: ServiceItem[]; onChange: (items: ServiceItem[]) => void; headerColor: string; borderColor: string; hasPrice?: boolean }) {
+function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor, hasPrice = true, hasNameVi = false }: { title: string; items: ServiceItem[]; onChange: (items: ServiceItem[]) => void; headerColor: string; borderColor: string; hasPrice?: boolean; hasNameVi?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const moveItem = (index: number, dir: number) => {
@@ -632,7 +633,10 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
   };
 
   const addItem = () => {
-    onChange([...items, { id: Date.now().toString(), name: "", ...(hasPrice ? { price: "" } : {}) }]);
+    onChange([
+      ...items,
+      { id: Date.now().toString(), name: "", ...(hasPrice ? { price: "" } : {}), ...(hasNameVi ? { name_vi: "" } : {}) },
+    ]);
     setIsOpen(true);
   };
 
@@ -661,13 +665,24 @@ function ServiceCategoryPanel({ title, items, onChange, headerColor, borderColor
                   <ChevronDown className="h-4 w-4" />
                 </button>
               </div>
-              <input 
-                type="text" 
-                placeholder="Name" 
-                value={item.name} 
-                onChange={(e) => updateItem(index, "name", e.target.value)}
-                className="flex-1 h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
-              />
+              <div className="flex-1 flex flex-col gap-1">
+                <input
+                  type="text"
+                  placeholder="Name (English)"
+                  value={item.name}
+                  onChange={(e) => updateItem(index, "name", e.target.value)}
+                  className="h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
+                />
+                {hasNameVi && (
+                  <input
+                    type="text"
+                    placeholder="Tên (Tiếng Việt) — falls back to English if blank"
+                    value={(item.name_vi as string) || ""}
+                    onChange={(e) => updateItem(index, "name_vi", e.target.value)}
+                    className="h-10 rounded-lg border border-border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-white"
+                  />
+                )}
+              </div>
               {hasPrice && (
                 <input 
                   type="text" 

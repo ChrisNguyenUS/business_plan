@@ -60,4 +60,30 @@ describe("getDictionary service descriptions", () => {
     expect(d.tax_desc).toBe("Giới thiệu thuế từ DB");
     expect(d.insurance_desc).toBe(viMessages.insurance_desc);
   });
+
+  it("localizes immigration_offerings names with an optional name_vi, per locale", async () => {
+    siteContentRows = [
+      {
+        section: "services",
+        content: {
+          immigration_offerings: [
+            { id: "1", name: "N-400 Citizenship Filing Application", name_vi: "Hồ sơ Quốc tịch N-400" },
+            { id: "2", name: "Green Card Filing Applications" }, // no vi translation yet
+          ],
+        },
+      },
+    ];
+
+    const vi = await getDictionary("vi");
+    expect(vi.immigration_offerings).toEqual([
+      { id: "1", name: "Hồ sơ Quốc tịch N-400" },
+      { id: "2", name: "Green Card Filing Applications" }, // falls back to English
+    ]);
+
+    const en = await getDictionary("en");
+    expect(en.immigration_offerings).toEqual([
+      { id: "1", name: "N-400 Citizenship Filing Application" },
+      { id: "2", name: "Green Card Filing Applications" },
+    ]);
+  });
 });
