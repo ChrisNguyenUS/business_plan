@@ -66,3 +66,5 @@ export interface JobDetail {
   client: ClientBrief | null
   steps: JobStepRow[]
 }
+
+export type NotificationKind = 'step_done' | 'step_waiting_client'
