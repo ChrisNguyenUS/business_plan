@@ -1,6 +1,9 @@
 import {
   createJobFromTemplateRpc,
+  findStepJobId,
+  insertNotification,
   listJobs,
+  listNotifications,
   toJobTemplateSummary,
   updateStep,
   type Db,
@@ -163,5 +166,104 @@ describe('listJobs filters', () => {
     await expect(listJobs(db, { filters: { status: 'open' } })).rejects.toEqual({
       message: 'boom',
     })
+  })
+})
+
+describe('findStepJobId', () => {
+  function stepDb(result: { data: unknown; error: { message: string } | null }) {
+    const maybeSingle = jest.fn().mockResolvedValue(result)
+    const eq = jest.fn(() => ({ maybeSingle }))
+    const select = jest.fn(() => ({ eq }))
+    const from = jest.fn(() => ({ select }))
+    return { db: { from } as unknown as Db, from, select, eq }
+  }
+
+  it('returns the job id of the step', async () => {
+    const { db, from, select, eq } = stepDb({ data: { job_id: 'job-9' }, error: null })
+    expect(await findStepJobId(db, STEP_ID)).toBe('job-9')
+    expect(from).toHaveBeenCalledWith('job_steps')
+    expect(select).toHaveBeenCalledWith('job_id')
+    expect(eq).toHaveBeenCalledWith('id', STEP_ID)
+  })
+
+  it('returns null when no row comes back', async () => {
+    const { db } = stepDb({ data: null, error: null })
+    expect(await findStepJobId(db, STEP_ID)).toBeNull()
+  })
+
+  it('throws on a database error', async () => {
+    const { db } = stepDb({ data: null, error: { message: 'boom' } })
+    await expect(findStepJobId(db, STEP_ID)).rejects.toEqual({ message: 'boom' })
+  })
+})
+
+describe('insertNotification', () => {
+  const row = {
+    jobId: 'job-1',
+    stepId: STEP_ID,
+    kind: 'step_done' as const,
+    toEmail: 'an@example.com',
+    status: 'failed' as const,
+    error: 'x'.repeat(800),
+    createdBy: 'user-1',
+  }
+
+  function insertDb(error: { message: string } | null) {
+    const insert = jest.fn().mockResolvedValue({ error })
+    const from = jest.fn(() => ({ insert }))
+    return { db: { from } as unknown as Db, from, insert }
+  }
+
+  it('maps the fields to the columns and cuts a long error to 500 characters', async () => {
+    const { db, from, insert } = insertDb(null)
+    expect(await insertNotification(db, row)).toEqual({ ok: true, value: null })
+    expect(from).toHaveBeenCalledWith('job_notifications')
+    expect(insert).toHaveBeenCalledWith({
+      job_id: 'job-1',
+      step_id: STEP_ID,
+      kind: 'step_done',
+      to_email: 'an@example.com',
+      status: 'failed',
+      error: 'x'.repeat(500),
+      created_by: 'user-1',
+    })
+  })
+
+  it('stores a missing error as null', async () => {
+    const { db, insert } = insertDb(null)
+    await insertNotification(db, { ...row, status: 'sent', error: null })
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ error: null, status: 'sent' }))
+  })
+
+  it('returns the database message instead of throwing', async () => {
+    const { db } = insertDb({ message: 'permission denied' })
+    expect(await insertNotification(db, row)).toEqual({ ok: false, error: 'permission denied' })
+  })
+})
+
+describe('listNotifications', () => {
+  function listDb(result: { data: unknown; error: { message: string } | null }) {
+    const limit = jest.fn().mockResolvedValue(result)
+    const order = jest.fn(() => ({ limit }))
+    const eq = jest.fn(() => ({ order }))
+    const select = jest.fn(() => ({ eq }))
+    const from = jest.fn(() => ({ select }))
+    return { db: { from } as unknown as Db, from, eq, order, limit }
+  }
+
+  it("lists one job's log, newest first, capped at 20", async () => {
+    const rows = [{ id: 'n1' }]
+    const { db, from, eq, order, limit } = listDb({ data: rows, error: null })
+    expect(await listNotifications(db, 'job-1')).toEqual(rows)
+    expect(from).toHaveBeenCalledWith('job_notifications')
+    expect(eq).toHaveBeenCalledWith('job_id', 'job-1')
+    expect(order).toHaveBeenCalledWith('created_at', { ascending: false })
+    expect(limit).toHaveBeenCalledWith(20)
+  })
+
+  it('returns an empty list for no rows, and throws on a database error', async () => {
+    expect(await listNotifications(listDb({ data: null, error: null }).db, 'job-1')).toEqual([])
+    const { db } = listDb({ data: null, error: { message: 'boom' } })
+    await expect(listNotifications(db, 'job-1')).rejects.toEqual({ message: 'boom' })
   })
 })

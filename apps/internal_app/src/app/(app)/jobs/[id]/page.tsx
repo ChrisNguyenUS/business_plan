@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getJob } from '@/actions/jobs'
+import { getJob, getJobNotifications } from '@/actions/jobs'
+import JobEmailHistory from '@/components/jobs/JobEmailHistory'
 import JobProgressBar from '@/components/jobs/JobProgressBar'
 import JobStatusBadge from '@/components/jobs/JobStatusBadge'
 import JobStepList from '@/components/jobs/JobStepList'
@@ -18,7 +19,7 @@ export default async function JobDetailPage({
 }) {
   const { id } = await params
 
-  const job = await getJob(id)
+  const [job, notifications] = await Promise.all([getJob(id), getJobNotifications(id)])
   // A malformed id, a missing row and an RLS-hidden row are the same thing here.
   if (!job) notFound()
 
@@ -76,9 +77,11 @@ export default async function JobDetailPage({
             This job has no steps. It was created without a template, so its status is set by hand.
           </p>
         ) : (
-          <JobStepList steps={job.steps} />
+          <JobStepList steps={job.steps} clientEmail={job.client?.email ?? null} />
         )}
       </div>
+
+      <JobEmailHistory notifications={notifications} />
     </div>
   )
 }

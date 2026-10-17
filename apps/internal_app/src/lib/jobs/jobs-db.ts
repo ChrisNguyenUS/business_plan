@@ -7,6 +7,8 @@ import type {
   JobListRow,
   JobStepRow,
   JobTemplateSummary,
+  NotificationKind,
+  NotificationRow,
   Result,
 } from './types'
 
@@ -25,7 +27,7 @@ const STEP_COLUMNS =
 const JOB_LIST_COLUMNS =
   'id, service_type, description, status, fee, deadline, template_key, updated_at, client:clients(id, first_name, last_name), steps:job_steps(status)'
 
-const JOB_DETAIL_COLUMNS = `id, service_type, description, status, fee, deadline, notes, template_key, created_at, updated_at, client:clients(id, first_name, last_name), steps:job_steps(${STEP_COLUMNS})`
+const JOB_DETAIL_COLUMNS = `id, service_type, description, status, fee, deadline, notes, template_key, created_at, updated_at, client:clients(id, first_name, last_name, email), template:job_templates(title_vi), steps:job_steps(${STEP_COLUMNS})`
 
 /** PostgREST may return numeric columns as numbers or strings; the UI wants a number. */
 function withNumericFee<T extends { fee: unknown }>(row: T): Omit<T, 'fee'> & { fee: number } {
@@ -140,4 +142,56 @@ export async function updateStep(
     return { ok: false, error: `Could not save the step: ${error.message}` }
   }
   return { ok: true, value: data as unknown as JobStepRow }
+}
+
+/** The job a step belongs to, or null when the step does not exist or RLS hides it. */
+export async function findStepJobId(db: Db, stepId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from('job_steps')
+    .select('job_id')
+    .eq('id', stepId)
+    .maybeSingle()
+  if (error) throw error
+  return (data as { job_id: string } | null)?.job_id ?? null
+}
+
+export interface NewNotification {
+  jobId: string
+  stepId: string
+  kind: NotificationKind
+  toEmail: string
+  status: 'sent' | 'failed'
+  error: string | null
+  createdBy: string | null
+}
+
+const ERROR_TEXT_LIMIT = 500
+
+/** Appends one row to the send log. The caller decides what a failure here means. */
+export async function insertNotification(db: Db, n: NewNotification): Promise<Result<null>> {
+  const { error } = await db.from('job_notifications').insert({
+    job_id: n.jobId,
+    step_id: n.stepId,
+    kind: n.kind,
+    to_email: n.toEmail,
+    status: n.status,
+    error: n.error === null ? null : n.error.slice(0, ERROR_TEXT_LIMIT),
+    created_by: n.createdBy,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true, value: null }
+}
+
+export const NOTIFICATIONS_LIMIT = 20
+
+/** Newest first. Throws on a database error, like the other reads. */
+export async function listNotifications(db: Db, jobId: string): Promise<NotificationRow[]> {
+  const { data, error } = await db
+    .from('job_notifications')
+    .select('id, kind, to_email, status, error, created_at, step:job_steps(position, title_en)')
+    .eq('job_id', jobId)
+    .order('created_at', { ascending: false })
+    .limit(NOTIFICATIONS_LIMIT)
+  if (error) throw error
+  return (data ?? []) as unknown as NotificationRow[]
 }

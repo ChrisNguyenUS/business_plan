@@ -11,6 +11,11 @@ export interface ClientBrief {
   last_name: string
 }
 
+/** The client on a job's detail page; the email is what progress emails go to. */
+export interface JobClient extends ClientBrief {
+  email: string | null
+}
+
 export interface JobTemplateSummary {
   key: string
   service_type: JobServiceType
@@ -63,6 +68,20 @@ export interface JobDetail {
   template_key: string | null
   created_at: string
   updated_at: string
-  client: ClientBrief | null
+  client: JobClient | null
+  /** The service name in Vietnamese, from the template; null for a job made without one. */
+  template: { title_vi: string } | null
   steps: JobStepRow[]
+}
+
+export type NotificationKind = 'step_done' | 'step_waiting_client'
+
+export interface NotificationRow {
+  id: string
+  kind: NotificationKind
+  to_email: string
+  status: 'sent' | 'failed'
+  error: string | null
+  created_at: string
+  step: { position: number; title_en: string } | null
 }

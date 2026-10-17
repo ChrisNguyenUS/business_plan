@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateJobStep } from '@/actions/jobs'
+import { emailStepUpdate, updateJobStep } from '@/actions/jobs'
+import { emailKindFor } from '@/lib/jobs/email'
 import {
   STEP_OWNER_LABELS,
   STEP_STATUSES,
@@ -26,7 +27,7 @@ const OWNER_STYLE: Record<JobStepRow['owner'], string> = {
 
 type Message = { kind: 'ok' | 'error'; text: string } | null
 
-function StepRow({ step }: { step: JobStepRow }) {
+function StepRow({ step, clientEmail }: { step: JobStepRow; clientEmail: string | null }) {
   const [status, setStatus] = useState<StepStatus>(step.status)
   const [clientNote, setClientNote] = useState(step.client_note ?? '')
   const [internalNote, setInternalNote] = useState(step.internal_note ?? '')
@@ -44,7 +45,11 @@ function StepRow({ step }: { step: JobStepRow }) {
     clientNote !== saved.clientNote ||
     internalNote !== saved.internalNote
 
-  function save() {
+  // Offer the email only when the step is moving to a status the client cares about.
+  const canEmail =
+    step.client_visible && emailKindFor(status) !== null && status !== saved.status
+
+  function save(emailClient: boolean) {
     setMessage(null)
     startTransition(async () => {
       const result = await updateJobStep(step.id, {
@@ -52,12 +57,22 @@ function StepRow({ step }: { step: JobStepRow }) {
         client_note: clientNote,
         internal_note: internalNote,
       })
-      if (result.ok) {
-        setSaved({ status, clientNote, internalNote })
-        setMessage({ kind: 'ok', text: 'Saved' })
-      } else {
+      if (!result.ok) {
         setMessage({ kind: 'error', text: result.error })
+        return
       }
+      setSaved({ status, clientNote, internalNote })
+      if (!emailClient) {
+        setMessage({ kind: 'ok', text: 'Saved' })
+        return
+      }
+      // The step is saved either way; only the email can still fail.
+      const mail = await emailStepUpdate(step.id)
+      setMessage(
+        mail.ok
+          ? { kind: 'ok', text: `Saved and emailed ${mail.value.to}` }
+          : { kind: 'error', text: `Saved. Email not sent: ${mail.error}` }
+      )
     })
   }
 
@@ -132,13 +147,30 @@ function StepRow({ step }: { step: JobStepRow }) {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={save}
+              onClick={() => save(false)}
               disabled={!dirty || pending}
               className="rounded-lg px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
               style={{ backgroundColor: '#3AAFB9' }}
             >
               {pending ? 'Saving…' : 'Save'}
             </button>
+            {canEmail && (
+              <button
+                type="button"
+                onClick={() => save(true)}
+                disabled={!clientEmail || pending}
+                className="rounded-lg border border-[#3AAFB9] px-4 py-1.5 text-sm font-semibold text-[#006970] disabled:opacity-40"
+              >
+                Save &amp; email
+              </button>
+            )}
+            {canEmail && (
+              <span className="text-xs text-slate-500">
+                {clientEmail
+                  ? `Save & email will write to ${clientEmail}`
+                  : 'This client has no email on file, so it cannot be emailed.'}
+              </span>
+            )}
             {message && (
               <span
                 role="status"
@@ -156,11 +188,17 @@ function StepRow({ step }: { step: JobStepRow }) {
   )
 }
 
-export default function JobStepList({ steps }: { steps: JobStepRow[] }) {
+export default function JobStepList({
+  steps,
+  clientEmail,
+}: {
+  steps: JobStepRow[]
+  clientEmail: string | null
+}) {
   return (
     <ul className="divide-y divide-[#ebeef3]">
       {steps.map((step) => (
-        <StepRow key={step.id} step={step} />
+        <StepRow key={step.id} step={step} clientEmail={clientEmail} />
       ))}
     </ul>
   )
