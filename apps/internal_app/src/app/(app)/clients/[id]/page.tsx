@@ -30,10 +30,13 @@ function InfoBlock({ label, value }: { label: string; value?: string | null }) {
 
 export default async function ClientProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ already?: string }>
 }) {
   const { id } = await params
+  const { already } = await searchParams
   const client = await getClient(id).catch(() => null)
   if (!client) notFound()
 
@@ -64,6 +67,15 @@ export default async function ClientProfilePage({
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {already === '1' && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-amber-50 text-sm text-amber-800">
+          <span className="material-symbols-outlined text-[18px]">warning</span>
+          <span>
+            This lead was already converted by someone else — the details you typed were not
+            saved. Review this client and edit if needed.
+          </span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-5">
@@ -80,6 +92,15 @@ export default async function ClientProfilePage({
             </h2>
             {client.a_number && (
               <p className="text-sm text-slate-500 font-mono mt-0.5">A# {client.a_number}</p>
+            )}
+            {client.source_lead_id && (
+              <Link
+                href={`/leads/${client.source_lead_id}`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#006970] hover:underline mt-1"
+              >
+                <span className="material-symbols-outlined text-sm">trending_up</span>
+                Source: N400Ready lead
+              </Link>
             )}
             <div className="flex flex-wrap gap-1.5 mt-2">
               {services.map((s) => (
