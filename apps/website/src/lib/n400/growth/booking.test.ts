@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { topicForCta, validateBookingInput } from './booking';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { OPEN_CONSULTATION_STATUSES, alreadyRequestedVariant, topicForCta, validateBookingInput } from './booking';
 
 describe('topicForCta', () => {
   it('maps writing/speaking coaching CTAs to their topics', () => {
@@ -35,5 +37,30 @@ describe('validateBookingInput', () => {
     ['topic', { ...good, topic: 'divorce_law' }],
   ])('rejects bad %s', (error, raw) => {
     expect(validateBookingInput(raw)).toEqual({ ok: false, error });
+  });
+});
+
+describe('OPEN_CONSULTATION_STATUSES', () => {
+  it('treats a booked consultation as still open (no second request, CTA parked)', () => {
+    expect(OPEN_CONSULTATION_STATUSES).toEqual(['new', 'contacted', 'booked']);
+  });
+
+  it('is the only open-status list the booking and CTA readers use', () => {
+    for (const file of ['booking-actions.ts', 'cta-state.ts']) {
+      const src = readFileSync(join(__dirname, file), 'utf8');
+      expect(src).toContain('OPEN_CONSULTATION_STATUSES');
+      expect(src).not.toMatch(/\.in\(\s*['"]status['"]\s*,\s*\[\s*['"]/);
+    }
+  });
+});
+
+describe('alreadyRequestedVariant', () => {
+  it('shows booked copy (no Calendly) only for a booked request', () => {
+    expect(alreadyRequestedVariant('booked')).toBe('booked');
+  });
+  it('keeps pending copy for new/contacted/none', () => {
+    expect(alreadyRequestedVariant('new')).toBe('pending');
+    expect(alreadyRequestedVariant('contacted')).toBe('pending');
+    expect(alreadyRequestedVariant(null)).toBe('pending');
   });
 });

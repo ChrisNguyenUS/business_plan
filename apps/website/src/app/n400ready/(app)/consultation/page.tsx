@@ -14,7 +14,7 @@ import {
 } from '@/lib/n400/growth/booking-actions';
 import { ingestClientEvent } from '@/lib/n400/growth/ingest';
 import {
-  CONSULTATION_TOPICS, PREFERRED_TIMES,
+  CONSULTATION_TOPICS, PREFERRED_TIMES, alreadyRequestedVariant,
   type ConsultationTopic, type PreferredTime,
 } from '@/lib/n400/growth/booking';
 
@@ -56,23 +56,26 @@ export default function ConsultationPage() {
   if (!ctx) return <div className="text-sm text-gray-500">{dict.common.loading}</div>;
 
   if (submitted || ctx.alreadyRequested) {
+    const booked = !submitted && alreadyRequestedVariant(ctx.openStatus) === 'booked';
     return (
       <div className="mx-auto max-w-xl px-4 py-10">
         <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
           <div className="text-xs font-bold uppercase tracking-wide text-teal-600">{t.eyebrow}</div>
           <h1 className="mt-1.5 text-xl font-bold text-gray-800">
-            {submitted ? t.confirmTitle : t.alreadyTitle}
+            {submitted ? t.confirmTitle : booked ? t.bookedTitle : t.alreadyTitle}
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            {submitted ? t.confirmBody : t.alreadyBody}
+            {submitted ? t.confirmBody : booked ? t.bookedBody : t.alreadyBody}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href={CALENDLY_URL} target="_blank" rel="noopener noreferrer"
-              className="rounded-full bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
-            >
-              {t.calendlyCta}
-            </a>
+            {!booked && (
+              <a
+                href={CALENDLY_URL} target="_blank" rel="noopener noreferrer"
+                className="rounded-full bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+              >
+                {t.calendlyCta}
+              </a>
+            )}
             <Link
               href="/n400ready"
               className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"

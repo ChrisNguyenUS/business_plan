@@ -9,8 +9,8 @@
 import { getAuthedServerClient } from './server-client';
 import { isFeatureOn, loadFeatureFlags } from './flags';
 import {
-  topicForCta, validateBookingInput,
-  type ConsultationTopic,
+  topicForCta, validateBookingInput, OPEN_CONSULTATION_STATUSES,
+  type ConsultationTopic, type OpenConsultationStatus,
 } from './booking';
 import { notifyConsultationRequest } from './notify';
 import { sendCapiLead } from '@/lib/analytics/meta-capi';
@@ -19,13 +19,14 @@ import { getDisplayName } from '@/lib/profile-utils';
 export interface BookingContext {
   enabled: boolean;
   alreadyRequested: boolean;
+  openStatus: OpenConsultationStatus | null;
   prefillName: string;
   sourceCta: string | null;
   prefillTopic: ConsultationTopic;
 }
 
 const DISABLED: BookingContext = {
-  enabled: false, alreadyRequested: false, prefillName: '', sourceCta: null, prefillTopic: 'n400_review',
+  enabled: false, alreadyRequested: false, openStatus: null, prefillName: '', sourceCta: null, prefillTopic: 'n400_review',
 };
 
 async function latestClickedCta(
@@ -53,9 +54,9 @@ export async function getBookingContext(): Promise<BookingContext> {
   const [openRes, profileRes, sourceCta] = await Promise.all([
     supabase
       .from('n400_consultation_requests')
-      .select('id')
+      .select('id, status')
       .eq('user_id', user.id)
-      .in('status', ['new', 'contacted'])
+      .in('status', [...OPEN_CONSULTATION_STATUSES])
       .limit(1),
     supabase
       .from('profiles')
@@ -71,6 +72,7 @@ export async function getBookingContext(): Promise<BookingContext> {
   return {
     enabled: true,
     alreadyRequested: (openRes.data ?? []).length > 0,
+    openStatus: ((openRes.data ?? [])[0]?.status as OpenConsultationStatus | undefined) ?? null,
     prefillName: display === 'User' ? '' : display,
     sourceCta,
     prefillTopic: topicForCta(sourceCta),
@@ -96,12 +98,12 @@ export async function submitConsultationRequest(raw: {
   // (two requests landing within the same round-trip) could still create two rows. Accepted
   // tradeoff for a lead-capture form (worst case: a duplicate lead record + duplicate staff
   // email), not worth a DB constraint for this volume/stakes. Revisit with a partial unique
-  // index on (user_id) WHERE status IN ('new','contacted') if this ever becomes a real problem.
+  // index on (user_id) WHERE status IN (OPEN_CONSULTATION_STATUSES: new, contacted, booked) if this ever becomes a real problem.
   const open = await supabase
     .from('n400_consultation_requests')
     .select('id')
     .eq('user_id', user.id)
-    .in('status', ['new', 'contacted'])
+    .in('status', [...OPEN_CONSULTATION_STATUSES])
     .limit(1);
   if ((open.data ?? []).length > 0) return { ok: true };
 

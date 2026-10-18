@@ -342,6 +342,8 @@ export const vi = {
       calendlyCta: 'Tự chọn lịch trên Calendly',
       alreadyTitle: 'Bạn đã có một yêu cầu đang chờ',
       alreadyBody: 'Đội ngũ Manna sẽ sớm liên hệ với bạn. Cần đổi giờ? Chọn lịch trực tiếp bên dưới.',
+      bookedTitle: 'Buổi tư vấn của bạn đã được đặt lịch',
+      bookedBody: 'Đội ngũ Manna đã xếp lịch tư vấn cho bạn. Nếu cần đổi giờ, hãy trả lời tin nhắn của chúng tôi hoặc gọi cho chúng tôi.',
       backToDashboard: 'Về trang chính',
     },
   },

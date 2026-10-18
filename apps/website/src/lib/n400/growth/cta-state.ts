@@ -4,6 +4,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { selectActiveCta, type CtaAction, type CtaDefinition, type CtaGroup } from './cta';
+import { OPEN_CONSULTATION_STATUSES } from './booking';
 import { loadLearningSignals } from './learning-signals';
 import type { PromptSurface } from './profiling';
 import type { GrowthContext } from './growth-context';
@@ -34,13 +35,13 @@ export async function loadCtaState(
       .eq('enabled', true),
     loadLearningSignals(supabase, ctx.userId, dict, ctx.gradedDays),
     // Consultation half only — per the growth-context guard rail this read
-    // does not belong in loadGrowthContext. An open (new/contacted) request
+    // does not belong in loadGrowthContext. An open (new/contacted/booked) request
     // parks the consultation group without burning its cooldown.
     supabase
       .from('n400_consultation_requests')
       .select('id')
       .eq('user_id', ctx.userId)
-      .in('status', ['new', 'contacted'])
+      .in('status', [...OPEN_CONSULTATION_STATUSES])
       .limit(1),
   ]);
 
