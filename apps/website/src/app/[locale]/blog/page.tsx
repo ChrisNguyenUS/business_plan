@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { isValidLocale, locales, type Locale } from "@/lib/i18n/config";
 import { listPublishedPosts } from "@/lib/blog/queries";
-import { blogPostPath, localizePost, postSlugs } from "@/lib/blog/post-locale";
+import { blogIndexPosts, blogPostPath, postSlugs } from "@/lib/blog/post-locale";
 import { blogIndexMetadata } from "@/lib/blog/post-seo";
 import { BLOG_LABELS, CATEGORY_LABELS, formatPostDate } from "@/lib/blog/labels";
 import { BlogList, type BlogCard } from "@/components/blog/BlogList";
@@ -25,22 +25,16 @@ export default async function BlogPage({ params }: Props) {
   if (!isValidLocale(locale)) notFound();
   const l: Locale = locale;
   const t = BLOG_LABELS[l];
-  const cards: BlogCard[] = (await listPublishedPosts()).flatMap((row) => {
-    const p = localizePost(row, l);
-    return p
-      ? [
-          {
-            id: p.id,
-            href: blogPostPath(l, p.slug),
-            title: p.title,
-            excerpt: p.excerpt,
-            category: p.category,
-            dateLabel: formatPostDate(p.publishedAt, l),
-            coverImageUrl: p.coverImageUrl,
-          },
-        ]
-      : [];
-  });
+  const { fallback, posts } = blogIndexPosts(await listPublishedPosts(), l);
+  const cards: BlogCard[] = posts.map((p) => ({
+    id: p.id,
+    href: blogPostPath(p.locale, p.slug),
+    title: p.title,
+    excerpt: p.excerpt,
+    category: p.category,
+    dateLabel: formatPostDate(p.publishedAt, l),
+    coverImageUrl: p.coverImageUrl,
+  }));
 
   return (
     <div className="py-16 lg:py-24">
@@ -48,6 +42,7 @@ export default async function BlogPage({ params }: Props) {
         <div className="text-center mb-14">
           <h1 className="text-4xl lg:text-5xl font-bold text-charcoal mb-3">{t.indexHeading}</h1>
           <p className="text-muted-foreground text-lg">{t.indexSub}</p>
+          {fallback && <p className="mt-4 text-sm text-primary font-medium">{t.fallbackNote}</p>}
         </div>
         {cards.length === 0 ? (
           <p className="text-center text-muted-foreground py-20">{t.empty}</p>

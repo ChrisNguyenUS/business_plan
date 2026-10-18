@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localizePost, postSlugs, resolvePostRoute } from "./post-locale";
+import { blogIndexPosts, localizePost, postSlugs, resolvePostRoute } from "./post-locale";
 import type { BlogPostRow } from "./types";
 
 function row(over: Partial<BlogPostRow>): BlogPostRow {
@@ -79,5 +79,23 @@ describe("resolvePostRoute", () => {
     const viPost = row({ id: "vi-post", slug_vi: "shared", title_vi: "VI", content_vi: "b" });
     const r = resolvePostRoute([enPost, viPost], "vi", "shared");
     expect(r.kind === "render" && r.post.id).toBe("vi-post");
+  });
+});
+
+describe("blogIndexPosts", () => {
+  it("lists the page's own-language posts when it has any", () => {
+    const r = blogIndexPosts([viOnly, both], "en");
+    expect(r.fallback).toBe(false);
+    expect(r.posts.map((p) => [p.id, p.locale])).toEqual([["p2", "en"]]);
+  });
+
+  it("falls back to the other language's posts instead of an empty page", () => {
+    const r = blogIndexPosts([viOnly], "en");
+    expect(r.fallback).toBe(true);
+    expect(r.posts.map((p) => [p.id, p.locale, p.slug])).toEqual([["p1", "vi", "don-n-400-la-gi"]]);
+  });
+
+  it("is empty only when no language has posts", () => {
+    expect(blogIndexPosts([], "vi")).toEqual({ fallback: false, posts: [] });
   });
 });
