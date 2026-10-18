@@ -17,6 +17,33 @@ export interface LeadPrefill {
   email: string
   phone: string
   address: { street: string; city: string; state: string; zip: string }
+  /** full_name the first/last split was derived from; null when split columns were used. */
+  nameSplitFrom: string | null
+}
+
+/** Profile names with the leads view as fallback for a null/missing profile field. */
+export function mergeLeadNames(
+  profile: LeadProfileNames | null,
+  lead: { full_name: string | null; email: string | null },
+): LeadProfileNames {
+  return {
+    first_name: profile?.first_name ?? null,
+    middle_name: profile?.middle_name ?? null,
+    last_name: profile?.last_name ?? null,
+    full_name: profile?.full_name ?? lead.full_name,
+    email: profile?.email ?? lead.email,
+  }
+}
+
+/** Unique-violation on clients.source_lead_id (lead already converted). */
+export function isSourceLeadDuplicate(
+  error: { code?: string; message?: string } | null,
+): boolean {
+  return (
+    !!error &&
+    error.code === '23505' &&
+    (error.message ?? '').includes('clients_source_lead_id_key')
+  )
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -48,6 +75,7 @@ export function buildLeadPrefill(
   const name = hasSplit
     ? { first: text(profile.first_name), middle: text(profile.middle_name), last: text(profile.last_name) }
     : splitFullName(text(profile.full_name))
+  const nameSplitFrom = !hasSplit && text(profile.full_name) !== '' ? text(profile.full_name) : null
 
   return {
     first_name: name.first,
@@ -61,5 +89,6 @@ export function buildLeadPrefill(
       state: text(addressPayload?.['state']),
       zip: '',
     },
+    nameSplitFrom,
   }
 }

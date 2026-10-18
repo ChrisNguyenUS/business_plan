@@ -30,10 +30,13 @@ function InfoBlock({ label, value }: { label: string; value?: string | null }) {
 
 export default async function ClientProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ already?: string }>
 }) {
   const { id } = await params
+  const { already } = await searchParams
   const client = await getClient(id).catch(() => null)
   if (!client) notFound()
 
@@ -64,6 +67,15 @@ export default async function ClientProfilePage({
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {already === '1' && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-amber-50 text-sm text-amber-800">
+          <span className="material-symbols-outlined text-[18px]">warning</span>
+          <span>
+            This lead was already converted by someone else — the details you typed were not
+            saved. Review this client and edit if needed.
+          </span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-5">

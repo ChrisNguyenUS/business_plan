@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { isUuid } from '@/lib/n400/lead-prefill'
+import { isSourceLeadDuplicate, isUuid } from '@/lib/n400/lead-prefill'
 
 export async function getClients(query?: string) {
   const supabase = await createClient()
@@ -35,8 +35,26 @@ export async function getClient(id: string) {
   return data
 }
 
-export async function createClient_(formData: FormData) {
+export async function createClient_(
+  formData: FormData,
+): Promise<{ id: string; alreadyConverted: boolean }> {
   const supabase = await createClient()
+
+  // The hidden field can be tampered with: only keep a lead staff can actually
+  // see as a client-role lead, otherwise store null (a bad uuid would be an
+  // unreadable FK error).
+  let sourceLeadId: string | null = null
+  const postedLead = formData.get('source_lead_id') as string | null
+  if (isUuid(postedLead)) {
+    const { data: lead, error: leadError } = await supabase
+      .from('n400_leads_view')
+      .select('user_id')
+      .eq('role', 'client')
+      .eq('user_id', postedLead)
+      .maybeSingle()
+    if (leadError) throw leadError
+    if (lead) sourceLeadId = postedLead
+  }
 
   const payload = {
     first_name: formData.get('first_name') as string,
@@ -58,9 +76,7 @@ export async function createClient_(formData: FormData) {
     services_used: [],
     notes: (formData.get('notes') as string) || null,
     // Set only by Convert to Client (hidden field). A label, never user_id.
-    source_lead_id: isUuid(formData.get('source_lead_id') as string | null)
-      ? (formData.get('source_lead_id') as string)
-      : null,
+    source_lead_id: sourceLeadId,
   }
 
   const { data, error } = await supabase
@@ -73,18 +89,14 @@ export async function createClient_(formData: FormData) {
     // Lead already converted (double submit, Back + resubmit, two staff at
     // once). Land on the existing client instead of failing: Next hides
     // thrown messages in production, so an error here would be unreadable.
-    if (
-      error.code === '23505' &&
-      error.message.includes('clients_source_lead_id_key') &&
-      payload.source_lead_id
-    ) {
+    if (isSourceLeadDuplicate(error) && payload.source_lead_id) {
       const { data: existing, error: lookupError } = await supabase
         .from('clients')
         .select('id')
         .eq('source_lead_id', payload.source_lead_id)
         .single()
       if (lookupError) throw lookupError
-      return existing.id as string
+      return { id: existing.id as string, alreadyConverted: true }
     }
     throw error
   }
@@ -93,7 +105,7 @@ export async function createClient_(formData: FormData) {
     revalidatePath('/leads')
     revalidatePath(`/leads/${payload.source_lead_id}`)
   }
-  return data.id as string
+  return { id: data.id as string, alreadyConverted: false }
 }
 
 export async function updateClient(id: string, formData: FormData) {

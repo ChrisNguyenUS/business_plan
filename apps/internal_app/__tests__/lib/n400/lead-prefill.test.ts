@@ -1,4 +1,4 @@
-import { buildLeadPrefill, isUuid } from '@/lib/n400/lead-prefill'
+import { buildLeadPrefill, isSourceLeadDuplicate, isUuid, mergeLeadNames } from '@/lib/n400/lead-prefill'
 
 const names = (p: Partial<Parameters<typeof buildLeadPrefill>[0]>) => ({
   first_name: null, middle_name: null, last_name: null, full_name: null, email: null, ...p,
@@ -13,7 +13,7 @@ describe('buildLeadPrefill', () => {
     )
     expect(v).toEqual({
       first_name: 'Vu', middle_name: 'Van', last_name: 'Tran', email: 'v@x.com', phone: '555-0100',
-      address: { street: '', city: 'Sunnyside', state: 'NY', zip: '' },
+      address: { street: '', city: 'Sunnyside', state: 'NY', zip: '' }, nameSplitFrom: null,
     })
   })
 
@@ -33,6 +33,7 @@ describe('buildLeadPrefill', () => {
     expect(buildLeadPrefill(names({}), null, null)).toEqual({
       first_name: '', middle_name: '', last_name: '', email: '', phone: '',
       address: { street: '', city: '', state: '', zip: '' },
+      nameSplitFrom: null,
     })
   })
 
@@ -49,5 +50,44 @@ describe('isUuid', () => {
     expect(isUuid('not-a-uuid')).toBe(false)
     expect(isUuid('')).toBe(false)
     expect(isUuid(undefined)).toBe(false)
+  })
+})
+
+describe('nameSplitFrom (V1)', () => {
+  it('is the trimmed full_name when it was split', () => {
+    expect(buildLeadPrefill(names({ full_name: '  Vu Tran ' }), null, null).nameSplitFrom).toBe('Vu Tran')
+  })
+  it('is null when split columns were used or nothing to split', () => {
+    expect(buildLeadPrefill(names({ first_name: 'Vu', full_name: 'Vu Tran' }), null, null).nameSplitFrom).toBeNull()
+    expect(buildLeadPrefill(names({}), null, null).nameSplitFrom).toBeNull()
+  })
+})
+
+describe('mergeLeadNames (V4)', () => {
+  const lead = { full_name: 'View Name', email: 'view@x.com' }
+  it('falls back to the view when the profile row has nulls', () => {
+    expect(mergeLeadNames(names({ first_name: 'A' }), lead)).toMatchObject({
+      first_name: 'A', full_name: 'View Name', email: 'view@x.com',
+    })
+  })
+  it('prefers profile values when present', () => {
+    expect(mergeLeadNames(names({ full_name: 'P', email: 'p@x.com' }), lead)).toMatchObject({
+      full_name: 'P', email: 'p@x.com',
+    })
+  })
+  it('uses the view alone when there is no profile row', () => {
+    expect(mergeLeadNames(null, lead)).toEqual({
+      first_name: null, middle_name: null, last_name: null, full_name: 'View Name', email: 'view@x.com',
+    })
+  })
+})
+
+describe('isSourceLeadDuplicate (V5)', () => {
+  it('matches only the source-lead unique index', () => {
+    expect(isSourceLeadDuplicate({ code: '23505', message: 'duplicate key value violates unique constraint "clients_source_lead_id_key"' })).toBe(true)
+    expect(isSourceLeadDuplicate({ code: '23505', message: 'violates "clients_email_key"' })).toBe(false)
+    expect(isSourceLeadDuplicate({ code: '23503', message: 'clients_source_lead_id_key' })).toBe(false)
+    expect(isSourceLeadDuplicate({ code: '23505' })).toBe(false)
+    expect(isSourceLeadDuplicate(null)).toBe(false)
   })
 })

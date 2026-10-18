@@ -107,8 +107,8 @@ export function ClientForm({ defaultValues, clientId, sourceLeadId }: Props) {
         await updateClient(clientId, formData)
         router.push(`/clients/${clientId}`)
       } else {
-        const id = await createClient_(formData)
-        router.push(`/clients/${id}`)
+        const { id, alreadyConverted } = await createClient_(formData)
+        router.push(alreadyConverted ? `/clients/${id}?already=1` : `/clients/${id}`)
       }
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong')

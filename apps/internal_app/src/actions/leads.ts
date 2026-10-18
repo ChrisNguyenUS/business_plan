@@ -11,7 +11,7 @@ import {
   type WeakSection,
 } from '@/lib/n400/leads-shape'
 import type { PromptDefinitionRow, PromptStateRow } from '@/lib/n400/profiling-status'
-import { buildLeadPrefill, isUuid, type LeadPrefill } from '@/lib/n400/lead-prefill'
+import { buildLeadPrefill, isUuid, mergeLeadNames, type LeadPrefill } from '@/lib/n400/lead-prefill'
 
 /**
  * One page of leads, highest effective score first.
@@ -164,7 +164,7 @@ export async function getLeadConversion(userId: string): Promise<string | null> 
  */
 export async function getLeadPrefill(
   userId: string,
-): Promise<{ displayName: string; values: LeadPrefill } | null> {
+): Promise<{ displayName: string; values: Omit<LeadPrefill, 'nameSplitFrom'>; nameSplitFrom: string | null } | null> {
   if (!isUuid(userId)) return null
   const supabase = await createClient()
 
@@ -205,19 +205,18 @@ export async function getLeadPrefill(
   if (consult.error) throw consult.error
   if (address.error) throw address.error
 
-  const names = profile.data ?? {
-    first_name: null,
-    middle_name: null,
-    last_name: null,
-    full_name: lead.full_name,
-    email: lead.email,
-  }
+  const names = mergeLeadNames(profile.data, {
+    full_name: lead.full_name as string | null,
+    email: lead.email as string | null,
+  })
+  const { nameSplitFrom, ...values } = buildLeadPrefill(
+    names,
+    (consult.data?.phone as string | null) ?? null,
+    (address.data?.payload as Record<string, unknown> | null) ?? null,
+  )
   return {
     displayName: (lead.full_name as string | null) || (lead.email as string | null) || 'this lead',
-    values: buildLeadPrefill(
-      names,
-      (consult.data?.phone as string | null) ?? null,
-      (address.data?.payload as Record<string, unknown> | null) ?? null,
-    ),
+    values,
+    nameSplitFrom,
   }
 }

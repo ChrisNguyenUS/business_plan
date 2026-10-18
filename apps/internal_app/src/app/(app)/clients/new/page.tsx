@@ -38,6 +38,11 @@ export default async function NewClientPage({
           </span>
         </div>
       )}
+      {prefill?.nameSplitFrom && (
+        <p className="text-sm text-slate-500 -mt-3">
+          Name filled from “{prefill.nameSplitFrom}” — check first/last order.
+        </p>
+      )}
       <div
         className="bg-white rounded-xl p-8"
         style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
