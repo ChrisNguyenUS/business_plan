@@ -1,4 +1,6 @@
 import {
+  ACTIVE_FILTER,
+  CLOSED_FILTERS,
   OPEN_STATUSES,
   daysSince,
   firstTabWithRows,
@@ -142,5 +144,18 @@ describe('F8 hygiene', () => {
     const a = mk('a', '2026-10-17T10:00:00+02:00') // 08:00Z
     const b = mk('b', '2026-10-17T09:00:00Z')
     expect(sortForTab([a, b], 'open').map((r) => r.id)).toEqual(['b', 'a'])
+  })
+})
+
+describe('fetch filters (C4)', () => {
+  const list = OPEN_STATUSES.join(',')
+  it('builds the active filter from OPEN_STATUSES', () => {
+    expect(ACTIVE_FILTER).toBe(`outcome.eq.follow_up,and(outcome.is.null,status.in.(${list}))`)
+  })
+  it('closed is the exact complement of active', () => {
+    expect(CLOSED_FILTERS).toEqual([
+      'outcome.is.null,outcome.neq.follow_up',
+      `outcome.not.is.null,status.not.in.(${list})`,
+    ])
   })
 })

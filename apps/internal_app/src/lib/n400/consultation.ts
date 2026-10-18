@@ -89,6 +89,17 @@ export function validateConsultationUpdate(input: {
 
 export const OPEN_STATUSES = ['new', 'contacted', 'booked', 'done'] as const
 
+// PostgREST filters that only decide what is fetched; the tab a row lands in
+// is still decided by inboxTab(). Closed is the exact complement of active
+// (chained .or() calls are ANDed), so every row is fetched by exactly one query
+// even if a value ever falls outside the CHECK sets.
+const OPEN_LIST = OPEN_STATUSES.join(',')
+export const ACTIVE_FILTER = `outcome.eq.follow_up,and(outcome.is.null,status.in.(${OPEN_LIST}))`
+export const CLOSED_FILTERS = [
+  'outcome.is.null,outcome.neq.follow_up',
+  `outcome.not.is.null,status.not.in.(${OPEN_LIST})`,
+] as const
+
 /** done-without-outcome stays open: the result still has to be recorded. */
 export function inboxTab(row: { status: string; outcome: string | null }): InboxTab {
   if (row.outcome === 'follow_up') return 'follow_up'

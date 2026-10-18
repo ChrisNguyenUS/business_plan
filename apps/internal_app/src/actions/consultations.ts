@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isUuid } from '@/lib/n400/lead-prefill'
 import {
-  OPEN_STATUSES,
+  ACTIVE_FILTER,
+  CLOSED_FILTERS,
   isNoopUpdate,
   validateConsultationUpdate,
   type ConsultationRow,
@@ -16,35 +17,34 @@ const CLOSED_LIMIT = 500
 const COLUMNS =
   'id, user_id, name, phone, preferred_time, topic, source_cta, status, outcome, outcome_note, note, created_at, updated_at'
 
-// PostgREST filters that only decide what is fetched; the tab a row lands in
-// is still decided by inboxTab() (single source of truth).
-const OPEN_LIST = OPEN_STATUSES.join(',')
-const ACTIVE_FILTER = `outcome.eq.follow_up,and(outcome.is.null,status.in.(${OPEN_LIST}))`
-const CLOSED_FILTER = 'outcome.in.(won,lost),and(outcome.is.null,status.in.(no_show,cancelled))'
-
 /**
  * Working set (open + follow-up, effectively uncapped) plus the 500 most
  * recently updated closed rows. The page partitions with inboxTab().
+ * A valid leadId narrows BOTH queries to that lead in the database.
  */
-export async function getConsultations(): Promise<{
+export async function getConsultations(leadId?: string): Promise<{
   rows: ConsultationRow[]
   closedCapped: boolean
   convertedClientIds: Record<string, string>
 }> {
   const supabase = await createClient()
+  const lead = isUuid(leadId) ? leadId : null
+  let activeQuery = supabase
+    .from('n400_consultation_requests')
+    .select(COLUMNS)
+    .or(ACTIVE_FILTER)
+  let closedQuery = supabase
+    .from('n400_consultation_requests')
+    .select(COLUMNS)
+    .or(CLOSED_FILTERS[0])
+    .or(CLOSED_FILTERS[1])
+  if (lead) {
+    activeQuery = activeQuery.eq('user_id', lead)
+    closedQuery = closedQuery.eq('user_id', lead)
+  }
   const [active, closed] = await Promise.all([
-    supabase
-      .from('n400_consultation_requests')
-      .select(COLUMNS)
-      .or(ACTIVE_FILTER)
-      .order('created_at', { ascending: false })
-      .limit(ACTIVE_LIMIT),
-    supabase
-      .from('n400_consultation_requests')
-      .select(COLUMNS)
-      .or(CLOSED_FILTER)
-      .order('updated_at', { ascending: false })
-      .limit(CLOSED_LIMIT),
+    activeQuery.order('created_at', { ascending: false }).limit(ACTIVE_LIMIT),
+    closedQuery.order('updated_at', { ascending: false }).limit(CLOSED_LIMIT),
   ])
   if (active.error) throw active.error
   if (closed.error) throw closed.error
@@ -119,7 +119,8 @@ export async function updateConsultation(
 
   const { data, error } = await supabase
     .from('n400_consultation_requests')
-    .update({ ...next, updated_at: new Date().toISOString() })
+    // updated_at is set by the n400_41 trigger (DB clock).
+    .update(next)
     .eq('id', id)
     .eq('updated_at', expected)
     .select('user_id')

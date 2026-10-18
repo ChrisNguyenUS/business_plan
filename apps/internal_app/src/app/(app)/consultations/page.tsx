@@ -26,8 +26,8 @@ export default async function ConsultationsPage({
   const params = await searchParams
   const lead = isUuid(params.lead) ? params.lead : null
 
-  const { rows: allRows, closedCapped, convertedClientIds } = await getConsultations()
-  const rows = lead ? allRows.filter((r) => r.user_id === lead) : allRows
+  const { rows: allRows, closedCapped, convertedClientIds } = await getConsultations(lead ?? undefined)
+  const rows = allRows
   const byTab: Record<InboxTab, typeof rows> = { open: [], follow_up: [], closed: [] }
   for (const row of rows) byTab[inboxTab(row)].push(row)
   const tab: InboxTab = INBOX_TABS.includes(params.tab as InboxTab)
@@ -53,8 +53,12 @@ export default async function ConsultationsPage({
         <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Consultations</h2>
         <p className="text-sm text-slate-400 mt-0.5">
           {waiting === 0
-            ? 'Nobody waiting for a call'
-            : `${waiting} waiting for a call`}
+            ? lead
+              ? 'Nothing waiting from this lead'
+              : 'Nobody waiting for a call'
+            : lead
+              ? `${waiting} waiting for a call from this lead`
+              : `${waiting} waiting for a call`}
           {closedCapped && tab === 'closed' && ' · Closed shows the 500 most recently updated'}
         </p>
         {lead && (
