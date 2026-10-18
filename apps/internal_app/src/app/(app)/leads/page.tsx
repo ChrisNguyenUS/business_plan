@@ -51,7 +51,7 @@ export default async function LeadsPage({
 }) {
   const params = await searchParams
   const requestedPage = Number(params.page ?? '1') || 1
-  const { leads, total, page } = await getLeads({
+  const { leads, total, page, convertedClientIds } = await getLeads({
     q: params.q,
     status: params.status,
     page: requestedPage,
@@ -191,8 +191,14 @@ export default async function LeadsPage({
                         {initialsOf(lead.full_name, lead.email)}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-800">
+                        <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                           {lead.full_name || 'Unnamed'}
+                          {convertedClientIds[lead.user_id] && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[rgba(58,175,185,0.1)] text-[#006970]">
+                              <span className="material-symbols-outlined text-[12px]">badge</span>
+                              Client
+                            </span>
+                          )}
                         </p>
                         <p className="text-[11px] text-slate-400">{lead.email ?? '—'}</p>
                       </div>

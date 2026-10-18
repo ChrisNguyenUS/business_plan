@@ -81,6 +81,15 @@ export default async function ClientProfilePage({
             {client.a_number && (
               <p className="text-sm text-slate-500 font-mono mt-0.5">A# {client.a_number}</p>
             )}
+            {client.source_lead_id && (
+              <Link
+                href={`/leads/${client.source_lead_id}`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#006970] hover:underline mt-1"
+              >
+                <span className="material-symbols-outlined text-sm">trending_up</span>
+                Source: N400Ready lead
+              </Link>
+            )}
             <div className="flex flex-wrap gap-1.5 mt-2">
               {services.map((s) => (
                 <span
