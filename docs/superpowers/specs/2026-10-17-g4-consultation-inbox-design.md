@@ -45,7 +45,7 @@ GRANT UPDATE (status, outcome, outcome_note, note, updated_at)
 - `validateConsultationUpdate({ status, outcome })`:
   - status phải thuộc danh sách; outcome là null hoặc thuộc danh sách.
   - **outcome chỉ được khác null khi status = `done`.** Đổi status khỏi `done` → outcome phải được xoá (action tự set null, không báo lỗi).
-- `inboxTab(row)`: `follow_up` nếu outcome = follow_up; `open` nếu status ∈ {new, contacted, booked} và outcome null; còn lại `closed`.
+- `inboxTab(row)`: `follow_up` nếu outcome = follow_up; `open` nếu status ∈ {new, contacted, booked, **done**} và outcome null (done chưa có outcome = còn phải ghi kết quả, gắn nhãn "needs outcome"); còn lại `closed`.
 - `daysSince(iso, now)` cho nhãn "updated N days ago".
 
 ## 5. Trang `/consultations`
