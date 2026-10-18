@@ -45,7 +45,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS clients_source_lead_id_key
    - Lead đã có client → `redirect('/clients/<id>')`.
    - Lead không tồn tại / RLS ẩn → `notFound()`.
    - Còn lại → render `ClientForm` với `defaultValues` từ prefill + hidden input `source_lead_id`, kèm banner "Converting N400Ready lead **<tên>** — enter date of birth to finish".
-3. Submit → `createClient_` đọc thêm `source_lead_id` (uuid hoặc null). Lỗi `23505` trên `clients_source_lead_id_key` → ném lỗi thông điệp rõ "This lead was already converted" (form đang hiện lỗi từ `err.message`). Thành công → `/clients/<id>` như cũ; `revalidatePath('/leads')` để badge cập nhật.
+3. Submit → `createClient_` đọc thêm `source_lead_id` (uuid hoặc null). Lỗi `23505` trên `clients_source_lead_id_key` → **trả về id client đã có**, form chuyển thẳng sang client đó (không ném lỗi: Next.js ẩn message của lỗi server action ở production, staff sẽ chỉ thấy lỗi chung). Thành công → `/clients/<id>` như cũ; `revalidatePath('/leads')` để badge cập nhật.
 
 ### Prefill (hàm thuần `src/lib/n400/lead-prefill.ts`)
 
@@ -70,7 +70,7 @@ Mọi field null/rỗng → để trống, không đoán.
 |---|---|
 | Thuần (test được) | `src/lib/n400/lead-prefill.ts` — `buildLeadPrefill(profile, phone, addressPayload)` |
 | Data access | `src/actions/leads.ts` — `getLeadConversion(userId)`, `getLeadPrefill(userId)`, `getLeads` thêm `convertedClientId` mỗi dòng |
-| Data access | `src/actions/clients.ts` — `createClient_` đọc `source_lead_id`, dịch lỗi 23505 |
+| Data access | `src/actions/clients.ts` — `createClient_` đọc `source_lead_id`, trùng 23505 → trả client đã có |
 | UI | `clients/new/page.tsx`, `leads/[userId]/page.tsx`, `leads/page.tsx`, `clients/[id]/page.tsx` |
 
 Mọi query bảng `n400_*` / `clients` theo lead đều `.eq(...)` tường minh — policy staff-read không phải bộ lọc phạm vi (bài học G2).
