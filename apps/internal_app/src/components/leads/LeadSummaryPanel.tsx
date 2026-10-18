@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import LeadStatusBadge from '@/components/leads/LeadStatusBadge'
 import type { LeadDetail, WeakSection } from '@/lib/n400/leads-shape'
 import type { SectionKey } from '@mannaos/n400-growth'
@@ -100,6 +101,15 @@ export default function LeadSummaryPanel({
       <Card title="Consultation">
         <Row label="Requested" value={formatDate(lead.consultation_requested_at)} />
         <Row label="Booked" value={formatDate(lead.consultation_booked_at)} />
+        {lead.consultation_requested_at && (
+          <Link
+            href="/consultations"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[#006970] hover:underline mt-2"
+          >
+            Open in inbox
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
+        )}
       </Card>
 
       <Card title="Attribution">
