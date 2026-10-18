@@ -3,30 +3,57 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isUuid } from '@/lib/n400/lead-prefill'
-import { validateConsultationUpdate, type ConsultationRow } from '@/lib/n400/consultation'
+import {
+  OPEN_STATUSES,
+  isNoopUpdate,
+  validateConsultationUpdate,
+  type ConsultationRow,
+} from '@/lib/n400/consultation'
 
-const INBOX_LIMIT = 500
+const ACTIVE_LIMIT = 2000
+const CLOSED_LIMIT = 500
 
 const COLUMNS =
   'id, user_id, name, phone, preferred_time, topic, source_cta, status, outcome, outcome_note, note, created_at, updated_at'
 
+// PostgREST filters that only decide what is fetched; the tab a row lands in
+// is still decided by inboxTab() (single source of truth).
+const OPEN_LIST = OPEN_STATUSES.join(',')
+const ACTIVE_FILTER = `outcome.eq.follow_up,and(outcome.is.null,status.in.(${OPEN_LIST}))`
+const CLOSED_FILTER = 'outcome.in.(won,lost),and(outcome.is.null,status.in.(no_show,cancelled))'
+
 /**
- * The most recent requests across every tab — the page partitions them with
- * inboxTab(), so the tab rules live in one (tested) place, not in SQL too.
+ * Working set (open + follow-up, effectively uncapped) plus the 500 most
+ * recently updated closed rows. The page partitions with inboxTab().
  */
 export async function getConsultations(): Promise<{
   rows: ConsultationRow[]
-  capped: boolean
+  closedCapped: boolean
   convertedClientIds: Record<string, string>
 }> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('n400_consultation_requests')
-    .select(COLUMNS)
-    .order('created_at', { ascending: false })
-    .limit(INBOX_LIMIT)
-  if (error) throw error
-  const rows = (data ?? []) as unknown as ConsultationRow[]
+  const [active, closed] = await Promise.all([
+    supabase
+      .from('n400_consultation_requests')
+      .select(COLUMNS)
+      .or(ACTIVE_FILTER)
+      .order('created_at', { ascending: false })
+      .limit(ACTIVE_LIMIT),
+    supabase
+      .from('n400_consultation_requests')
+      .select(COLUMNS)
+      .or(CLOSED_FILTER)
+      .order('updated_at', { ascending: false })
+      .limit(CLOSED_LIMIT),
+  ])
+  if (active.error) throw active.error
+  if (closed.error) throw closed.error
+  const closedRows = (closed.data ?? []) as unknown as ConsultationRow[]
+  const byId = new Map<string, ConsultationRow>()
+  for (const r of [...((active.data ?? []) as unknown as ConsultationRow[]), ...closedRows]) {
+    byId.set(r.id, r)
+  }
+  const rows = [...byId.values()]
 
   const convertedClientIds: Record<string, string> = {}
   const userIds = [...new Set(rows.map((r) => r.user_id))]
@@ -41,7 +68,7 @@ export async function getConsultations(): Promise<{
     }
   }
 
-  return { rows, capped: rows.length === INBOX_LIMIT, convertedClientIds }
+  return { rows, closedCapped: closedRows.length === CLOSED_LIMIT, convertedClientIds }
 }
 
 const textOrNull = (v: FormDataEntryValue | null): string | null => {
@@ -65,22 +92,43 @@ export async function updateConsultation(
   })
   if (!checked.ok) return checked
 
+  const expected = String(formData.get('expected_updated_at') ?? '')
+  const CONFLICT = 'Someone else updated this request — reload to see their changes'
+  const next = {
+    status: checked.value.status,
+    outcome: checked.value.outcome,
+    // An outcome note without an outcome is meaningless — drop it with the outcome.
+    outcome_note: checked.value.outcome ? textOrNull(formData.get('outcome_note')) : null,
+    note: textOrNull(formData.get('note')),
+  }
+
   const supabase = await createClient()
+  const { data: current, error: readError } = await supabase
+    .from('n400_consultation_requests')
+    .select('id, user_id, status, outcome, note, outcome_note, updated_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (readError) {
+    console.error('[updateConsultation]', id, readError.message)
+    return { ok: false, error: 'Could not save — try again' }
+  }
+  if (!current) return { ok: false, error: 'Request not found or not allowed' }
+  if (current.updated_at !== expected) return { ok: false, error: CONFLICT }
+  // Saving without edits must not reset the follow-up age.
+  if (isNoopUpdate(current, next)) return { ok: true }
+
   const { data, error } = await supabase
     .from('n400_consultation_requests')
-    .update({
-      status: checked.value.status,
-      outcome: checked.value.outcome,
-      // An outcome note without an outcome is meaningless — drop it with the outcome.
-      outcome_note: checked.value.outcome ? textOrNull(formData.get('outcome_note')) : null,
-      note: textOrNull(formData.get('note')),
-      updated_at: new Date().toISOString(),
-    })
+    .update({ ...next, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('updated_at', expected)
     .select('user_id')
     .maybeSingle()
-  if (error) return { ok: false, error: 'Could not save — try again' }
-  if (!data) return { ok: false, error: 'Request not found or not allowed' }
+  if (error) {
+    console.error('[updateConsultation]', id, error.message)
+    return { ok: false, error: 'Could not save — try again' }
+  }
+  if (!data) return { ok: false, error: CONFLICT }
 
   revalidatePath('/consultations')
   revalidatePath(`/leads/${data.user_id}`)
