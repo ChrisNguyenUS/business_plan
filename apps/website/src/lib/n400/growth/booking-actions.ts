@@ -9,7 +9,7 @@
 import { getAuthedServerClient } from './server-client';
 import { isFeatureOn, loadFeatureFlags } from './flags';
 import {
-  topicForCta, validateBookingInput,
+  topicForCta, validateBookingInput, OPEN_CONSULTATION_STATUSES,
   type ConsultationTopic,
 } from './booking';
 import { notifyConsultationRequest } from './notify';
@@ -55,7 +55,7 @@ export async function getBookingContext(): Promise<BookingContext> {
       .from('n400_consultation_requests')
       .select('id')
       .eq('user_id', user.id)
-      .in('status', ['new', 'contacted'])
+      .in('status', [...OPEN_CONSULTATION_STATUSES])
       .limit(1),
     supabase
       .from('profiles')
@@ -101,7 +101,7 @@ export async function submitConsultationRequest(raw: {
     .from('n400_consultation_requests')
     .select('id')
     .eq('user_id', user.id)
-    .in('status', ['new', 'contacted'])
+    .in('status', [...OPEN_CONSULTATION_STATUSES])
     .limit(1);
   if ((open.data ?? []).length > 0) return { ok: true };
 
