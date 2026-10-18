@@ -7,6 +7,8 @@ import { createClient_, updateClient } from '@/actions/clients'
 interface Props {
   defaultValues?: Record<string, any>
   clientId?: string
+  /** Convert to Client: posted as source_lead_id so the client remembers its lead. */
+  sourceLeadId?: string
 }
 
 function Field({
@@ -86,7 +88,7 @@ function SectionHeader({ title }: { title: string }) {
   )
 }
 
-export function ClientForm({ defaultValues, clientId }: Props) {
+export function ClientForm({ defaultValues, clientId, sourceLeadId }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -116,6 +118,7 @@ export function ClientForm({ defaultValues, clientId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-10 max-w-3xl">
+      {sourceLeadId && <input type="hidden" name="source_lead_id" value={sourceLeadId} />}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-600 font-medium">{error}</p>

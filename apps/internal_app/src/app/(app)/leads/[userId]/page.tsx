@@ -1,6 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getLead, getLeadProfiling, getLeadTimeline, getLeadWeakSection } from '@/actions/leads'
+import {
+  getLead,
+  getLeadConversion,
+  getLeadProfiling,
+  getLeadTimeline,
+  getLeadWeakSection,
+} from '@/actions/leads'
 import LeadTimeline from '@/components/leads/LeadTimeline'
 import LeadSummaryPanel from '@/components/leads/LeadSummaryPanel'
 import LeadKpis from '@/components/leads/LeadKpis'
@@ -22,10 +28,11 @@ export default async function LeadDetailPage({
   // Missing row and RLS-filtered row are the same thing from here.
   if (!lead) notFound()
 
-  const [timeline, weakSection, profiling] = await Promise.all([
+  const [timeline, weakSection, profiling, clientId] = await Promise.all([
     getLeadTimeline(userId),
     getLeadWeakSection(userId),
     getLeadProfiling(userId),
+    getLeadConversion(userId),
   ])
 
   const summary = summarizeActivity(timeline.events)
@@ -35,18 +42,38 @@ export default async function LeadDetailPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/leads"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
-          Back to Leads
-        </Link>
-        <h2 className="text-2xl font-semibold text-slate-800 tracking-tight mt-1">
-          {lead.full_name || 'Unnamed lead'}
-        </h2>
-        <p className="text-sm text-slate-400 mt-0.5">{lead.email ?? '—'}</p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <Link
+            href="/leads"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Back to Leads
+          </Link>
+          <h2 className="text-2xl font-semibold text-slate-800 tracking-tight mt-1">
+            {lead.full_name || 'Unnamed lead'}
+          </h2>
+          <p className="text-sm text-slate-400 mt-0.5">{lead.email ?? '—'}</p>
+        </div>
+        {clientId ? (
+          <Link
+            href={`/clients/${clientId}`}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-[#006970] border border-[#3AAFB9]/40 hover:bg-[rgba(58,175,185,0.08)] transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-sm">badge</span>
+            View client
+          </Link>
+        ) : (
+          <Link
+            href={`/clients/new?fromLead=${lead.user_id}`}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-all shrink-0"
+            style={{ backgroundColor: '#3AAFB9' }}
+          >
+            <span className="material-symbols-outlined text-sm">person_add</span>
+            Convert to Client
+          </Link>
+        )}
       </div>
 
       <LeadKpis summary={summary} />
