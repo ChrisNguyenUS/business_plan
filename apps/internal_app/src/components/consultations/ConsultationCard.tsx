@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { updateConsultation } from '@/actions/consultations'
 import {
   CONSULTATION_OUTCOMES,
@@ -10,6 +10,7 @@ import {
   OUTCOME_LABELS,
   STATUS_LABELS,
   daysSince,
+  updatedAgoLabel,
   topicLabel,
   type ConsultationOutcome,
   type ConsultationRow,
@@ -44,17 +45,26 @@ export default function ConsultationCard({
   const [outcome, setOutcome] = useState(row.outcome ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (!saved) return
+    const t = setTimeout(() => setSaved(false), 2000)
+    return () => clearTimeout(t)
+  }, [saved])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setSaving(true)
     setError('')
+    setSaved(false)
     const result = await updateConsultation(row.id, new FormData(e.currentTarget))
     setSaving(false)
     if (!result.ok) {
       setError(result.error)
       return
     }
+    setSaved(true)
     router.refresh()
   }
 
@@ -64,9 +74,11 @@ export default function ConsultationCard({
   return (
     <form
       onSubmit={handleSubmit}
+      onChange={() => setSaved(false)}
       className="bg-white rounded-xl p-5 space-y-4"
       style={{ boxShadow: '0 12px 32px -4px rgba(0, 105, 112, 0.04)' }}
     >
+      <input type="hidden" name="expected_updated_at" value={row.updated_at} />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <Link
@@ -89,7 +101,7 @@ export default function ConsultationCard({
           </p>
           <p className="text-[11px] text-slate-400 mt-0.5">
             Requested {formatDate(row.created_at)}
-            {showAge && ` · updated ${daysSince(row.updated_at)} days ago`}
+            {showAge && ` · ${updatedAgoLabel(daysSince(row.updated_at))}`}
             {needsOutcome && (
               <span className="ml-1 font-semibold text-amber-700">· needs outcome</span>
             )}
@@ -172,6 +184,11 @@ export default function ConsultationCard({
       )}
 
       <div className="flex items-center justify-end gap-3">
+        {saved && (
+          <p role="status" className="text-xs text-emerald-700 font-medium">
+            Saved
+          </p>
+        )}
         {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
         <button
           type="submit"

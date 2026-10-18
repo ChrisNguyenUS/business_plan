@@ -103,7 +103,7 @@ export default function LeadSummaryPanel({
         <Row label="Booked" value={formatDate(lead.consultation_booked_at)} />
         {lead.consultation_requested_at && (
           <Link
-            href="/consultations"
+            href={`/consultations?lead=${lead.user_id}`}
             className="inline-flex items-center gap-1 text-xs font-semibold text-[#006970] hover:underline mt-2"
           >
             Open in inbox
