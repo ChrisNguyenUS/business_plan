@@ -17,7 +17,7 @@ Staff xử lý yêu cầu tư vấn khách gửi từ N400Ready trong một ch�
 - Policy: `own insert` (khách), `read` (chủ hoặc staff), `admin update` (chỉ admin). Không có policy DELETE.
 - Grant: `anon` và `authenticated` đều có full table privileges (RLS là lớp chặn duy nhất).
 - Trigger `trg_n400_consultation_recompute` (AFTER INSERT OR UPDATE, SECURITY DEFINER): đóng dấu `consultation_booked_at` khi status vào `booked|done`, gọi `recompute_n400_lead_score` (booked +100, done +120). **Tái dùng, không sửa.**
-- Website chỉ INSERT (booking-actions.ts) và SELECT; **không bao giờ UPDATE** bảng này. Website coi `status ∈ {new, contacted}` là "đang mở": chặn gửi yêu cầu mới và ẩn CTA tư vấn. Staff đổi sang trạng thái khác → khách đặt lại được, CTA hiện lại. Hành vi có sẵn, giữ nguyên.
+- Website chỉ INSERT (booking-actions.ts) và SELECT; **không bao giờ UPDATE** bảng này. Website coi `status ∈ {new, contacted}` là "đang mở": chặn gửi yêu cầu mới và ẩn CTA tư vấn. Staff đổi sang trạng thái khác → form đặt lịch mở lại. **Nhưng** CTA tư vấn chỉ hiện lại nếu chưa từng `booked/done`: trigger n400_17 đóng dấu `consultation_booked_at` vĩnh viễn và `consultationRetired` ẩn CTA mãi mãi (bấm nhầm Booked → khách mất CTA, không có nút gỡ). Trong lúc `booked`, khách mở thẳng trang đặt lịch vẫn gửi được yêu cầu thứ hai. Hành vi có sẵn của website, ngoài phạm vi nhánh này — ghi vào ROADMAP backlog (final review 2026-10-17).
 - Số yêu cầu trên prod: **0**.
 
 ## 3. Database — migration `n400_40_consultation_staff_update.sql`
