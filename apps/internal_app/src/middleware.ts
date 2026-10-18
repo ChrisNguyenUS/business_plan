@@ -76,6 +76,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // api/cron is called by Vercel Cron without a session; the route checks CRON_SECRET itself.
-    '/((?!_next/static|_next/image|favicon.ico|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/cron/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
