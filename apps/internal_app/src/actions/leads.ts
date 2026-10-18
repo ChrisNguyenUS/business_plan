@@ -11,6 +11,7 @@ import {
   type WeakSection,
 } from '@/lib/n400/leads-shape'
 import type { PromptDefinitionRow, PromptStateRow } from '@/lib/n400/profiling-status'
+import { buildLeadPrefill, isUuid, type LeadPrefill } from '@/lib/n400/lead-prefill'
 
 /**
  * One page of leads, highest effective score first.
@@ -24,7 +25,13 @@ export async function getLeads(params: {
   q?: string
   status?: string
   page?: number
-}): Promise<{ leads: LeadRow[]; total: number; page: number; pageSize: number }> {
+}): Promise<{
+  leads: LeadRow[]
+  total: number
+  page: number
+  pageSize: number
+  convertedClientIds: Record<string, string>
+}> {
   const page = Math.max(1, params.page ?? 1)
   const supabase = await createClient()
 
@@ -49,11 +56,28 @@ export async function getLeads(params: {
   // hard to debug.
   if (error) throw error
 
+  const leads = (data ?? []) as unknown as LeadRow[]
+
+  // Which of this page's leads are already clients. A second small query
+  // instead of joining clients into n400_leads_view keeps the view unchanged.
+  const convertedClientIds: Record<string, string> = {}
+  if (leads.length > 0) {
+    const { data: converted, error: convertedError } = await supabase
+      .from('clients')
+      .select('id, source_lead_id')
+      .in('source_lead_id', leads.map((l) => l.user_id))
+    if (convertedError) throw convertedError
+    for (const c of converted ?? []) {
+      if (c.source_lead_id) convertedClientIds[c.source_lead_id as string] = c.id as string
+    }
+  }
+
   return {
-    leads: (data ?? []) as unknown as LeadRow[],
+    leads,
     total: count ?? 0,
     page,
     pageSize: LEADS_PAGE_SIZE,
+    convertedClientIds,
   }
 }
 
@@ -118,5 +142,82 @@ export async function getLeadProfiling(
   return {
     definitions: (defs.data ?? []) as unknown as PromptDefinitionRow[],
     states: (states.data ?? []) as unknown as PromptStateRow[],
+  }
+}
+
+/** The client this lead was converted into, or null. */
+export async function getLeadConversion(userId: string): Promise<string | null> {
+  if (!isUuid(userId)) return null
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('source_lead_id', userId)
+    .maybeSingle()
+  if (error) throw error
+  return (data?.id as string | undefined) ?? null
+}
+
+/**
+ * Everything Convert to Client can prefill, or null when the id is not a
+ * client-role lead staff can see (bad id, staff/admin account, RLS).
+ */
+export async function getLeadPrefill(
+  userId: string,
+): Promise<{ displayName: string; values: LeadPrefill } | null> {
+  if (!isUuid(userId)) return null
+  const supabase = await createClient()
+
+  // n400_leads_view carries role, so a staff/admin profile is never converted.
+  const { data: lead, error: leadError } = await supabase
+    .from('n400_leads_view')
+    .select('user_id, full_name, email')
+    .eq('role', 'client')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (leadError) throw leadError
+  if (!lead) return null
+
+  const [profile, consult, address] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('first_name, middle_name, last_name, full_name, email')
+      .eq('id', userId)
+      .maybeSingle(),
+    supabase
+      .from('n400_consultation_requests')
+      .select('phone')
+      .eq('user_id', userId)
+      .not('phone', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('n400_growth_events')
+      .select('payload')
+      .eq('user_id', userId)
+      .eq('event_type', 'address_entered')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
+  if (profile.error) throw profile.error
+  if (consult.error) throw consult.error
+  if (address.error) throw address.error
+
+  const names = profile.data ?? {
+    first_name: null,
+    middle_name: null,
+    last_name: null,
+    full_name: lead.full_name,
+    email: lead.email,
+  }
+  return {
+    displayName: (lead.full_name as string | null) || (lead.email as string | null) || 'this lead',
+    values: buildLeadPrefill(
+      names,
+      (consult.data?.phone as string | null) ?? null,
+      (address.data?.payload as Record<string, unknown> | null) ?? null,
+    ),
   }
 }

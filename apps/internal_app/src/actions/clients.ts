@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { isUuid } from '@/lib/n400/lead-prefill'
 
 export async function getClients(query?: string) {
   const supabase = await createClient()
@@ -56,6 +57,10 @@ export async function createClient_(formData: FormData) {
     },
     services_used: [],
     notes: (formData.get('notes') as string) || null,
+    // Set only by Convert to Client (hidden field). A label, never user_id.
+    source_lead_id: isUuid(formData.get('source_lead_id') as string | null)
+      ? (formData.get('source_lead_id') as string)
+      : null,
   }
 
   const { data, error } = await supabase
@@ -64,8 +69,30 @@ export async function createClient_(formData: FormData) {
     .select('id')
     .single()
 
-  if (error) throw error
+  if (error) {
+    // Lead already converted (double submit, Back + resubmit, two staff at
+    // once). Land on the existing client instead of failing: Next hides
+    // thrown messages in production, so an error here would be unreadable.
+    if (
+      error.code === '23505' &&
+      error.message.includes('clients_source_lead_id_key') &&
+      payload.source_lead_id
+    ) {
+      const { data: existing, error: lookupError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('source_lead_id', payload.source_lead_id)
+        .single()
+      if (lookupError) throw lookupError
+      return existing.id as string
+    }
+    throw error
+  }
   revalidatePath('/clients')
+  if (payload.source_lead_id) {
+    revalidatePath('/leads')
+    revalidatePath(`/leads/${payload.source_lead_id}`)
+  }
   return data.id as string
 }
 
