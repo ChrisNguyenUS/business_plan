@@ -1,6 +1,10 @@
 import {
+  OPEN_STATUSES,
   daysSince,
+  firstTabWithRows,
   inboxTab,
+  isNoopUpdate,
+  updatedAgoLabel,
   sortForTab,
   topicLabel,
   validateConsultationUpdate,
@@ -87,5 +91,56 @@ describe('daysSince / topicLabel', () => {
     expect(topicLabel('document_prep')).toBe('Document prep')
     expect(topicLabel('mystery')).toBe('mystery')
     expect(topicLabel(null)).toBe('—')
+  })
+})
+
+describe('F3 isNoopUpdate', () => {
+  const cur = { status: 'done', outcome: 'won', note: 'hi', outcome_note: null }
+  it('is true for identical values', () => {
+    expect(isNoopUpdate(cur, { ...cur })).toBe(true)
+  })
+  it('treats whitespace-only note as null', () => {
+    expect(isNoopUpdate({ ...cur, note: null }, { ...cur, note: '   ' })).toBe(true)
+    expect(isNoopUpdate({ ...cur, note: ' hi ' }, cur)).toBe(true)
+  })
+  it('is false when any field differs', () => {
+    expect(isNoopUpdate(cur, { ...cur, status: 'booked' })).toBe(false)
+    expect(isNoopUpdate(cur, { ...cur, outcome: 'lost' })).toBe(false)
+    expect(isNoopUpdate(cur, { ...cur, note: 'bye' })).toBe(false)
+    expect(isNoopUpdate(cur, { ...cur, outcome_note: 'x' })).toBe(false)
+  })
+})
+
+describe('F6 updatedAgoLabel', () => {
+  it('uses natural wording', () => {
+    expect(updatedAgoLabel(0)).toBe('updated today')
+    expect(updatedAgoLabel(1)).toBe('updated 1 day ago')
+    expect(updatedAgoLabel(5)).toBe('updated 5 days ago')
+  })
+})
+
+describe('F7 firstTabWithRows', () => {
+  it('picks the first non-empty tab in order, defaulting to open', () => {
+    expect(firstTabWithRows({ open: 0, follow_up: 2, closed: 1 })).toBe('follow_up')
+    expect(firstTabWithRows({ open: 0, follow_up: 0, closed: 3 })).toBe('closed')
+    expect(firstTabWithRows({ open: 1, follow_up: 1, closed: 1 })).toBe('open')
+    expect(firstTabWithRows({ open: 0, follow_up: 0, closed: 0 })).toBe('open')
+  })
+})
+
+describe('F8 hygiene', () => {
+  it('exports OPEN_STATUSES', () => {
+    expect([...OPEN_STATUSES]).toEqual(['new', 'contacted', 'booked', 'done'])
+  })
+  it('daysSince is 0 for an unparseable timestamp', () => {
+    expect(daysSince('not-a-date')).toBe(0)
+  })
+  it('sortForTab compares instants, not strings', () => {
+    const mk = (id: string, created_at: string): ConsultationRow =>
+      ({ id, created_at, updated_at: created_at }) as ConsultationRow
+    // lexically "…+00:00" > "…Z" mis-orders the same-format check; instants must win
+    const a = mk('a', '2026-10-17T10:00:00+02:00') // 08:00Z
+    const b = mk('b', '2026-10-17T09:00:00Z')
+    expect(sortForTab([a, b], 'open').map((r) => r.id)).toEqual(['b', 'a'])
   })
 })

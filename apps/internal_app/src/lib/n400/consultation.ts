@@ -87,22 +87,64 @@ export function validateConsultationUpdate(input: {
   }
 }
 
+export const OPEN_STATUSES = ['new', 'contacted', 'booked', 'done'] as const
+
 /** done-without-outcome stays open: the result still has to be recorded. */
 export function inboxTab(row: { status: string; outcome: string | null }): InboxTab {
   if (row.outcome === 'follow_up') return 'follow_up'
-  if (row.outcome === null && ['new', 'contacted', 'booked', 'done'].includes(row.status)) {
+  if (row.outcome === null && (OPEN_STATUSES as readonly string[]).includes(row.status)) {
     return 'open'
   }
   return 'closed'
 }
 
+const ts = (iso: string): number => {
+  const n = Date.parse(iso)
+  return Number.isNaN(n) ? 0 : n
+}
+
 export function sortForTab(rows: ConsultationRow[], tab: InboxTab): ConsultationRow[] {
   const copy = [...rows]
-  if (tab === 'open') return copy.sort((x, y) => y.created_at.localeCompare(x.created_at))
-  if (tab === 'follow_up') return copy.sort((x, y) => x.updated_at.localeCompare(y.updated_at))
-  return copy.sort((x, y) => y.updated_at.localeCompare(x.updated_at))
+  if (tab === 'open') return copy.sort((x, y) => ts(y.created_at) - ts(x.created_at))
+  if (tab === 'follow_up') return copy.sort((x, y) => ts(x.updated_at) - ts(y.updated_at))
+  return copy.sort((x, y) => ts(y.updated_at) - ts(x.updated_at))
 }
 
 export function daysSince(iso: string, now: Date = new Date()): number {
-  return Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / 86_400_000))
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return 0
+  return Math.max(0, Math.floor((now.getTime() - t) / 86_400_000))
+}
+
+export function updatedAgoLabel(days: number): string {
+  if (days <= 0) return 'updated today'
+  return days === 1 ? 'updated 1 day ago' : `updated ${days} days ago`
+}
+
+/** Trim; empty becomes null — the same normalisation the update action applies. */
+export function normalizeText(v: string | null | undefined): string | null {
+  const s = (v ?? '').trim()
+  return s.length > 0 ? s : null
+}
+
+interface EditableFields {
+  status: string
+  outcome: string | null
+  note: string | null
+  outcome_note: string | null
+}
+
+/** True when saving would change nothing (so updated_at / follow-up age must not move). */
+export function isNoopUpdate(current: EditableFields, next: EditableFields): boolean {
+  return (
+    current.status === next.status &&
+    (current.outcome ?? null) === (next.outcome ?? null) &&
+    normalizeText(current.note) === normalizeText(next.note) &&
+    normalizeText(current.outcome_note) === normalizeText(next.outcome_note)
+  )
+}
+
+/** Default tab when filtering to one lead: first tab that has anything to show. */
+export function firstTabWithRows(counts: Record<InboxTab, number>): InboxTab {
+  return INBOX_TABS.find((t) => counts[t] > 0) ?? 'open'
 }
