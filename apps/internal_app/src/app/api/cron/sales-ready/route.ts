@@ -25,6 +25,12 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'unauthorized' }, { status: 401 })
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  if (!siteUrl) {
+    console.error('[cron/sales-ready] NEXT_PUBLIC_SITE_URL missing')
+    return Response.json({ error: 'not configured' }, { status: 500 })
+  }
+
   const supabase = createAdminClient()
   if (!supabase) {
     console.error('[cron/sales-ready] SUPABASE_SERVICE_ROLE_KEY or URL missing')
@@ -54,7 +60,7 @@ export async function GET(request: Request): Promise<Response> {
 
   let emailed = false
   if (plan.toNotify.length > 0) {
-    const mail = buildSalesReadyEmail(plan.toNotify, process.env.NEXT_PUBLIC_SITE_URL ?? '')
+    const mail = buildSalesReadyEmail(plan.toNotify, siteUrl)
     const sent = await sendWithResend({ to: RECIPIENT, ...mail })
     if (sent.ok) {
       emailed = true
