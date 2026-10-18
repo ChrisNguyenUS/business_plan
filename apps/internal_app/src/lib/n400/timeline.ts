@@ -1,4 +1,5 @@
 import type { GrowthEventType } from '@mannaos/n400-growth'
+import type { PromptDefinitionRow } from '@/lib/n400/profiling-status'
 
 /** One rendered row of the lead timeline. */
 export interface TimelineEntry {
@@ -19,6 +20,15 @@ function str(payload: Record<string, unknown>, key: string): string | null {
 function num(payload: Record<string, unknown>, key: string): number | null {
   const v = payload[key]
   return typeof v === 'number' ? v : null
+}
+
+/** 's6_speaking_help' → 'Speaking help'. The sN_ scenario prefix is an
+ *  internal ordering tag, not something staff need to read. */
+function ctaName(payload: Record<string, unknown>): string {
+  const id = str(payload, 'cta_id')
+  if (!id) return 'unknown'
+  const words = id.replace(/^s\d+_/, '').replace(/_/g, ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
 function joinDot(parts: (string | null)[]): string | null {
@@ -47,7 +57,16 @@ function attemptDetail(payload: Record<string, unknown>): string | null {
 export function describeEvent(
   type: GrowthEventType,
   payload: Record<string, unknown>,
+  /** Profiling definitions by question_key; without them prompts show raw keys. */
+  questions?: ReadonlyMap<string, PromptDefinitionRow>,
 ): TimelineEntry {
+  const key = str(payload, 'question_key')
+  const question = (key && questions?.get(key)?.text_en) ?? key ?? 'unknown'
+  const rawAnswer = str(payload, 'answer')
+  const answer =
+    (key && rawAnswer && questions?.get(key)?.options.find((o) => o.value === rawAnswer)?.label_en) ??
+    rawAnswer
+
   switch (type) {
     case 'account_created':
       return { icon: 'person_add', title: 'Signed up', detail: null }
@@ -80,42 +99,42 @@ export function describeEvent(
     case 'prompt_shown':
       return {
         icon: 'help',
-        title: `Asked: ${str(payload, 'question_key') ?? 'unknown'}`,
+        title: `Asked: ${question}`,
         detail: str(payload, 'surface'),
       }
 
     case 'prompt_answered':
       return {
         icon: 'check_circle',
-        title: `Answered: ${str(payload, 'question_key') ?? 'unknown'}`,
-        detail: joinDot([str(payload, 'answer'), str(payload, 'surface')]),
+        title: `Answered: ${question}`,
+        detail: joinDot([answer, str(payload, 'surface')]),
       }
 
     case 'prompt_skipped':
       return {
         icon: 'cancel',
-        title: `Skipped: ${str(payload, 'question_key') ?? 'unknown'}`,
+        title: `Skipped: ${question}`,
         detail: str(payload, 'surface'),
       }
 
     case 'cta_shown':
       return {
         icon: 'campaign',
-        title: `CTA shown: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA shown: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 
     case 'cta_clicked':
       return {
         icon: 'ads_click',
-        title: `CTA clicked: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA clicked: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 
     case 'cta_dismissed':
       return {
         icon: 'do_not_disturb_on',
-        title: `CTA dismissed: ${str(payload, 'cta_id') ?? 'unknown'}`,
+        title: `CTA dismissed: ${ctaName(payload)}`,
         detail: str(payload, 'surface'),
       }
 

@@ -5,7 +5,9 @@
 import type { GrowthEventType, JourneyStage, LeadStatus } from '@mannaos/n400-growth'
 
 export const LEADS_PAGE_SIZE = 50
-export const TIMELINE_LIMIT = 100
+// High enough that the dashboard KPIs cover a real lead's whole history
+// (the busiest client had ~60 events in Oct 2026); the timeline says so when capped.
+export const TIMELINE_LIMIT = 500
 
 export interface LeadRow {
   user_id: string

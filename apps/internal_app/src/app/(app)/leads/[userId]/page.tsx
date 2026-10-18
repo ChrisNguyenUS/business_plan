@@ -1,8 +1,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getLead, getLeadTimeline, getLeadWeakSection } from '@/actions/leads'
+import { getLead, getLeadProfiling, getLeadTimeline, getLeadWeakSection } from '@/actions/leads'
 import LeadTimeline from '@/components/leads/LeadTimeline'
 import LeadSummaryPanel from '@/components/leads/LeadSummaryPanel'
+import LeadKpis from '@/components/leads/LeadKpis'
+import LeadActivityChart from '@/components/leads/LeadActivityChart'
+import LeadProfilingCard from '@/components/leads/LeadProfilingCard'
+import { groupTimeline, summarizeActivity } from '@/lib/n400/activity'
+import { answersFromLead, describeProfiling, questionsOf } from '@/lib/n400/profiling-status'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,10 +22,16 @@ export default async function LeadDetailPage({
   // Missing row and RLS-filtered row are the same thing from here.
   if (!lead) notFound()
 
-  const [timeline, weakSection] = await Promise.all([
+  const [timeline, weakSection, profiling] = await Promise.all([
     getLeadTimeline(userId),
     getLeadWeakSection(userId),
+    getLeadProfiling(userId),
   ])
+
+  const summary = summarizeActivity(timeline.events)
+  const days = groupTimeline(timeline.events)
+  const profilingRows = describeProfiling(profiling.definitions, profiling.states, answersFromLead(lead))
+  const questions = new Map(questionsOf(profiling.definitions).map((d) => [d.question_key, d]))
 
   return (
     <div className="space-y-6">
@@ -38,9 +49,18 @@ export default async function LeadDetailPage({
         <p className="text-sm text-slate-400 mt-0.5">{lead.email ?? '—'}</p>
       </div>
 
+      <LeadKpis summary={summary} />
+      <LeadProfilingCard rows={profilingRows} />
+      <LeadActivityChart daily={summary.daily} />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2">
-          <LeadTimeline events={timeline.events} total={timeline.total} />
+          <LeadTimeline
+            days={days}
+            shown={timeline.events.length}
+            total={timeline.total}
+            questions={questions}
+          />
         </div>
         <LeadSummaryPanel lead={lead} weakSection={weakSection} />
       </div>

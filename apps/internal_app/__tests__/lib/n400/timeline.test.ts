@@ -48,12 +48,45 @@ describe('describeEvent', () => {
     expect(entry.detail).toBe('not_yet · results')
   })
 
+  it('shows the real question and answer label when definitions are given', () => {
+    const questions = new Map([
+      [
+        'filed',
+        {
+          question_key: 'filed',
+          variant: 'a',
+          text_en: 'Have you already submitted your N-400?',
+          options: [{ value: 'not_yet', label_en: 'Not yet' }],
+          trigger: {},
+          depends_on: null,
+          sort_order: 1,
+        },
+      ],
+    ])
+    expect(describeEvent('prompt_shown', { question_key: 'filed', surface: 'results' }, questions).title).toBe(
+      'Asked: Have you already submitted your N-400?',
+    )
+    const answered = describeEvent(
+      'prompt_answered',
+      { question_key: 'filed', answer: 'not_yet', surface: 'results' },
+      questions,
+    )
+    expect(answered.title).toBe('Answered: Have you already submitted your N-400?')
+    expect(answered.detail).toBe('Not yet · results')
+  })
+
   it('names the CTA on cta_clicked', () => {
     const entry = describeEvent('cta_clicked', {
       cta_id: 's10_document_prep', variant: 'a', surface: 'dashboard', group: 'consultation',
     })
-    expect(entry.title).toBe('CTA clicked: s10_document_prep')
+    expect(entry.title).toBe('CTA clicked: Document prep')
     expect(entry.detail).toBe('dashboard')
+  })
+
+  it('humanizes a CTA id with no scenario prefix too', () => {
+    expect(describeEvent('cta_shown', { cta_id: 'speaking_help' }).title).toBe(
+      'CTA shown: Speaking help',
+    )
   })
 
   it('degrades to the raw type for an event type it has never seen', () => {
