@@ -45,6 +45,19 @@ export function localizePost(post: BlogPostRow, locale: Locale): LocalizedPost |
   };
 }
 
+/**
+ * Posts for a blog index page. When the page's language has none, show the
+ * other language's posts (linked in their own language) instead of an empty page.
+ */
+export function blogIndexPosts(rows: BlogPostRow[], locale: Locale): { fallback: boolean; posts: LocalizedPost[] } {
+  const own = rows.flatMap((r) => localizePost(r, locale) ?? []);
+  if (own.length > 0) return { fallback: false, posts: own };
+  const others = locales
+    .filter((l) => l !== locale)
+    .flatMap((l) => rows.flatMap((r) => localizePost(r, l) ?? []));
+  return { fallback: others.length > 0, posts: others };
+}
+
 export type PostRoute =
   | { kind: "render"; post: LocalizedPost }
   | { kind: "redirect"; to: string }
