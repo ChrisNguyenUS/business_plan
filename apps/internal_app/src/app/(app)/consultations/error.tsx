@@ -1,10 +1,10 @@
 'use client'
 
 export default function ConsultationsError({
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string }
-  reset: () => void
+  unstable_retry: () => void
 }) {
   return (
     <div
@@ -15,7 +15,7 @@ export default function ConsultationsError({
       <p className="mt-3 text-slate-500 font-medium">Couldn&apos;t load consultations</p>
       <button
         type="button"
-        onClick={() => reset()}
+        onClick={() => unstable_retry()}
         className="mt-4 px-4 py-2 rounded-lg text-white text-sm font-semibold"
         style={{ backgroundColor: '#3AAFB9' }}
       >

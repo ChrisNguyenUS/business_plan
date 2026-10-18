@@ -46,6 +46,13 @@ export default function ConsultationCard({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  // Re-sync local state when the server row changes (adjust-state-during-render pattern).
+  const [seenUpdatedAt, setSeenUpdatedAt] = useState(row.updated_at)
+  if (seenUpdatedAt !== row.updated_at) {
+    setSeenUpdatedAt(row.updated_at)
+    setStatus(row.status)
+    setOutcome(row.outcome ?? '')
+  }
 
   useEffect(() => {
     if (!saved) return
@@ -167,6 +174,7 @@ export default function ConsultationCard({
       </div>
 
       <textarea
+        key={`note:${row.updated_at}`}
         name="note"
         defaultValue={row.note ?? ''}
         rows={2}
@@ -175,6 +183,7 @@ export default function ConsultationCard({
       />
       {isDone && outcome && (
         <textarea
+          key={`outcome_note:${row.updated_at}`}
           name="outcome_note"
           defaultValue={row.outcome_note ?? ''}
           rows={2}

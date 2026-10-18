@@ -98,7 +98,7 @@ export default async function ConsultationsPage({
         <div className="space-y-4">
           {visible.map((row) => (
             <ConsultationCard
-              key={`${row.id}:${row.updated_at}`}
+              key={row.id}
               row={row}
               clientId={convertedClientIds[row.user_id] ?? null}
               showAge={tab === 'follow_up'}
