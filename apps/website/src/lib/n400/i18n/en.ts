@@ -342,6 +342,8 @@ export const en: N400Dict = {
       calendlyCta: 'Pick a slot on Calendly',
       alreadyTitle: 'You already have a pending request',
       alreadyBody: 'The Manna team will reach out soon. Need a specific time? Pick a slot below.',
+      bookedTitle: 'Your consultation is booked',
+      bookedBody: 'The Manna team has scheduled your consultation. If you need to change the time, reply to our message or call us.',
       backToDashboard: 'Back to dashboard',
     },
   },

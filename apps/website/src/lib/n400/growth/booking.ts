@@ -11,6 +11,13 @@ export type PreferredTime = (typeof PREFERRED_TIMES)[number];
  *  here — before 2026-10-18 it didn't, so a booked customer could re-request. */
 export const OPEN_CONSULTATION_STATUSES = ['new', 'contacted', 'booked'] as const;
 
+export type OpenConsultationStatus = (typeof OPEN_CONSULTATION_STATUSES)[number];
+
+/** Which "already requested" screen to show: staff-booked requests must not offer a second Calendly booking. */
+export function alreadyRequestedVariant(openStatus: OpenConsultationStatus | null): 'booked' | 'pending' {
+  return openStatus === 'booked' ? 'booked' : 'pending';
+}
+
 /** Prefill the form topic from the CTA that brought the user here (spec §5.1). */
 export function topicForCta(sourceCta: string | null): ConsultationTopic {
   if (!sourceCta) return 'n400_review';

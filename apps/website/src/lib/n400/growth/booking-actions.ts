@@ -10,7 +10,7 @@ import { getAuthedServerClient } from './server-client';
 import { isFeatureOn, loadFeatureFlags } from './flags';
 import {
   topicForCta, validateBookingInput, OPEN_CONSULTATION_STATUSES,
-  type ConsultationTopic,
+  type ConsultationTopic, type OpenConsultationStatus,
 } from './booking';
 import { notifyConsultationRequest } from './notify';
 import { sendCapiLead } from '@/lib/analytics/meta-capi';
@@ -19,13 +19,14 @@ import { getDisplayName } from '@/lib/profile-utils';
 export interface BookingContext {
   enabled: boolean;
   alreadyRequested: boolean;
+  openStatus: OpenConsultationStatus | null;
   prefillName: string;
   sourceCta: string | null;
   prefillTopic: ConsultationTopic;
 }
 
 const DISABLED: BookingContext = {
-  enabled: false, alreadyRequested: false, prefillName: '', sourceCta: null, prefillTopic: 'n400_review',
+  enabled: false, alreadyRequested: false, openStatus: null, prefillName: '', sourceCta: null, prefillTopic: 'n400_review',
 };
 
 async function latestClickedCta(
@@ -53,7 +54,7 @@ export async function getBookingContext(): Promise<BookingContext> {
   const [openRes, profileRes, sourceCta] = await Promise.all([
     supabase
       .from('n400_consultation_requests')
-      .select('id')
+      .select('id, status')
       .eq('user_id', user.id)
       .in('status', [...OPEN_CONSULTATION_STATUSES])
       .limit(1),
@@ -71,6 +72,7 @@ export async function getBookingContext(): Promise<BookingContext> {
   return {
     enabled: true,
     alreadyRequested: (openRes.data ?? []).length > 0,
+    openStatus: ((openRes.data ?? [])[0]?.status as OpenConsultationStatus | undefined) ?? null,
     prefillName: display === 'User' ? '' : display,
     sourceCta,
     prefillTopic: topicForCta(sourceCta),

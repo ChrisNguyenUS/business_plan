@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { OPEN_CONSULTATION_STATUSES, topicForCta, validateBookingInput } from './booking';
+import { OPEN_CONSULTATION_STATUSES, alreadyRequestedVariant, topicForCta, validateBookingInput } from './booking';
 
 describe('topicForCta', () => {
   it('maps writing/speaking coaching CTAs to their topics', () => {
@@ -51,5 +51,16 @@ describe('OPEN_CONSULTATION_STATUSES', () => {
       expect(src).toContain('OPEN_CONSULTATION_STATUSES');
       expect(src).not.toMatch(/\.in\(\s*'status'\s*,\s*\[\s*'/);
     }
+  });
+});
+
+describe('alreadyRequestedVariant', () => {
+  it('shows booked copy (no Calendly) only for a booked request', () => {
+    expect(alreadyRequestedVariant('booked')).toBe('booked');
+  });
+  it('keeps pending copy for new/contacted/none', () => {
+    expect(alreadyRequestedVariant('new')).toBe('pending');
+    expect(alreadyRequestedVariant('contacted')).toBe('pending');
+    expect(alreadyRequestedVariant(null)).toBe('pending');
   });
 });
