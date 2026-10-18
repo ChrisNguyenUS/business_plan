@@ -98,7 +98,7 @@ export async function submitConsultationRequest(raw: {
   // (two requests landing within the same round-trip) could still create two rows. Accepted
   // tradeoff for a lead-capture form (worst case: a duplicate lead record + duplicate staff
   // email), not worth a DB constraint for this volume/stakes. Revisit with a partial unique
-  // index on (user_id) WHERE status IN ('new','contacted') if this ever becomes a real problem.
+  // index on (user_id) WHERE status IN (OPEN_CONSULTATION_STATUSES: new, contacted, booked) if this ever becomes a real problem.
   const open = await supabase
     .from('n400_consultation_requests')
     .select('id')

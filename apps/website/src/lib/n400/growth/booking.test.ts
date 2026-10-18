@@ -49,7 +49,7 @@ describe('OPEN_CONSULTATION_STATUSES', () => {
     for (const file of ['booking-actions.ts', 'cta-state.ts']) {
       const src = readFileSync(join(__dirname, file), 'utf8');
       expect(src).toContain('OPEN_CONSULTATION_STATUSES');
-      expect(src).not.toMatch(/\.in\(\s*'status'\s*,\s*\[\s*'/);
+      expect(src).not.toMatch(/\.in\(\s*['"]status['"]\s*,\s*\[\s*['"]/);
     }
   });
 });
