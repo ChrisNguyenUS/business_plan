@@ -6,17 +6,18 @@ import { supabase } from "@/lib/supabase";
 import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
 import { slugify } from "@/lib/blog/slugify";
 import { publishBlocker } from "@/lib/blog/publish-guard";
+import { keepTagsForCategory, tagsInCategory } from "@/lib/blog/tags";
 
 type BlogPost = BlogPostRow;
 
-const CATEGORIES = ["tax", "insurance", "immigration", "ai", "general"];
+const CATEGORIES = ["immigration", "business", "tax", "insurance", "ai", "documents", "general"];
 const POST_TYPES = ["article", "guide", "news", "faq"];
 const DEFAULT_AUTHOR = "Manna One Solution";
 
 const EMPTY_POST: Partial<BlogPost> = {
   slug_en: "", slug_vi: "", title_en: "", title_vi: "", excerpt_en: "", excerpt_vi: "",
   content_en: "", content_vi: "", faq_en: [], faq_vi: [], author_name: DEFAULT_AUTHOR,
-  cover_image_url: "", category: "immigration", post_type: "article", published: false,
+  cover_image_url: "", category: "immigration", tags: [], post_type: "article", published: false,
 };
 
 export default function AdminBlog() {
@@ -82,6 +83,7 @@ export default function AdminBlog() {
       author_name: editing.author_name?.trim() || DEFAULT_AUTHOR,
       cover_image_url: editing.cover_image_url || null,
       category: editing.category || "general",
+      tags: editing.tags ?? [],
       post_type: editing.post_type || "article",
       published: editing.published ?? false,
     };
@@ -223,9 +225,37 @@ export default function AdminBlog() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <SelectFormField label="Category" value={editing.category || "general"} options={CATEGORIES} onChange={(v) => setEditing({ ...editing, category: v })} />
+                <SelectFormField label="Category" value={editing.category || "general"} options={CATEGORIES} onChange={(v) => setEditing({ ...editing, category: v, tags: keepTagsForCategory(editing.tags ?? [], v) })} />
                 <SelectFormField label="Post Type" value={editing.post_type || "article"} options={POST_TYPES} onChange={(v) => setEditing({ ...editing, post_type: v })} />
               </div>
+
+              <fieldset>
+                <legend className="block text-sm font-medium text-charcoal mb-1">Hashtags</legend>
+                {tagsInCategory(editing.category || "general").length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Chủ đề này chưa có hashtag.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {tagsInCategory(editing.category || "general").map((tag) => {
+                      const checked = (editing.tags ?? []).includes(tag.key);
+                      return (
+                        <label key={tag.key} className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              setEditing({
+                                ...editing,
+                                tags: checked ? (editing.tags ?? []).filter((k) => k !== tag.key) : [...(editing.tags ?? []), tag.key],
+                              })
+                            }
+                          />
+                          #{tag.label.vi}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </fieldset>
 
               <div className="flex items-center gap-3 pt-2">
                 <button
