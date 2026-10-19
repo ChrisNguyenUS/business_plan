@@ -7,7 +7,7 @@ category: immigration
 checked_on: 2026-10-15
 ---
 
-The U.S. citizenship test is not hard for well-prepared applicants: according to the latest figures USCIS has published, **95.7%** of applicants passed in fiscal year 2022 (including retests), and more than 88% passed on the first try. Still, the 2025 civics test (for applications filed on or after October 20, 2025) has a larger question bank and asks more questions than the old test, and USCIS has not yet published a pass rate for the new test. Beyond the 128 civics questions, the part that needs the most preparation is understanding the English questions about your own Form N-400.
+Most applicants pass the U.S. citizenship test. According to the latest figures USCIS has published, **95.7%** of applicants passed in fiscal year 2022 (including retests), and more than 88% passed on the first try. Still, the 2025 civics test (for applications filed on or after October 20, 2025) has a larger question bank and asks more questions than the old test, and USCIS has not yet published a pass rate for the new test. Beyond the 128 civics questions, the part that needs the most preparation is understanding the English questions about your own Form N-400.
 
 ## What is the U.S. citizenship test pass rate?
 
@@ -26,7 +26,7 @@ According to the USCIS [Naturalization Test Performance](https://www.uscis.gov/c
 
 First-try civics pass rates for applicants exempt from English because of age (fiscal year 2022): 88.7% for 50/20, 85.9% for 55/15 and 91.2% for 65/20.
 
-**Important:** these figures predate the 2025 test. The USCIS page has no figures yet for the new 20-question test. Treat them as a general picture, not a prediction for your test.
+**Important:** these figures predate the 2025 test. The USCIS page has no figures yet for the new 20-question test. Use them as a rough guide only.
 
 ## How is the 2025 test different from the old one?
 
@@ -40,7 +40,7 @@ According to [The Naturalization Interview and Test](https://www.uscis.gov/citiz
 | Needed to pass | 6 | 12 |
 | Stops early | 6 correct or 5 wrong | 12 correct or 9 wrong |
 
-The share you need right is still 60%. The main differences are that you **have more questions to learn** (128 instead of 100) and **must stay focused longer** (up to 20 questions). The Policy Manual says the questions are chosen at random by the USCIS system, so there are no "favorite" questions to bank on.
+The share you need right is still 60%. The main differences are that you **have more questions to learn** (128 instead of 100) and **must stay focused longer** (up to 20 questions). The Policy Manual says the questions are chosen at random by the USCIS system, so you can't predict which questions you will get.
 
 The full list: [The 128 Civics Questions (2025 Test) and How to Study Them](/en/blog/128-civics-questions-2025).
 
@@ -68,7 +68,7 @@ Some questions ask for several answers, for example question 81, "Name five of t
 
 ### 5. Nerves and not recognizing the question
 
-Many people know the answer but don't recognize the question when it is spoken. The fix is to **practice listening and answering out loud**, not just reading silently.
+You may know an answer and still miss the question when you hear it. **Practice by listening to each question and answering out loud.**
 
 ## What happens if I fail?
 
@@ -100,17 +100,17 @@ If you would like someone to prepare Form N-400 for you, [Manna One Solution's i
 
 ## Sources
 
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (fiscal year 2022 figures; page updated October 5, 2023; checked October 15, 2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (checked October 15, 2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (fiscal year 2022 figures; page updated October 5, 2023; checked October 15, 2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (checked October 15, 2026)
 
 ## Frequently asked questions
 
 ### Is the U.S. citizenship test hard?
 
-Not very, for people who prepare well: according to USCIS, 95.7% of applicants in fiscal year 2022 passed (including retests). Those figures predate the 2025 test, so they do not yet reflect the new 20-question test.
+Most applicants pass. According to USCIS, 95.7% of applicants in fiscal year 2022 passed (including retests). Those figures predate the 2025 test, so they do not yet reflect the new 20-question test.
 
 ### What is the pass rate for the 2025 civics test?
 
@@ -134,4 +134,4 @@ Yes. You get two chances. You retake the part you failed 60–90 days after your
 
 ### How long should I study?
 
-It depends on the person. The most reliable approach is to study a little every day, review the questions you miss and take mock tests until you pass comfortably and consistently.
+No single number of weeks fits everyone. Study a little every day, review the questions you miss, and take mock tests until you pass them several times in a row.

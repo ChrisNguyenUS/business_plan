@@ -64,11 +64,11 @@ If you have been abroad **more than 1 year** without a reentry permit, or more t
 
 ## Sources
 
-- [USCIS — Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (updated September 12, 2025; checked October 19, 2026)
-- [USCIS — I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (checked October 19, 2026)
-- [USCIS — I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (updated June 3, 2026; checked October 19, 2026)
-- [USCIS — G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
-- [USCIS — International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (checked October 19, 2026)
+- [USCIS: Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (updated September 12, 2025; checked October 19, 2026)
+- [USCIS: I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (checked October 19, 2026)
+- [USCIS: I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (updated June 3, 2026; checked October 19, 2026)
+- [USCIS: G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
+- [USCIS: International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (checked October 19, 2026)
 
 ## Frequently asked questions
 

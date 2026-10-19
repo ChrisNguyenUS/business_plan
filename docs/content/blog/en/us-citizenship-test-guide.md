@@ -7,9 +7,7 @@ category: immigration
 checked_on: 2026-10-15
 ---
 
-The U.S. citizenship test is an interview with a U.S. Citizenship and Immigration Services (USCIS) officer: the officer goes over the answers on your Form N-400, then tests your English (speaking, reading and writing) and your civics knowledge (U.S. history and government). If you filed Form N-400 on or after October 20, 2025, the civics part is the 2025 test: the officer asks up to 20 of 128 questions, and you must answer 12 correctly to pass. Passing the interview is not the end: you become a U.S. citizen only after you take the Oath of Allegiance at a naturalization ceremony.
-
-This guide walks through the whole process in order, with a link to the official USCIS page for each step. More detailed articles are linked in each section.
+The U.S. citizenship test is an interview with a U.S. Citizenship and Immigration Services (USCIS) officer: the officer goes over the answers on your Form N-400, then tests your English (speaking, reading and writing) and your civics knowledge (U.S. history and government). If you filed Form N-400 on or after October 20, 2025, the civics part is the 2025 test: the officer asks up to 20 of 128 questions, and you must answer 12 correctly to pass. You become a U.S. citizen only after you take the Oath of Allegiance at a naturalization ceremony.
 
 ## How many steps are there in the naturalization process?
 
@@ -41,7 +39,7 @@ If you are **married to a U.S. citizen**, you may be able to apply after 3 years
 
 The Form N-400 instructions say you can generally file **up to 90 days** before you reach the 5-year (or 3-year) continuous residence requirement, as long as you meet every other requirement ([N-400 Instructions, edition 01/20/25](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf)). USCIS has an Early Filing Calculator to find the earliest date you can file.
 
-Every case is different (long trips outside the U.S., past arrests, unpaid taxes and so on). Those situations call for a licensed immigration attorney, not conclusions drawn from an article. See also: [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
+Every case is different (long trips outside the U.S., past arrests, unpaid taxes and so on). If any of these apply to you, talk to a licensed immigration attorney. See also: [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
 
 ## Step 2: File Form N-400 and pay the fee
 
@@ -58,7 +56,7 @@ Fees according to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked O
 
 According to the [USCIS Poverty Guidelines page](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (in effect from January 13, 2026), the reduced fee is for households with income at or below 400% of the federal poverty guidelines (for example, a 1-person household: $63,840; a 4-person household: $132,000 in the 48 contiguous states). A fee waiver on Form I-912 is based on receiving a means-tested benefit, income at or below 150% of the poverty guidelines (1-person household: $23,940), or financial hardship. Applicants asking for a reduced fee or a waiver must file on paper.
 
-Fees can change. Always check [uscis.gov/n-400](https://www.uscis.gov/n-400) and the [G-1055 Fee Schedule](https://www.uscis.gov/g-1055) on the day you file.
+Fees can change. Check [uscis.gov/n-400](https://www.uscis.gov/n-400) and the [G-1055 Fee Schedule](https://www.uscis.gov/g-1055) on the day you file.
 
 ## Step 3: Biometrics
 
@@ -83,7 +81,7 @@ There is no separate speaking test. According to USCIS, your speaking ability is
 - **Reading:** you are given up to 3 sentences and must read 1 correctly.
 - **Writing:** the officer reads up to 3 sentences aloud and you must write 1 correctly, in a way the officer can understand.
 
-The Policy Manual is explicit: abbreviating a word in the dictated sentence counts as a fail. So when you practice writing, write every word in full and capitalize correctly.
+Under the Policy Manual, abbreviating a word in the dictated sentence counts as a fail. When you practice writing, write every word in full and capitalize correctly.
 
 ### The civics test: the 2025 test or the 2008 test?
 
@@ -117,7 +115,7 @@ More for older applicants, including the 20 questions for 65/20: [The Citizenshi
 
 ## The N-400 review and the Yes/No questions
 
-The part people most often underestimate is the review of your application. Part 9 of Form N-400 has 37 items of Yes/No questions, from whether you have ever voted or owe taxes to criminal history and allegiance to the Constitution. At the interview you are under oath to tell the truth, and the officer can go back over these questions.
+Prepare for the review of your application, too. Part 9 of Form N-400 has 37 items of Yes/No questions, from whether you have ever voted or owe taxes to criminal history and allegiance to the Constitution. At the interview you are under oath to tell the truth, and the officer can go back over these questions.
 
 [N-400 Yes/No Questions: What Each One Asks](/en/blog/n-400-yes-no-questions) explains each group of questions. That article only explains what the questions mean; the answers are yours and must be truthful. If anything is unclear for you (for example, a past arrest, even one that was expunged), talk to a licensed immigration attorney before you file.
 
@@ -147,15 +145,13 @@ The latest figures on the USCIS [Naturalization Test Performance](https://www.us
 
 ## How should I study?
 
-A simple plan for busy people:
-
 1. **Confirm which test you will take** from your filing date (2008 or 2025), and whether you qualify for 50/20, 55/15 or 65/20.
 2. **Study the civics questions by group** (government, history, symbols and holidays), a little every day, and review the ones you miss.
 3. **Practice reading and writing short English sentences**, writing every word in full with no abbreviations.
 4. **Reread your own Form N-400** carefully, because the officer will ask about it.
 5. **Take a full mock interview** before the real one.
 
-[N400 Ready](/en/n400ready) is a **free** app from Manna One Solution for citizenship test practice in English and Vietnamese: study the civics questions with explanations, practice reading, writing and speaking, and take mock interviews. It helps you practice; the official answers are still the list on uscis.gov.
+[N400 Ready](/en/n400ready) is a **free** app from Manna One Solution for citizenship test practice in English and Vietnamese: study the civics questions with explanations, practice reading, writing and speaking, and take mock interviews. The official answers are still the list on uscis.gov.
 
 ## When should I get help?
 
@@ -163,17 +159,17 @@ You can fill out Form N-400 yourself. If you would like someone to prepare the p
 
 ## Sources
 
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part B, Ch. 4: Results of the Naturalization Examination](https://www.uscis.gov/policy-manual/volume-12-part-b-chapter-4) (checked October 15, 2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
-- [USCIS — N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
-- [USCIS — Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (checked October 15, 2026)
-- [USCIS — I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (checked October 15, 2026)
-- [USCIS — I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (checked October 15, 2026)
-- [USCIS — Naturalization Ceremonies](https://www.uscis.gov/citizenship/learn-about-citizenship/naturalization-ceremonies) (checked October 15, 2026)
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (checked October 15, 2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (checked October 15, 2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part B, Ch. 4: Results of the Naturalization Examination](https://www.uscis.gov/policy-manual/volume-12-part-b-chapter-4) (checked October 15, 2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
+- [USCIS: N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
+- [USCIS: Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (checked October 15, 2026)
+- [USCIS: I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (checked October 15, 2026)
+- [USCIS: I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (checked October 15, 2026)
+- [USCIS: Naturalization Ceremonies](https://www.uscis.gov/citizenship/learn-about-citizenship/naturalization-ceremonies) (checked October 15, 2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (checked October 15, 2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (checked October 15, 2026)
 
 ## Frequently asked questions
 

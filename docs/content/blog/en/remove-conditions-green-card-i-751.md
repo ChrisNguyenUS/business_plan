@@ -49,7 +49,7 @@ According to USCIS [Removing Conditions on Permanent Residence Based on Marriage
 - Joint tax returns.
 - Sworn affidavits from people who know you both, with their contact information.
 
-The more real documents of your shared life over the past 2 years, the clearer the case.
+Send documents from across the full 2 years of your marriage.
 
 ## What happens after I file Form I-751?
 
@@ -76,12 +76,12 @@ You can file Form I-751 yourself. If you would like someone to prepare the paper
 
 ## Sources
 
-- [USCIS — I-751, Petition to Remove Conditions on Residence](https://www.uscis.gov/i-751) (updated June 16, 2026; checked October 19, 2026)
-- [USCIS — Conditional Permanent Residence](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence) (checked October 19, 2026)
-- [USCIS — Removing Conditions on Permanent Residence Based on Marriage](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence/removing-conditions-on-permanent-residence-based-on-marriage) (checked October 19, 2026)
-- [USCIS — When to File Your Petition to Remove Conditions](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions) (checked October 19, 2026)
-- [USCIS — 48-month green card extension for pending Form I-751](https://www.uscis.gov/archive/uscis-extends-green-card-validity-for-conditional-permanent-residents-with-a-pending-form-i-751-or) (checked October 19, 2026)
-- [USCIS — G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
+- [USCIS: I-751, Petition to Remove Conditions on Residence](https://www.uscis.gov/i-751) (updated June 16, 2026; checked October 19, 2026)
+- [USCIS: Conditional Permanent Residence](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence) (checked October 19, 2026)
+- [USCIS: Removing Conditions on Permanent Residence Based on Marriage](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence/removing-conditions-on-permanent-residence-based-on-marriage) (checked October 19, 2026)
+- [USCIS: When to File Your Petition to Remove Conditions](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions) (checked October 19, 2026)
+- [USCIS: 48-month green card extension for pending Form I-751](https://www.uscis.gov/archive/uscis-extends-green-card-validity-for-conditional-permanent-residents-with-a-pending-form-i-751-or) (checked October 19, 2026)
+- [USCIS: G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
 
 ## Frequently asked questions
 

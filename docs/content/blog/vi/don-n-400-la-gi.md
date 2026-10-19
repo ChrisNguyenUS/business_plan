@@ -2,13 +2,13 @@
 slug_vi: don-n-400-la-gi
 slug_en: what-is-form-n-400
 title_vi: Đơn N-400 là gì? Điều kiện, lệ phí và các phần của đơn
-excerpt_vi: Đơn N-400 là đơn xin nhập quốc tịch Mỹ. Điều kiện nộp, lệ phí theo uscis.gov và các phần chính của đơn, giải thích bằng tiếng Việt.
+excerpt_vi: Đơn N-400 là đơn xin nhập quốc tịch Mỹ. Điều kiện nộp, lệ phí theo uscis.gov và 16 phần của đơn, có dẫn nguồn.
 category: immigration
 ---
 
 Đơn N-400 (Application for Naturalization) là đơn người có thẻ xanh nộp cho Sở Di trú Hoa Kỳ (USCIS) để xin nhập quốc tịch Mỹ. Người nộp thường phải có thẻ xanh ít nhất 5 năm (hoặc 3 năm nếu kết hôn và sống chung với công dân Mỹ) và đáp ứng các điều kiện về cư trú, tư cách đạo đức, tiếng Anh và kiến thức công dân. Theo [trang N-400 của USCIS](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026), lệ phí là **$710 nếu nộp online** và **$760 nếu nộp bằng giấy**, có thể xin giảm hoặc miễn.
 
-Bài này giải thích ai được nộp, lệ phí, các phần của đơn và những gì xảy ra sau khi nộp. Toàn bộ hành trình từ nộp đơn đến lễ tuyên thệ có ở bài [Thi quốc tịch Mỹ 2026: toàn bộ quy trình](/vi/blog/thi-quoc-tich-my).
+Toàn bộ hành trình từ nộp đơn đến lễ tuyên thệ có ở bài [Thi quốc tịch Mỹ 2026: toàn bộ quy trình](/vi/blog/thi-quoc-tich-my).
 
 ## Ai được nộp đơn N-400?
 
@@ -35,7 +35,7 @@ Ngoài ra còn có các diện khác như phục vụ trong quân đội Mỹ. H
 
 ### "Cư trú liên tục" khác "có mặt thực tế" thế nào?
 
-- **Có mặt thực tế (physical presence)** là tổng số ngày bạn thật sự ở trong nước Mỹ. Đơn N-400 hỏi về các chuyến đi ra khỏi Mỹ để tính phần này.
+- **Có mặt thực tế (physical presence)** là tổng số ngày bạn có mặt trong nước Mỹ. Đơn N-400 hỏi về các chuyến đi ra khỏi Mỹ để tính phần này.
 - **Cư trú liên tục (continuous residence)** là việc bạn giữ Mỹ làm nơi sinh sống, không bị gián đoạn. Những chuyến đi dài có thể ảnh hưởng đến điều kiện này.
 
 Cách tính trong từng trường hợp, nhất là khi từng ở ngoài Mỹ lâu, là câu hỏi cần hỏi luật sư di trú có giấy phép.
@@ -94,7 +94,7 @@ Lệ phí có thể thay đổi. Hãy kiểm tra lại uscis.gov/n-400 và [Fee 
 | 15 | Chữ ký tại buổi phỏng vấn |
 | 16 | Lời Tuyên thệ Trung thành |
 
-Phần 9 là phần nhiều người cần đọc kỹ nhất. Bài [Câu hỏi Yes/No trong đơn N-400: mỗi câu hỏi điều gì](/vi/blog/cau-hoi-yes-no-don-n-400) giải thích từng nhóm câu hỏi bằng tiếng Việt.
+Phần 9 gồm các câu hỏi Yes/No về quá khứ của bạn. Bài [Câu hỏi Yes/No trong đơn N-400: mỗi câu hỏi điều gì](/vi/blog/cau-hoi-yes-no-don-n-400) giải thích từng nhóm câu hỏi bằng tiếng Việt.
 
 Một vài lưu ý từ trang N-400 và hướng dẫn đơn:
 
@@ -120,7 +120,7 @@ Người lớn tuổi có thể được miễn thi tiếng Anh. Xem [Thi quốc
 
 ## Chuẩn bị gì trước khi điền đơn?
 
-Đơn N-400 hỏi nhiều thông tin trong 5 năm (hoặc 3 năm) gần nhất. Chuẩn bị trước giúp điền đúng và nhanh hơn:
+Đơn N-400 hỏi nhiều thông tin trong 5 năm (hoặc 3 năm) gần nhất. Bạn gom sẵn những thứ sau:
 
 - Thẻ xanh (hai mặt) và số A-Number.
 - Địa chỉ nơi ở, kèm ngày bắt đầu và kết thúc, trong 5 năm.
@@ -138,13 +138,13 @@ Bạn có thể tự điền đơn N-400. Nếu muốn có người chuẩn bị
 
 ## Nguồn
 
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (cập nhật 16/06/2026; kiểm tra ngày 15/10/2026)
-- [USCIS — N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (kiểm tra ngày 15/10/2026)
-- [USCIS — I-912, Request for Fee Waiver](https://www.uscis.gov/i-912) và [hướng dẫn Form I-912](https://www.uscis.gov/sites/default/files/document/forms/i-912instr.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (kiểm tra ngày 15/10/2026)
-- [USCIS — I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (kiểm tra ngày 15/10/2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (cập nhật 16/06/2026; kiểm tra ngày 15/10/2026)
+- [USCIS: N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (kiểm tra ngày 15/10/2026)
+- [USCIS: I-912, Request for Fee Waiver](https://www.uscis.gov/i-912) và [hướng dẫn Form I-912](https://www.uscis.gov/sites/default/files/document/forms/i-912instr.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (kiểm tra ngày 15/10/2026)
+- [USCIS: I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (kiểm tra ngày 15/10/2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp
 

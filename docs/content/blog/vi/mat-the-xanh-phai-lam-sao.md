@@ -63,11 +63,11 @@ Nếu bạn ở ngoài Mỹ **trên 1 năm** mà không có giấy phép tái nh
 
 ## Nguồn
 
-- [USCIS — Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (cập nhật 12/09/2025; kiểm tra ngày 19/10/2026)
-- [USCIS — I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (kiểm tra ngày 19/10/2026)
-- [USCIS — I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (cập nhật 03/06/2026; kiểm tra ngày 19/10/2026)
-- [USCIS — G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
-- [USCIS — International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (kiểm tra ngày 19/10/2026)
+- [USCIS: Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (cập nhật 12/09/2025; kiểm tra ngày 19/10/2026)
+- [USCIS: I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (kiểm tra ngày 19/10/2026)
+- [USCIS: I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (cập nhật 03/06/2026; kiểm tra ngày 19/10/2026)
+- [USCIS: G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
+- [USCIS: International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (kiểm tra ngày 19/10/2026)
 
 ## Câu hỏi thường gặp
 

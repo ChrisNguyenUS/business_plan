@@ -7,7 +7,7 @@ category: immigration
 checked_on: 2026-10-15
 ---
 
-The 128 civics questions (2025 version) are the official list USCIS uses for applicants who filed Form N-400 on or after October 20, 2025. At the interview, the officer asks up to 20 of these questions out loud, and you need 12 correct answers. This article lists all 128 questions with the official answers from [USCIS document M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf).
+The 128 civics questions (2025 version) are the official list USCIS uses for applicants who filed Form N-400 on or after October 20, 2025. At the interview, the officer asks up to 20 of these questions out loud, and you need 12 correct answers. Below are all 128 questions with the official answers from [USCIS document M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf).
 
 If you filed before October 20, 2025, you take the 2008 test with its 100 questions, not this list. See [U.S. Citizenship Test 2026: Every Step from Form N-400 to the Oath Ceremony](/en/blog/us-citizenship-test-guide) to find out which test applies to you.
 
@@ -20,7 +20,7 @@ According to [The Naturalization Interview and Test](https://www.uscis.gov/citiz
 | Question set | 128 questions | 20 questions marked ★ |
 | Questions asked | Up to 20 | 10 |
 | Needed to pass | 12 | 6 |
-| Stops early | At 12 correct or 9 wrong | — |
+| Stops early | At 12 correct or 9 wrong | Not applicable |
 | Language | English | Language of your choice, with an interpreter |
 
 Questions are chosen at random from the 128. You get two attempts; if you fail civics, you retake it 60–90 days later.
@@ -34,17 +34,17 @@ Questions are chosen at random from the 128. You get two attempts; if you fail c
 
 ## How to study the 128 questions
 
-1. **Study by group, not by number.** The set has three parts: government (1–72), history (73–118), and symbols and holidays (119–128). Take one small group each week.
+1. **Study by group.** The set has three parts: government (1–72), history (73–118), and symbols and holidays (119–128). Take one small group each week.
 2. **Pick the shortest answer to memorize.** For question 1, "Republic" is enough. Short answers are easier to say and remember.
 3. **Review the questions you miss every day.** Questions you get wrong should come back sooner than the ones you know.
-4. **Practice out loud.** The test is oral, so practice hearing the questions in English and answering out loud, not just reading silently.
+4. **Practice out loud.** The test is oral, so practice hearing each question in English and saying your answer.
 5. **Update the state questions.** Write down your senators, representative, governor and state capital, and check them again close to your interview.
 
 [N400 Ready](/en/n400ready) is Manna One Solution's **free** app for practicing the civics questions in English and Vietnamese, reviewing the ones you miss, and practicing reading, writing, speaking and mock interviews. If anything differs, the official list on uscis.gov is the standard.
 
 Besides civics, you also take the English test and answer questions about your Form N-400. See [N-400 Yes/No Questions: What Each One Asks](/en/blog/n-400-yes-no-questions) and [Is the U.S. Citizenship Test Hard?](/en/blog/is-the-citizenship-test-hard).
 
-## Part 1. American Government — A. Principles of American Government (questions 1–15)
+## Part 1. American Government: A. Principles of American Government (questions 1–15)
 
 **1. What is the form of government of the United States?**  
 Answer: Republic · Constitution-based federal republic · Representative democracy
@@ -91,7 +91,7 @@ Answer: Declaration of Independence · Articles of Confederation · Federalist P
 **15. There are three branches of government. Why?**  
 Answer: So one part does not become too powerful · Checks and balances · Separation of powers
 
-## Part 1. American Government — B. System of Government (questions 16–62)
+## Part 1. American Government: B. System of Government (questions 16–62)
 
 **16. Name the three branches of government.**  
 Answer: Legislative, executive, and judicial · Congress, president, and the courts
@@ -234,7 +234,7 @@ Answer: Answers will vary by state. Residents of D.C. answer that D.C. does not 
 **62. What is the capital of your state?**  
 Answer: Answers will vary by state. Residents of D.C. answer that D.C. is not a state and does not have a capital; residents of a U.S. territory name the territory's capital.
 
-## Part 1. American Government — C. Rights and Responsibilities (questions 63–72)
+## Part 1. American Government: C. Rights and Responsibilities (questions 63–72)
 
 **63. There are four amendments to the U.S. Constitution about who can vote. Describe one of them.**  
 Answer: Citizens eighteen (18) and older (can vote). · You don’t have to pay (a poll tax) to vote. · Any citizen can vote. (Women and men can vote.) · A male citizen of any race (can vote).
@@ -266,7 +266,7 @@ Answer: Required by law · All people pay to fund the federal government · Requ
 **72. It is important for all men age 18 through 25 to register for the Selective Service. Name one reason why.**  
 Answer: Required by law · Civic duty · Makes the draft fair, if needed
 
-## Part 2. American History — A. Colonial Period and Independence (questions 73–89)
+## Part 2. American History: A. Colonial Period and Independence (questions 73–89)
 
 **73. The colonists came to America for many reasons. Name one.**  
 Answer: Freedom · Political liberty · Religious freedom · Economic opportunity · Escape persecution
@@ -319,7 +319,7 @@ Answer: “Father of the Constitution” · Fourth president of the United State
 **89. Alexander Hamilton is famous for many things. Name one.**  
 Answer: First Secretary of the Treasury · One of the writers of the Federalist Papers · Helped establish the First Bank of the United States · Aide to General George Washington · Member of the Continental Congress
 
-## Part 2. American History — B. 1800s (questions 90–99)
+## Part 2. American History: B. 1800s (questions 90–99)
 
 **90. What territory did the United States buy from France in 1803?**  
 Answer: Louisiana Territory · Louisiana
@@ -351,7 +351,7 @@ Answer: After the Civil War · During Reconstruction · (With the) 15th Amendmen
 **99. Name one leader of the women’s rights movement in the 1800s.**  
 Answer: Susan B. Anthony · Elizabeth Cady Stanton · Sojourner Truth · Harriet Tubman · Lucretia Mott · Lucy Stone
 
-## Part 2. American History — C. Recent American History and Other Important Historical Information (questions 100–118)
+## Part 2. American History: C. Recent American History and Other Important Historical Information (questions 100–118)
 
 **100. Name one war fought by the United States in the 1900s.**  
 Answer: World War I · World War II · Korean War · Vietnam War · (Persian) Gulf War
@@ -410,7 +410,7 @@ Answer: Apache · Blackfeet · Cayuga · Cherokee · Cheyenne · Chippewa · Cho
 **118. Name one example of an American innovation.**  
 Answer: Light bulb · Automobile (cars, internal combustion engine) · Skyscrapers · Airplane · Assembly line · Landing on the moon · Integrated circuit (IC)
 
-## Part 3. Symbols and Holidays — A. Symbols (questions 119–124)
+## Part 3. Symbols and Holidays: A. Symbols (questions 119–124)
 
 **119. What is the capital of the United States?**  
 Answer: Washington, D.C.
@@ -430,7 +430,7 @@ Answer: The Star-Spangled Banner
 **124. The Nation’s first motto was “E Pluribus Unum.” What does that mean?**  
 Answer: Out of many, one · We all become one
 
-## Part 3. Symbols and Holidays — B. Holidays (questions 125–128)
+## Part 3. Symbols and Holidays: B. Holidays (questions 125–128)
 
 **125. What is Independence Day?**  
 Answer: A holiday to celebrate U.S. independence (from Britain) · The country’s birthday
@@ -451,11 +451,11 @@ If you would like someone to prepare Form N-400 for you, [Manna One Solution's i
 
 ## Sources
 
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (page updated September 18, 2025; checked October 15, 2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
-- [USCIS — Study for the Test](https://www.uscis.gov/citizenship/find-study-materials-and-resources/study-for-the-test) (checked October 15, 2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (page updated September 18, 2025; checked October 15, 2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
+- [USCIS: Study for the Test](https://www.uscis.gov/citizenship/find-study-materials-and-resources/study-for-the-test) (checked October 15, 2026)
 
 ## Frequently asked questions
 

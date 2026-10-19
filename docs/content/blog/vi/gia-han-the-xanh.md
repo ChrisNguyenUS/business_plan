@@ -8,7 +8,7 @@ checked_on: 2026-10-19
 
 Gia hạn thẻ xanh 10 năm là nộp **Form I-90 (Application to Replace Permanent Resident Card)** cho Sở Di trú Hoa Kỳ (USCIS). Theo USCIS, bạn nên nộp khi thẻ **đã hết hạn hoặc sẽ hết hạn trong vòng 6 tháng**. Lệ phí theo bảng phí G-1055 (bản 16/10/2026) là **$415 nếu nộp online** và **$465 nếu nộp giấy**. Sau khi nộp, giấy biên nhận của USCIS kèm thẻ cũ được dùng làm bằng chứng thường trú trong **36 tháng** kể từ ngày hết hạn in trên thẻ.
 
-Thẻ xanh hết hạn **không làm mất tư cách thường trú nhân**: thẻ chỉ là giấy chứng minh. Nhưng thẻ hết hạn gây khó khăn khi đi làm, đi máy bay hay xuất nhập cảnh, nên gia hạn đúng lúc rất quan trọng.
+Thẻ hết hạn thì bạn **vẫn là thường trú nhân**; thẻ chỉ là giấy chứng minh tư cách đó. Có điều thẻ hết hạn khiến bạn khó chứng minh quyền đi làm, lên máy bay hay nhập cảnh lại Mỹ.
 
 > Lưu ý: nếu bạn có **thẻ xanh 2 năm** (thẻ có điều kiện, thường do kết hôn), bạn **không** gia hạn bằng I-90. Bạn phải nộp Form I-751 để xóa điều kiện. Xem bài [Thẻ xanh 2 năm lên 10 năm: xóa điều kiện bằng Form I-751](/vi/blog/the-xanh-2-nam-len-10-nam).
 
@@ -22,7 +22,7 @@ Theo trang [Replace Your Green Card của USCIS](https://www.uscis.gov/green-car
 - Bạn đã đủ 14 tuổi và thẻ được cấp trước sinh nhật 14 tuổi (trừ khi thẻ hết hạn trước sinh nhật 16 tuổi).
 - Bạn chưa từng nhận được thẻ USCIS đã gửi.
 
-Nếu đang ở nước ngoài và thẻ sắp hết hạn, USCIS hướng dẫn nộp I-90 **ngay khi trở về Mỹ**. Bạn nên tránh để thẻ hết hạn trong lúc đang ở nước ngoài. Đọc thêm: [Có thẻ xanh về Việt Nam được bao lâu?](/vi/blog/co-the-xanh-ve-viet-nam-duoc-bao-lau).
+Nếu đang ở nước ngoài và thẻ sắp hết hạn, USCIS hướng dẫn nộp I-90 **ngay khi trở về Mỹ**. Nếu thẻ sẽ hết hạn trong chuyến đi, hãy gia hạn trước khi đi. Đọc thêm: [Có thẻ xanh về Việt Nam được bao lâu?](/vi/blog/co-the-xanh-ve-viet-nam-duoc-bao-lau).
 
 ## Lệ phí gia hạn thẻ xanh là bao nhiêu?
 
@@ -60,7 +60,7 @@ Trong lúc chờ, bạn vẫn có bằng chứng thường trú: theo [thông b�
 
 ## Có nên nộp quốc tịch thay vì gia hạn thẻ xanh?
 
-Nếu bạn đã có thẻ xanh đủ 5 năm (hoặc 3 năm nếu kết hôn và sống chung với công dân Mỹ), bạn có thể cân nhắc nộp đơn **N-400** xin quốc tịch thay vì chỉ gia hạn thẻ. Điều kiện, lệ phí và quy trình có trong bài [Đơn N-400 là gì?](/vi/blog/don-n-400-la-gi) và [Thi quốc tịch Mỹ 2026](/vi/blog/thi-quoc-tich-my). Việc nên chọn cách nào tùy hoàn cảnh riêng; nếu có tiền án hay từng ở ngoài Mỹ lâu, hãy hỏi luật sư di trú có giấy phép trước.
+Nếu bạn đã có thẻ xanh đủ 5 năm (hoặc 3 năm nếu kết hôn và sống chung với công dân Mỹ), bạn có thể đủ điều kiện nộp đơn **N-400** xin quốc tịch thay vì chỉ gia hạn thẻ. Điều kiện, lệ phí và quy trình có trong bài [Đơn N-400 là gì?](/vi/blog/don-n-400-la-gi) và [Thi quốc tịch Mỹ 2026](/vi/blog/thi-quoc-tich-my). Việc nên chọn cách nào tùy hoàn cảnh riêng; nếu có tiền án hay từng ở ngoài Mỹ lâu, hãy hỏi luật sư di trú có giấy phép trước.
 
 Khi chuẩn bị thi quốc tịch, bạn có thể luyện miễn phí với [N400 Ready](/vi/n400ready) của Manna One Solution.
 
@@ -70,11 +70,11 @@ Bạn có thể tự nộp I-90. Nếu muốn có người chuẩn bị giấy t
 
 ## Nguồn
 
-- [USCIS — I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (cập nhật 07/10/2026; kiểm tra ngày 19/10/2026)
-- [USCIS — Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (kiểm tra ngày 19/10/2026)
-- [USCIS — G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
-- [USCIS — Gia hạn hiệu lực thẻ xanh 36 tháng cho người nộp I-90](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals) (kiểm tra ngày 19/10/2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 19/10/2026)
+- [USCIS: I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (cập nhật 07/10/2026; kiểm tra ngày 19/10/2026)
+- [USCIS: Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (kiểm tra ngày 19/10/2026)
+- [USCIS: G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
+- [USCIS: Gia hạn hiệu lực thẻ xanh 36 tháng cho người nộp I-90](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals) (kiểm tra ngày 19/10/2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 19/10/2026)
 
 ## Câu hỏi thường gặp
 

@@ -9,8 +9,6 @@ checked_on: 2026-10-15
 
 If you are 65 or older and have had a green card for at least 20 years (counted on the date you file Form N-400), you qualify for **65/20**: you are exempt from the English test, you can take the civics test in the language of your choice (Vietnamese, for example) with an interpreter, and you only need to study **20** special questions. On the 2025 test, the officer asks 10 of those 20 questions and you need **6** correct. If you are over 65 but have had your green card for less than 20 years, you don't qualify for 65/20, but you may qualify for 50/20 or 55/15.
 
-This article explains each exemption according to USCIS guidance, lists the 20 questions for 65/20 on the 2025 test, and suggests how older applicants can study.
-
 ## Which English exemptions are there?
 
 According to the [USCIS Policy Manual, Volume 12, Part E, Chapter 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026), there are three exemptions based on age and years as a permanent resident. Both are **counted on the date you file Form N-400**, not the date of your interview.
@@ -118,11 +116,11 @@ According to the USCIS Policy Manual, applicants who cannot meet the English req
 
 [N400 Ready](/en/n400ready) is Manna One Solution's **free** app, in English and Vietnamese, that works on your phone and helps you review the civics questions and take practice tests. The official answers are still the list on uscis.gov.
 
-Many older applicants worry about how hard the test is. See the USCIS figures in [Is the U.S. Citizenship Test Hard?](/en/blog/is-the-citizenship-test-hard): in fiscal year 2022, 65/20 applicants passed civics on the first try at a rate of 91.2%.
+If you worry about how hard the test is, look at the USCIS figures in [Is the U.S. Citizenship Test Hard?](/en/blog/is-the-citizenship-test-hard). In fiscal year 2022, 65/20 applicants passed civics on the first try at a rate of 91.2%.
 
 ## Fees for applicants with low income
 
-Many older applicants live on a fixed income. According to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked October 15, 2026), the fee is $710 online or $760 on paper; you can request a reduced fee of $380 if household income is at or below 400% of the federal poverty guidelines, or a fee waiver with Form I-912. Details are in [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
+If you live on a fixed income, check the fee options first. According to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked October 15, 2026), the fee is $710 online or $760 on paper; you can request a reduced fee of $380 if household income is at or below 400% of the federal poverty guidelines, or a fee waiver with Form I-912. Details are in [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
 
 ## Need someone to prepare your application?
 
@@ -130,13 +128,13 @@ If you would like someone to prepare Form N-400 for you, [Manna One Solution's i
 
 ## Sources
 
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
-- [USCIS — Civics Questions for the 65/20 Exemption (2008 test)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/65-20q.pdf) (checked October 15, 2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (page updated September 18, 2025; checked October 15, 2026)
-- [USCIS — N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (checked October 15, 2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (checked October 15, 2026)
+- [USCIS: Civics Questions for the 65/20 Exemption (2008 test)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/65-20q.pdf) (checked October 15, 2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (page updated September 18, 2025; checked October 15, 2026)
+- [USCIS: N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (checked October 15, 2026)
 
 ## Frequently asked questions
 

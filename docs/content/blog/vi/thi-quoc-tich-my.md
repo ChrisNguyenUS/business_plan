@@ -6,9 +6,7 @@ excerpt_vi: Thi quốc tịch Mỹ 2026 gồm những gì? Từng bước từ n
 category: immigration
 ---
 
-Thi quốc tịch Mỹ là buổi phỏng vấn với nhân viên Sở Di trú (USCIS): nhân viên hỏi lại các câu trong đơn N-400 của bạn, rồi kiểm tra tiếng Anh (nói, đọc, viết) và kiến thức công dân (lịch sử và chính quyền Mỹ). Nếu bạn nộp đơn N-400 từ ngày 20/10/2025 trở đi, phần công dân là bài thi 2025: nhân viên hỏi tối đa 20 câu trong bộ 128 câu, bạn cần trả lời đúng 12 câu để đậu. Đậu phỏng vấn chưa phải là xong: bạn chỉ trở thành công dân Mỹ sau khi đọc Lời Tuyên thệ Trung thành tại lễ nhập tịch.
-
-Bài này đi qua toàn bộ quy trình theo thứ tự thời gian, mỗi bước có đường dẫn đến trang chính thức của USCIS. Các bài chi tiết hơn được liên kết ở từng phần.
+Thi quốc tịch Mỹ là buổi phỏng vấn với nhân viên Sở Di trú (USCIS): nhân viên hỏi lại các câu trong đơn N-400 của bạn, rồi kiểm tra tiếng Anh (nói, đọc, viết) và kiến thức công dân (lịch sử và chính quyền Mỹ). Nếu bạn nộp đơn N-400 từ ngày 20/10/2025 trở đi, phần công dân là bài thi 2025: nhân viên hỏi tối đa 20 câu trong bộ 128 câu, bạn cần trả lời đúng 12 câu để đậu. Bạn chỉ trở thành công dân Mỹ sau khi đọc Lời Tuyên thệ Trung thành tại lễ nhập tịch.
 
 ## Quy trình thi quốc tịch Mỹ gồm mấy bước?
 
@@ -25,7 +23,7 @@ Thời gian xử lý đơn khác nhau theo văn phòng USCIS. Bạn có thể xe
 
 ## Bước 1: Ai được nộp đơn xin quốc tịch Mỹ?
 
-Theo USCIS, trường hợp phổ biến nhất là người có thẻ xanh (thường trú nhân — lawful permanent resident) từ 5 năm trở lên. Trang [I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) liệt kê các điều kiện chung:
+Theo USCIS, trường hợp phổ biến nhất là người có thẻ xanh (thường trú nhân: lawful permanent resident) từ 5 năm trở lên. Trang [I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) liệt kê các điều kiện chung:
 
 - Từ 18 tuổi trở lên khi nộp đơn N-400.
 - Là thường trú nhân ít nhất 5 năm.
@@ -40,7 +38,7 @@ Người **kết hôn với công dân Mỹ** có thể nộp sau 3 năm có th�
 
 Hướng dẫn đơn N-400 cho biết bạn thường có thể nộp sớm **tối đa 90 ngày** trước khi đủ thời gian cư trú liên tục 5 năm (hoặc 3 năm), nhưng vẫn phải đáp ứng mọi điều kiện khác ([N-400 Instructions, bản 01/20/25](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf)). USCIS có công cụ Early Filing Calculator để tính ngày sớm nhất được nộp.
 
-Mỗi hồ sơ có hoàn cảnh riêng (từng ra khỏi Mỹ lâu, từng bị bắt, nợ thuế…). Những trường hợp đó cần hỏi luật sư di trú có giấy phép, không nên tự kết luận từ một bài viết. Xem thêm: [Đơn N-400 là gì? Điều kiện, lệ phí và các phần của đơn](/vi/blog/don-n-400-la-gi).
+Mỗi hồ sơ có hoàn cảnh riêng (từng ra khỏi Mỹ lâu, từng bị bắt, nợ thuế…). Nếu bạn rơi vào một trong các trường hợp này, hãy hỏi luật sư di trú có giấy phép. Xem thêm: [Đơn N-400 là gì? Điều kiện, lệ phí và các phần của đơn](/vi/blog/don-n-400-la-gi).
 
 ## Bước 2: Nộp đơn N-400 và lệ phí
 
@@ -57,7 +55,7 @@ Lệ phí theo [trang N-400 của USCIS](https://www.uscis.gov/n-400) (kiểm tr
 
 Theo [trang Poverty Guidelines của USCIS](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (áp dụng từ 13/01/2026), mức giảm lệ phí dành cho hộ có thu nhập không quá 400% mức nghèo liên bang (ví dụ hộ 1 người: $63,840; hộ 4 người: $132,000 ở 48 tiểu bang liền kề). Miễn lệ phí bằng Form I-912 xét theo việc đang nhận trợ cấp dựa trên thu nhập (means-tested benefit), thu nhập không quá 150% mức nghèo (hộ 1 người: $23,940), hoặc khó khăn tài chính. Người xin giảm hay miễn lệ phí phải nộp đơn bằng giấy.
 
-Lệ phí có thể thay đổi. Luôn kiểm tra lại [uscis.gov/n-400](https://www.uscis.gov/n-400) và [Fee Schedule G-1055](https://www.uscis.gov/g-1055) vào ngày bạn nộp.
+Lệ phí có thể thay đổi. Hãy kiểm tra lại [uscis.gov/n-400](https://www.uscis.gov/n-400) và [Fee Schedule G-1055](https://www.uscis.gov/g-1055) vào ngày bạn nộp.
 
 ## Bước 3: Lăn tay (biometrics)
 
@@ -82,7 +80,7 @@ Không có bài thi nói riêng. Theo USCIS, khả năng nói của bạn đư�
 - **Đọc:** bạn được đưa tối đa 3 câu, cần đọc đúng 1 câu.
 - **Viết:** nhân viên đọc tối đa 3 câu, bạn cần viết đúng 1 câu sao cho nhân viên hiểu được.
 
-Cẩm nang Chính sách ghi rõ: viết tắt một từ trong câu được đọc cho viết được tính là không đạt. Vì vậy khi luyện viết, hãy tập viết đủ chữ và viết hoa đúng chỗ.
+Theo Cẩm nang Chính sách, viết tắt một từ trong câu được đọc cho viết bị tính là không đạt. Khi luyện viết, hãy tập viết đủ chữ và viết hoa đúng chỗ.
 
 ### Phần thi công dân (civics): bài 2025 hay bài 2008?
 
@@ -116,7 +114,7 @@ Chi tiết cho người lớn tuổi, kèm 20 câu hỏi 65/20 bằng tiếng Vi
 
 ## Phần hỏi đơn N-400 và các câu Yes/No
 
-Phần dễ bị xem nhẹ nhất là phần hỏi lại đơn. Phần 9 của đơn N-400 có 37 nhóm câu hỏi Yes/No, từ việc đã từng đi bầu, nợ thuế, tiền án, đến lòng trung thành với Hiến pháp. Trong buổi phỏng vấn, bạn đã tuyên thệ nói thật, và nhân viên có thể hỏi lại các câu này.
+Bạn cũng cần chuẩn bị cho phần hỏi lại đơn. Phần 9 của đơn N-400 có 37 nhóm câu hỏi Yes/No, từ việc đã từng đi bầu, nợ thuế, tiền án, đến lòng trung thành với Hiến pháp. Trong buổi phỏng vấn, bạn đã tuyên thệ nói thật, và nhân viên có thể hỏi lại các câu này.
 
 Bài [Câu hỏi Yes/No trong đơn N-400: mỗi câu hỏi điều gì](/vi/blog/cau-hoi-yes-no-don-n-400) giải thích từng nhóm câu hỏi bằng tiếng Việt. Bài đó chỉ giải thích câu hỏi nghĩa là gì; câu trả lời là của riêng bạn, phải đúng sự thật. Nếu có điều gì bạn không chắc (ví dụ từng bị bắt, kể cả khi hồ sơ đã được xóa), hãy hỏi luật sư di trú có giấy phép trước khi nộp đơn.
 
@@ -146,15 +144,13 @@ Số liệu mới nhất USCIS công bố trên trang [Naturalization Test Perfo
 
 ## Nên học như thế nào?
 
-Một lịch học đơn giản cho người bận rộn:
-
 1. **Xác định bài thi của bạn** theo ngày nộp đơn (2008 hay 2025) và xem mình có thuộc diện 50/20, 55/15 hay 65/20 không.
 2. **Học câu hỏi công dân theo nhóm** (chính quyền, lịch sử, biểu tượng và ngày lễ), mỗi ngày một ít, ôn lại câu sai.
 3. **Tập đọc và viết câu ngắn** bằng tiếng Anh, viết đủ chữ, không viết tắt.
 4. **Đọc kỹ lại đơn N-400 của chính bạn**, vì nhân viên sẽ hỏi lại thông tin trong đó.
 5. **Thi thử** trọn buổi phỏng vấn trước ngày thi thật.
 
-[N400 Ready](/n400ready) là ứng dụng **miễn phí** của Manna One Solution để luyện thi quốc tịch bằng tiếng Việt: học câu hỏi công dân với giải thích tiếng Việt, tập đọc, viết, nói và thi thử. Ứng dụng giúp bạn ôn luyện; đáp án chính thức vẫn là danh sách trên uscis.gov.
+[N400 Ready](/n400ready) là ứng dụng **miễn phí** của Manna One Solution để luyện thi quốc tịch bằng tiếng Việt: học câu hỏi công dân với giải thích tiếng Việt, tập đọc, viết, nói và thi thử. Đáp án chính thức vẫn là danh sách trên uscis.gov.
 
 ## Khi nào nên tìm người giúp?
 
@@ -162,17 +158,17 @@ Bạn có thể tự điền đơn N-400. Nếu muốn có người chuẩn bị
 
 ## Nguồn
 
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part B, Ch. 4: Results of the Naturalization Examination](https://www.uscis.gov/policy-manual/volume-12-part-b-chapter-4) (kiểm tra ngày 15/10/2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
-- [USCIS — N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (kiểm tra ngày 15/10/2026)
-- [USCIS — I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (kiểm tra ngày 15/10/2026)
-- [USCIS — I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (kiểm tra ngày 15/10/2026)
-- [USCIS — Naturalization Ceremonies](https://www.uscis.gov/citizenship/learn-about-citizenship/naturalization-ceremonies) (kiểm tra ngày 15/10/2026)
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (kiểm tra ngày 15/10/2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (kiểm tra ngày 15/10/2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part B, Ch. 4: Results of the Naturalization Examination](https://www.uscis.gov/policy-manual/volume-12-part-b-chapter-4) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (kiểm tra ngày 15/10/2026)
+- [USCIS: I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (kiểm tra ngày 15/10/2026)
+- [USCIS: I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (kiểm tra ngày 15/10/2026)
+- [USCIS: Naturalization Ceremonies](https://www.uscis.gov/citizenship/learn-about-citizenship/naturalization-ceremonies) (kiểm tra ngày 15/10/2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (kiểm tra ngày 15/10/2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp
 

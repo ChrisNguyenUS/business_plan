@@ -6,7 +6,7 @@ excerpt_vi: Thi quốc tịch Mỹ có khó không? Theo USCIS, 95,7% người t
 category: immigration
 ---
 
-Thi quốc tịch Mỹ không khó với người chuẩn bị kỹ: theo số liệu mới nhất USCIS công bố, năm tài chính 2022 có **95,7%** người thi đậu (tính cả lần thi lại), và hơn 88% đậu ngay lần đầu. Tuy vậy, bài thi công dân 2025 (cho người nộp đơn từ 20/10/2025) có bộ câu hỏi lớn hơn và số câu hỏi nhiều hơn bài cũ, và USCIS chưa công bố tỷ lệ đậu riêng cho bài mới. Ngoài 128 câu công dân, phần cần chuẩn bị kỹ là nghe hiểu các câu hỏi tiếng Anh về đơn N-400 của chính bạn.
+Phần lớn người thi quốc tịch Mỹ đều đậu. Theo số liệu mới nhất USCIS công bố, năm tài chính 2022 có **95,7%** người thi đậu (tính cả lần thi lại), và hơn 88% đậu ngay lần đầu. Tuy vậy, bài thi công dân 2025 (cho người nộp đơn từ 20/10/2025) có bộ câu hỏi lớn hơn và số câu hỏi nhiều hơn bài cũ, và USCIS chưa công bố tỷ lệ đậu riêng cho bài mới. Ngoài 128 câu công dân, phần cần chuẩn bị kỹ là nghe hiểu các câu hỏi tiếng Anh về đơn N-400 của chính bạn.
 
 ## Tỷ lệ đậu thi quốc tịch Mỹ là bao nhiêu?
 
@@ -25,7 +25,7 @@ Theo trang [Naturalization Test Performance của USCIS](https://www.uscis.gov/c
 
 Tỷ lệ đậu phần công dân lần đầu của người được miễn tiếng Anh theo tuổi (năm tài chính 2022): diện 50/20 là 88,7%, diện 55/15 là 85,9%, diện 65/20 là 91,2%.
 
-**Lưu ý quan trọng:** đây là số liệu trước khi có bài thi 2025. Trang này của USCIS chưa có số liệu cho bài 20 câu mới. Nên xem các con số trên như bức tranh chung, không phải dự đoán cho bài thi của bạn.
+**Lưu ý:** đây là số liệu trước khi có bài thi 2025. Trang này của USCIS chưa có số liệu cho bài 20 câu mới, nên bạn chỉ dùng các con số trên để tham khảo.
 
 ## Bài thi 2025 khác bài cũ thế nào?
 
@@ -39,7 +39,7 @@ Theo trang [The Naturalization Interview and Test](https://www.uscis.gov/citizen
 | Cần đúng | 6 | 12 |
 | Dừng sớm | Đúng 6 hoặc sai 5 | Đúng 12 hoặc sai 9 |
 
-Tỷ lệ cần đúng vẫn là 60%. Khác biệt chính là **phải học nhiều câu hơn** (128 thay vì 100) và **phải giữ tập trung lâu hơn** (có thể đến 20 câu). Cẩm nang Chính sách cho biết câu hỏi được hệ thống của USCIS chọn ngẫu nhiên, nên không có "câu tủ".
+Tỷ lệ cần đúng vẫn là 60%. Khác biệt chính là **phải học nhiều câu hơn** (128 thay vì 100) và **phải giữ tập trung lâu hơn** (có thể đến 20 câu). Cẩm nang Chính sách cho biết câu hỏi được hệ thống của USCIS chọn ngẫu nhiên, nên bạn không đoán trước được mình sẽ gặp câu nào.
 
 Danh sách đầy đủ: [128 câu hỏi thi quốc tịch Mỹ (bộ 2025) bằng tiếng Việt](/vi/blog/128-cau-hoi-thi-quoc-tich-my).
 
@@ -67,7 +67,7 @@ Một số câu yêu cầu nhiều đáp án, ví dụ câu 81 "kể tên năm t
 
 ### 5. Hồi hộp và không hiểu câu hỏi
 
-Nhiều người biết đáp án nhưng không nhận ra câu hỏi khi nghe bằng giọng nói thật. Cách khắc phục là **tập nghe và trả lời thành tiếng**, không chỉ đọc thầm.
+Bạn có thể thuộc đáp án mà vẫn không nhận ra câu hỏi khi nghe nhân viên đọc. **Hãy tập nghe từng câu hỏi và trả lời thành tiếng.**
 
 ## Nếu rớt thì sao?
 
@@ -99,17 +99,17 @@ Nếu bạn muốn có người chuẩn bị đơn N-400 giúp, [dịch vụ chu
 
 ## Nguồn
 
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (số liệu năm tài chính 2022; trang cập nhật 05/10/2023; kiểm tra ngày 15/10/2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (kiểm tra ngày 15/10/2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (số liệu năm tài chính 2022; trang cập nhật 05/10/2023; kiểm tra ngày 15/10/2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp
 
 ### Thi quốc tịch Mỹ có khó không?
 
-Với người chuẩn bị kỹ thì không quá khó: theo USCIS, 95,7% người thi trong năm tài chính 2022 đã đậu (tính cả thi lại). Số liệu này có trước bài thi 2025, nên chưa phản ánh bài 20 câu mới.
+Phần lớn người thi đều đậu. Theo USCIS, 95,7% người thi trong năm tài chính 2022 đã đậu (tính cả thi lại). Số liệu này có trước bài thi 2025, nên chưa phản ánh bài 20 câu mới.
 
 ### Tỷ lệ đậu bài thi công dân 2025 là bao nhiêu?
 
@@ -133,4 +133,4 @@ Có. Bạn có hai lần thi. Phần trượt được thi lại trong khoảng 
 
 ### Học bao lâu thì đủ để thi?
 
-Tùy mỗi người. Cách chắc chắn nhất là học đều mỗi ngày, ôn câu sai và thi thử nhiều lần cho đến khi bạn đạt ổn định trên mức cần đậu.
+Không có số tuần chung cho mọi người. Bạn học mỗi ngày một ít, ôn câu sai và thi thử cho đến khi đậu nhiều lần liên tiếp.

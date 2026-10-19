@@ -6,13 +6,13 @@ excerpt_vi: Giải thích bằng tiếng Việt các câu hỏi Yes/No trong đ�
 category: immigration
 ---
 
-Các câu hỏi Yes/No trong đơn N-400 nằm ở **Phần 9 (Additional Information About You)**, gồm 37 mục, hỏi về những việc liên quan đến tư cách đạo đức tốt (good moral character), an ninh quốc gia và sự gắn bó với Hiến pháp Hoa Kỳ. Bài này giải thích **mỗi câu hỏi điều gì** bằng tiếng Việt, dựa trên đơn N-400 bản 01/20/25 và hướng dẫn đi kèm. Bài không hướng dẫn bạn nên trả lời Yes hay No: câu trả lời phải đúng với sự thật của riêng bạn, và bạn ký tên xác nhận dưới hình phạt khai man (penalty of perjury).
+Các câu hỏi Yes/No trong đơn N-400 nằm ở **Phần 9 (Additional Information About You)**, gồm 37 mục, hỏi về những việc liên quan đến tư cách đạo đức tốt (good moral character), an ninh quốc gia và sự gắn bó với Hiến pháp Hoa Kỳ. Dưới đây là **nội dung từng câu hỏi** bằng tiếng Việt, theo đơn N-400 bản 01/20/25 và hướng dẫn đi kèm. Chúng tôi không hướng dẫn bạn trả lời Yes hay No: câu trả lời phải đúng với sự thật của riêng bạn, và bạn ký tên xác nhận dưới hình phạt khai man (penalty of perjury).
 
 Trong buổi phỏng vấn quốc tịch, nhân viên USCIS hỏi về đơn và lý lịch của bạn, nên các câu này có thể được hỏi lại. Xem toàn bộ quy trình ở bài [Thi quốc tịch Mỹ 2026: từ đơn N-400 đến lễ tuyên thệ](/vi/blog/thi-quoc-tich-my).
 
 ## Chữ "EVER" trong câu hỏi nghĩa là gì?
 
-Đơn N-400 ghi rõ ở đầu Phần 9: khi câu hỏi có chữ **"EVER"** (đã từng bao giờ), bạn phải khai về hành động hoặc việc làm **ở bất kỳ đâu trên thế giới, vào bất kỳ thời điểm nào**, trừ khi câu hỏi nói khác. Nghĩa là không chỉ ở Mỹ, không chỉ 5 năm gần đây.
+Đơn N-400 ghi rõ ở đầu Phần 9: khi câu hỏi có chữ **"EVER"** (đã từng bao giờ), bạn phải khai về hành động hoặc việc làm **ở bất kỳ đâu trên thế giới, vào bất kỳ thời điểm nào**, trừ khi câu hỏi nói khác. Bạn khai cả những việc xảy ra ngoài nước Mỹ và những việc cách đây hơn 5 năm.
 
 Nếu trả lời "Yes" ở các mục 1–14, đơn yêu cầu bạn giải thích thêm ở **Phần 14 (Additional Information)**.
 
@@ -30,7 +30,7 @@ Theo hướng dẫn đơn N-400, người có thuế quá hạn cần nộp bả
 - **Mục 5.a:** Bạn đã từng là thành viên, tham gia, hoặc có liên hệ với **đảng Cộng sản hay đảng toàn trị** ở bất kỳ đâu chưa?
 - **Mục 5.b:** Bạn đã từng ủng hộ, cổ vũ, hoặc tham gia nhóm nào cổ vũ việc lật đổ chính quyền Mỹ bằng bạo lực, chống mọi chính quyền có tổ chức, chủ nghĩa cộng sản thế giới, chế độ độc tài toàn trị ở Mỹ, tấn công hay giết nhân viên chính quyền, phá hoại tài sản trái phép, hoặc phá hoại (sabotage) chưa?
 
-Câu hỏi này đặc biệt liên quan đến nhiều người gốc Việt từng sống ở Việt Nam. Hướng dẫn đơn N-400 giải thích rằng tư cách thành viên hiện tại hoặc trước đây trong một số tổ chức **có thể** cho thấy thiếu tư cách đạo đức tốt hoặc không gắn bó với Hiến pháp. Theo [Cẩm nang Chính sách USCIS, Tập 12, Phần D, Chương 7](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7), luật có các ngoại lệ (ví dụ tham gia không tự nguyện, trước 16 tuổi, hoặc để có việc làm, thực phẩm và nhu yếu phẩm), và người nộp đơn có trách nhiệm chứng minh mình thuộc ngoại lệ. Tuy vậy, việc một trường hợp cụ thể có thuộc ngoại lệ hay không là câu hỏi pháp lý. Nếu bạn có liên quan đến mục này, hãy hỏi luật sư di trú có giấy phép trước khi nộp đơn.
+Nếu bạn từng sống ở Việt Nam, mục này có thể liên quan đến bạn. Hướng dẫn đơn N-400 giải thích rằng tư cách thành viên hiện tại hoặc trước đây trong một số tổ chức **có thể** cho thấy thiếu tư cách đạo đức tốt hoặc không gắn bó với Hiến pháp. Theo [Cẩm nang Chính sách USCIS, Tập 12, Phần D, Chương 7](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7), luật có các ngoại lệ (ví dụ tham gia không tự nguyện, trước 16 tuổi, hoặc để có việc làm, thực phẩm và nhu yếu phẩm), và người nộp đơn có trách nhiệm chứng minh mình thuộc ngoại lệ. Tuy vậy, việc một trường hợp cụ thể có thuộc ngoại lệ hay không là câu hỏi pháp lý. Nếu bạn có liên quan đến mục này, hãy hỏi luật sư di trú có giấy phép trước khi nộp đơn.
 
 ## Mục 6–14: Bạo lực, vũ khí, nhóm vũ trang
 
@@ -101,7 +101,7 @@ Các mục này hỏi bạn đã từng rời Mỹ để tránh quân dịch, xi
 - **Mục 34:** Bạn có sẵn lòng đọc toàn bộ Lời Tuyên thệ không?
 - **Mục 35–37:** Nếu luật yêu cầu, bạn có sẵn lòng cầm vũ khí cho Hoa Kỳ, làm công việc không chiến đấu trong quân đội, hoặc làm công việc quan trọng cho quốc gia dưới sự chỉ đạo dân sự không?
 
-Đơn ghi chú: nếu trả lời "No" ở bất kỳ câu nào trừ mục 33, hãy đọc phần Oath of Allegiance trong hướng dẫn. Theo [Cẩm nang Chính sách USCIS, Tập 12, Phần J, Chương 3](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3), người nộp đơn có thể xin bỏ các câu về cầm vũ khí hoặc phục vụ không chiến đấu trong lời tuyên thệ nếu có niềm tin tôn giáo hoặc đạo đức sâu sắc. Đây là chi tiết nên đọc trong hướng dẫn hoặc hỏi luật sư.
+Đơn ghi chú: nếu trả lời "No" ở bất kỳ câu nào trừ mục 33, hãy đọc phần Oath of Allegiance trong hướng dẫn. Theo [Cẩm nang Chính sách USCIS, Tập 12, Phần J, Chương 3](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3), người nộp đơn có thể xin bỏ các câu về cầm vũ khí hoặc phục vụ không chiến đấu trong lời tuyên thệ nếu có niềm tin tôn giáo hoặc đạo đức sâu sắc. Nếu điều này áp dụng cho bạn, hãy đọc hướng dẫn đơn hoặc hỏi luật sư.
 
 ## Chuẩn bị cho phần hỏi đơn thế nào?
 
@@ -118,12 +118,12 @@ Các mục này hỏi bạn đã từng rời Mỹ để tránh quân dịch, xi
 
 ## Nguồn
 
-- [USCIS — Form N-400, Application for Naturalization (bản 01/20/25), Phần 9](https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part D, Ch. 7: Attachment to the Constitution](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part J, Ch. 3: Oath of Allegiance Modifications and Waivers](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3) (kiểm tra ngày 15/10/2026)
+- [USCIS: Form N-400, Application for Naturalization (bản 01/20/25), Phần 9](https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part D, Ch. 7: Attachment to the Constitution](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part J, Ch. 3: Oath of Allegiance Modifications and Waivers](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3) (kiểm tra ngày 15/10/2026)
 - [Selective Service System](https://www.sss.gov/) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp

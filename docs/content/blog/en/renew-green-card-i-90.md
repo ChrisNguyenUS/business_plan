@@ -9,7 +9,7 @@ checked_on: 2026-10-19
 
 Renewing a 10-year green card means filing **Form I-90 (Application to Replace Permanent Resident Card)** with U.S. Citizenship and Immigration Services (USCIS). According to USCIS, you should file when your card **has expired or will expire within the next 6 months**. The fee under the G-1055 Fee Schedule (edition October 16, 2026) is **$415 online** and **$465 on paper**. After you file, the USCIS receipt notice together with your old card serves as proof of permanent residence for **36 months** from the expiration date printed on the card.
 
-An expired green card **does not end your permanent resident status**: the card is only proof of it. But an expired card makes working, flying and reentering the U.S. harder, so renewing on time matters.
+You **stay a permanent resident** after your card expires; the card is only proof of your status. An expired card does make it harder to prove you can work, board a flight or reenter the U.S.
 
 > Note: if you have a **2-year green card** (a conditional card, usually through marriage), you do **not** renew it with Form I-90. You file Form I-751 to remove the conditions. See [2-Year to 10-Year Green Card: Removing Conditions with Form I-751](/en/blog/remove-conditions-green-card-i-751).
 
@@ -23,7 +23,7 @@ According to the USCIS [Replace Your Green Card](https://www.uscis.gov/green-car
 - You have reached your 14th birthday and your card was issued before then (unless it expires before your 16th birthday).
 - You never received the card USCIS mailed.
 
-If you are abroad and your card is about to expire, USCIS says to file Form I-90 **as soon as you return to the U.S.** It is best not to let your card expire while you are out of the country. See also: [How Long Can a Green Card Holder Stay Outside the U.S.?](/en/blog/green-card-travel-how-long-abroad).
+If you are abroad and your card is about to expire, USCIS says to file Form I-90 **as soon as you return to the U.S.** If your card will expire during a trip, renew it before you leave. See also: [How Long Can a Green Card Holder Stay Outside the U.S.?](/en/blog/green-card-travel-how-long-abroad).
 
 ## How much does it cost to renew a green card?
 
@@ -61,7 +61,7 @@ You still have proof of status while you wait: according to a [USCIS announcemen
 
 ## Should I apply for citizenship instead?
 
-If you have had your green card for 5 years (or 3 years if married to and living with a U.S. citizen), you may want to consider filing **Form N-400** for citizenship instead of only renewing. Eligibility, fees and the process are in [What Is Form N-400?](/en/blog/what-is-form-n-400) and [U.S. Citizenship Test 2026](/en/blog/us-citizenship-test-guide). Which path fits depends on your situation; if you have a criminal record or long trips abroad, talk to a licensed immigration attorney first.
+If you have had your green card for 5 years (or 3 years if married to and living with a U.S. citizen), you may be eligible to file **Form N-400** for citizenship instead of only renewing. Eligibility, fees and the process are in [What Is Form N-400?](/en/blog/what-is-form-n-400) and [U.S. Citizenship Test 2026](/en/blog/us-citizenship-test-guide). Which path fits depends on your situation; if you have a criminal record or long trips abroad, talk to a licensed immigration attorney first.
 
 When you prepare for the citizenship test, you can practice free with [N400 Ready](/en/n400ready) from Manna One Solution.
 
@@ -71,11 +71,11 @@ You can file Form I-90 yourself. If you would like someone to prepare the paperw
 
 ## Sources
 
-- [USCIS — I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (updated October 7, 2026; checked October 19, 2026)
-- [USCIS — Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (checked October 19, 2026)
-- [USCIS — G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
-- [USCIS — Green Card validity extension to 36 months for renewals](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals) (checked October 19, 2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (checked October 19, 2026)
+- [USCIS: I-90, Application to Replace Permanent Resident Card](https://www.uscis.gov/i-90) (updated October 7, 2026; checked October 19, 2026)
+- [USCIS: Replace Your Green Card](https://www.uscis.gov/green-card/after-we-grant-your-green-card/replace-your-green-card) (checked October 19, 2026)
+- [USCIS: G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
+- [USCIS: Green Card validity extension to 36 months for renewals](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals) (checked October 19, 2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (checked October 19, 2026)
 
 ## Frequently asked questions
 

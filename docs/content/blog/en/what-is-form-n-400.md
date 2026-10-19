@@ -2,14 +2,14 @@
 slug_vi: don-n-400-la-gi
 slug_en: what-is-form-n-400
 title_en: What Is Form N-400? Eligibility, Fees and the Parts of the Form
-excerpt_en: Form N-400 is the application for U.S. citizenship. Who can file, the fees according to uscis.gov, and the main parts of the form, explained plainly.
+excerpt_en: Form N-400 is the application for U.S. citizenship. Who can file, the fees according to uscis.gov, and the 16 parts of the form, with sources.
 category: immigration
 checked_on: 2026-10-15
 ---
 
 Form N-400 (Application for Naturalization) is the form a green card holder files with U.S. Citizenship and Immigration Services (USCIS) to become a U.S. citizen. Applicants usually need to have had a green card for at least 5 years (or 3 years if married to and living with a U.S. citizen) and meet the requirements for residence, good moral character, English and civics. According to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked October 15, 2026), the fee is **$710 online** and **$760 on paper**, and you can ask for a reduced fee or a waiver.
 
-This article explains who can file, the fees, the parts of the form and what happens after you file. The full journey from filing to the oath ceremony is in [U.S. Citizenship Test 2026: Every Step from Form N-400 to the Oath Ceremony](/en/blog/us-citizenship-test-guide).
+For the full journey from filing to the oath ceremony, see [U.S. Citizenship Test 2026: Every Step from Form N-400 to the Oath Ceremony](/en/blog/us-citizenship-test-guide).
 
 ## Who can file Form N-400?
 
@@ -36,7 +36,7 @@ There are other bases too, such as service in the U.S. military. The N-400 instr
 
 ### How is "continuous residence" different from "physical presence"?
 
-- **Physical presence** is the total number of days you were actually inside the United States. Form N-400 asks about your trips outside the U.S. to work this out.
+- **Physical presence** is the total number of days you were inside the United States. Form N-400 asks about your trips outside the U.S. to work this out.
 - **Continuous residence** means keeping the U.S. as your home without a break. Long trips abroad can affect it.
 
 How these are counted in a particular case, especially after long periods outside the U.S., is a question for a licensed immigration attorney.
@@ -95,7 +95,7 @@ The 01/20/25 edition of Form N-400 has 16 parts (per the table of contents in th
 | 15 | Signature at the interview |
 | 16 | Oath of Allegiance |
 
-Part 9 is the part most people need to read most carefully. [N-400 Yes/No Questions: What Each One Asks](/en/blog/n-400-yes-no-questions) explains each group of questions.
+Part 9 holds the Yes/No questions about your history. [N-400 Yes/No Questions: What Each One Asks](/en/blog/n-400-yes-no-questions) explains each group of questions.
 
 A few points from the N-400 page and the instructions:
 
@@ -121,7 +121,7 @@ Older applicants may be exempt from the English test. See [The Citizenship Test 
 
 ## What should I gather before filling out the form?
 
-Form N-400 asks about the last 5 (or 3) years in detail. Having this ready makes it faster and more accurate:
+Form N-400 asks about the last 5 (or 3) years in detail. Gather these first:
 
 - Your green card (both sides) and A-Number.
 - Your home addresses, with start and end dates, for 5 years.
@@ -139,13 +139,13 @@ You can fill out Form N-400 yourself. If you would like someone to prepare the p
 
 ## Sources
 
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (updated June 16, 2026; checked October 15, 2026)
-- [USCIS — N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
-- [USCIS — Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (checked October 15, 2026)
-- [USCIS — I-912, Request for Fee Waiver](https://www.uscis.gov/i-912) and the [Form I-912 instructions](https://www.uscis.gov/sites/default/files/document/forms/i-912instr.pdf) (checked October 15, 2026)
-- [USCIS — I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (checked October 15, 2026)
-- [USCIS — I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (checked October 15, 2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (checked October 15, 2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (updated June 16, 2026; checked October 15, 2026)
+- [USCIS: N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
+- [USCIS: Poverty Guidelines](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (checked October 15, 2026)
+- [USCIS: I-912, Request for Fee Waiver](https://www.uscis.gov/i-912) and the [Form I-912 instructions](https://www.uscis.gov/sites/default/files/document/forms/i-912instr.pdf) (checked October 15, 2026)
+- [USCIS: I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-a-lawful-permanent-resident-of-5-years) (checked October 15, 2026)
+- [USCIS: I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen) (checked October 15, 2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (checked October 15, 2026)
 
 ## Frequently asked questions
 

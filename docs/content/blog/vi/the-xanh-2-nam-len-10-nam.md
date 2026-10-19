@@ -48,7 +48,7 @@ Theo trang [Removing Conditions on Permanent Residence Based on Marriage](https:
 - Tờ khai thuế khai chung.
 - Lời khai có tuyên thệ (affidavit) của người biết hai bạn, kèm thông tin liên lạc.
 
-Bạn càng có nhiều giấy tờ thật về đời sống chung trong 2 năm qua thì hồ sơ càng rõ ràng.
+Hãy nộp giấy tờ trải đều suốt 2 năm hôn nhân.
 
 ## Sau khi nộp I-751 thì sao?
 
@@ -75,12 +75,12 @@ Bạn có thể tự nộp I-751. Nếu muốn có người chuẩn bị giấy 
 
 ## Nguồn
 
-- [USCIS — I-751, Petition to Remove Conditions on Residence](https://www.uscis.gov/i-751) (cập nhật 16/06/2026; kiểm tra ngày 19/10/2026)
-- [USCIS — Conditional Permanent Residence](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence) (kiểm tra ngày 19/10/2026)
-- [USCIS — Removing Conditions on Permanent Residence Based on Marriage](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence/removing-conditions-on-permanent-residence-based-on-marriage) (kiểm tra ngày 19/10/2026)
-- [USCIS — When to File Your Petition to Remove Conditions](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions) (kiểm tra ngày 19/10/2026)
-- [USCIS — Gia hạn hiệu lực thẻ 48 tháng cho người có I-751 đang chờ](https://www.uscis.gov/archive/uscis-extends-green-card-validity-for-conditional-permanent-residents-with-a-pending-form-i-751-or) (kiểm tra ngày 19/10/2026)
-- [USCIS — G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
+- [USCIS: I-751, Petition to Remove Conditions on Residence](https://www.uscis.gov/i-751) (cập nhật 16/06/2026; kiểm tra ngày 19/10/2026)
+- [USCIS: Conditional Permanent Residence](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence) (kiểm tra ngày 19/10/2026)
+- [USCIS: Removing Conditions on Permanent Residence Based on Marriage](https://www.uscis.gov/green-card/after-we-grant-your-green-card/conditional-permanent-residence/removing-conditions-on-permanent-residence-based-on-marriage) (kiểm tra ngày 19/10/2026)
+- [USCIS: When to File Your Petition to Remove Conditions](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions) (kiểm tra ngày 19/10/2026)
+- [USCIS: Gia hạn hiệu lực thẻ 48 tháng cho người có I-751 đang chờ](https://www.uscis.gov/archive/uscis-extends-green-card-validity-for-conditional-permanent-residents-with-a-pending-form-i-751-or) (kiểm tra ngày 19/10/2026)
+- [USCIS: G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
 
 ## Câu hỏi thường gặp
 

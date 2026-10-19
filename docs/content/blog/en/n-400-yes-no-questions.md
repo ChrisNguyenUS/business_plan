@@ -7,13 +7,13 @@ category: immigration
 checked_on: 2026-10-15
 ---
 
-The Yes/No questions on Form N-400 are in **Part 9 (Additional Information About You)**, which has 37 items about good moral character, national security and attachment to the U.S. Constitution. This article explains **what each question asks**, based on the 01/20/25 edition of Form N-400 and its instructions. It does not tell you whether to answer Yes or No: your answers must be true for you, and you sign them under penalty of perjury.
+The Yes/No questions on Form N-400 are in **Part 9 (Additional Information About You)**, which has 37 items about good moral character, national security and attachment to the U.S. Constitution. We summarize **what each question asks**, from the 01/20/25 edition of Form N-400 and its instructions. We don't tell you how to answer: your answers must be true for you, and you sign them under penalty of perjury.
 
 At the citizenship interview, the USCIS officer asks about your application and background, so these questions may come up again. See the whole process in [U.S. Citizenship Test 2026: Every Step from Form N-400 to the Oath Ceremony](/en/blog/us-citizenship-test-guide).
 
 ## What does "EVER" mean in these questions?
 
-Form N-400 says at the start of Part 9: when a question uses the word **"EVER"**, you must report any act or event **anywhere in the world, at any time**, unless the question says otherwise. That means not only in the U.S., and not only in the last 5 years.
+Form N-400 says at the start of Part 9: when a question uses the word **"EVER"**, you must report any act or event **anywhere in the world, at any time**, unless the question says otherwise. That includes events outside the U.S. and events more than 5 years ago.
 
 If you answer "Yes" to items 1–14, the form asks you to explain in **Part 14 (Additional Information)**.
 
@@ -31,7 +31,7 @@ According to the N-400 instructions, applicants with overdue taxes should submit
 - **Item 5.a:** Have you **ever** been a member of, involved in, or associated with any **Communist or totalitarian party** anywhere?
 - **Item 5.b:** Have you **ever** advocated, supported or been part of any group that advocated the violent overthrow of the U.S. government, opposition to all organized government, world communism, a totalitarian dictatorship in the U.S., the assault or killing of government officials, unlawful damage to property, or sabotage?
 
-This question matters especially for many people who lived in Vietnam. The N-400 instructions explain that current or past membership in certain organizations **may** indicate a lack of good moral character or of attachment to the Constitution. According to the [USCIS Policy Manual, Volume 12, Part D, Chapter 7](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7), the law has exceptions (for example, involuntary membership, membership before age 16, or membership to get employment, food rations or other necessities), and the applicant has to show the exception applies. Still, whether a particular case falls under an exception is a legal question. If this item applies to you, talk to a licensed immigration attorney before you file.
+If you lived in Vietnam, this item may apply to you. The N-400 instructions explain that current or past membership in certain organizations **may** indicate a lack of good moral character or of attachment to the Constitution. According to the [USCIS Policy Manual, Volume 12, Part D, Chapter 7](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7), the law has exceptions (for example, involuntary membership, membership before age 16, or membership to get employment, food rations or other necessities), and the applicant has to show the exception applies. Still, whether a particular case falls under an exception is a legal question. If this item applies to you, talk to a licensed immigration attorney before you file.
 
 ## Items 6–14: Violence, weapons and armed groups
 
@@ -102,7 +102,7 @@ These items ask whether you have ever left the U.S. to avoid the draft, applied 
 - **Item 34:** Are you willing to take the full Oath of Allegiance?
 - **Items 35–37:** If the law requires it, are you willing to bear arms on behalf of the United States, perform noncombatant service in the U.S. armed forces, or perform work of national importance under civilian direction?
 
-The form notes: if you answer "No" to any question other than item 33, read the Oath of Allegiance section of the instructions. According to the [USCIS Policy Manual, Volume 12, Part J, Chapter 3](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3), applicants may ask to take a modified oath without the clauses about bearing arms or noncombatant service if they have deeply held religious or moral beliefs. This is a detail to read in the instructions or ask an attorney about.
+The form notes: if you answer "No" to any question other than item 33, read the Oath of Allegiance section of the instructions. According to the [USCIS Policy Manual, Volume 12, Part J, Chapter 3](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3), applicants may ask to take a modified oath without the clauses about bearing arms or noncombatant service if they have deeply held religious or moral beliefs. If this applies to you, read the instructions or ask an attorney.
 
 ## How should I prepare for the application review?
 
@@ -119,12 +119,12 @@ The form notes: if you answer "No" to any question other than item 33, read the 
 
 ## Sources
 
-- [USCIS — Form N-400, Application for Naturalization (edition 01/20/25), Part 9](https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf) (checked October 15, 2026)
-- [USCIS — N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part D, Ch. 7: Attachment to the Constitution](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7) (checked October 15, 2026)
-- [USCIS Policy Manual — Vol. 12, Part J, Ch. 3: Oath of Allegiance Modifications and Waivers](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3) (checked October 15, 2026)
+- [USCIS: Form N-400, Application for Naturalization (edition 01/20/25), Part 9](https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf) (checked October 15, 2026)
+- [USCIS: N-400 Instructions (edition 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (checked October 15, 2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (checked October 15, 2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part D, Ch. 7: Attachment to the Constitution](https://www.uscis.gov/policy-manual/volume-12-part-d-chapter-7) (checked October 15, 2026)
+- [USCIS Policy Manual: Vol. 12, Part J, Ch. 3: Oath of Allegiance Modifications and Waivers](https://www.uscis.gov/policy-manual/volume-12-part-j-chapter-3) (checked October 15, 2026)
 - [Selective Service System](https://www.sss.gov/) (checked October 15, 2026)
 
 ## Frequently asked questions

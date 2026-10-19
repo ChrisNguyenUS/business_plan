@@ -70,13 +70,13 @@ Nếu hôn nhân **chưa đủ 2 năm** vào ngày người được bảo lãnh
 
 ## Nguồn
 
-- [USCIS — Family of U.S. Citizens](https://www.uscis.gov/family/family-of-us-citizens) (kiểm tra ngày 19/10/2026)
-- [USCIS — Family of Green Card Holders](https://www.uscis.gov/family/family-of-green-card-holders-permanent-residents) (kiểm tra ngày 19/10/2026)
-- [USCIS — I-130, Petition for Alien Relative](https://www.uscis.gov/i-130) (kiểm tra ngày 19/10/2026)
-- [USCIS — G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
-- [U.S. Department of State — Visa Bulletin tháng 10/2026](https://adoption.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-october-2026.html) (kiểm tra ngày 19/10/2026)
-- [U.S. Department of State — Fees for Visa Services](https://adoption.state.gov/content/travel/en/us-visas/visa-information-resources/fees/fees-visa-services.html) (kiểm tra ngày 19/10/2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 19/10/2026)
+- [USCIS: Family of U.S. Citizens](https://www.uscis.gov/family/family-of-us-citizens) (kiểm tra ngày 19/10/2026)
+- [USCIS: Family of Green Card Holders](https://www.uscis.gov/family/family-of-green-card-holders-permanent-residents) (kiểm tra ngày 19/10/2026)
+- [USCIS: I-130, Petition for Alien Relative](https://www.uscis.gov/i-130) (kiểm tra ngày 19/10/2026)
+- [USCIS: G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
+- [U.S. Department of State: Visa Bulletin tháng 10/2026](https://adoption.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-october-2026.html) (kiểm tra ngày 19/10/2026)
+- [U.S. Department of State: Fees for Visa Services](https://adoption.state.gov/content/travel/en/us-visas/visa-information-resources/fees/fees-visa-services.html) (kiểm tra ngày 19/10/2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (kiểm tra ngày 19/10/2026)
 
 ## Câu hỏi thường gặp
 

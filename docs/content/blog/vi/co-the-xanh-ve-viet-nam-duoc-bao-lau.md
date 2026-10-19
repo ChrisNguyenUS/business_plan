@@ -37,7 +37,7 @@ Ngoài ra, với chuyến đi **từ 1 năm trở lên** vì một số công vi
 
 ## Giấy phép tái nhập cảnh (reentry permit) là gì?
 
-Giấy phép tái nhập cảnh là giấy tờ USCIS cấp qua **Form I-131**, giúp thường trú nhân quay lại Mỹ sau chuyến đi dài mà không bị xem là từ bỏ thường trú chỉ vì ở ngoài Mỹ lâu. Theo USCIS:
+Giấy phép tái nhập cảnh là giấy tờ USCIS cấp qua **Form I-131**. Có giấy này, bạn quay lại Mỹ sau chuyến đi dài mà riêng thời gian ở ngoài Mỹ không bị tính là từ bỏ thường trú. Theo USCIS:
 
 - Nên xin **trước khi rời Mỹ**, và giấy phép hết giá trị nếu bạn ở ngoài Mỹ **quá 2 năm**.
 - Có giấy phép **không bảo đảm** được nhập cảnh; bạn vẫn phải đủ điều kiện nhập cảnh.
@@ -55,7 +55,7 @@ Nếu chuyến đi dưới 1 năm và thẻ bị mất, bị đánh cắp hoặc
 - **Ghi lại ngày đi, ngày về** của mọi chuyến đi. Đơn N-400 sẽ hỏi chi tiết các chuyến đi trong 5 năm.
 - **Thẻ xanh 2 năm:** đừng để lỡ hạn 90 ngày nộp I-751. Xem [Thẻ xanh 2 năm lên 10 năm](/vi/blog/the-xanh-2-nam-len-10-nam).
 
-Mỗi hoàn cảnh khác nhau. Nếu bạn đã hoặc sắp ở ngoài Mỹ lâu, hãy hỏi luật sư di trú có giấy phép trước khi đi.
+Nếu bạn đã hoặc sắp ở ngoài Mỹ lâu, hãy hỏi luật sư di trú có giấy phép trước khi đi.
 
 ## Cần người giúp chuẩn bị giấy phép tái nhập cảnh?
 
@@ -63,10 +63,10 @@ Mỗi hoàn cảnh khác nhau. Nếu bạn đã hoặc sắp ở ngoài Mỹ lâ
 
 ## Nguồn
 
-- [USCIS — International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (cập nhật 12/09/2025; kiểm tra ngày 19/10/2026)
-- [USCIS — I-131, Application for Travel Documents](https://www.uscis.gov/i-131) (cập nhật 07/10/2026; kiểm tra ngày 19/10/2026)
-- [USCIS — G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
-- [USCIS — I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (kiểm tra ngày 19/10/2026)
+- [USCIS: International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (cập nhật 12/09/2025; kiểm tra ngày 19/10/2026)
+- [USCIS: I-131, Application for Travel Documents](https://www.uscis.gov/i-131) (cập nhật 07/10/2026; kiểm tra ngày 19/10/2026)
+- [USCIS: G-1055 Fee Schedule (bản 16/10/2026)](https://www.uscis.gov/g-1055) (kiểm tra ngày 19/10/2026)
+- [USCIS: I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (kiểm tra ngày 19/10/2026)
 
 ## Câu hỏi thường gặp
 
@@ -76,7 +76,7 @@ Chuyến đi dưới 1 năm thường quay lại bằng thẻ xanh còn hạn. T
 
 ### Thẻ xanh 2 năm có về Việt Nam được không?
 
-Được. Thẻ 2 năm theo cùng quy định đi lại như thẻ 10 năm. Bạn chỉ cần nhớ nộp I-751 đúng hạn trong 90 ngày trước khi thẻ hết hạn.
+Được. Thẻ 2 năm theo cùng quy định đi lại như thẻ 10 năm. Hãy sắp xếp chuyến đi để vẫn nộp được I-751 trong 90 ngày trước khi thẻ hết hạn.
 
 ### Ở Việt Nam 7 tháng có bị mất thẻ xanh không?
 

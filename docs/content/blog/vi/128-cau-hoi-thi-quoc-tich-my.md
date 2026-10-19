@@ -6,7 +6,7 @@ excerpt_vi: Đủ 128 câu hỏi thi quốc tịch Mỹ bộ 2025, dịch tiến
 category: immigration
 ---
 
-Bộ 128 câu hỏi thi quốc tịch Mỹ (bộ 2025) là danh sách chính thức USCIS dùng cho người nộp đơn N-400 từ ngày 20/10/2025 trở đi. Trong buổi phỏng vấn, nhân viên hỏi miệng tối đa 20 câu trong bộ này và bạn cần trả lời đúng 12 câu. Bài này liệt kê đủ 128 câu, dịch sang tiếng Việt, kèm đáp án chính thức bằng tiếng Anh theo tài liệu [M-1778 (09/25) của USCIS](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf).
+Bộ 128 câu hỏi thi quốc tịch Mỹ (bộ 2025) là danh sách chính thức USCIS dùng cho người nộp đơn N-400 từ ngày 20/10/2025 trở đi. Trong buổi phỏng vấn, nhân viên hỏi miệng tối đa 20 câu trong bộ này và bạn cần trả lời đúng 12 câu. Dưới đây là đủ 128 câu, dịch sang tiếng Việt, kèm đáp án chính thức bằng tiếng Anh theo tài liệu [M-1778 (09/25) của USCIS](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf).
 
 Nếu bạn nộp đơn trước ngày 20/10/2025, bạn làm bài thi 2008 với bộ 100 câu, không phải bộ này. Xem bài tổng quan [Thi quốc tịch Mỹ 2026: toàn bộ quy trình](/vi/blog/thi-quoc-tich-my) để biết bạn thuộc bài thi nào.
 
@@ -19,7 +19,7 @@ Theo trang [The Naturalization Interview and Test](https://www.uscis.gov/citizen
 | Bộ câu hỏi | 128 câu | 20 câu có dấu ★ |
 | Số câu được hỏi | Tối đa 20 | 10 |
 | Cần trả lời đúng | 12 | 6 |
-| Dừng sớm | Khi đúng 12 hoặc sai 9 | — |
+| Dừng sớm | Khi đúng 12 hoặc sai 9 | Không áp dụng |
 | Ngôn ngữ | Tiếng Anh | Ngôn ngữ bạn chọn, qua thông dịch viên |
 
 Câu hỏi được chọn ngẫu nhiên từ bộ 128 câu. Bạn có hai lần thi; nếu trượt, phần công dân được thi lại trong 60–90 ngày.
@@ -31,19 +31,19 @@ Câu hỏi được chọn ngẫu nhiên từ bộ 128 câu. Bạn có hai lần
 - Đáp án giữ nguyên tiếng Anh như tài liệu của USCIS, vì đó là cách bạn sẽ trả lời trong buổi thi. USCIS cho biết có thể có đáp án đúng khác, nhưng khuyến khích người thi dùng các đáp án trong danh sách.
 - Một số câu có đáp án **thay đổi theo thời gian** (câu 30, 38, 39, 57) hoặc **tùy nơi bạn sống** (câu 23, 29, 61, 62). Với các câu này, USCIS yêu cầu trả lời theo người đang giữ chức vào ngày bạn phỏng vấn; xem [uscis.gov/citizenship/testupdates](https://www.uscis.gov/citizenship/testupdates).
 
-## Cách học 128 câu hiệu quả
+## Cách học 128 câu
 
-1. **Học theo nhóm, không học theo số thứ tự.** Bộ câu chia ba phần: chính quyền (câu 1–72), lịch sử (câu 73–118), biểu tượng và ngày lễ (câu 119–128). Mỗi tuần học một nhóm nhỏ.
+1. **Học theo nhóm.** Bộ câu chia ba phần: chính quyền (câu 1–72), lịch sử (câu 73–118), biểu tượng và ngày lễ (câu 119–128). Mỗi tuần học một nhóm nhỏ.
 2. **Chọn một đáp án ngắn nhất để thuộc.** Ví dụ câu 1, chỉ cần nhớ "Republic". Đáp án ngắn dễ nói và dễ nhớ hơn.
 3. **Ôn lại câu sai mỗi ngày.** Câu bạn trả lời sai nên được hỏi lại sớm hơn câu đã thuộc.
-4. **Tập nói thành tiếng.** Bài thi là hỏi miệng, nên hãy tập nghe câu hỏi tiếng Anh và trả lời thành tiếng, không chỉ đọc thầm.
+4. **Tập nói thành tiếng.** Bài thi là hỏi miệng, nên hãy tập nghe từng câu hỏi tiếng Anh và nói câu trả lời ra miệng.
 5. **Cập nhật câu theo tiểu bang.** Ghi sẵn tên thượng nghị sĩ, dân biểu, thống đốc và thủ phủ của nơi bạn ở, kiểm tra lại gần ngày thi. Xem [đáp án theo tiểu bang của bạn](/vi/n400ready#states).
 
 [N400 Ready](/vi/n400ready) là ứng dụng **miễn phí** của Manna One Solution giúp bạn luyện câu hỏi công dân với giải thích tiếng Việt, ôn câu sai, tập đọc, viết, nói và thi thử. Khi có khác biệt, danh sách chính thức trên uscis.gov là chuẩn.
 
 Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đơn N-400. Xem [Câu hỏi Yes/No trong đơn N-400](/vi/blog/cau-hoi-yes-no-don-n-400) và [Thi quốc tịch Mỹ có khó không?](/vi/blog/thi-quoc-tich-my-co-kho-khong).
 
-## Phần 1. Chính quyền Mỹ — A. Nguyên tắc của chính quyền Mỹ (câu 1–15)
+## Phần 1. Chính quyền Mỹ: A. Nguyên tắc của chính quyền Mỹ (câu 1–15)
 
 **1. Hình thức chính phủ của Hoa Kỳ là gì?**  
 *What is the form of government of the United States?*  
@@ -106,7 +106,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: So one part does not become too powerful · Checks and balances · Separation of powers
 
 
-## Phần 1. Chính quyền Mỹ — B. Hệ thống chính quyền (câu 16–62)
+## Phần 1. Chính quyền Mỹ: B. Hệ thống chính quyền (câu 16–62)
 
 **16. Kể tên ba nhánh của chính phủ.**  
 *Name the three branches of government.*  
@@ -297,7 +297,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án: tùy tiểu bang bạn sống. Người sống ở D.C. trả lời rằng D.C. không phải tiểu bang nên không có thủ phủ; người sống ở vùng lãnh thổ nói thủ phủ của vùng lãnh thổ đó.
 
 
-## Phần 1. Chính quyền Mỹ — C. Quyền và trách nhiệm (câu 63–72)
+## Phần 1. Chính quyền Mỹ: C. Quyền và trách nhiệm (câu 63–72)
 
 **63. Có bốn tu chính án của Hiến pháp nói về việc ai được đi bầu. Hãy mô tả một.**  
 *There are four amendments to the U.S. Constitution about who can vote. Describe one of them.*  
@@ -340,7 +340,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: Required by law · Civic duty · Makes the draft fair, if needed
 
 
-## Phần 2. Lịch sử Mỹ — A. Thời thuộc địa và độc lập (câu 73–89)
+## Phần 2. Lịch sử Mỹ: A. Thời thuộc địa và độc lập (câu 73–89)
 
 **73. Người thuộc địa đến Mỹ vì nhiều lý do. Kể một.**  
 *The colonists came to America for many reasons. Name one.*  
@@ -411,7 +411,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: First Secretary of the Treasury · One of the writers of the Federalist Papers · Helped establish the First Bank of the United States · Aide to General George Washington · Member of the Continental Congress
 
 
-## Phần 2. Lịch sử Mỹ — B. Thế kỷ 19 (câu 90–99)
+## Phần 2. Lịch sử Mỹ: B. Thế kỷ 19 (câu 90–99)
 
 **90. Năm 1803, Hoa Kỳ mua vùng đất nào từ Pháp?**  
 *What territory did the United States buy from France in 1803?*  
@@ -454,7 +454,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: Susan B. Anthony · Elizabeth Cady Stanton · Sojourner Truth · Harriet Tubman · Lucretia Mott · Lucy Stone
 
 
-## Phần 2. Lịch sử Mỹ — C. Lịch sử gần đây và các sự kiện quan trọng khác (câu 100–118)
+## Phần 2. Lịch sử Mỹ: C. Lịch sử gần đây và các sự kiện quan trọng khác (câu 100–118)
 
 **100. Kể một cuộc chiến Hoa Kỳ tham gia trong thế kỷ 20 (những năm 1900).**  
 *Name one war fought by the United States in the 1900s.*  
@@ -533,7 +533,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: Light bulb · Automobile (cars, internal combustion engine) · Skyscrapers · Airplane · Assembly line · Landing on the moon · Integrated circuit (IC)
 
 
-## Phần 3. Biểu tượng và ngày lễ — A. Biểu tượng (câu 119–124)
+## Phần 3. Biểu tượng và ngày lễ: A. Biểu tượng (câu 119–124)
 
 **119. Thủ đô của Hoa Kỳ là gì?**  
 *What is the capital of the United States?*  
@@ -560,7 +560,7 @@ Ngoài phần công dân, bạn còn thi tiếng Anh và được hỏi lại đ
 Đáp án chính thức: Out of many, one · We all become one
 
 
-## Phần 3. Biểu tượng và ngày lễ — B. Ngày lễ (câu 125–128)
+## Phần 3. Biểu tượng và ngày lễ: B. Ngày lễ (câu 125–128)
 
 **125. Ngày Độc lập (Independence Day) là gì?**  
 *What is Independence Day?*  
@@ -584,11 +584,11 @@ Nếu bạn muốn có người chuẩn bị đơn N-400 giúp, [dịch vụ chu
 
 ## Nguồn
 
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (trang cập nhật 18/09/2025; kiểm tra ngày 15/10/2026)
-- [USCIS — The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
-- [USCIS — Study for the Test](https://www.uscis.gov/citizenship/find-study-materials-and-resources/study-for-the-test) (kiểm tra ngày 15/10/2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (trang cập nhật 18/09/2025; kiểm tra ngày 15/10/2026)
+- [USCIS: The Naturalization Interview and Test](https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
+- [USCIS: Study for the Test](https://www.uscis.gov/citizenship/find-study-materials-and-resources/study-for-the-test) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp
 

@@ -76,13 +76,13 @@ Yes. You sign **Form I-864**, promising financial support for your parents. Your
 
 ## Sources
 
-- [USCIS — Family of U.S. Citizens](https://www.uscis.gov/family/family-of-us-citizens) (checked October 19, 2026)
-- [USCIS — Family of Green Card Holders](https://www.uscis.gov/family/family-of-green-card-holders-permanent-residents) (checked October 19, 2026)
-- [USCIS — I-130, Petition for Alien Relative](https://www.uscis.gov/i-130) (checked October 19, 2026)
-- [USCIS — I-864, Affidavit of Support](https://www.uscis.gov/i-864) (checked October 19, 2026)
-- [USCIS — G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
-- [U.S. Department of State — Fees for Visa Services](https://adoption.state.gov/content/travel/en/us-visas/visa-information-resources/fees/fees-visa-services.html) (checked October 19, 2026)
-- [USCIS — Processing Times](https://egov.uscis.gov/processing-times/) (checked October 19, 2026)
+- [USCIS: Family of U.S. Citizens](https://www.uscis.gov/family/family-of-us-citizens) (checked October 19, 2026)
+- [USCIS: Family of Green Card Holders](https://www.uscis.gov/family/family-of-green-card-holders-permanent-residents) (checked October 19, 2026)
+- [USCIS: I-130, Petition for Alien Relative](https://www.uscis.gov/i-130) (checked October 19, 2026)
+- [USCIS: I-864, Affidavit of Support](https://www.uscis.gov/i-864) (checked October 19, 2026)
+- [USCIS: G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
+- [U.S. Department of State: Fees for Visa Services](https://adoption.state.gov/content/travel/en/us-visas/visa-information-resources/fees/fees-visa-services.html) (checked October 19, 2026)
+- [USCIS: Processing Times](https://egov.uscis.gov/processing-times/) (checked October 19, 2026)
 
 ## Frequently asked questions
 

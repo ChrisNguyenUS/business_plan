@@ -38,7 +38,7 @@ For absences of **1 year or more** for certain kinds of work (for example, for t
 
 ## What is a reentry permit?
 
-A reentry permit is a document USCIS issues through **Form I-131**. It lets a permanent resident return to the U.S. after a long trip without being considered to have abandoned residence just because of the time abroad. According to USCIS:
+A reentry permit is a document USCIS issues through **Form I-131**. With it, you can return to the U.S. after a long trip, and the length of the trip alone does not count as abandoning your residence. According to USCIS:
 
 - Apply **before you leave the U.S.**; the permit expires if you stay abroad **more than 2 years**.
 - A permit **does not guarantee** admission; you still have to be admissible.
@@ -56,7 +56,7 @@ If your trip is under 1 year and your card is lost, stolen or destroyed, you can
 - **Write down the departure and return dates** of every trip. Form N-400 asks about every trip in the last 5 years.
 - **2-year card holders:** don't miss the 90-day Form I-751 window. See [2-Year to 10-Year Green Card](/en/blog/remove-conditions-green-card-i-751).
 
-Every situation is different. If you have been, or will be, outside the U.S. for a long time, talk to a licensed immigration attorney before you go.
+If you have been, or will be, outside the U.S. for a long time, talk to a licensed immigration attorney before you go.
 
 ## Need help preparing a reentry permit?
 
@@ -64,10 +64,10 @@ Every situation is different. If you have been, or will be, outside the U.S. for
 
 ## Sources
 
-- [USCIS — International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (updated September 12, 2025; checked October 19, 2026)
-- [USCIS — I-131, Application for Travel Documents](https://www.uscis.gov/i-131) (updated October 7, 2026; checked October 19, 2026)
-- [USCIS — G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
-- [USCIS — I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (checked October 19, 2026)
+- [USCIS: International Travel as a Permanent Resident](https://www.uscis.gov/green-card/after-we-grant-your-green-card/international-travel-as-a-permanent-resident) (updated September 12, 2025; checked October 19, 2026)
+- [USCIS: I-131, Application for Travel Documents](https://www.uscis.gov/i-131) (updated October 7, 2026; checked October 19, 2026)
+- [USCIS: G-1055 Fee Schedule (edition 10/16/26)](https://www.uscis.gov/g-1055) (checked October 19, 2026)
+- [USCIS: I-131A, Application for Carrier Documentation](https://www.uscis.gov/i-131a) (checked October 19, 2026)
 
 ## Frequently asked questions
 
@@ -77,7 +77,7 @@ Trips under 1 year usually return with a valid green card. Six months or more ma
 
 ### Can a 2-year green card holder travel abroad?
 
-Yes. A 2-year card follows the same travel rules as a 10-year card. Just make sure you file Form I-751 in the 90 days before the card expires.
+Yes. A 2-year card follows the same travel rules as a 10-year card. Plan your trips so you can file Form I-751 in the 90 days before the card expires.
 
 ### Will I lose my green card if I stay abroad for 7 months?
 

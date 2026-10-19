@@ -8,8 +8,6 @@ category: immigration
 
 Người từ 65 tuổi trở lên và đã có thẻ xanh ít nhất 20 năm (tính vào ngày nộp đơn N-400) thuộc diện **65/20**: được miễn thi tiếng Anh, được thi công dân bằng ngôn ngữ mình chọn (ví dụ tiếng Việt) qua thông dịch viên, và chỉ cần học **20 câu** đặc biệt. Với bài thi 2025, nhân viên hỏi 10 trong 20 câu đó và bạn cần trả lời đúng **6 câu**. Người trên 65 tuổi nhưng có thẻ xanh chưa đủ 20 năm thì không thuộc diện 65/20, nhưng có thể thuộc diện 50/20 hoặc 55/15.
 
-Bài này giải thích từng diện theo hướng dẫn của USCIS, liệt kê 20 câu hỏi 65/20 của bài thi 2025 bằng tiếng Việt, và gợi ý cách học cho người lớn tuổi.
-
 ## Có những diện miễn thi tiếng Anh nào?
 
 Theo [Cẩm nang Chính sách USCIS, Tập 12, Phần E, Chương 2](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026), có ba diện dựa trên tuổi và số năm có thẻ xanh. Cả tuổi và số năm đều **tính vào ngày nộp đơn N-400**, không phải ngày phỏng vấn.
@@ -137,11 +135,11 @@ Theo Cẩm nang Chính sách USCIS, người không thể đáp ứng yêu cầu
 
 [N400 Ready](/vi/n400ready) là ứng dụng **miễn phí** của Manna One Solution, giao diện tiếng Việt, dùng trên điện thoại, giúp bạn ôn câu hỏi công dân và thi thử. Đáp án chuẩn vẫn là danh sách chính thức trên uscis.gov.
 
-Nhiều người lớn tuổi lo về độ khó của bài thi. Xem số liệu USCIS công bố ở bài [Thi quốc tịch Mỹ có khó không?](/vi/blog/thi-quoc-tich-my-co-kho-khong): năm tài chính 2022, người diện 65/20 đậu phần công dân ngay lần đầu với tỷ lệ 91,2%.
+Nếu bạn lo bài thi khó, hãy xem số liệu USCIS công bố ở bài [Thi quốc tịch Mỹ có khó không?](/vi/blog/thi-quoc-tich-my-co-kho-khong). Năm tài chính 2022, người diện 65/20 đậu phần công dân ngay lần đầu với tỷ lệ 91,2%.
 
 ## Lệ phí cho người có thu nhập thấp
 
-Nhiều người lớn tuổi sống bằng thu nhập cố định. Theo [trang N-400 của USCIS](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026), lệ phí là $710 nếu nộp online, $760 nếu nộp giấy; có thể xin giảm còn $380 nếu thu nhập hộ không quá 400% mức nghèo liên bang, hoặc xin miễn bằng Form I-912. Chi tiết ở bài [Đơn N-400 là gì? Điều kiện, lệ phí và các phần của đơn](/vi/blog/don-n-400-la-gi).
+Nếu bạn sống bằng thu nhập cố định, hãy xem các mức lệ phí trước. Theo [trang N-400 của USCIS](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026), lệ phí là $710 nếu nộp online, $760 nếu nộp giấy; có thể xin giảm còn $380 nếu thu nhập hộ không quá 400% mức nghèo liên bang, hoặc xin miễn bằng Form I-912. Chi tiết ở bài [Đơn N-400 là gì? Điều kiện, lệ phí và các phần của đơn](/vi/blog/don-n-400-la-gi).
 
 ## Cần người giúp chuẩn bị hồ sơ?
 
@@ -149,13 +147,13 @@ Nếu bạn muốn có người chuẩn bị đơn N-400 giúp, [dịch vụ chu
 
 ## Nguồn
 
-- [USCIS Policy Manual — Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
-- [USCIS — 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Civics Questions for the 65/20 Exemption (bài thi 2008)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/65-20q.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (trang cập nhật 18/09/2025; kiểm tra ngày 15/10/2026)
-- [USCIS — N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
-- [USCIS — N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
-- [USCIS — Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (kiểm tra ngày 15/10/2026)
+- [USCIS Policy Manual: Vol. 12, Part E, Ch. 2: English and Civics Testing](https://www.uscis.gov/policy-manual/volume-12-part-e-chapter-2) (kiểm tra ngày 15/10/2026)
+- [USCIS: 128 Civics Questions and Answers (2025 version), M-1778 (09/25)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Civics Questions for the 65/20 Exemption (bài thi 2008)](https://www.uscis.gov/sites/default/files/document/questions-and-answers/65-20q.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: Civics Test Updates](https://www.uscis.gov/citizenship/testupdates) (trang cập nhật 18/09/2025; kiểm tra ngày 15/10/2026)
+- [USCIS: N-400 Instructions (bản 01/20/25)](https://www.uscis.gov/sites/default/files/document/forms/n-400instr.pdf) (kiểm tra ngày 15/10/2026)
+- [USCIS: N-400, Application for Naturalization](https://www.uscis.gov/n-400) (kiểm tra ngày 15/10/2026)
+- [USCIS: Naturalization Test Performance](https://www.uscis.gov/citizenship-resource-center/naturalization-related-data-and-statistics/naturalization-test-performance) (kiểm tra ngày 15/10/2026)
 
 ## Câu hỏi thường gặp
 
