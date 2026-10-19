@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { isValidLocale, locales, type Locale } from "@/lib/i18n/config";
 import { listPublishedPosts } from "@/lib/blog/queries";
-import { blogIndexPosts, blogPostPath, postSlugs } from "@/lib/blog/post-locale";
+import { blogIndexPosts, postSlugs } from "@/lib/blog/post-locale";
 import { blogIndexMetadata } from "@/lib/blog/post-seo";
-import { BLOG_LABELS, CATEGORY_LABELS, formatPostDate } from "@/lib/blog/labels";
-import { BlogList, type BlogCard } from "@/components/blog/BlogList";
+import { BLOG_LABELS, CATEGORY_LABELS } from "@/lib/blog/labels";
+import { BlogList } from "@/components/blog/BlogList";
+import { BlogCardGrid, toBlogCard } from "@/components/blog/BlogCardGrid";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -26,15 +28,7 @@ export default async function BlogPage({ params }: Props) {
   const l: Locale = locale;
   const t = BLOG_LABELS[l];
   const { fallback, posts } = blogIndexPosts(await listPublishedPosts(), l);
-  const cards: BlogCard[] = posts.map((p) => ({
-    id: p.id,
-    href: blogPostPath(p.locale, p.slug),
-    title: p.title,
-    excerpt: p.excerpt,
-    category: p.category,
-    dateLabel: formatPostDate(p.publishedAt, l),
-    coverImageUrl: p.coverImageUrl,
-  }));
+  const cards = posts.map((p) => toBlogCard(p, l));
 
   return (
     <div className="py-16 lg:py-24">
@@ -47,7 +41,9 @@ export default async function BlogPage({ params }: Props) {
         {cards.length === 0 ? (
           <p className="text-center text-muted-foreground py-20">{t.empty}</p>
         ) : (
-          <BlogList locale={l} allLabel={t.all} categoryLabels={CATEGORY_LABELS[l]} posts={cards} />
+          <Suspense fallback={<BlogCardGrid cards={cards} categoryLabels={CATEGORY_LABELS[l]} />}>
+            <BlogList locale={l} cards={cards} labels={t} categoryLabels={CATEGORY_LABELS[l]} />
+          </Suspense>
         )}
       </div>
     </div>
