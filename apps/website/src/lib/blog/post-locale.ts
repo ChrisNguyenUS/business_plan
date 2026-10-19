@@ -39,6 +39,7 @@ export function localizePost(post: BlogPostRow, locale: Locale): LocalizedPost |
     authorName: post.author_name,
     coverImageUrl: post.cover_image_url,
     category: post.category,
+    tags: post.tags ?? [],
     publishedAt: post.published_at ?? post.created_at,
     updatedAt: post.updated_at,
     slugs,
@@ -72,4 +73,14 @@ export function resolvePostRoute(candidates: BlogPostRow[], locale: Locale, slug
     if (target) return { kind: "redirect", to: blogPostPath(locale, target) };
   }
   return { kind: "not-found" };
+}
+
+/** A hashtag's posts as one locale's pages see them, in the rows' order. */
+export function postsForTag(rows: BlogPostRow[], key: string, locale: Locale): LocalizedPost[] {
+  return rows.filter((r) => (r.tags ?? []).includes(key)).flatMap((r) => localizePost(r, locale) ?? []);
+}
+
+/** Locales in which a hashtag page has at least one post. */
+export function localesWithTag(rows: BlogPostRow[], key: string): Locale[] {
+  return locales.filter((l) => postsForTag(rows, key, l).length > 0);
 }

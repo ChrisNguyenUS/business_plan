@@ -18,6 +18,8 @@ export interface BlogPostRow {
   author_name: string;
   cover_image_url: string | null;
   category: string;
+  /** Hashtag keys from src/lib/blog/tags.ts (migration website_02). */
+  tags: string[];
   post_type: string;
   published: boolean;
   published_at: string | null;
@@ -37,6 +39,7 @@ export interface LocalizedPost {
   authorName: string;
   coverImageUrl: string | null;
   category: string;
+  tags: string[];
   publishedAt: string;
   updatedAt: string;
   slugs: Partial<Record<Locale, string>>;

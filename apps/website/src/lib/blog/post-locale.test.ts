@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blogIndexPosts, localizePost, postSlugs, resolvePostRoute } from "./post-locale";
+import { blogIndexPosts, localesWithTag, localizePost, postSlugs, postsForTag, resolvePostRoute } from "./post-locale";
 import type { BlogPostRow } from "./types";
 
 function row(over: Partial<BlogPostRow>): BlogPostRow {
@@ -13,6 +13,7 @@ function row(over: Partial<BlogPostRow>): BlogPostRow {
     author_name: "Manna One Solution",
     cover_image_url: null,
     category: "immigration",
+    tags: [],
     post_type: "article",
     published: true,
     published_at: "2026-10-20T15:00:00Z",
@@ -46,7 +47,7 @@ describe("localizePost", () => {
     expect(localizePost(row({ ...viOnly, published_at: null, faq_vi: [{ q: "Q?", a: "A." }] }), "vi")).toEqual({
       id: "p1", locale: "vi", slug: "don-n-400-la-gi", title: "Đơn N-400 là gì?", excerpt: "Tóm tắt",
       content: "Nội dung", faq: [{ q: "Q?", a: "A." }], authorName: "Manna One Solution",
-      coverImageUrl: null, category: "immigration",
+      coverImageUrl: null, category: "immigration", tags: [],
       publishedAt: "2026-10-19T15:00:00Z", updatedAt: "2026-10-21T15:00:00Z",
       slugs: { vi: "don-n-400-la-gi" },
     });
@@ -97,5 +98,30 @@ describe("blogIndexPosts", () => {
 
   it("is empty only when no language has posts", () => {
     expect(blogIndexPosts([], "vi")).toEqual({ fallback: false, posts: [] });
+  });
+});
+
+describe("hashtags on posts", () => {
+  const tagged = row({
+    id: "p3", tags: ["green-card", "uscis-fees"],
+    slug_vi: "gia-han-the-xanh", title_vi: "Gia hạn thẻ xanh", content_vi: "Nội dung",
+  });
+
+  it("carries the row's tags onto the localized post", () => {
+    expect(localizePost(tagged, "vi")?.tags).toEqual(["green-card", "uscis-fees"]);
+  });
+
+  it("treats a missing tags value as no tags", () => {
+    expect(localizePost(row({ ...viOnly, tags: undefined as unknown as string[] }), "vi")?.tags).toEqual([]);
+  });
+
+  it("lists a hashtag's posts in one locale", () => {
+    expect(postsForTag([tagged, viOnly], "green-card", "vi").map((p) => p.id)).toEqual(["p3"]);
+    expect(postsForTag([tagged, viOnly], "green-card", "en")).toEqual([]);
+  });
+
+  it("lists the locales where a hashtag has posts", () => {
+    expect(localesWithTag([tagged], "green-card")).toEqual(["vi"]);
+    expect(localesWithTag([tagged], "sponsor-parents")).toEqual([]);
   });
 });

@@ -10,7 +10,7 @@ const viPost: BlogPostRow = {
   id: "p1", slug_en: null, slug_vi: "don-n-400-la-gi",
   title_en: null, title_vi: "Đơn N-400 là gì?", excerpt_en: null, excerpt_vi: "x",
   content_en: null, content_vi: "Nội dung", faq_en: [], faq_vi: [],
-  author_name: "Manna One Solution", cover_image_url: null, category: "immigration", post_type: "article",
+  author_name: "Manna One Solution", cover_image_url: null, category: "immigration", tags: [], post_type: "article",
   published: true, published_at: "2026-10-20T15:00:00Z", created_at: "2026-10-19T15:00:00Z", updated_at: "2026-10-21T15:00:00Z",
 };
 

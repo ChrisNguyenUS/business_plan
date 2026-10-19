@@ -4,7 +4,7 @@ import type { BlogPostRow } from "./types";
 
 const COLUMNS =
   "id,slug_en,slug_vi,title_en,title_vi,excerpt_en,excerpt_vi,content_en,content_vi,faq_en,faq_vi," +
-  "author_name,cover_image_url,category,post_type,published,published_at,created_at,updated_at";
+  "author_name,cover_image_url,category,tags,post_type,published,published_at,created_at,updated_at";
 
 // Anon key, no session: RLS returns published rows only.
 function publicClient() {

@@ -5,7 +5,7 @@ import type { LocalizedPost } from "./types";
 const post: LocalizedPost = {
   id: "p1", locale: "vi", slug: "don-n-400-la-gi", title: "Đơn N-400 là gì?", excerpt: "Tóm tắt",
   content: "Nội dung", faq: [{ q: "Lệ phí bao nhiêu?", a: "Xem uscis.gov." }],
-  authorName: "Manna One Solution", coverImageUrl: null, category: "immigration",
+  authorName: "Manna One Solution", coverImageUrl: null, category: "immigration", tags: [],
   publishedAt: "2026-10-20T15:00:00Z", updatedAt: "2026-10-21T15:00:00Z",
   slugs: { vi: "don-n-400-la-gi" },
 };
