@@ -1,5 +1,6 @@
 ---
 slug_vi: mo-cong-ty-o-my-khi-dang-o-viet-nam
+slug_en: form-us-llc-from-vietnam
 title_vi: Mở công ty LLC ở Mỹ khi đang ở Việt Nam: EIN, ngân hàng và thuế
 excerpt_vi: Người ở Việt Nam mở được LLC ở Mỹ: không cần SSN hay ITIN để có EIN, cần registered agent ở Mỹ, và phải nộp Form 5472 hằng năm. Những điều cần biết.
 category: business
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 Người đang ở Việt Nam **có thể mở LLC ở Mỹ** mà không cần sang Mỹ, không cần thẻ xanh và không cần SSN. Bạn cần: một **registered agent** có địa chỉ ở bang nơi lập công ty; xin **EIN** bằng điện thoại, fax hoặc thư (người nước ngoài **không cần ITIN** để có EIN); và mỗi năm nộp **Form 5472 kèm Form 1120 "pro forma"** nếu LLC chỉ có một chủ là người nước ngoài. Thiếu Form 5472 có thể bị phạt **$25.000**.
 
 Có một điều quan trọng: **mở công ty ở Mỹ không cho bạn quyền sang Mỹ sống hay làm việc.** Muốn vào Mỹ điều hành công ty, bạn vẫn phải có visa phù hợp.
+
+> **Tóm tắt nhanh**
+>
+> - Không cần SSN, ITIN hay sang Mỹ để lập LLC và xin EIN.
+> - LLC một chủ là người nước ngoài nộp Form 5472 kèm Form 1120 pro forma mỗi năm; thiếu có thể bị phạt $25.000.
+> - Có LLC ở Mỹ không cho bạn visa hay quyền làm việc ở Mỹ.
 
 ## Bước 1: Chọn bang và lập LLC
 

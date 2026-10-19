@@ -1,5 +1,6 @@
 ---
 slug_vi: lam-website-cho-doanh-nghiep-nho
+slug_en: small-business-website-google-profile
 title_vi: Làm website cho doanh nghiệp nhỏ: tên miền, email và Google Business Profile
 excerpt_vi: Checklist cho tiệm và công ty nhỏ của người Việt ở Mỹ: tên miền, email theo tên công ty, website song ngữ chuẩn SEO, và Google Business Profile đúng quy định.
 category: business
@@ -7,6 +8,12 @@ checked_on: 2026-10-19
 ---
 
 Một doanh nghiệp nhỏ muốn khách tìm thấy trên Google cần bốn thứ: **tên miền** riêng, **email theo tên miền** (ví dụ hello@tencongty.com), **website** có thông tin rõ ràng và đọc tốt trên điện thoại, và **Google Business Profile** (hồ sơ trên Google Maps) được xác minh. Google Business Profile chỉ dành cho doanh nghiệp **có chỗ khách tới được** hoặc **đi tới chỗ khách**; địa chỉ ảo và hộp thư P.O. Box không được chấp nhận.
+
+> **Tóm tắt nhanh**
+>
+> - Đăng ký tên miền dưới tên bạn hoặc công ty, kèm email theo tên miền.
+> - Tên, địa chỉ, số điện thoại phải giống hệt nhau trên website và Google Business Profile.
+> - Google Business Profile không nhận văn phòng ảo, P.O. Box, hay tên nhét từ khóa.
 
 ## 1. Tên miền: chọn một lần, dùng lâu dài
 

@@ -1,5 +1,6 @@
 ---
 slug_vi: mo-tai-khoan-ngan-hang-doanh-nghiep
+slug_en: business-bank-account-llc
 title_vi: Mở tài khoản ngân hàng doanh nghiệp cho LLC: cần giấy tờ gì?
 excerpt_vi: Mở tài khoản ngân hàng cho LLC cần Certificate of Formation, thư EIN, Company Agreement và giấy tờ tùy thân. Ngân hàng phải xác minh ai sở hữu từ 25%.
 category: business
@@ -7,6 +8,12 @@ checked_on: 2026-10-19
 ---
 
 Để mở tài khoản ngân hàng doanh nghiệp cho LLC, bạn thường mang theo: **Certificate of Formation** do bang cấp, **thư xác nhận EIN** của IRS, **Company Agreement**, và **giấy tờ tùy thân có hình** của người ký. Theo quy định CDD (Customer Due Diligence) của FinCEN, ngân hàng **phải xác minh danh tính mọi người sở hữu từ 25% trở lên** và **một người điều hành** công ty. Mỗi ngân hàng có thể đòi thêm giấy tờ khác.
+
+> **Tóm tắt nhanh**
+>
+> - Mang Certificate of Formation, thư EIN, Company Agreement và giấy tờ tùy thân có hình.
+> - Ngân hàng phải xác minh mọi người sở hữu từ 25% và một người điều hành.
+> - Tách tiền cá nhân và tiền công ty để giữ sự bảo vệ của LLC.
 
 ## Vì sao phải có tài khoản riêng cho LLC?
 

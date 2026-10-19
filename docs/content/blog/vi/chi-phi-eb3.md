@@ -1,5 +1,6 @@
 ---
 slug_vi: chi-phi-eb3
+slug_en: eb3-costs-who-pays
 title_vi: Chi phí EB-3 lao động phổ thông: ai trả khoản nào, lệ phí chính phủ bao nhiêu
 excerpt_vi: Chi phí PERM do chủ lao động trả theo luật liên bang. Lệ phí I-140 $715 giấy hoặc $665 online, phí visa $345 mỗi người. Bảng các khoản và ai trả.
 category: immigration
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 Chi phí của một hồ sơ EB-3 lao động phổ thông chia làm bốn nhóm: **chi phí PERM** (xin mức lương, tuyển dụng, luật sư cho phần PERM), **lệ phí chính phủ** (I-140, visa hoặc I-485), **khám sức khỏe và giấy tờ**, và **phí dịch vụ** của bên hỗ trợ. Điểm quan trọng nhất: theo **20 CFR 656.12(b)**, **chủ lao động không được nhận tiền của người lao động cho bất kỳ việc gì liên quan tới xin PERM**, kể cả phí luật sư của chủ lao động.
 
 Số liệu kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Chủ lao động trả chi phí PERM; nhận tiền của người lao động cho PERM là bị cấm.
+> - Form I-140: $715 nộp giấy hoặc $665 online, cộng phí Asylum Program.
+> - Phí visa: $345 mỗi người; I-485: $1.440 nộp giấy hoặc $1.390 online.
 
 ## Chi phí PERM: chủ lao động trả
 

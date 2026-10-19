@@ -1,5 +1,6 @@
 ---
 slug_vi: sau-khi-mo-llc-o-texas-phai-lam-gi
+slug_en: after-forming-texas-llc
 title_vi: Mở LLC ở Texas xong phải làm gì? Franchise tax, sales tax, BOI và thuế
 excerpt_vi: Sau khi mở LLC ở Texas: báo cáo franchise tax và Public Information Report hạn 15/5 mỗi năm, sales tax permit miễn phí, BOI không còn phải nộp.
 category: business
@@ -14,6 +15,12 @@ Mở LLC ở Texas xong, bạn còn mấy việc phải làm hằng năm và m�
 - **Thuế liên bang:** khai theo cách IRS xếp loại LLC của bạn.
 
 Số liệu theo Texas Comptroller, FinCEN và IRS, kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Nộp Public Information Report trước 15/5 mỗi năm, bắt đầu từ năm sau năm lập công ty.
+> - Chỉ đóng franchise tax khi doanh thu vượt $2,65 triệu (báo cáo năm 2026).
+> - Sales tax permit miễn phí; LLC lập ở Mỹ không còn phải nộp BOI.
 
 ## 1. Franchise tax và Public Information Report (hạn 15/5)
 

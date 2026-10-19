@@ -1,5 +1,6 @@
 ---
 slug_vi: xin-ein-cho-llc
+slug_en: get-ein-for-llc
 title_vi: Xin EIN cho LLC: miễn phí trên IRS, có SSN và không có SSN
 excerpt_vi: EIN là mã số thuế của công ty, xin miễn phí trên IRS.gov. Có SSN thì xin online và nhận ngay; ở nước ngoài thì xin qua điện thoại hoặc fax Form SS-4.
 category: business
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 **EIN (Employer Identification Number)** là mã số thuế 9 chữ số IRS cấp cho doanh nghiệp. LLC cần EIN để mở tài khoản ngân hàng, thuê nhân viên và khai thuế. **IRS cấp EIN miễn phí.** Nếu người đại diện có SSN hoặc ITIN và công ty ở Mỹ, bạn xin online trên IRS.gov và **nhận số ngay**. Nếu công ty hoặc chủ ở nước ngoài, bạn xin qua **điện thoại 267-941-1099** hoặc **fax Form SS-4**.
 
 Số liệu theo [trang EIN của IRS](https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number) (cập nhật 16/10/2026) và [hướng dẫn Form SS-4 (bản 12/2025)](https://www.irs.gov/instructions/iss4), kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - EIN miễn phí từ IRS; đừng trả tiền cho trang web nào để lấy số này.
+> - Có SSN hoặc ITIN và công ty ở Mỹ: xin online, có số ngay.
+> - Ở nước ngoài: gọi 267-941-1099 hoặc fax Form SS-4, không cần ITIN.
 
 ## Trước khi xin EIN
 

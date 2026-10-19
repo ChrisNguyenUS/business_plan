@@ -1,5 +1,6 @@
 ---
 slug_vi: lua-dao-eb3
+slug_en: eb3-scam-warning-signs
 title_vi: Dấu hiệu lừa đảo EB-3 và định cư diện việc làm: 8 điều cần kiểm tra
 excerpt_vi: Bảo đảm có thẻ xanh, đòi đóng tiền PERM, trả tiền qua Western Union hay cho cá nhân: các dấu hiệu lừa đảo EB-3 theo USCIS và FTC, và cách kiểm tra.
 category: immigration
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 Một lời mời EB-3 có dấu hiệu lừa đảo khi: **bảo đảm** có thẻ xanh hoặc bảo đảm thời gian; **đòi bạn đóng tiền PERM** hoặc trừ lương để trả chi phí tuyển dụng; bắt **trả tiền để nhận lời mời làm việc**; đòi trả qua **Western Union, MoneyGram, thẻ quà tặng, tiền mã hóa** hoặc chuyển cho **cá nhân**; hoặc người tư vấn **không phải luật sư** mà vẫn đưa lời khuyên pháp lý về di trú. USCIS và Ủy ban Thương mại Liên bang (FTC) đều cảnh báo những kiểu này.
 
 Thông tin theo trang [Common Scams của USCIS](https://www.uscis.gov/scams-fraud-and-misconduct/avoid-scams/common-scams) và [hướng dẫn tránh lừa đảo di trú của FTC](https://consumer.ftc.gov/articles/how-avoid-immigration-scams-and-get-real-help), kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Không ai bảo đảm được thẻ xanh EB-3 hay thời gian.
+> - Bị đòi trả chi phí PERM hoặc trả tiền để nhận lời mời làm việc là dấu hiệu lừa đảo.
+> - USCIS không nhận Western Union, MoneyGram, PayPal hay thẻ quà tặng.
 
 ## 8 dấu hiệu cần dừng lại kiểm tra
 

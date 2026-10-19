@@ -1,5 +1,6 @@
 ---
 slug_vi: mo-llc-o-texas
+slug_en: how-to-form-llc-texas
 title_vi: Mở LLC ở Texas 2026: từng bước, lệ phí $300 và mất bao lâu
 excerpt_vi: Mở LLC ở Texas: nộp Form 205 cho Secretary of State, lệ phí $300, cần registered agent ở Texas. Từng bước, thời gian, và nên chọn LLC hay DBA.
 category: business
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 Muốn mở LLC (công ty trách nhiệm hữu hạn) ở Texas, bạn nộp **Form 205, Certificate of Formation** cho **Texas Secretary of State**. Lệ phí bang là **$300**. Bạn cần một **registered agent** có địa chỉ đường phố ở Texas, và ít nhất một thành viên (member) hoặc quản lý (manager). Nộp online qua SOSPortal là nhanh nhất. Nếu cần gấp, Texas có dịch vụ xử lý nhanh **Texas Express**: $50 (thường 2–3 ngày làm việc), $500 (ngày làm việc kế tiếp) hoặc $750 (trong ngày), cộng thêm lệ phí $300.
 
 Số liệu theo trang [hướng dẫn Form 205](https://www.sos.texas.gov/corp/instructions/205.shtml) và [Texas Express](https://www.sos.state.tx.us/express.shtml) của Texas Secretary of State, kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Nộp Form 205 cho Texas Secretary of State, lệ phí $300.
+> - Cần registered agent có địa chỉ đường phố ở Texas; LLC không tự làm agent cho chính mình được.
+> - Cần nhanh thì thêm phí Texas Express $50, $500 hoặc $750.
 
 ## LLC là gì, và vì sao nhiều người chọn LLC?
 

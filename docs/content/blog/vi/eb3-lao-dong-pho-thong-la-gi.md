@@ -1,5 +1,6 @@
 ---
 slug_vi: eb3-lao-dong-pho-thong-la-gi
+slug_en: eb3-unskilled-other-workers
 title_vi: EB-3 lao động phổ thông là gì? Điều kiện, các bước PERM, I-140 và visa
 excerpt_vi: EB-3 Other Workers là diện thẻ xanh qua việc làm cần dưới 2 năm kinh nghiệm. Chủ lao động Mỹ xin PERM, nộp I-140; vợ/chồng và con dưới 21 tuổi đi cùng.
 category: immigration
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 **EB-3 lao động phổ thông** (tiếng Anh: **EB-3 Other Workers**, hay "unskilled workers") là diện thẻ xanh dựa trên việc làm, dành cho công việc **cần dưới 2 năm đào tạo hoặc kinh nghiệm**, **toàn thời gian** và **không theo mùa vụ**. Người lao động cần một **chủ lao động Mỹ** đứng ra bảo lãnh: chủ lao động xin **chứng nhận lao động (PERM)** của Bộ Lao động, rồi nộp **đơn I-140** cho USCIS. Khi đến lượt theo Visa Bulletin, người lao động phỏng vấn ở lãnh sự (nếu ở Việt Nam) hoặc nộp I-485 (nếu đủ điều kiện ở Mỹ). **Vợ/chồng và con chưa kết hôn dưới 21 tuổi** được nhận thẻ xanh theo diện phụ thuộc.
 
 Thông tin theo [trang EB-3 của USCIS](https://www.uscis.gov/working-in-the-united-states/permanent-workers/employment-based-immigration-third-preference-eb-3) (cập nhật 20/8/2026), kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Dành cho việc làm lâu dài, toàn thời gian, cần dưới 2 năm đào tạo hoặc kinh nghiệm.
+> - Chủ lao động xin PERM rồi nộp I-140; người lao động chờ tới lượt theo Visa Bulletin.
+> - Vợ/chồng và con chưa kết hôn dưới 21 tuổi được đi cùng.
 
 ## EB-3 gồm ba nhánh
 

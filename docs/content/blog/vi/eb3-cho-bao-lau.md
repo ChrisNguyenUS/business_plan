@@ -1,5 +1,6 @@
 ---
 slug_vi: eb3-cho-bao-lau
+slug_en: eb3-other-workers-wait-time
 title_vi: EB-3 lao động phổ thông chờ bao lâu? Visa Bulletin tháng 10/2026
 excerpt_vi: Visa Bulletin tháng 10/2026: EB-3 Other Workers cho người Việt có Final Action Date 01/01/2022. Cộng thêm thời gian PERM trung bình 336 ngày và I-140.
 category: immigration
@@ -9,6 +10,12 @@ checked_on: 2026-10-19
 Theo **Visa Bulletin tháng 10/2026**, diện **EB-3 Other Workers** (lao động phổ thông) của người sinh ở Việt Nam có **Final Action Date là 01/01/2022** và **Dates for Filing là 01/06/2022**. Nghĩa là tháng này chỉ hồ sơ có **ngày ưu tiên trước 01/01/2022** mới được cấp visa hoặc duyệt thẻ xanh. Ngày ưu tiên thường là ngày chủ lao động nộp PERM. Trước khi có ngày ưu tiên, hồ sơ còn phải qua bước xin mức lương và tuyển dụng; riêng PERM hiện mất trung bình **336 ngày**.
 
 Visa Bulletin thay đổi mỗi tháng. Số liệu dưới đây kiểm tra ngày 19/10/2026.
+
+> **Tóm tắt nhanh**
+>
+> - Final Action Date tháng 10/2026 của Other Workers (Việt Nam và đa số nước): 01/01/2022.
+> - PERM hiện trung bình 336 ngày trước khi nộp được I-140.
+> - Không ai đoán trước được Visa Bulletin hay vượt hàng chờ một cách hợp pháp.
 
 ## Đọc Visa Bulletin cho người Việt
 
