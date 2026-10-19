@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { ORGANIZATION_ID } from "@/lib/seo/json-ld";
 import { SITE_URL } from "@/lib/seo/site";
 import { blogPostPath } from "./post-locale";
+import { tagsForPost } from "./tags";
 import type { LocalizedPost } from "./types";
 
 export const ORG_AUTHOR = "Manna One Solution";
@@ -71,6 +72,9 @@ export function postJsonLd(post: LocalizedPost) {
       mainEntityOfPage: url,
       url,
       image: absoluteUrl(post.coverImageUrl ?? OG_FALLBACK),
+      ...(tagsForPost(post.tags).length > 0
+        ? { keywords: tagsForPost(post.tags).map((t) => t.label[post.locale]).join(", ") }
+        : {}),
     },
     {
       "@type": "BreadcrumbList",

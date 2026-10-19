@@ -99,3 +99,16 @@ describe("blogIndexMetadata", () => {
     expect(blogIndexMetadata("en", ["vi"]).robots).toEqual({ index: false, follow: true });
   });
 });
+
+describe("postJsonLd keywords", () => {
+  it("lists the post's hashtag labels in its language", () => {
+    const ld = postJsonLd({ ...post, tags: ["green-card", "uscis-fees", "nope"] });
+    const article = (ld["@graph"] as Record<string, unknown>[])[0];
+    expect(article.keywords).toBe("Thẻ xanh, Lệ phí USCIS");
+  });
+
+  it("omits keywords when the post has no hashtags", () => {
+    const article = (postJsonLd(post)["@graph"] as Record<string, unknown>[])[0];
+    expect(article).not.toHaveProperty("keywords");
+  });
+});

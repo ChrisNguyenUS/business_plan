@@ -7,6 +7,7 @@ import { findPublishedPostsBySlug } from "@/lib/blog/queries";
 import { resolvePostRoute } from "@/lib/blog/post-locale";
 import { postJsonLd, postMetadata } from "@/lib/blog/post-seo";
 import { BLOG_LABELS, formatPostDate } from "@/lib/blog/labels";
+import { tagPath, tagsForPost } from "@/lib/blog/tags";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { PostBody } from "@/components/blog/PostBody";
 
@@ -30,6 +31,7 @@ export default async function BlogPostPage({ params }: Props) {
   const post = r.post;
   const locale: Locale = post.locale;
   const t = BLOG_LABELS[locale];
+  const postTags = tagsForPost(post.tags);
   const d = await getDictionary(locale);
 
   return (
@@ -47,6 +49,20 @@ export default async function BlogPostPage({ params }: Props) {
           {t.by} {post.authorName} · {t.published} {formatPostDate(post.publishedAt, locale)} · {t.updated}{" "}
           {formatPostDate(post.updatedAt, locale)}
         </p>
+        {postTags.length > 0 && (
+          <ul className="flex flex-wrap gap-2 -mt-4 mb-8" aria-label={t.tagsLabel}>
+            {postTags.map((tag) => (
+              <li key={tag.key}>
+                <Link
+                  href={tagPath(locale, tag.key)}
+                  className="inline-block rounded-full bg-teal-light px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
+                >
+                  #{tag.label[locale]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {post.coverImageUrl && (
           <div className="rounded-2xl overflow-hidden mb-8 relative aspect-[1200/630]">
