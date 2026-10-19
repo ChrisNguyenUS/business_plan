@@ -96,4 +96,18 @@ describe("sitemap.xml", () => {
     const entries = await sitemap();
     expect(entries.some((e) => e.url === "https://www.mannaos.com/vi/about")).toBe(true);
   });
+
+  it("lists a hashtag page per locale that has posts, dated by its newest post", async () => {
+    const tagged = { ...viPost, id: "p2", slug_vi: "bao-lanh-cha-me-sang-my", tags: ["sponsor-parents", "nope"], updated_at: "2026-10-25T10:00:00Z" };
+    listPublishedPosts.mockResolvedValue([viPost, tagged]);
+    const entries = await sitemap();
+    const tagEntry = entries.find((e) => e.url === "https://www.mannaos.com/vi/blog/chu-de/bao-lanh-cha-me");
+    expect(tagEntry?.lastModified).toEqual(new Date("2026-10-25T10:00:00Z"));
+    expect(tagEntry?.alternates?.languages).toEqual({
+      vi: "https://www.mannaos.com/vi/blog/chu-de/bao-lanh-cha-me",
+      "x-default": "https://www.mannaos.com/vi/blog/chu-de/bao-lanh-cha-me",
+    });
+    expect(entries.some((e) => e.url.includes("/en/blog/topics/"))).toBe(false);
+    expect(entries.some((e) => e.url.includes("/blog/chu-de/the-xanh"))).toBe(false);
+  });
 });

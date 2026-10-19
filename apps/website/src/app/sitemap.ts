@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
 import type { Locale } from "@/lib/i18n/config";
 import { listPublishedPosts } from "@/lib/blog/queries";
-import { blogPostPath, postSlugs } from "@/lib/blog/post-locale";
+import { blogPostPath, localesWithTag, postSlugs } from "@/lib/blog/post-locale";
 import { languageAlternates } from "@/lib/blog/post-seo";
+import { tagPagePaths } from "@/lib/blog/tag-seo";
+import { BLOG_TAGS } from "@/lib/blog/tags";
 import type { BlogPostRow } from "@/lib/blog/types";
 import { SITE_URL } from "@/lib/seo/site";
 import { ALL_STATE_SLUGS } from "@/lib/n400/public/state-slugs";
@@ -70,6 +72,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   });
 
+  // One entry per hashtag page that has posts in that locale (empty ones 404).
+  const tagEntries: MetadataRoute.Sitemap = BLOG_TAGS.flatMap((tag) => {
+    const tagged = posts.filter((p) => (p.tags ?? []).includes(tag.key));
+    const paths = tagPagePaths(tag, localesWithTag(posts, tag.key));
+    const newest = Math.max(...tagged.map((p) => new Date(p.updated_at).getTime()));
+    return Object.values(paths).map((path) => ({
+      url: `${SITE_URL}${path}`,
+      lastModified: new Date(newest),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+      alternates: { languages: absoluteAlternates(paths) },
+    }));
+  });
+
   return [
     ...urls("", 1.0, "weekly"),
     ...urls("/services", 0.9, "monthly"),
@@ -84,6 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...urls("/contact", 0.8, "weekly"),
     ...blogIndex,
     ...postEntries,
+    ...tagEntries,
     ...urls("/privacy-policy", 0.3, "yearly"),
     ...urls("/terms-of-service", 0.3, "yearly"),
   ];
