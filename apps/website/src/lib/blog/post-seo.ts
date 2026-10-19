@@ -14,6 +14,9 @@ const CRUMBS: Record<Locale, { home: string; blog: string }> = {
 };
 
 /** hreflang map for the locales that exist; x-default = English if present, else Vietnamese. */
+// Covers may be stored site-relative ("/images/blog/x.webp"); schema.org needs absolute URLs.
+const absoluteUrl = (url: string) => (url.startsWith("/") ? `${SITE_URL}${url}` : url);
+
 export function languageAlternates(paths: Partial<Record<Locale, string>>): Record<string, string> {
   const languages: Record<string, string> = {};
   if (paths.en) languages.en = paths.en;
@@ -47,6 +50,7 @@ export function postMetadata(post: LocalizedPost): Metadata {
       modifiedTime: post.updatedAt,
       images: [post.coverImageUrl ?? OG_FALLBACK],
     },
+    twitter: { card: "summary_large_image", images: [post.coverImageUrl ?? OG_FALLBACK] },
   };
 }
 
@@ -66,7 +70,7 @@ export function postJsonLd(post: LocalizedPost) {
       inLanguage: post.locale,
       mainEntityOfPage: url,
       url,
-      image: post.coverImageUrl ?? `${SITE_URL}${OG_FALLBACK}`,
+      image: absoluteUrl(post.coverImageUrl ?? OG_FALLBACK),
     },
     {
       "@type": "BreadcrumbList",

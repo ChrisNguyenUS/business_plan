@@ -28,6 +28,12 @@ describe("postMetadata", () => {
     });
   });
 
+  it("shares the post's own cover on Open Graph and Twitter", () => {
+    const m = postMetadata({ ...post, coverImageUrl: "/images/blog/don-n-400-la-gi.webp" });
+    expect(m.openGraph).toMatchObject({ images: ["/images/blog/don-n-400-la-gi.webp"] });
+    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: ["/images/blog/don-n-400-la-gi.webp"] });
+  });
+
   it("is an Open Graph article with dates and the site image when there is no cover", () => {
     expect(postMetadata(post).openGraph).toMatchObject({
       type: "article",
@@ -52,6 +58,13 @@ describe("postJsonLd", () => {
       author: { "@id": "https://www.mannaos.com/#organization" },
       publisher: { "@id": "https://www.mannaos.com/#organization" },
     });
+  });
+
+  it("makes a site-relative cover image absolute for structured data", () => {
+    const g = postJsonLd({ ...post, coverImageUrl: "/images/blog/don-n-400-la-gi.webp" })["@graph"];
+    expect(g.find((n) => n["@type"] === "BlogPosting")?.image).toBe(
+      "https://www.mannaos.com/images/blog/don-n-400-la-gi.webp"
+    );
   });
 
   it("names a person as author when the byline is not the organization", () => {
