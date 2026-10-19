@@ -123,7 +123,7 @@ SEO:
 - `title`: `<label>: bài viết | Manna One Solution` / `<label>: articles | Manna One Solution`; meta description from the registry.
 - Canonical to itself; hreflang `vi`, `en` and `x-default` (en) only when the other locale's page also has posts, otherwise only its own locale.
 - JSON-LD `@graph`: `CollectionPage` (with `isPartOf` the WebSite and `about` the hashtag label) plus `BreadcrumbList`, through the existing `serializeJsonLd`.
-- `revalidate` matches the blog index; `generateStaticParams` lists the hashtags that have posts.
+- Rendered on demand and cached by the `[locale]` layout's `revalidate = 30`, like the post pages (no `generateStaticParams`).
 
 Sitemap: one entry per hashtag page that has posts, `lastModified` = the newest `updated_at` among its posts, with the same alternates rule as above.
 
@@ -133,7 +133,7 @@ Under the title and date line, show the post's hashtags as chips linking to thei
 
 ## 7. Admin (`/[locale]/admin/blog`)
 
-- `CATEGORIES` gains `business` and `documents`, with the labels from section 1 shown next to the key.
+- `CATEGORIES` gains `business` and `documents` (the select shows keys, like today).
 - A "Hashtags" fieldset of checkboxes lists the hashtags of the selected category. Changing the category keeps only the ticked hashtags that belong to it.
 - Saving writes `tags` with the existing insert/update calls; no other admin behavior changes.
 
