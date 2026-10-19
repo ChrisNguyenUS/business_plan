@@ -57,7 +57,7 @@ After you file, USCIS sends a **biometrics** appointment notice for an Applicati
 
 Processing times vary. Check the current time on the [USCIS Processing Times](https://egov.uscis.gov/processing-times/) page (select Form I-90).
 
-You still have proof of status while you wait: according to a [USCIS announcement](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals), since September 10, 2024 the **Form I-90 receipt notice (Form I-797) together with your expired card** proves permanent resident status for **36 months** from the expiration date on the card. Use them together for work and travel. If you have no card (for example, it was lost), USCIS may issue an **ADIT stamp** (temporary proof of permanent residence) after you file Form I-90; you request an appointment at a USCIS office through the USCIS Contact Center.
+You still have proof of status while you wait. According to a [USCIS announcement](https://www.uscis.gov/newsroom/alerts/uscis-extends-green-card-validity-extension-to-36-months-for-green-card-renewals), since September 10, 2024 the **Form I-90 receipt notice (Form I-797) together with your expired card** proves permanent resident status for **36 months** from the expiration date on the card. Use them together for work and travel. If you have no card (for example, it was lost), USCIS may issue an **ADIT stamp** (temporary proof of permanent residence) after you file Form I-90; you request an appointment at a USCIS office through the USCIS Contact Center.
 
 ## Should I apply for citizenship instead?
 

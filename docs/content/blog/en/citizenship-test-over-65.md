@@ -7,7 +7,7 @@ category: immigration
 checked_on: 2026-10-15
 ---
 
-If you are 65 or older and have had a green card for at least 20 years (counted on the date you file Form N-400), you qualify for **65/20**: you are exempt from the English test, you can take the civics test in the language of your choice (Vietnamese, for example) with an interpreter, and you only need to study **20** special questions. On the 2025 test, the officer asks 10 of those 20 questions and you need **6** correct. If you are over 65 but have had your green card for less than 20 years, you don't qualify for 65/20, but you may qualify for 50/20 or 55/15.
+If you are 65 or older and have had a green card for at least 20 years (counted on the date you file Form N-400), you qualify for **65/20**. You are exempt from the English test, you can take the civics test in the language of your choice (Vietnamese, for example) with an interpreter, and you only need to study **20** special questions. On the 2025 test, the officer asks 10 of those 20 questions and you need **6** correct. If you are over 65 but have had your green card for less than 20 years, you don't qualify for 65/20, but you may qualify for 50/20 or 55/15.
 
 ## Which English exemptions are there?
 
@@ -120,7 +120,7 @@ If you worry about how hard the test is, look at the USCIS figures in [Is the U.
 
 ## Fees for applicants with low income
 
-If you live on a fixed income, check the fee options first. According to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked October 15, 2026), the fee is $710 online or $760 on paper; you can request a reduced fee of $380 if household income is at or below 400% of the federal poverty guidelines, or a fee waiver with Form I-912. Details are in [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
+If you live on a fixed income, check the fee options first. According to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked October 15, 2026), the fee is $710 online or $760 on paper. You can request a reduced fee of $380 if household income is at or below 400% of the federal poverty guidelines, or a fee waiver with Form I-912. Details are in [What Is Form N-400? Eligibility, Fees and the Parts of the Form](/en/blog/what-is-form-n-400).
 
 ## Need someone to prepare your application?
 

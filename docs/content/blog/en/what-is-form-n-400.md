@@ -30,7 +30,14 @@ According to [I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov
 
 ### Married to a U.S. citizen (3 years)
 
-According to [I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen), you need a green card for at least 3 years, **living in marital union** with your U.S. citizen spouse during those 3 years, 3 years of continuous residence, at least **18 months** of physical presence in those 3 years, 3 months in the state or district where you file, plus the moral character, English, civics and Constitution requirements.
+According to [I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen), you need:
+
+- A green card for at least 3 years.
+- **Living in marital union** with your U.S. citizen spouse during those 3 years.
+- 3 years of continuous residence.
+- At least **18 months** of physical presence in those 3 years.
+- 3 months in the state or district where you file.
+- The same moral character, English, civics and Constitution requirements.
 
 There are other bases too, such as service in the U.S. military. The N-400 instructions list them under Part 1.
 

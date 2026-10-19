@@ -22,7 +22,11 @@ If you are preparing to sponsor your spouse, see also [Sponsoring Your Spouse fo
 According to the [USCIS I-751 page](https://www.uscis.gov/i-751) (updated June 16, 2026):
 
 - **Joint filing with your spouse:** file during the **90-day period immediately before your card expires**. Filing earlier may get the petition rejected. USCIS has a [page to find the first day you can file](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions).
-- **Waiver of the joint filing requirement:** file on your own **at any time before your card expires**, if you qualify on one of these grounds: a good-faith marriage that ended in divorce or annulment; your spouse died; you were battered or subjected to extreme cruelty; or removal would cause extreme hardship.
+- **Waiver of the joint filing requirement:** file on your own **at any time before your card expires**, if you qualify on one of these grounds:
+  - a good-faith marriage that ended in divorce or annulment;
+  - your spouse died;
+  - you were battered or subjected to extreme cruelty;
+  - removal would cause extreme hardship.
 - **Children:** children who got conditional cards at the same time as a parent are usually included in the parent's Form I-751.
 
 An example to show how the window works (not a calculation for your case): if your card expires on June 1, the joint filing window opens about 90 days earlier, in early March.

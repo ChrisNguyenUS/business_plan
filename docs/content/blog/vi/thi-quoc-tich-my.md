@@ -53,7 +53,7 @@ Lệ phí theo [trang N-400 của USCIS](https://www.uscis.gov/n-400) (kiểm tr
 | Giảm lệ phí (reduced fee), chỉ nộp giấy | $380 |
 | Miễn lệ phí (fee waiver, Form I-912), chỉ nộp giấy | $0 |
 
-Theo [trang Poverty Guidelines của USCIS](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (áp dụng từ 13/01/2026), mức giảm lệ phí dành cho hộ có thu nhập không quá 400% mức nghèo liên bang (ví dụ hộ 1 người: $63,840; hộ 4 người: $132,000 ở 48 tiểu bang liền kề). Miễn lệ phí bằng Form I-912 xét theo việc đang nhận trợ cấp dựa trên thu nhập (means-tested benefit), thu nhập không quá 150% mức nghèo (hộ 1 người: $23,940), hoặc khó khăn tài chính. Người xin giảm hay miễn lệ phí phải nộp đơn bằng giấy.
+Theo [trang Poverty Guidelines của USCIS](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (áp dụng từ 13/01/2026), mức giảm lệ phí dành cho hộ có thu nhập không quá 400% mức nghèo liên bang. Ở 48 tiểu bang liền kề, mức này là $63,840 cho hộ 1 người và $132,000 cho hộ 4 người. Miễn lệ phí bằng Form I-912 xét theo việc đang nhận trợ cấp dựa trên thu nhập (means-tested benefit), thu nhập không quá 150% mức nghèo (hộ 1 người: $23,940), hoặc khó khăn tài chính. Người xin giảm hay miễn lệ phí phải nộp đơn bằng giấy.
 
 Lệ phí có thể thay đổi. Hãy kiểm tra lại [uscis.gov/n-400](https://www.uscis.gov/n-400) và [Fee Schedule G-1055](https://www.uscis.gov/g-1055) vào ngày bạn nộp.
 

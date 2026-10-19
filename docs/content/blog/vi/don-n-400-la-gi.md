@@ -29,7 +29,14 @@ Theo trang [I Am a Lawful Permanent Resident of 5 Years](https://www.uscis.gov/c
 
 ### Diện kết hôn với công dân Mỹ (3 năm)
 
-Theo trang [I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen), người nộp cần có thẻ xanh ít nhất 3 năm, **sống chung trong hôn nhân** với người phối ngẫu là công dân Mỹ trong 3 năm đó, cư trú liên tục 3 năm, có mặt ở Mỹ ít nhất **18 tháng** trong 3 năm, sống 3 tháng ở tiểu bang hoặc khu vực nộp đơn, cùng các điều kiện về tư cách đạo đức, tiếng Anh, công dân và Hiến pháp.
+Theo trang [I Am Married to a U.S. Citizen](https://www.uscis.gov/citizenship/learn-about-citizenship/citizenship-and-naturalization/i-am-married-to-a-us-citizen), người nộp cần:
+
+- Có thẻ xanh ít nhất 3 năm.
+- **Sống chung trong hôn nhân** với người phối ngẫu là công dân Mỹ trong 3 năm đó.
+- Cư trú liên tục 3 năm.
+- Có mặt ở Mỹ ít nhất **18 tháng** trong 3 năm.
+- Sống 3 tháng ở tiểu bang hoặc khu vực nộp đơn.
+- Đáp ứng các điều kiện về tư cách đạo đức, tiếng Anh, công dân và Hiến pháp như diện 5 năm.
 
 Ngoài ra còn có các diện khác như phục vụ trong quân đội Mỹ. Hướng dẫn đơn N-400 liệt kê các diện ở Phần 1.
 

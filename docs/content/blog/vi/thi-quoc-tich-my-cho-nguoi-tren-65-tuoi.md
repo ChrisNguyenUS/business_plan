@@ -6,7 +6,7 @@ excerpt_vi: Thi quốc tịch Mỹ cho người trên 65 tuổi: diện 65/20 mi
 category: immigration
 ---
 
-Người từ 65 tuổi trở lên và đã có thẻ xanh ít nhất 20 năm (tính vào ngày nộp đơn N-400) thuộc diện **65/20**: được miễn thi tiếng Anh, được thi công dân bằng ngôn ngữ mình chọn (ví dụ tiếng Việt) qua thông dịch viên, và chỉ cần học **20 câu** đặc biệt. Với bài thi 2025, nhân viên hỏi 10 trong 20 câu đó và bạn cần trả lời đúng **6 câu**. Người trên 65 tuổi nhưng có thẻ xanh chưa đủ 20 năm thì không thuộc diện 65/20, nhưng có thể thuộc diện 50/20 hoặc 55/15.
+Người từ 65 tuổi trở lên và đã có thẻ xanh ít nhất 20 năm (tính vào ngày nộp đơn N-400) thuộc diện **65/20**. Bạn được miễn thi tiếng Anh, được thi công dân bằng ngôn ngữ mình chọn (ví dụ tiếng Việt) qua thông dịch viên, và chỉ cần học **20 câu** đặc biệt. Với bài thi 2025, nhân viên hỏi 10 trong 20 câu đó và bạn cần trả lời đúng **6 câu**. Người trên 65 tuổi nhưng có thẻ xanh chưa đủ 20 năm thì không thuộc diện 65/20, nhưng có thể thuộc diện 50/20 hoặc 55/15.
 
 ## Có những diện miễn thi tiếng Anh nào?
 

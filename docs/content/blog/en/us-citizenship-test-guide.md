@@ -54,7 +54,7 @@ Fees according to the [USCIS N-400 page](https://www.uscis.gov/n-400) (checked O
 | Reduced fee (paper only) | $380 |
 | Fee waiver (Form I-912, paper only) | $0 |
 
-According to the [USCIS Poverty Guidelines page](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (in effect from January 13, 2026), the reduced fee is for households with income at or below 400% of the federal poverty guidelines (for example, a 1-person household: $63,840; a 4-person household: $132,000 in the 48 contiguous states). A fee waiver on Form I-912 is based on receiving a means-tested benefit, income at or below 150% of the poverty guidelines (1-person household: $23,940), or financial hardship. Applicants asking for a reduced fee or a waiver must file on paper.
+According to the [USCIS Poverty Guidelines page](https://www.uscis.gov/forms/filing-fees/poverty-guidelines) (in effect from January 13, 2026), the reduced fee is for households with income at or below 400% of the federal poverty guidelines. In the 48 contiguous states, that is $63,840 for a 1-person household and $132,000 for a 4-person household. A fee waiver on Form I-912 is based on receiving a means-tested benefit, income at or below 150% of the poverty guidelines (1-person household: $23,940), or financial hardship. Applicants asking for a reduced fee or a waiver must file on paper.
 
 Fees can change. Check [uscis.gov/n-400](https://www.uscis.gov/n-400) and the [G-1055 Fee Schedule](https://www.uscis.gov/g-1055) on the day you file.
 

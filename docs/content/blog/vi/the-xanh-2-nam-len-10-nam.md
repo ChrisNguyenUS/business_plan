@@ -21,7 +21,11 @@ Nếu bạn đang chuẩn bị bảo lãnh vợ hoặc chồng sang Mỹ, đọc
 Theo [trang I-751 của USCIS](https://www.uscis.gov/i-751) (cập nhật 16/06/2026):
 
 - **Nộp chung với vợ/chồng (joint filing):** nộp trong **90 ngày ngay trước ngày thẻ hết hạn**. Nộp sớm hơn có thể bị trả hồ sơ. USCIS có [trang tính ngày bắt đầu được nộp](https://www.uscis.gov/forms/when-to-file-your-petition-to-remove-conditions).
-- **Xin miễn nộp chung (waiver):** nộp riêng **bất cứ lúc nào trước khi thẻ hết hạn**, nếu thuộc một trong các trường hợp: hôn nhân thật lòng nhưng đã ly hôn hoặc hủy hôn; người phối ngẫu đã mất; bị bạo hành hoặc đối xử tàn nhẫn; hoặc việc bị trục xuất gây khó khăn cực độ (extreme hardship).
+- **Xin miễn nộp chung (waiver):** nộp riêng **bất cứ lúc nào trước khi thẻ hết hạn**, nếu thuộc một trong các trường hợp:
+  - hôn nhân thật lòng nhưng đã ly hôn hoặc hủy hôn;
+  - người phối ngẫu đã mất;
+  - bị bạo hành hoặc đối xử tàn nhẫn;
+  - việc bị trục xuất gây khó khăn cực độ (extreme hardship).
 - **Con cái:** con có thẻ có điều kiện cùng lúc với cha mẹ thường được đưa vào đơn I-751 của cha mẹ.
 
 Ví dụ để hiểu cách tính (không phải tính cho hồ sơ của bạn): thẻ hết hạn ngày 1/6 thì khoảng 90 ngày trước đó, tức đầu tháng 3, là lúc bắt đầu được nộp đơn chung.
