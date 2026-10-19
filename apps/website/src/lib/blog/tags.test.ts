@@ -1,0 +1,58 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { isValidSlug } from "./slugify";
+import { BLOG_TAGS, keepTagsForCategory, tagBySlug, tagPath, tagsForPost, tagsInCategory } from "./tags";
+
+describe("BLOG_TAGS registry", () => {
+  it("has unique keys and unique valid slugs per locale", () => {
+    const keys = BLOG_TAGS.map((t) => t.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const locale of ["vi", "en"] as const) {
+      const slugs = BLOG_TAGS.map((t) => t.slug[locale]);
+      expect(new Set(slugs).size).toBe(slugs.length);
+      for (const s of slugs) expect(isValidSlug(s)).toBe(true);
+    }
+  });
+
+  it("has a label and a description of at most 160 characters in both locales", () => {
+    for (const t of BLOG_TAGS) {
+      for (const locale of ["vi", "en"] as const) {
+        expect(t.label[locale].trim()).not.toBe("");
+        expect(t.description[locale].trim()).not.toBe("");
+        expect(t.description[locale].length).toBeLessThanOrEqual(160);
+      }
+    }
+  });
+
+  it("covers every key the backfill migration writes", () => {
+    const sql = readFileSync(join(process.cwd(), "supabase/migrations/website_02_blog_tags.sql"), "utf8");
+    const used = [...sql.matchAll(/array\[([^\]]*)\]/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+    expect(used.length).toBeGreaterThan(0);
+    const known = new Set(BLOG_TAGS.map((t) => t.key));
+    for (const key of used) expect(known.has(key)).toBe(true);
+  });
+});
+
+describe("hashtag lookups", () => {
+  it("drops unknown keys and keeps registry order", () => {
+    expect(tagsForPost(["uscis-fees", "nope", "green-card"]).map((t) => t.key)).toEqual(["green-card", "uscis-fees"]);
+  });
+
+  it("finds a hashtag by its locale slug", () => {
+    expect(tagBySlug("vi", "bao-lanh-cha-me")?.key).toBe("sponsor-parents");
+    expect(tagBySlug("en", "bao-lanh-cha-me")).toBeNull();
+  });
+
+  it("builds the localized hashtag page path", () => {
+    expect(tagPath("vi", "sponsor-parents")).toBe("/vi/blog/chu-de/bao-lanh-cha-me");
+    expect(tagPath("en", "sponsor-parents")).toBe("/en/blog/topics/sponsor-parents");
+  });
+
+  it("lists hashtags of one category and keeps only those when the category changes", () => {
+    expect(tagsInCategory("immigration").length).toBe(BLOG_TAGS.length);
+    expect(tagsInCategory("tax")).toEqual([]);
+    expect(keepTagsForCategory(["green-card", "nope"], "immigration")).toEqual(["green-card"]);
+    expect(keepTagsForCategory(["green-card"], "tax")).toEqual([]);
+  });
+});
