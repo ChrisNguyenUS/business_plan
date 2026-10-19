@@ -49,8 +49,8 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
 
         {post.coverImageUrl && (
-          <div className="rounded-2xl overflow-hidden mb-8 relative h-64 lg:h-80">
-            <Image src={post.coverImageUrl} alt={post.title} fill className="object-cover" />
+          <div className="rounded-2xl overflow-hidden mb-8 relative aspect-[1200/630]">
+            <Image src={post.coverImageUrl} alt={post.title} fill priority sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
           </div>
         )}
 

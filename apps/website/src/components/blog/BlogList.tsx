@@ -56,8 +56,8 @@ export function BlogList({
             className="group bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
           >
             {p.coverImageUrl && (
-              <div className="aspect-video overflow-hidden relative">
-                <Image src={p.coverImageUrl} alt={p.title} fill className="object-cover" />
+              <div className="aspect-[1200/630] overflow-hidden relative">
+                <Image src={p.coverImageUrl} alt={p.title} fill sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw" className="object-cover" />
               </div>
             )}
             <div className="p-6">
