@@ -34,6 +34,20 @@ describe("BLOG_TAGS registry", () => {
   });
 });
 
+describe("business and EB-3 hashtags", () => {
+  it("lists the business hashtags in registry order", () => {
+    expect(tagsInCategory("business").map((t) => t.key)).toEqual([
+      "form-llc", "texas-business", "business-taxes", "business-banking", "business-website", "us-company-from-vietnam",
+    ]);
+  });
+
+  it("adds EB-3 and immigration-scam hashtags under immigration", () => {
+    expect(tagBySlug("vi", "eb3")?.key).toBe("eb3");
+    expect(tagBySlug("en", "immigration-scams")?.category).toBe("immigration");
+    expect(tagPath("vi", "form-llc")).toBe("/vi/blog/chu-de/mo-llc");
+  });
+});
+
 describe("hashtag lookups", () => {
   it("drops unknown keys and keeps registry order", () => {
     expect(tagsForPost(["uscis-fees", "nope", "green-card"]).map((t) => t.key)).toEqual(["green-card", "uscis-fees"]);
@@ -50,7 +64,7 @@ describe("hashtag lookups", () => {
   });
 
   it("lists hashtags of one category and keeps only those when the category changes", () => {
-    expect(tagsInCategory("immigration").length).toBe(BLOG_TAGS.length);
+    expect(tagsInCategory("immigration").every((t) => t.category === "immigration")).toBe(true);
     expect(tagsInCategory("tax")).toEqual([]);
     expect(keepTagsForCategory(["green-card", "nope"], "immigration")).toEqual(["green-card"]);
     expect(keepTagsForCategory(["green-card"], "tax")).toEqual([]);

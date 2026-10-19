@@ -101,6 +101,86 @@ export const BLOG_TAGS: readonly BlogTag[] = [
       en: "Traveling abroad with a green card: how long you can stay, reentry permits, and what to do if you lose your card.",
     },
   },
+  {
+    key: "eb3",
+    category: "immigration",
+    slug: { vi: "eb3", en: "eb3" },
+    label: { vi: "EB-3", en: "EB-3" },
+    description: {
+      vi: "Định cư Mỹ diện EB-3 lao động phổ thông: điều kiện, PERM và I-140, thời gian chờ theo Visa Bulletin, chi phí và cách tránh lừa đảo.",
+      en: "EB-3 Other Workers green cards: eligibility, PERM and Form I-140, Visa Bulletin wait times, costs, and how to avoid scams.",
+    },
+  },
+  {
+    key: "immigration-scams",
+    category: "immigration",
+    slug: { vi: "lua-dao-di-tru", en: "immigration-scams" },
+    label: { vi: "Lừa đảo di trú", en: "Immigration scams" },
+    description: {
+      vi: "Dấu hiệu lừa đảo di trú theo cảnh báo của USCIS và FTC, cách kiểm tra bên hỗ trợ hồ sơ và nơi báo cáo.",
+      en: "Immigration scam warning signs from USCIS and the FTC, how to check who is helping with your case, and where to report.",
+    },
+  },
+  {
+    key: "form-llc",
+    category: "business",
+    slug: { vi: "mo-llc", en: "form-llc" },
+    label: { vi: "Mở LLC", en: "Forming an LLC" },
+    description: {
+      vi: "Mở LLC ở Mỹ: các bước nộp hồ sơ với bang, registered agent, EIN, Company Agreement và tài khoản ngân hàng.",
+      en: "Forming an LLC in the U.S.: state filing steps, registered agents, the EIN, the Company Agreement and the bank account.",
+    },
+  },
+  {
+    key: "texas-business",
+    category: "business",
+    slug: { vi: "kinh-doanh-o-texas", en: "texas-business" },
+    label: { vi: "Kinh doanh ở Texas", en: "Texas business" },
+    description: {
+      vi: "Lập và duy trì doanh nghiệp ở Texas: Form 205, lệ phí bang, franchise tax, Public Information Report và sales tax permit.",
+      en: "Starting and keeping a business in Texas: Form 205, state fees, franchise tax, the Public Information Report and sales tax permits.",
+    },
+  },
+  {
+    key: "business-taxes",
+    category: "business",
+    slug: { vi: "thue-doanh-nghiep", en: "business-taxes" },
+    label: { vi: "Thuế doanh nghiệp", en: "Business taxes" },
+    description: {
+      vi: "Thuế và báo cáo của doanh nghiệp nhỏ: EIN, cách IRS đánh thuế LLC, franchise tax Texas và Form 5472 cho chủ nước ngoài.",
+      en: "Small business taxes and filings: the EIN, how the IRS taxes LLCs, Texas franchise tax, and Form 5472 for foreign owners.",
+    },
+  },
+  {
+    key: "business-banking",
+    category: "business",
+    slug: { vi: "ngan-hang-doanh-nghiep", en: "business-banking" },
+    label: { vi: "Ngân hàng doanh nghiệp", en: "Business banking" },
+    description: {
+      vi: "Mở tài khoản ngân hàng cho LLC: giấy tờ cần mang, quy định xác minh chủ sở hữu và lưu ý khi chủ ở Việt Nam.",
+      en: "Opening a bank account for an LLC: the documents to bring, ownership verification rules, and notes for owners in Vietnam.",
+    },
+  },
+  {
+    key: "business-website",
+    category: "business",
+    slug: { vi: "website-doanh-nghiep", en: "business-websites" },
+    label: { vi: "Website doanh nghiệp", en: "Business websites" },
+    description: {
+      vi: "Website, email theo tên miền và Google Business Profile cho doanh nghiệp nhỏ, làm đúng quy định của Google.",
+      en: "Websites, branded email and Google Business Profile for small businesses, set up within Google's rules.",
+    },
+  },
+  {
+    key: "us-company-from-vietnam",
+    category: "business",
+    slug: { vi: "mo-cong-ty-tu-viet-nam", en: "us-company-from-vietnam" },
+    label: { vi: "Mở công ty từ Việt Nam", en: "U.S. company from Vietnam" },
+    description: {
+      vi: "Người ở Việt Nam mở công ty ở Mỹ: EIN không cần SSN, ngân hàng, Form 5472 và những gì công ty không làm được về visa.",
+      en: "Forming a U.S. company while living in Vietnam: an EIN without an SSN, banking, Form 5472, and what a company can't do for a visa.",
+    },
+  },
 ];
 
 /** URL segment between /blog/ and the hashtag slug. */
