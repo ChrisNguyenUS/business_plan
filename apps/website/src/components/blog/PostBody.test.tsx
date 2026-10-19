@@ -15,6 +15,11 @@ describe("PostBody", () => {
     expect(html).toContain("<td>N-400</td>");
   });
 
+  it("wraps tables so wide ones scroll sideways on phones", () => {
+    const html = renderToStaticMarkup(<PostBody markdown={"| A | B |\n|---|---|\n| 1 | 2 |"} />);
+    expect(html).toContain('<div class="my-8 overflow-x-auto"><table>');
+  });
+
   it("opens external links safely and keeps internal links in-tab", () => {
     const html = renderToStaticMarkup(<PostBody markdown={"[USCIS](https://www.uscis.gov) [N400](/n400ready)"} />);
     expect(html).toContain('<a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer">USCIS</a>');

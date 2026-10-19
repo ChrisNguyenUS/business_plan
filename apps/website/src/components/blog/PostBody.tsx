@@ -8,6 +8,12 @@ export function PostBody({ markdown }: { markdown: string }) {
       remarkPlugins={[remarkGfm]}
       components={{
         h1: ({ children }) => <h2>{children}</h2>,
+        // Wide fee/category tables scroll sideways on phones instead of widening the page.
+        table: ({ children }) => (
+          <div className="my-8 overflow-x-auto">
+            <table>{children}</table>
+          </div>
+        ),
         a: ({ href, children }) =>
           href?.startsWith("http") ? (
             <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>

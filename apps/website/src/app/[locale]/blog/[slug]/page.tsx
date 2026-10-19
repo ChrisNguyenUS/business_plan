@@ -54,7 +54,7 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
         )}
 
-        <div className="prose prose-lg max-w-none prose-headings:text-charcoal prose-p:text-muted-foreground prose-a:text-primary">
+        <div className="prose prose-lg max-w-none prose-headings:text-charcoal prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-p:text-muted-foreground prose-li:text-muted-foreground prose-li:marker:text-primary prose-strong:text-charcoal prose-a:text-primary prose-a:font-medium prose-table:my-0 prose-table:text-base prose-th:bg-muted prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-1 prose-blockquote:rounded-r-lg [&_blockquote_p]:before:content-none [&_blockquote_p]:after:content-none">
           <PostBody markdown={post.content} />
         </div>
 
