@@ -19,6 +19,17 @@ export const BLOG_LABELS = {
     ctaApp: "Mở N400 Ready",
     ctaService: "Dịch vụ hồ sơ di trú",
     all: "Tất cả",
+    searchLabel: "Tìm bài viết",
+    searchPlaceholder: "Tìm bài: thi quốc tịch, bảo lãnh cha mẹ, thẻ xanh…",
+    clearSearch: "Xóa tìm kiếm",
+    countAll: "{total} bài viết",
+    countSome: "{shown}/{total} bài viết",
+    noResults: "Không tìm thấy bài phù hợp.",
+    popularTags: "Chủ đề nhiều bài:",
+    askZalo: "Hỏi Manna qua Zalo",
+    tagsLabel: "Hashtag",
+    tagTitleSuffix: "bài viết",
+    relatedTags: "Chủ đề liên quan",
   },
   en: {
     indexTitle: "Articles: citizenship, immigration, tax",
@@ -38,12 +49,32 @@ export const BLOG_LABELS = {
     ctaApp: "Open N400 Ready",
     ctaService: "Immigration document services",
     all: "All",
+    searchLabel: "Search articles",
+    searchPlaceholder: "Search: citizenship test, sponsoring parents, green card…",
+    clearSearch: "Clear search",
+    countAll: "{total} articles",
+    countSome: "{shown} of {total} articles",
+    noResults: "No matching articles.",
+    popularTags: "Popular topics:",
+    askZalo: "Ask Manna on Zalo",
+    tagsLabel: "Hashtags",
+    tagTitleSuffix: "articles",
+    relatedTags: "Related topics",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
+/** Big topics shown as filter buttons, in display order. "general" is a fallback, never a filter. */
+export const CATEGORY_ORDER = ["immigration", "business", "tax", "insurance", "ai", "documents"] as const;
+
 export const CATEGORY_LABELS: Record<Locale, Record<string, string>> = {
-  vi: { tax: "Thuế", insurance: "Bảo hiểm", immigration: "Di trú", ai: "AI", general: "Chung" },
-  en: { tax: "Tax", insurance: "Insurance", immigration: "Immigration", ai: "AI", general: "General" },
+  vi: {
+    immigration: "Di trú Mỹ", business: "Business", tax: "Thuế", insurance: "Bảo hiểm",
+    ai: "AI", documents: "Giấy tờ ở Mỹ", general: "Chung",
+  },
+  en: {
+    immigration: "U.S. immigration", business: "Business", tax: "Tax", insurance: "Insurance",
+    ai: "AI", documents: "U.S. paperwork", general: "General",
+  },
 };
 
 export function formatPostDate(iso: string, locale: Locale): string {
