@@ -19,12 +19,14 @@ interface Submission {
 const STATUSES = ["all", "new", "contacted", "in_progress", "completed", "archived"];
 // Keys are the service_type values the contact form and EB-3 screening store.
 const SERVICE_LABELS: Record<string, string> = {
-  tax: "Tax & Business",
-  insurance: "Insurance & Finance",
   immigration: "Immigration",
-  eb3: "EB-3 Other Workers",
+  "personal-documents": "Personal Documents",
+  tax: "Tax",
+  business: "Business",
+  insurance: "Insurance & Finance",
   ai: "AI / Automation",
-  general: "General",
+  eb3: "EB-3 Other Workers",
+  general: "General / Other",
 };
 const SERVICES = ["all", ...Object.keys(SERVICE_LABELS)];
 
