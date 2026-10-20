@@ -39,6 +39,8 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
   const isActive = (href: string) => {
     if (href === `/${locale}`) return pathname === `/${locale}`;
+    // The N400 Ready link points at /n400ready, but its public pages live under /[locale]/n400ready.
+    if (href === "/n400ready") return pathname.startsWith(`/${locale}/n400ready`);
     return pathname.startsWith(href);
   };
 
