@@ -11,13 +11,12 @@ interface ContactStripProps {
 
 export default function ContactStrip({ dictionary, locale }: ContactStripProps) {
   return (
-    <section className="relative py-16 lg:py-20 bg-charcoal overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+    <section className="relative py-16 lg:py-20 bg-teal-light border-y border-primary/20 overflow-hidden">
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+        <h2 className="text-3xl lg:text-4xl font-bold text-charcoal mb-4">
           {dictionary.contact_title}
         </h2>
-        <p className="text-white/70 text-lg mb-8">{dictionary.contact_desc}</p>
+        <p className="text-muted-foreground text-lg mb-8">{dictionary.contact_desc}</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href={`/${locale}/contact`} className="w-full sm:w-auto">
             <Button size="lg" className="w-full bg-primary hover:bg-teal-dark text-white rounded-full px-8 gap-2 shadow-lg">
@@ -30,7 +29,7 @@ export default function ContactStrip({ dictionary, locale }: ContactStripProps) 
             <Button
               size="lg"
               variant="outline"
-              className="w-full bg-transparent text-white border-white/30 hover:bg-white/10 hover:text-white rounded-full px-8 gap-2"
+              className="w-full bg-white text-primary border-primary/30 hover:bg-primary/5 hover:text-primary rounded-full px-8 gap-2"
             >
               <Phone className="h-4 w-4" />
               {dictionary.contact_call}: {dictionary.contact_phone}
