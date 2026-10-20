@@ -91,8 +91,14 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           
           if (content.hero_bg_image) dbDict.hero_bg_image = content.hero_bg_image;
           
-          if (content.trust_badges) dbDict.trust_badges = content.trust_badges;
-          
+          // trust_badges and cta_text are stored in English only; Vietnamese pages keep
+          // vi.json unless a localized trust_badges_vi list exists.
+          if (locale === "en") {
+            if (content.trust_badges) dbDict.trust_badges = content.trust_badges;
+          } else if (Array.isArray(content.trust_badges_vi) && content.trust_badges_vi.length > 0) {
+            dbDict.trust_badges = content.trust_badges_vi;
+          }
+
           // Legacy fallbacks
           if (content.badge_1) dbDict.why_bilingual = content.badge_1;
           if (content.badge_2) dbDict.why_efin = content.badge_2;
@@ -101,7 +107,7 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
 
           if (content.hero_headline && !content.hero_headline_en && locale === "en") dbDict.hero_headline = content.hero_headline;
           if (content.hero_subtitle && !content.hero_sub_en && locale === "en") dbDict.hero_sub = content.hero_subtitle;
-          if (content.cta_text) dbDict.hero_cta1 = content.cta_text;
+          if (content.cta_text && locale === "en") dbDict.hero_cta1 = content.cta_text;
         }
 
         if (row.section === "about") {

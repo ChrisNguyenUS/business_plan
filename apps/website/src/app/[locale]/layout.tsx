@@ -82,7 +82,17 @@ export default async function LocaleLayout({
           <ConditionalChrome
             navbar={<Navbar dictionary={dictionary} locale={locale as Locale} />}
             footer={<Footer dictionary={dictionary} locale={locale as Locale} />}
-            floating={<FloatingButtons />}
+            floating={
+              <FloatingButtons
+                labels={{
+                  menu: dictionary.contact_menu,
+                  close: dictionary.contact_menu_close,
+                  zalo: dictionary.contact_zalo,
+                  messenger: dictionary.contact_messenger,
+                  call: dictionary.contact_phone_label,
+                }}
+              />
+            }
           >
             {children}
           </ConditionalChrome>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, ArrowRight, ShieldCheck } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
@@ -12,7 +12,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
+    <section className="relative min-h-[560px] lg:min-h-[640px] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -24,26 +24,27 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
           priority
           fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 to-charcoal/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/95 via-charcoal/80 to-charcoal/40" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="max-w-2xl">
+          <p className="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+            <span className="h-px w-8 bg-primary" aria-hidden="true" />
+            {dictionary.hero_eyebrow}
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-white mb-5 leading-[1.1] text-balance">
             {dictionary.hero_headline}
           </h1>
-          <p className="text-lg text-white/80 font-medium mb-3">
+          <p className="text-lg text-white/85 leading-relaxed mb-8 max-w-xl">
             {dictionary.hero_sub}
-          </p>
-          <p className="text-white/60 text-base mb-8 leading-relaxed">
-            {dictionary.hero_desc}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link href={`/${locale}/contact`}>
               <Button
                 size="lg"
-                className="w-full bg-primary hover:bg-teal-dark text-white rounded-full px-6 gap-2 sm:w-auto cursor-pointer"
+                className="w-full bg-primary hover:bg-teal-dark text-white rounded-full px-7 gap-2 sm:w-auto cursor-pointer shadow-lg"
               >
                 <Calendar className="h-4 w-4" />
                 {dictionary.hero_cta1}
@@ -53,25 +54,21 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full text-white border-white/30 hover:bg-white/10 rounded-full px-6 gap-2 sm:w-auto cursor-pointer"
+                className="w-full bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white rounded-full px-7 gap-2 sm:w-auto cursor-pointer"
               >
                 {dictionary.hero_cta2}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href={`/${locale}/n400ready`}>
-              <Button
-                size="lg"
-                className="w-full bg-white/95 hover:bg-white text-purple-700 rounded-full px-6 gap-2 sm:w-auto cursor-pointer shadow-lg group"
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-white shadow-sm">
-                  <span className="text-[8px] font-black leading-none">N400</span>
-                </span>
-                <span className="font-extrabold">N400 Ready App</span>
-                <ShieldCheck className="h-4 w-4 text-purple-500 transition group-hover:scale-110" />
-              </Button>
-            </Link>
           </div>
+          {/* Quieter entry point to the free N400 Ready app (keeps the acquisition path). */}
+          <p className="mt-6 text-sm text-white/75">
+            {dictionary.hero_n400_prefix}{" "}
+            <Link href={`/${locale}/n400ready`} className="font-semibold text-white underline decoration-primary underline-offset-4 hover:decoration-white">
+              N400 Ready App
+            </Link>
+            <ArrowRight className="ml-1 inline h-3.5 w-3.5 text-white/75" aria-hidden="true" />
+          </p>
         </div>
       </div>
     </section>

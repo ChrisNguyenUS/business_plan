@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -11,6 +10,7 @@ interface ServicesOverviewProps {
 }
 
 export default function ServicesOverview({ dictionary, locale }: ServicesOverviewProps) {
+  // Immigration and Tax & Business are the core services, so they get a light teal accent.
   const services = [
     {
       key: "immigration",
@@ -18,6 +18,7 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_immigration_title,
       desc: dictionary.services_immigration_desc,
       link: `/${locale}/services/immigration`,
+      featured: true,
     },
     {
       key: "tax",
@@ -25,13 +26,7 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_tax_title,
       desc: dictionary.services_tax_desc,
       link: `/${locale}/services/tax`,
-    },
-    {
-      key: "ai",
-      img: "/images/service-ai.png",
-      title: dictionary.services_ai_title,
-      desc: dictionary.services_ai_desc,
-      link: `/${locale}/services/ai`,
+      featured: true,
     },
     {
       key: "insurance",
@@ -39,13 +34,22 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_insurance_title,
       desc: dictionary.services_insurance_desc,
       link: `/${locale}/services/insurance`,
+      featured: false,
+    },
+    {
+      key: "ai",
+      img: "/images/service-ai.png",
+      title: dictionary.services_ai_title,
+      desc: dictionary.services_ai_desc,
+      link: `/${locale}/services/ai`,
+      featured: false,
     },
   ];
 
   return (
-    <section className="py-20 bg-surface">
+    <section className="py-16 lg:py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div className="text-center mb-10 lg:mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-charcoal mb-3">
             {dictionary.services_title}
           </h2>
@@ -54,39 +58,30 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {services.map((s) => (
-            <div
+            <Link
               key={s.key}
-              className="bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+              href={s.link}
+              className={`group flex flex-col rounded-2xl p-6 border shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                s.featured ? "bg-white border-primary/30 border-t-4 border-t-primary" : "bg-white border-border"
+              }`}
             >
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-teal-light p-2 mb-4">
-                <Image
-                  src={s.img}
-                  alt={s.title}
-                  width={48}
-                  height={48}
-                  className="w-full h-full object-cover rounded-lg"
-                />
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-teal-light p-2 mb-4">
+                <Image src={s.img} alt="" width={48} height={48} className="w-full h-full object-cover rounded-lg" />
               </div>
               <h3 className="font-bold text-charcoal text-lg mb-2">{s.title}</h3>
-              <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                {s.desc}
-              </p>
-              <Link
-                href={s.link}
-                aria-label={`${dictionary.services_learn_more} — ${s.title}`}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary hover:text-teal-dark p-0 gap-1"
-                >
+              <p className="text-muted-foreground text-[15px] leading-relaxed mb-5">{s.desc}</p>
+              <span className="mt-auto flex items-center justify-between text-sm font-semibold text-primary">
+                <span className="inline-flex items-center gap-1">
                   {dictionary.services_learn_more}
-                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-light" aria-hidden="true">
+                  <ArrowUpRight className="h-4 w-4" />
+                </span>
+              </span>
+            </Link>
           ))}
         </div>
       </div>

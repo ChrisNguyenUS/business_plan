@@ -87,3 +87,40 @@ describe("getDictionary service descriptions", () => {
     ]);
   });
 });
+
+// Prod site_content 'homepage' row: trust_badges and cta_text are single-language (English).
+const homepageRow = {
+  section: "homepage",
+  content: {
+    hero_headline_en: "English headline from the DB",
+    hero_headline_vi: "Tiêu đề tiếng Việt từ DB",
+    cta_text: "Book a Free Consultation",
+    trust_badges: [{ id: "1", title: "IRS Authorized e-file Provider", desc: "English badge" }],
+  },
+};
+
+describe("getDictionary homepage row", () => {
+  beforeEach(() => {
+    siteContentRows = [homepageRow];
+  });
+
+  it("keeps vi.json trust badges and CTA on Vietnamese pages", async () => {
+    const d = await getDictionary("vi");
+    expect(d.trust_badges).toBeUndefined();
+    expect(d.hero_cta1).toBe(viMessages.hero_cta1);
+    expect(d.hero_headline).toBe("Tiêu đề tiếng Việt từ DB");
+  });
+
+  it("applies the English trust badges and CTA on English pages", async () => {
+    const d = await getDictionary("en");
+    expect(d.trust_badges).toEqual(homepageRow.content.trust_badges);
+    expect(d.hero_cta1).toBe("Book a Free Consultation");
+    expect(d.hero_headline).toBe("English headline from the DB");
+  });
+
+  it("uses trust_badges_vi on Vietnamese pages when present", async () => {
+    const vi = [{ id: "1", title: "Nhà cung cấp e-file được IRS ủy quyền", desc: "Thẻ tiếng Việt" }];
+    siteContentRows = [{ section: "homepage", content: { ...homepageRow.content, trust_badges_vi: vi } }];
+    expect((await getDictionary("vi")).trust_badges).toEqual(vi);
+  });
+});
