@@ -10,7 +10,6 @@ interface ServicesOverviewProps {
 }
 
 export default function ServicesOverview({ dictionary, locale }: ServicesOverviewProps) {
-  // Immigration and Tax & Business are the core services, so they get a light teal accent.
   const services = [
     {
       key: "immigration",
@@ -18,7 +17,6 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_immigration_title,
       desc: dictionary.services_immigration_desc,
       link: `/${locale}/services/immigration`,
-      featured: true,
     },
     {
       key: "tax",
@@ -26,7 +24,6 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_tax_title,
       desc: dictionary.services_tax_desc,
       link: `/${locale}/services/tax`,
-      featured: true,
     },
     {
       key: "insurance",
@@ -34,7 +31,6 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_insurance_title,
       desc: dictionary.services_insurance_desc,
       link: `/${locale}/services/insurance`,
-      featured: false,
     },
     {
       key: "ai",
@@ -42,7 +38,6 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
       title: dictionary.services_ai_title,
       desc: dictionary.services_ai_desc,
       link: `/${locale}/services/ai`,
-      featured: false,
     },
   ];
 
@@ -63,9 +58,7 @@ export default function ServicesOverview({ dictionary, locale }: ServicesOvervie
             <Link
               key={s.key}
               href={s.link}
-              className={`group flex flex-col rounded-2xl p-6 border shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                s.featured ? "bg-white border-primary/30 border-t-4 border-t-primary" : "bg-white border-border"
-              }`}
+              className="group flex flex-col rounded-2xl bg-white p-6 border border-border shadow-sm hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-teal-light p-2 mb-4">
                 <Image src={s.img} alt="" width={48} height={48} className="w-full h-full object-cover rounded-lg" />
