@@ -9,6 +9,7 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
 import { getAlternateLocaleHref } from "@/lib/i18n/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { serviceCategories } from "@/lib/services/categories";
 
 interface NavbarProps {
   dictionary: Dictionary;
@@ -34,12 +35,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
     { label: "N400 Ready", href: "/n400ready" },
   ];
 
-  const serviceLinks = [
-    { label: dictionary.services_immigration_title, href: `/${locale}/services/immigration` },
-    { label: dictionary.services_tax_title, href: `/${locale}/services/tax` },
-    { label: dictionary.services_ai_title, href: `/${locale}/services/ai` },
-    { label: dictionary.services_insurance_title, href: `/${locale}/services/insurance` },
-  ];
+  const serviceLinks = serviceCategories(dictionary, locale).map((c) => ({ label: c.navLabel, href: c.href }));
 
   const isActive = (href: string) => {
     if (href === `/${locale}`) return pathname === `/${locale}`;

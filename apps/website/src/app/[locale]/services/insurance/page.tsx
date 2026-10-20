@@ -28,6 +28,7 @@ export default async function InsurancePage({ params }: { params: Promise<{ loca
       services={Array.isArray(d.insurance_offerings) ? d.insurance_offerings.map(o => o.name) : []}
       faqs={faqs}
       badgeText="Licensed Insurance Agent"
+      note={d.insurance_note}
       ctaText={d.insurance_cta}
       dictionary={d}
       locale={locale as Locale}

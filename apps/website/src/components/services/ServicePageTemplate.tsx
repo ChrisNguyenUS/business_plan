@@ -15,12 +15,14 @@ interface ServicePageTemplateProps {
   ctaText: string;
   ctaLink?: string;
   badgeText?: string;
+  /** Scope/compliance note shown under the description. */
+  note?: string;
   dictionary: Dictionary;
   locale: Locale;
 }
 
 export default function ServicePageTemplate({
-  title, desc, services, pricing, pricingNote, faqs, ctaText, ctaLink, badgeText, dictionary, locale,
+  title, desc, services, pricing, pricingNote, faqs, ctaText, ctaLink, badgeText, note, dictionary, locale,
 }: ServicePageTemplateProps) {
   return (
     <div className="py-16 lg:py-24">
@@ -29,6 +31,11 @@ export default function ServicePageTemplate({
         <div className="mb-12">
           <h1 className="text-3xl lg:text-5xl font-bold text-charcoal mb-4">{title}</h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">{desc}</p>
+          {note && (
+            <p className="mt-4 max-w-2xl rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground leading-relaxed">
+              {note}
+            </p>
+          )}
           {badgeText && (
             <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-teal-light border border-primary/20">
               <CheckCircle className="h-4 w-4 text-primary" />
