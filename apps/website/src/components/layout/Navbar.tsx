@@ -55,7 +55,13 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           font-weight: 500;
           color: #1a1a1a;
           text-decoration: none;
+          white-space: nowrap;
           transition: color 0.2s ease;
+        }
+        .nav-link:focus-visible {
+          outline: 2px solid hsl(174, 54%, 36%);
+          outline-offset: 4px;
+          border-radius: 2px;
         }
         .nav-link::after {
           content: '';
@@ -234,7 +240,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
             </Link>
 
             {/* Desktop Nav Links */}
-            <div className="hidden lg:flex" style={{ alignItems: 'center', gap: '28px' }}>
+            <div className="hidden lg:flex items-center gap-5 xl:gap-7">
               {navLinks.map((link) => (
                 <div key={link.href} className="services-parent" style={{ position: 'relative' }}>
                   {link.hasDropdown ? (
