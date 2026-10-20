@@ -65,11 +65,11 @@
   "contact_select_service": "Chọn dịch vụ...",
   "about_title": "Về Manna One Solution",
   "about_mission_title": "Sứ Mệnh",
-  "about_mission": "Một Nơi, Mọi Giải Pháp — chúng tôi tồn tại để đơn giản hóa cuộc sống cho cộng đồng người Việt tại Houston và các nơi khác. Từ di trú, thuế, tự động hóa đến bảo hiểm, chúng tôi xử lý tất cả dưới một mái nhà.",
+  "about_mission": "Chúng tôi giúp cuộc sống ở Mỹ đơn giản hơn cho cộng đồng người Việt tại Houston và khắp nước Mỹ. Từ giấy tờ di trú, thuế, mở doanh nghiệp đến bảo hiểm và thủ tục hằng ngày, Manna đồng hành cùng bạn từng bước, bằng chính ngôn ngữ của bạn.",
   "about_story_title": "Câu Chuyện Của Chúng Tôi",
-  "about_story": "Được thành lập tại Houston, TX, Manna One Solution ra đời từ niềm tin đơn giản: mọi người đều xứng đáng được tiếp cận dịch vụ chuyên nghiệp bằng ngôn ngữ của mình. Đội ngũ của chúng tôi kết hợp kinh nghiệm soạn hồ sơ di trú, khai thuế và bảo hiểm với công nghệ AI tiên tiến để cung cấp dịch vụ hiệu quả và đáng tin cậy.",
+  "about_story": "Ra đời năm 2026 để phục vụ cộng đồng người Mỹ gốc Việt tại Houston, Manna One Solution bắt đầu từ một niềm tin đơn giản: ai cũng xứng đáng được hỗ trợ chuyên nghiệp, minh bạch, chi phí hợp lý, bằng ngôn ngữ của mình. Là đơn vị soạn hồ sơ không phải luật sư, chúng tôi giúp bạn với mẫu đơn USCIS, thuế, doanh nghiệp, bảo hiểm và giấy tờ hằng ngày, rõ ràng, trung thực và song ngữ.",
   "about_serving": "Phục Vụ Khắp Nơi",
-  "about_areas": "Houston · Dallas/Fort Worth · Austin · Cộng đồng người Việt toàn quốc",
+  "about_areas": "Houston · Dallas/Fort Worth · Austin · Online toàn nước Mỹ (tùy dịch vụ)",
   "about_credentials": "Chứng Chỉ & Giấy Phép",
   "services_page_title": "Dịch Vụ Của Chúng Tôi",
   "services_page_subtitle": "Hỗ trợ song ngữ trong sáu nhóm dịch vụ cho cuộc sống, gia đình và kinh doanh ở Mỹ.",
@@ -389,5 +389,46 @@
       "q": "Có hỗ trợ bằng tiếng Việt không?",
       "a": "Có. Chúng tôi giải thích từng mẫu đơn và từng bước bằng tiếng Việt hoặc tiếng Anh, tùy bạn."
     }
-  ]
+  ],
+  "about_eyebrow": "Giới thiệu",
+  "about_tagline": "Một Nơi, Mọi Giải Pháp",
+  "about_photo_alt": "Nhân viên tư vấn cùng một cặp vợ chồng xem giấy tờ tại văn phòng",
+  "about_disclosure_title": "Lưu ý: chúng tôi không phải luật sư",
+  "about_disclosure": "Với dịch vụ di trú, chúng tôi soạn mẫu đơn USCIS theo hướng dẫn của bạn. Chúng tôi KHÔNG phải văn phòng luật và KHÔNG tư vấn pháp lý. Hồ sơ phức tạp (RFE, bị từ chối, không đủ điều kiện nhập cảnh) sẽ được giới thiệu tới luật sư di trú có giấy phép.",
+  "about_serving_heading": "Houston, Texas và các khu vực lân cận",
+  "about_serving_desc": "Văn phòng chính ở Houston. Chúng tôi cũng phục vụ khách ở Dallas/Fort Worth và Austin, và nhiều dịch vụ có thể làm online ở bất kỳ đâu tại Mỹ, tùy từng dịch vụ. Bảo hiểm chỉ phục vụ tại Texas.",
+  "about_credentials_heading": "Giấy phép rõ ràng, tra cứu được",
+  "about_credentials_sub": "Chúng tôi chỉ ghi những giấy phép đang có. Mục nào còn đang xử lý sẽ ghi rõ là đang chờ duyệt.",
+  "about_verify": "Tra cứu trên TDI",
+  "about_credential_list": [
+    {
+      "title": "IRS EFIN #857993",
+      "status": "active",
+      "label": "Đã được IRS cấp",
+      "desc": "Mã số nộp thuế điện tử của IRS: được phép nộp tờ khai thuế điện tử cho khách hàng."
+    },
+    {
+      "title": "Texas Life Insurance License #3142469",
+      "status": "active",
+      "label": "Đã cấp phép",
+      "desc": "Được cấp phép tại Texas cho bảo hiểm nhân thọ và sản phẩm annuity.",
+      "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
+    },
+    {
+      "title": "Texas P&C Insurance License #3118525",
+      "status": "active",
+      "label": "Đã cấp phép",
+      "desc": "Được cấp phép tại Texas cho bảo hiểm tài sản & trách nhiệm (P&C). NPN #21024561.",
+      "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
+    },
+    {
+      "title": "Texas Notary Public",
+      "status": "pending",
+      "label": "Đang chờ duyệt",
+      "desc": "Đang nộp đơn với Texas Secretary of State. Chưa được cấp."
+    }
+  ],
+  "about_cta_eyebrow": "Bắt đầu ngay hôm nay",
+  "about_cta_title": "Bạn cần hỗ trợ dịch vụ nào?",
+  "about_cta_desc": "Một nơi, nhiều giải pháp. Đội ngũ Manna sẵn sàng giúp bạn xác định bước tiếp theo."
 }

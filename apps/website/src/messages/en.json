@@ -65,11 +65,11 @@
   "contact_select_service": "Select a service...",
   "about_title": "About Manna One Solution",
   "about_mission_title": "Our Mission",
-  "about_mission": "One Stop, All Solutions — we exist to simplify life for the Vietnamese community in Houston and beyond. From immigration to taxes, automation, and insurance, we handle it all under one roof.",
+  "about_mission": "We make life in the U.S. simpler for the Vietnamese community in Houston and beyond. From immigration paperwork, taxes, and business setup to insurance and everyday administrative tasks, Manna works with you step by step, in your own language.",
   "about_story_title": "Our Story",
   "about_story": "Launched in 2026 to serve Houston's Vietnamese-American community, Manna One Solution was founded on a simple belief: everyone deserves transparent, affordable professional services in their own language. As a non-attorney document preparer, we help clients navigate USCIS forms, taxes and business needs, automation, and insurance — clearly, honestly, and bilingually.",
-  "about_serving": "Proudly Serving",
-  "about_areas": "Houston · Dallas/Fort Worth · Austin · Vietnamese communities nationwide",
+  "about_serving": "Where we serve",
+  "about_areas": "Houston · Dallas/Fort Worth · Austin · Online across the U.S. (varies by service)",
   "about_credentials": "Our Credentials",
   "services_page_title": "Our Services",
   "services_page_subtitle": "Bilingual help across six areas of life, family, and business in the U.S.",
@@ -389,5 +389,46 @@
       "q": "Can you help in Vietnamese?",
       "a": "Yes. We explain each form and step in Vietnamese or English, whichever you prefer."
     }
-  ]
+  ],
+  "about_eyebrow": "About us",
+  "about_tagline": "One Stop, All Solutions",
+  "about_photo_alt": "A consultant reviewing paperwork with a couple at a bright office table",
+  "about_disclosure_title": "Non-Attorney Disclosure",
+  "about_disclosure": "For immigration services, we prepare USCIS forms at client direction. We are NOT a law firm and do NOT provide legal advice. Complex cases (RFEs, denials, inadmissibility) are referred to licensed immigration attorneys.",
+  "about_serving_heading": "Houston, Texas and beyond",
+  "about_serving_desc": "Our home base is Houston. We also serve clients in Dallas/Fort Worth and Austin, and many services can be done online anywhere in the U.S., depending on the service. Insurance is available in Texas only.",
+  "about_credentials_heading": "Credentials you can check",
+  "about_credentials_sub": "We list only credentials we actually hold. Anything still in progress is marked as pending.",
+  "about_verify": "Verify with TDI",
+  "about_credential_list": [
+    {
+      "title": "IRS EFIN #857993",
+      "status": "active",
+      "label": "Authorized",
+      "desc": "IRS Electronic Filing Identification Number: authorized to e-file tax returns for clients."
+    },
+    {
+      "title": "Texas Life Insurance License #3142469",
+      "status": "active",
+      "label": "Licensed",
+      "desc": "Texas-licensed for life insurance and annuity products.",
+      "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
+    },
+    {
+      "title": "Texas P&C Insurance License #3118525",
+      "status": "active",
+      "label": "Licensed",
+      "desc": "Texas-licensed for property & casualty insurance. NPN #21024561.",
+      "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
+    },
+    {
+      "title": "Texas Notary Public",
+      "status": "pending",
+      "label": "Pending",
+      "desc": "Application in progress with the Texas Secretary of State. Not yet commissioned."
+    }
+  ],
+  "about_cta_eyebrow": "Get started today",
+  "about_cta_title": "Which service do you need help with?",
+  "about_cta_desc": "One stop, many solutions. The Manna team is ready to help you find your next step."
 }
