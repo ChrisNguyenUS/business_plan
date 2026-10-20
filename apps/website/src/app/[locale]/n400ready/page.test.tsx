@@ -18,6 +18,19 @@ describe('/[locale]/n400ready', () => {
     expect(h).toContain('application/ld+json');
   });
 
+  it('keeps a crawlable link to every state and territory page, with Texas selected', async () => {
+    const h = await html('vi');
+    const stateLinks = new Set(h.match(/\/vi\/n400ready\/states\/[a-z-]+/g));
+    expect(stateLinks.size).toBe(56);
+    expect(h).toMatch(/href="\/vi\/n400ready\/states\/texas" aria-current="true"/);
+  });
+
+  it('cites USCIS for which test applies', async () => {
+    const h = await html('vi');
+    expect(h).toContain('https://www.uscis.gov/citizenship/learn-about-citizenship/the-naturalization-interview-and-test');
+    expect(h).toContain('20/10/2025');
+  });
+
   it('renders the English version', async () => {
     const h = await html('en');
     expect(h).toContain('free U.S. citizenship test practice');
