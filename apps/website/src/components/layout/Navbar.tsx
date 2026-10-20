@@ -277,7 +277,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
             {/* Right Side */}
             <div className="hidden lg:flex" style={{ alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               {/* Language Toggle */}
-              <Link href={alternateHref} className="lang-toggle">
+              <Link href={alternateHref} className="lang-toggle" hrefLang={locale === "en" ? "vi" : "en"} aria-label={locale === "en" ? "Tiếng Việt" : "English"}>
                 {altLabel}
               </Link>
 
@@ -384,7 +384,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                 {/* Mobile Bottom Buttons */}
                 <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Link href={alternateHref} className="lang-toggle">{altLabel}</Link>
+                    <Link href={alternateHref} className="lang-toggle" hrefLang={locale === "en" ? "vi" : "en"} aria-label={locale === "en" ? "Tiếng Việt" : "English"}>{altLabel}</Link>
                     {loading ? null : user ? (
                       <>
                         <Link href={`/${locale}/portal`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: 'center' }}>
