@@ -35,7 +35,7 @@ export async function TagPageView({ localeParam, slug, expected }: { localeParam
           <h1 className="text-4xl lg:text-5xl font-bold text-charcoal mb-3">#{tag.label[locale]}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{tag.description[locale]}</p>
         </div>
-        <BlogCardGrid cards={posts.map((p) => toBlogCard(p, locale))} categoryLabels={CATEGORY_LABELS[locale]} />
+        <BlogCardGrid cards={posts.map((p) => toBlogCard(p, locale))} categoryLabels={CATEGORY_LABELS[locale]} minReadLabel={t.minRead} />
         {related.length > 0 && (
           <section className="mt-14 text-center">
             <h2 className="text-lg font-semibold text-charcoal mb-4">{t.relatedTags}</h2>
