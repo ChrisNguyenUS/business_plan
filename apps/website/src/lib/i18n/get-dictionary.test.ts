@@ -15,6 +15,28 @@ vi.mock("@/lib/supabase", () => ({
 
 const { getDictionary } = await import("./get-dictionary");
 
+// Prod site_content 'about' row stores English-only story/areas. They must not
+// replace the Vietnamese copy on /vi/about.
+describe("getDictionary about overrides", () => {
+  beforeEach(() => {
+    siteContentRows = [
+      { section: "about", content: { story: "English story from the DB", areas: "Houston · English areas" } },
+    ];
+  });
+
+  it("keeps vi.json story and areas on Vietnamese pages", async () => {
+    const d = await getDictionary("vi");
+    expect(d.about_story).toBe(viMessages.about_story);
+    expect(d.about_areas).toBe(viMessages.about_areas);
+  });
+
+  it("still applies story and areas on English pages", async () => {
+    const d = await getDictionary("en");
+    expect(d.about_story).toBe("English story from the DB");
+    expect(d.about_areas).toBe("Houston · English areas");
+  });
+});
+
 // Prod site_content 'services' row stores single-language (English) *_desc
 // keys. They must not leak onto Vietnamese pages.
 const legacyServicesRow = {

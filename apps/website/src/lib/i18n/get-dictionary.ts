@@ -122,8 +122,9 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           if (content.about_photo) dbDict.about_photo = content.about_photo;
 
           if (content.mission && !content.about_mission_en && locale === "en") dbDict.about_mission = content.mission;
-          if (content.story) dbDict.about_story = content.story;
-          if (content.areas) dbDict.about_areas = content.areas;
+          // Legacy story/areas hold English copy only, so they apply on English pages only.
+          if (content.story && locale === "en") dbDict.about_story = content.story;
+          if (content.areas && locale === "en") dbDict.about_areas = content.areas;
         }
 
         if (row.section === "services") {
