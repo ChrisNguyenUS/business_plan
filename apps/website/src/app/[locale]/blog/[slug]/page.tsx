@@ -93,16 +93,16 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="mt-10 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground leading-relaxed">
               {d.immigration_scope_note}
             </p>
-            <div className="mt-8 rounded-2xl bg-charcoal p-8 text-center">
-              <h2 className="text-xl font-bold text-white mb-2">{t.ctaTitle}</h2>
-              <p className="text-white/70 text-sm mb-6">{t.ctaBody}</p>
+            <div className="mt-8 rounded-2xl border border-primary/20 bg-teal-light p-8 text-center">
+              <h2 className="text-xl font-bold text-charcoal mb-2">{t.ctaTitle}</h2>
+              <p className="text-muted-foreground text-sm mb-6">{t.ctaBody}</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/n400ready" className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-dark">
                   {t.ctaApp}
                 </Link>
                 <Link
                   href={`/${locale}/services/immigration`}
-                  className="rounded-full border border-white/30 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+                  className="rounded-full border border-primary/30 bg-white px-6 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5"
                 >
                   {t.ctaService}
                 </Link>

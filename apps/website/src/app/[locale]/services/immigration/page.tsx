@@ -73,11 +73,11 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
         </p>
 
         {/* CTA */}
-        <div className="text-center p-10 rounded-2xl bg-charcoal">
-          <h3 className="text-2xl font-bold text-white mb-2">
+        <div className="text-center p-10 rounded-2xl border border-primary/20 bg-teal-light">
+          <h3 className="text-2xl font-bold text-charcoal mb-2">
             Đặt Lịch Hỗ Trợ Hồ Sơ / Request Filing Support
           </h3>
-          <p className="text-white/60 text-sm mb-6">
+          <p className="text-muted-foreground text-sm mb-6">
             Contact us today to discuss your case.
           </p>
           <Link href={`/${locale}/contact`}>
