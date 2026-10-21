@@ -9,6 +9,7 @@ import JobProgressBar from '@/components/jobs/JobProgressBar'
 import JobStatusBadge from '@/components/jobs/JobStatusBadge'
 import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 import { deriveProgress } from '@/lib/jobs/progress'
+import DeleteClientButton from '@/components/clients/DeleteClientButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -117,7 +118,13 @@ export default async function ClientProfilePage({
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-start gap-2">
+          {isAdmin && (
+            <DeleteClientButton
+              id={client.id}
+              name={`${client.first_name} ${client.last_name}`}
+            />
+          )}
           <Link
             href={`/clients/${client.id}/edit`}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 border border-[#bcc9ca]/40 hover:bg-[#f1f4f9] transition-colors"
