@@ -10,6 +10,9 @@ import JobStatusBadge from '@/components/jobs/JobStatusBadge'
 import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 import { deriveProgress } from '@/lib/jobs/progress'
 import DeleteClientButton from '@/components/clients/DeleteClientButton'
+import RequestDeletionButton from '@/components/deletion/RequestDeletionButton'
+import PendingRequestBanner from '@/components/deletion/PendingRequestBanner'
+import { getPendingRequestFor } from '@/actions/deletion-requests'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,7 +58,10 @@ export default async function ClientProfilePage({
     .limit(5)
 
   // Jobs are admin-only in v1 (2026-04-16 roles plan): staff never see this section.
-  const isAdmin = await isCurrentUserAdmin()
+  const [isAdmin, pendingRequest] = await Promise.all([
+    isCurrentUserAdmin(),
+    getPendingRequestFor('client', id),
+  ])
   const jobs = isAdmin ? await getJobsForClient(id) : []
 
   const addr = client.address as Record<string, string> | null
@@ -76,6 +82,13 @@ export default async function ClientProfilePage({
             saved. Review this client and edit if needed.
           </span>
         </div>
+      )}
+      {pendingRequest && (
+        <PendingRequestBanner
+          entityType="client"
+          requesterName={pendingRequest.requesterName}
+          createdAt={pendingRequest.createdAt}
+        />
       )}
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -119,11 +132,13 @@ export default async function ClientProfilePage({
           </div>
         </div>
         <div className="flex items-start gap-2">
-          {isAdmin && (
+          {isAdmin ? (
             <DeleteClientButton
               id={client.id}
               name={`${client.first_name} ${client.last_name}`}
             />
+          ) : (
+            !pendingRequest && <RequestDeletionButton entityType="client" entityId={client.id} />
           )}
           <Link
             href={`/clients/${client.id}/edit`}
