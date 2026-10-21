@@ -101,7 +101,7 @@ export default async function CasesPage({
           <table className="w-full text-left">
             <thead className="bg-[#f7f9ff]/60 border-b border-[#ebeef3]">
               <tr>
-                {['Client', 'Case Type / Forms', 'Status', 'Receipt #', 'Created', ''].map((h) => (
+                {['Client', 'Case Type / Forms', 'Status', 'Receipt #', 'Created'].map((h) => (
                   <th
                     key={h}
                     className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
@@ -125,7 +125,7 @@ export default async function CasesPage({
                     className="border-t border-[#f1f4f9] hover:bg-[#f7f9ff]/40 transition-colors group"
                   >
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/cases/${c.id}`} className="flex items-center gap-3 group/open">
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
                           style={{ backgroundColor: '#3AAFB9' }}
@@ -133,7 +133,7 @@ export default async function CasesPage({
                           {initials}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">
+                          <p className="text-sm font-semibold text-slate-800 group-hover/open:text-[#006970] group-hover/open:underline">
                             {client
                               ? `${client.last_name}, ${client.first_name}`
                               : 'Unknown'}
@@ -142,7 +142,7 @@ export default async function CasesPage({
                             {client?.a_number ? `A# ${client.a_number}` : `#${c.id.slice(0, 8).toUpperCase()}`}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-slate-600 capitalize">{c.case_type}</p>
@@ -184,16 +184,6 @@ export default async function CasesPage({
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-xs text-slate-500">{timeAgo(c.created_at)}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/cases/${c.id}`}
-                        className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs font-semibold transition-all"
-                        style={{ color: '#3AAFB9' }}
-                      >
-                        Open
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                      </Link>
                     </td>
                   </tr>
                 )
