@@ -5,6 +5,8 @@ import { CASE_STATUS_LABELS, type CaseStatus } from '@/types'
 import StatusDropdown from '@/components/cases/StatusDropdown'
 import DocumentChecklist from '@/components/cases/DocumentChecklist'
 import ReceiptNumberForm from '@/components/cases/ReceiptNumberForm'
+import DeleteCaseButton from '@/components/cases/DeleteCaseButton'
+import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +18,7 @@ export default async function CaseDetailPage({
   const { id } = await params
   const caseData = await getCase(id).catch(() => null)
   if (!caseData) notFound()
+  const isAdmin = await isCurrentUserAdmin()
 
   const c = caseData as any
   const primaryClient = c.primary_client
@@ -48,6 +51,7 @@ export default async function CaseDetailPage({
           <button className="px-4 py-2 text-tertiary text-sm font-semibold hover:text-error transition-colors">
             Archive Case
           </button>
+          {isAdmin && <DeleteCaseButton id={id} />}
         </div>
       </div>
 

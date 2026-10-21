@@ -2,6 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { getCurrentAdminId } from '@/lib/auth/is-admin'
+import { isUuid } from '@/lib/jobs/validation'
+import type { Result } from '@/lib/jobs/types'
+import { deleteCaseRow } from '@/lib/deletion/perform'
+import { closePendingFor, deletionDeps } from '@/lib/deletion/flow'
 import type { CaseStatus, FormType } from '@/types'
 
 export async function getCases(filters?: {
@@ -153,4 +159,23 @@ export async function toggleDocumentReceived(docId: string, received: boolean, c
     .eq('id', docId)
   if (error) throw error
   revalidatePath(`/cases/${caseId}`)
+}
+
+/**
+ * Admin only: permanently delete a case. The database cascades its forms,
+ * documents and status history; jobs, payments and expenses keep their row
+ * with case_id cleared. RLS "cases admin delete" (009) is the real gate.
+ */
+export async function deleteCase(id: string): Promise<Result<never>> {
+  if (!isUuid(id)) return { ok: false, error: 'Unknown case.' }
+  const adminId = await getCurrentAdminId()
+  if (!adminId) return { ok: false, error: 'Only an admin can delete cases.' }
+
+  const supabase = await createClient()
+  const result = await deleteCaseRow(supabase, id)
+  if (!result.ok) return result
+  for (const path of result.value) revalidatePath(path)
+  await closePendingFor(deletionDeps(supabase), 'case', id, adminId)
+  revalidatePath('/deletion-requests')
+  redirect('/cases')
 }

@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { isSourceLeadDuplicate, isUuid } from '@/lib/n400/lead-prefill'
-import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
-import { clientDeleteBlocker } from '@/lib/clients/delete-guard'
+import { getCurrentAdminId } from '@/lib/auth/is-admin'
+import { deleteClientRow } from '@/lib/deletion/perform'
+import { closePendingFor, deletionDeps } from '@/lib/deletion/flow'
 import type { Result } from '@/lib/jobs/types'
 
 export async function getClients(query?: string) {
@@ -154,44 +155,19 @@ export async function updateClientServices(id: string, services: string[]) {
 
 /**
  * Admin only: permanently delete a client that has no cases and no jobs, then
- * go back to the list. RLS ("clients admin delete", migration 009) enforces
- * admin; the checks here turn refusals into messages.
+ * go back to the list. Same code as approving a staff request
+ * (lib/deletion/perform.ts); RLS "clients admin delete" (009) is the real gate.
  */
 export async function deleteClient(id: string): Promise<Result<never>> {
   if (!isUuid(id)) return { ok: false, error: 'Unknown client.' }
-  if (!(await isCurrentUserAdmin())) return { ok: false, error: 'Only an admin can delete clients.' }
+  const adminId = await getCurrentAdminId()
+  if (!adminId) return { ok: false, error: 'Only an admin can delete clients.' }
 
   const supabase = await createClient()
-  const [cases, jobs] = await Promise.all([
-    supabase
-      .from('cases')
-      .select('id', { count: 'exact', head: true })
-      .or(`primary_client_id.eq.${id},secondary_client_id.eq.${id}`),
-    supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('client_id', id),
-  ])
-  if (cases.error) return { ok: false, error: cases.error.message }
-  if (jobs.error) return { ok: false, error: jobs.error.message }
-  const blocker = clientDeleteBlocker({ cases: cases.count ?? 0, jobs: jobs.count ?? 0 })
-  if (blocker) return { ok: false, error: blocker }
-
-  // A spouse link is only a pointer, and its FK would block the delete.
-  const unlink = await supabase.from('clients').update({ spouse_id: null }).eq('spouse_id', id)
-  if (unlink.error) return { ok: false, error: unlink.error.message }
-
-  const { data, error } = await supabase
-    .from('clients')
-    .delete()
-    .eq('id', id)
-    .select('source_lead_id')
-  if (error) return { ok: false, error: error.message }
-  // RLS filters a refused delete to zero rows instead of raising.
-  if (!data || data.length === 0) return { ok: false, error: 'Client not found or not deletable.' }
-
-  revalidatePath('/clients')
-  const leadId = data[0].source_lead_id as string | null
-  if (leadId) {
-    revalidatePath('/leads')
-    revalidatePath(`/leads/${leadId}`)
-  }
+  const result = await deleteClientRow(supabase, id)
+  if (!result.ok) return result
+  for (const path of result.value) revalidatePath(path)
+  await closePendingFor(deletionDeps(supabase), 'client', id, adminId)
+  revalidatePath('/deletion-requests')
   redirect('/clients')
 }

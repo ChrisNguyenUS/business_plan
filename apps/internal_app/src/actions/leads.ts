@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
+import { getCurrentAdminId } from '@/lib/auth/is-admin'
+import { hideLeadRow } from '@/lib/deletion/perform'
+import { closePendingFor, deletionDeps } from '@/lib/deletion/flow'
 import type { Result } from '@/lib/jobs/types'
 import {
   LEADS_LIST_COLUMNS,
@@ -117,14 +119,19 @@ export async function getLeadHiddenAt(userId: string): Promise<string | null> {
  */
 export async function setLeadHidden(userId: string, hidden: boolean): Promise<Result<null>> {
   if (!isUuid(userId)) return { ok: false, error: 'Unknown lead.' }
-  if (!(await isCurrentUserAdmin())) return { ok: false, error: 'Only an admin can hide leads.' }
+  const adminId = await getCurrentAdminId()
+  if (!adminId) return { ok: false, error: 'Only an admin can hide leads.' }
 
   const supabase = await createClient()
-  const { error } = hidden
-    ? await supabase.from('hidden_leads').insert({ user_id: userId })
-    : await supabase.from('hidden_leads').delete().eq('user_id', userId)
-  // 23505: already hidden (double click, two tabs) — the outcome is the same.
-  if (error && error.code !== '23505') return { ok: false, error: error.message }
+  if (hidden) {
+    const result = await hideLeadRow(supabase, userId)
+    if (!result.ok) return result
+    await closePendingFor(deletionDeps(supabase), 'lead', userId, adminId)
+    revalidatePath('/deletion-requests')
+  } else {
+    const { error } = await supabase.from('hidden_leads').delete().eq('user_id', userId)
+    if (error) return { ok: false, error: error.message }
+  }
 
   revalidatePath('/leads')
   revalidatePath(`/leads/${userId}`)
