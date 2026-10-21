@@ -65,35 +65,32 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           outline-offset: 4px;
           border-radius: 2px;
         }
+        /* Underline grows with transform (GPU), not width (layout). */
         .nav-link::after {
           content: '';
           position: absolute;
           bottom: -2px;
           left: 0;
-          width: 0;
+          width: 100%;
           height: 2px;
           background-color: hsl(174, 54%, 36%);
           border-radius: 1px;
-          transition: width 0.3s ease-in-out;
-        }
-        .nav-link:hover {
-          color: hsl(174, 54%, 36%);
-        }
-        .nav-link:hover::after {
-          width: 100%;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 200ms var(--motion-easing);
         }
         .nav-link.active {
           color: hsl(174, 54%, 36%);
           font-weight: 600;
         }
         .nav-link.active::after {
-          width: 100%;
+          transform: scaleX(1);
         }
+        /* Scales out of its trigger; also opens on keyboard focus. */
         .services-dropdown {
           position: absolute;
           top: calc(100% + 12px);
           left: 50%;
-          transform: translateX(-50%);
           min-width: 220px;
           background: white;
           border-radius: 12px;
@@ -102,14 +99,24 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           padding: 8px;
           opacity: 0;
           visibility: hidden;
-          transform: translateX(-50%) translateY(-4px);
-          transition: all 0.2s ease;
+          transform: translateX(-50%) translateY(-4px) scale(0.97);
+          transform-origin: top center;
+          transition: opacity 150ms ease-out, transform 150ms var(--motion-easing), visibility 150ms;
           z-index: 100;
         }
-        .services-parent:hover .services-dropdown {
+        /* Bridges the 12px gap so the pointer can travel from link to menu. */
+        .services-dropdown::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: -12px;
+          height: 12px;
+        }
+        .services-parent:focus-within .services-dropdown {
           opacity: 1;
           visibility: visible;
-          transform: translateX(-50%) translateY(0);
+          transform: translateX(-50%) translateY(0) scale(1);
         }
         .dropdown-link {
           display: block;
@@ -120,9 +127,9 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           transition: background 0.15s ease, color 0.15s ease;
           text-decoration: none;
         }
-        .dropdown-link:hover {
-          background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
+        .dropdown-link:focus-visible {
+          outline: 2px solid hsl(174, 54%, 36%);
+          outline-offset: -2px;
         }
         .lang-toggle {
           width: 36px;
@@ -141,9 +148,6 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           flex-shrink: 0;
           letter-spacing: 0.03em;
         }
-        .lang-toggle:hover {
-          background: hsl(174, 54%, 28%);
-        }
         .search-btn {
           width: 36px;
           height: 36px;
@@ -156,10 +160,6 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           cursor: pointer;
           color: #555;
           transition: background 0.2s ease, color 0.2s ease, transform 160ms ease-out;
-        }
-        .search-btn:hover {
-          background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
         }
         .btn-client-login {
           display: inline-flex;
@@ -178,11 +178,6 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
         }
-        .btn-client-login:hover {
-          border-color: hsl(174, 54%, 36%);
-          color: hsl(174, 54%, 36%);
-          background: hsl(170, 30%, 96%);
-        }
         .btn-book-now {
           display: inline-flex;
           align-items: center;
@@ -199,10 +194,6 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           text-decoration: none;
           transition: background 0.2s ease, box-shadow 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
-        }
-        .btn-book-now:hover {
-          background: hsl(174, 54%, 28%);
-          box-shadow: 0 4px 12px hsla(174, 54%, 36%, 0.35);
         }
         /* Press feedback: the button visibly reacts to the tap/click. */
         .lang-toggle:active,
@@ -222,10 +213,47 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           text-decoration: none;
           transition: background 0.15s ease, color 0.15s ease;
         }
-        .mobile-nav-link:hover,
         .mobile-nav-link.active {
           background: hsl(170, 30%, 96%);
           color: hsl(174, 54%, 36%);
+        }
+        /* Hover only on real pointers: on touch, a tap would leave hover stuck. */
+        @media (hover: hover) and (pointer: fine) {
+          .nav-link:hover {
+            color: hsl(174, 54%, 36%);
+          }
+          .nav-link:hover::after {
+            transform: scaleX(1);
+          }
+          .services-parent:hover .services-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+          .dropdown-link:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(174, 54%, 36%);
+          }
+          .lang-toggle:hover {
+            background: hsl(174, 54%, 28%);
+          }
+          .search-btn:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(174, 54%, 36%);
+          }
+          .btn-client-login:hover {
+            border-color: hsl(174, 54%, 36%);
+            color: hsl(174, 54%, 36%);
+            background: hsl(170, 30%, 96%);
+          }
+          .btn-book-now:hover {
+            background: hsl(174, 54%, 28%);
+            box-shadow: 0 4px 12px hsla(174, 54%, 36%, 0.35);
+          }
+          .mobile-nav-link:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(174, 54%, 36%);
+          }
         }
       `}</style>
 
