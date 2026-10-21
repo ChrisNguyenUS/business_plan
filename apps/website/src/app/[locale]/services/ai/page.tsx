@@ -13,13 +13,6 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
 
-  const faqs = [
-    { q: "What kind of automation can you build for my business?", a: "We build custom automations including appointment scheduling, invoice processing, customer follow-ups, data entry automation, and more — all tailored to your specific workflow." },
-    { q: "Do I need technical knowledge to use AI tools?", a: "Not at all! We build everything to be user-friendly. We also provide training and ongoing support so you can use the tools confidently." },
-    { q: "Can you help my Vietnamese business go digital?", a: "Absolutely. We specialize in helping Vietnamese-owned businesses adopt modern technology. We understand your business culture and needs." },
-    { q: "What is a monthly retainer?", a: "A monthly retainer gives you ongoing access to our AI and automation team. We maintain your systems, add new features, and provide priority support." },
-  ];
-
   const offerings = d.ai_offerings || [];
 
   return (
@@ -27,7 +20,7 @@ export default async function AIPage({ params }: { params: Promise<{ locale: str
       title={d.ai_title}
       desc={d.ai_desc}
       services={offerings.map(o => o.name)}
-      faqs={faqs}
+      faqs={d.ai_faqs}
       ctaText={d.ai_cta}
       dictionary={d}
       locale={locale as Locale}

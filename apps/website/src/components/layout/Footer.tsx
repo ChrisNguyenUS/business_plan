@@ -62,12 +62,12 @@ export default function Footer({ dictionary, locale }: FooterProps) {
               </li>
               <li>
                 <Link href={`/${locale}/privacy-policy`} className="rounded-sm transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                  Privacy Policy
+                  {dictionary.footer_privacy}
                 </Link>
               </li>
               <li>
                 <Link href={`/${locale}/terms-of-service`} className="rounded-sm transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                  Terms of Service
+                  {dictionary.footer_terms}
                 </Link>
               </li>
             </ul>

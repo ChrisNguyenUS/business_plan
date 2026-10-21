@@ -460,5 +460,69 @@
   "contact_label_facebook": "Facebook",
   "contact_label_location": "Location",
   "contact_new_tab": "(opens in a new tab)",
-  "contact_privacy_link": "Privacy Policy"
+  "contact_privacy_link": "Privacy Policy",
+  "footer_privacy": "Privacy Policy",
+  "footer_terms": "Terms of Service",
+  "immigration_cta_title": "Need help preparing your forms?",
+  "immigration_cta_desc": "Book a free appointment to talk through your paperwork.",
+  "tax_badge": "EFIN Licensed",
+  "insurance_badge": "Licensed Insurance Agent",
+  "tax_faqs": [
+    {
+      "q": "What documents do I need for tax preparation?",
+      "a": "You'll need W-2 forms, 1099 forms, Social Security numbers, previous year's tax return, and any deduction receipts. We'll provide a complete checklist at your appointment."
+    },
+    {
+      "q": "Can you file taxes for someone with an ITIN?",
+      "a": "Yes! We regularly help individuals with ITINs file their taxes and can also assist with ITIN applications."
+    },
+    {
+      "q": "Do you offer tax preparation in Vietnamese?",
+      "a": "Absolutely. Our team is fully bilingual in Vietnamese and English. We can explain everything in your preferred language."
+    },
+    {
+      "q": "What is the deadline for filing taxes?",
+      "a": "The standard deadline is April 15th. If you need more time, we can file an extension (Form 4868) to give you until October 15th."
+    }
+  ],
+  "insurance_faqs": [
+    {
+      "q": "How much does a life insurance consultation cost?",
+      "a": "Consultations are completely free. We help you understand your options before you make any decisions."
+    },
+    {
+      "q": "What types of life insurance do you offer?",
+      "a": "We offer term life, whole life, universal life, and indexed universal life insurance from top-rated carriers."
+    },
+    {
+      "q": "Can I get insurance with pre-existing conditions?",
+      "a": "Yes, many carriers offer policies for people with pre-existing conditions. We'll help you find the best option for your situation."
+    },
+    {
+      "q": "Do you explain policies in Vietnamese?",
+      "a": "Yes! We provide full bilingual service so you can understand every detail of your policy in Vietnamese or English."
+    },
+    {
+      "q": "What is an annuity and is it right for me?",
+      "a": "An annuity is a financial product that provides guaranteed income, typically for retirement. We'll assess your financial goals to determine if it's a good fit."
+    }
+  ],
+  "ai_faqs": [
+    {
+      "q": "What kind of automation can you build for my business?",
+      "a": "We build custom automations including appointment scheduling, invoice processing, customer follow-ups, data entry automation, and more — all tailored to your specific workflow."
+    },
+    {
+      "q": "Do I need technical knowledge to use AI tools?",
+      "a": "Not at all! We build everything to be user-friendly. We also provide training and ongoing support so you can use the tools confidently."
+    },
+    {
+      "q": "Can you help my Vietnamese business go digital?",
+      "a": "Absolutely. We specialize in helping Vietnamese-owned businesses adopt modern technology. We understand your business culture and needs."
+    },
+    {
+      "q": "What is a monthly retainer?",
+      "a": "A monthly retainer gives you ongoing access to our AI and automation team. We maintain your systems, add new features, and provide priority support."
+    }
+  ]
 }

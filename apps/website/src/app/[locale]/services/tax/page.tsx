@@ -13,13 +13,6 @@ export default async function TaxPage({ params }: { params: Promise<{ locale: st
   const { locale } = await params;
   const d = await getDictionary(locale as Locale);
 
-  const faqs = [
-    { q: "What documents do I need for tax preparation?", a: "You'll need W-2 forms, 1099 forms, Social Security numbers, previous year's tax return, and any deduction receipts. We'll provide a complete checklist at your consultation." },
-    { q: "Can you file taxes for someone with an ITIN?", a: "Yes! We regularly help individuals with ITINs file their taxes and can also assist with ITIN applications." },
-    { q: "Do you offer tax preparation in Vietnamese?", a: "Absolutely. Our team is fully bilingual in Vietnamese and English. We can explain everything in your preferred language." },
-    { q: "What is the deadline for filing taxes?", a: "The standard deadline is April 15th. If you need more time, we can file an extension (Form 4868) to give you until October 15th." },
-  ];
-
   const offerings = d.tax_offerings || [];
 
   return (
@@ -27,8 +20,8 @@ export default async function TaxPage({ params }: { params: Promise<{ locale: st
       title={d.tax_title}
       desc={d.tax_desc}
       services={offerings.map(o => o.name)}
-      faqs={faqs}
-      badgeText="EFIN Licensed"
+      faqs={d.tax_faqs}
+      badgeText={d.tax_badge}
       ctaText={d.services_cta}
       dictionary={d}
       locale={locale as Locale}
