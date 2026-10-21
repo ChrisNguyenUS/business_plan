@@ -1,6 +1,6 @@
 ---
 slug_vi: cong-ham-doc-than
-title_vi: "Công hàm độc thân 2026: giấy tờ để về Việt Nam kết hôn"
+title_vi: Công hàm độc thân 2026: giấy tờ để về Việt Nam kết hôn
 excerpt_vi: Công hàm độc thân cho công dân Mỹ và người có thẻ xanh về Việt Nam kết hôn. Từ 11/9/2026 chỉ cần Apostille, không phải gửi Đại sứ quán Việt Nam hợp pháp hóa.
 category: immigration
 checked_on: 2026-10-21
@@ -125,6 +125,8 @@ Theo cẩm nang của Sở Tư pháp Hưng Yên (áp dụng Nghị định 123/2
 - **Tuổi kết hôn.** Nam từ **đủ 20 tuổi**, nữ từ **đủ 18 tuổi** (Luật Hôn nhân và Gia đình 2014).
 - **Hôn nhân giả.** Luật cấm kết hôn giả tạo. UBND xã có thể phỏng vấn để xác nhận hai người tự nguyện và giao tiếp được với nhau.
 
+Cần người giúp lên danh sách giấy tờ và điền mẫu bằng tiếng Việt? Xem [dịch vụ Giấy tờ & thủ tục cá nhân](/vi/services/personal-documents) của Manna One Solution.
+
 ## Sau khi kết hôn: bảo lãnh vợ/chồng sang Mỹ
 
 Hôn nhân đăng ký hợp pháp ở Việt Nam nhìn chung được công nhận tại Mỹ, và bạn không cần báo cho Đại sứ quán Mỹ. Bước tiếp theo là nộp **Form I-130** cho USCIS. Công dân Mỹ bảo lãnh vợ/chồng không phải chờ số visa; người có thẻ xanh bảo lãnh theo diện **F2A**. Xem chi tiết trong bài [Bảo lãnh vợ chồng sang Mỹ](/vi/blog/bao-lanh-vo-chong-sang-my).
@@ -133,21 +135,22 @@ Giữ bản gốc Giấy chứng nhận kết hôn, ảnh cưới, tin nhắn v�
 
 ## Câu hỏi thường gặp
 
-**Công hàm độc thân làm ở Mỹ mất bao lâu?**
+### Công hàm độc thân làm ở Mỹ mất bao lâu?
+
 Phụ thuộc vào tốc độ của County Clerk và Secretary of State ở tiểu bang bạn. Bỏ bước gửi Đại sứ quán Việt Nam giúp rút ngắn đáng kể so với trước. Hãy hỏi thời gian xử lý của từng nơi trước khi đặt vé về Việt Nam.
 
-**Từ 11/9/2026 tôi còn phải gửi hồ sơ tới Đại sứ quán Việt Nam ở Washington hay Lãnh sự quán ở San Francisco, Houston không?**
+### Từ 11/9/2026 tôi còn phải gửi hồ sơ tới Đại sứ quán Việt Nam ở Washington hay Lãnh sự quán ở San Francisco, Houston không?
+
 Không, với giấy tờ công của Mỹ đã có Apostille. Điều 37 Nghị định 293/2026/NĐ-CP ghi cơ quan đại diện Việt Nam ở nước ngoài không hợp pháp hóa giấy tờ thuộc diện được miễn theo Công ước Apostille.
 
-**Người có thẻ xanh có ký bản tuyên thệ ở Đại sứ quán Mỹ tại Việt Nam được không?**
+### Người có thẻ xanh có ký bản tuyên thệ ở Đại sứ quán Mỹ tại Việt Nam được không?
+
 Hướng dẫn của Đại sứ quán Mỹ về kết hôn viết cho công dân Mỹ. Người có thẻ xanh nên làm giấy tại Mỹ (Cách 1).
 
-**Tôi có cần về Việt Nam để nộp hồ sơ không?**
+### Tôi có cần về Việt Nam để nộp hồ sơ không?
+
 Không bắt buộc. Người ở Việt Nam nộp được một mình, không cần giấy ủy quyền. Nhưng bạn phải có mặt khi nhận Giấy chứng nhận kết hôn.
 
-**Manna One Solution có làm thay thủ tục này không?**
-Chúng tôi giúp bạn lên danh sách giấy tờ, điền mẫu, đặt lịch, và giải thích từng bước bằng tiếng Việt. Xem [dịch vụ Giấy tờ & thủ tục cá nhân](/vi/services/personal-documents). County Clerk, Secretary of State, Đại sứ quán và UBND xã là nơi cấp giấy và quyết định hồ sơ; chúng tôi không làm thay các cơ quan này.
+### Manna One Solution có làm thay thủ tục này không?
 
----
-
-*Bài viết mang tính thông tin chung, cập nhật ngày 21/10/2026. Manna One Solution không phải văn phòng luật và không tư vấn pháp lý. Yêu cầu có thể khác nhau giữa các địa phương; hãy hỏi UBND xã nơi nộp hồ sơ trước khi chuẩn bị. Với hồ sơ phức tạp (ly hôn ở nhiều nước, giấy tờ mâu thuẫn, quốc tịch chưa rõ), hãy hỏi luật sư có giấy phép.*
+Chúng tôi giúp bạn lên danh sách giấy tờ, điền mẫu, đặt lịch, và giải thích từng bước bằng tiếng Việt, qua dịch vụ Giấy tờ & thủ tục cá nhân. County Clerk, Secretary of State, Đại sứ quán và UBND xã là nơi cấp giấy và quyết định hồ sơ; chúng tôi không làm thay các cơ quan này.
