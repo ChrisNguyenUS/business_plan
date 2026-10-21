@@ -83,7 +83,7 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
         aria-expanded={open}
         aria-controls="floating-contact-menu"
         aria-label={open ? labels.close : labels.menu}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:bg-teal-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:bg-teal-dark transition-[background-color,scale] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         {open ? <X className="h-6 w-6" aria-hidden="true" /> : <MessagesSquare className="h-6 w-6" aria-hidden="true" />}
       </button>

@@ -137,7 +137,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           justify-content: center;
           cursor: pointer;
           text-decoration: none;
-          transition: background 0.2s ease;
+          transition: background 0.2s ease, transform 160ms ease-out;
           flex-shrink: 0;
           letter-spacing: 0.03em;
         }
@@ -155,7 +155,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           justify-content: center;
           cursor: pointer;
           color: #555;
-          transition: background 0.2s ease, color 0.2s ease;
+          transition: background 0.2s ease, color 0.2s ease, transform 160ms ease-out;
         }
         .search-btn:hover {
           background: hsl(170, 30%, 96%);
@@ -175,7 +175,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           font-weight: 500;
           cursor: pointer;
           text-decoration: none;
-          transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+          transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
         }
         .btn-client-login:hover {
@@ -197,12 +197,19 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           font-weight: 600;
           cursor: pointer;
           text-decoration: none;
-          transition: background 0.2s ease, box-shadow 0.2s ease;
+          transition: background 0.2s ease, box-shadow 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
         }
         .btn-book-now:hover {
           background: hsl(174, 54%, 28%);
           box-shadow: 0 4px 12px hsla(174, 54%, 36%, 0.35);
+        }
+        /* Press feedback: the button visibly reacts to the tap/click. */
+        .lang-toggle:active,
+        .search-btn:active,
+        .btn-client-login:active,
+        .btn-book-now:active {
+          transform: scale(0.97);
         }
         /* Mobile nav-link style */
         .mobile-nav-link {
@@ -327,7 +334,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
             {/* Mobile Hamburger */}
             <button
-              className="lg:hidden"
+              className="lg:hidden transition-transform duration-150 ease-out active:scale-[0.97]"
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#333' }}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
