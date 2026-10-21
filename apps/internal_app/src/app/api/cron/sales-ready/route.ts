@@ -41,16 +41,24 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'not configured' }, { status: 500 })
   }
 
-  const ready = await supabase
-    .from('n400_leads_view')
-    .select('user_id, full_name, email, effective_score, last_activity_date')
-    .eq('role', 'client')
-    .eq('effective_status', 'sales_ready')
-  if (ready.error) {
-    console.error('[cron/sales-ready] read failed', ready.error.message)
+  // Leads an admin hid (migration 017) are never claimed or emailed.
+  const [hidden, ready] = await Promise.all([
+    supabase.from('hidden_leads').select('user_id'),
+    supabase
+      .from('n400_leads_view')
+      .select('user_id, full_name, email, effective_score, last_activity_date')
+      .eq('role', 'client')
+      .eq('effective_status', 'sales_ready'),
+  ])
+  const readError = hidden.error ?? ready.error
+  if (readError) {
+    console.error('[cron/sales-ready] read failed', readError.message)
     return Response.json({ error: 'read failed' }, { status: 500 })
   }
-  const readyLeads = (ready.data ?? []) as SalesReadyLead[]
+  const hiddenIds = new Set((hidden.data ?? []).map((r) => r.user_id as string))
+  const readyLeads = ((ready.data ?? []) as SalesReadyLead[]).filter(
+    (l) => !hiddenIds.has(l.user_id),
+  )
   const readyIds = readyLeads.map((l) => l.user_id)
 
   // Claim, then send: stamping first (only rows still unstamped) means an

@@ -31,6 +31,7 @@ interface Op {
 
 /** Minimal chainable fake: records every call, resolves with a canned result. */
 function fakeClient(results: {
+  hidden?: { data: unknown[] | null; error: { message: string } | null }
   ready?: { data: unknown[] | null; error: { message: string } | null }
   claim?: { data: unknown[] | null; error: { message: string } | null }
   unclaim?: { error: { message: string } | null }
@@ -60,7 +61,8 @@ function fakeClient(results: {
         const isNull = (op.payload as { sales_ready_notified_at?: unknown } | undefined)
           ?.sales_ready_notified_at === null
         let r: unknown
-        if (table === 'n400_leads_view') r = results.ready ?? { data: [], error: null }
+        if (table === 'hidden_leads') r = results.hidden ?? { data: [], error: null }
+        else if (table === 'n400_leads_view') r = results.ready ?? { data: [], error: null }
         else if (op.action === 'update' && !isNull) r = results.claim ?? { data: [], error: null }
         else if (op.filters.some(([n, c]) => n === 'in' && c === 'user_id'))
           r = results.unclaim ?? { error: null }
@@ -149,6 +151,34 @@ describe('GET /api/cron/sales-ready', () => {
       expect(claim.filters).toEqual(
         expect.arrayContaining([['in', 'user_id', ['a', 'b']], ['is', 'sales_ready_notified_at', null]]),
       )
+    })
+
+    it('never claims or emails a lead an admin hid', async () => {
+      const { client, ops } = fakeClient({
+        hidden: { data: [{ user_id: 'b' }], error: null },
+        ready: { data: [L('a'), L('b')], error: null },
+        claim: { data: [{ user_id: 'a' }], error: null },
+      })
+      createAdminClient.mockReturnValue(client)
+      const send = sendWithResend.mockResolvedValue({ ok: true, value: { id: 'x' } })
+      expect((await call('Bearer s3cret')).status).toBe(200)
+      const claim = ops.find((o) => o.action === 'update')!
+      expect(claim.filters).toEqual(expect.arrayContaining([['in', 'user_id', ['a']]]))
+      expect(send.mock.calls[0][0].html).not.toContain('Lead b')
+    })
+
+    it('500s without claiming when the hidden-leads read fails', async () => {
+      const { client, ops } = fakeClient({
+        hidden: { data: null, error: { message: 'nope' } },
+        ready: { data: [L('a')], error: null },
+      })
+      createAdminClient.mockReturnValue(client)
+      const send = sendWithResend.mockResolvedValue({ ok: true, value: { id: null } })
+      const res = await call('Bearer s3cret')
+      expect(res.status).toBe(500)
+      expect(await res.json()).toEqual({ error: 'read failed' })
+      expect(ops.some((o) => o.action === 'update')).toBe(false)
+      expect(send).not.toHaveBeenCalled()
     })
 
     it('un-claims and 500s when the email fails', async () => {
