@@ -16,3 +16,15 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
   const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   return data?.role === 'admin'
 }
+
+/** The signed-in admin's id, or null for staff / signed-out. Server-only. */
+export async function getCurrentAdminId(): Promise<string | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  return data?.role === 'admin' ? user.id : null
+}

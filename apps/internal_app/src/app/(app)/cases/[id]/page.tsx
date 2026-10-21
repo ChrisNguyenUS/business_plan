@@ -5,6 +5,11 @@ import { CASE_STATUS_LABELS, type CaseStatus } from '@/types'
 import StatusDropdown from '@/components/cases/StatusDropdown'
 import DocumentChecklist from '@/components/cases/DocumentChecklist'
 import ReceiptNumberForm from '@/components/cases/ReceiptNumberForm'
+import DeleteCaseButton from '@/components/cases/DeleteCaseButton'
+import RequestDeletionButton from '@/components/deletion/RequestDeletionButton'
+import PendingRequestBanner from '@/components/deletion/PendingRequestBanner'
+import { getPendingRequestFor } from '@/actions/deletion-requests'
+import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +21,10 @@ export default async function CaseDetailPage({
   const { id } = await params
   const caseData = await getCase(id).catch(() => null)
   if (!caseData) notFound()
+  const [isAdmin, pendingRequest] = await Promise.all([
+    isCurrentUserAdmin(),
+    getPendingRequestFor('case', id),
+  ])
 
   const c = caseData as any
   const primaryClient = c.primary_client
@@ -36,6 +45,14 @@ export default async function CaseDetailPage({
         <span className="text-on-surface-variant">MOS-{id.split('-')[0].toUpperCase()}</span>
       </nav>
 
+      {pendingRequest && (
+        <PendingRequestBanner
+          entityType="case"
+          requesterName={pendingRequest.requesterName}
+          createdAt={pendingRequest.createdAt}
+        />
+      )}
+
       {/* Page Title & Actions */}
       <div className="flex items-end justify-between mb-8">
         <div>
@@ -45,9 +62,11 @@ export default async function CaseDetailPage({
         </div>
         <div className="flex items-center space-x-3">
           <StatusDropdown caseId={id} currentStatus={caseStatus} />
-          <button className="px-4 py-2 text-tertiary text-sm font-semibold hover:text-error transition-colors">
-            Archive Case
-          </button>
+          {isAdmin ? (
+            <DeleteCaseButton id={id} />
+          ) : (
+            <RequestDeletionButton entityType="case" entityId={id} alreadyPending={!!pendingRequest} />
+          )}
         </div>
       </div>
 

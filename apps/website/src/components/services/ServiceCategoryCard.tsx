@@ -24,7 +24,7 @@ export default function ServiceCategoryCard({
 }: ServiceCategoryCardProps) {
   const Heading = headingLevel;
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border shadow-sm hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border shadow-sm hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 transition-[translate,box-shadow,border-color] duration-200 ease-out focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
       <div className="relative aspect-[16/9] bg-[#FAF6F1]">
         <Image
           src={c.img}

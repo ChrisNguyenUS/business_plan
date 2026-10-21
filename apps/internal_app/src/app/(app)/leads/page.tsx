@@ -3,6 +3,7 @@ import { getLeads } from '@/actions/leads'
 import { LEADS_PAGE_SIZE } from '@/lib/n400/leads-shape'
 import LeadStatusBadge from '@/components/leads/LeadStatusBadge'
 import type { LeadStatus } from '@mannaos/n400-growth'
+import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,22 +48,31 @@ function formatDate(value: string | null): string {
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; page?: string }>
+  searchParams: Promise<{ q?: string; status?: string; page?: string; hidden?: string }>
 }) {
   const params = await searchParams
   const requestedPage = Number(params.page ?? '1') || 1
+  // Only admins can hide leads, so only they get the Hidden view.
+  const isAdmin = await isCurrentUserAdmin()
+  const showHidden = isAdmin && params.hidden === '1'
   const { leads, total, page, convertedClientIds } = await getLeads({
     q: params.q,
     status: params.status,
     page: requestedPage,
+    hidden: showHidden,
   })
 
   const totalPages = Math.max(1, Math.ceil(total / LEADS_PAGE_SIZE))
-  const hasFilters = Boolean(params.q || params.status)
+  const hasFilters = Boolean(params.q || params.status || showHidden)
 
   const linkFor = (overrides: Record<string, string | undefined>) => {
     const next = new URLSearchParams()
-    const merged = { q: params.q, status: params.status, ...overrides }
+    const merged = {
+      q: params.q,
+      status: params.status,
+      hidden: showHidden ? '1' : undefined,
+      ...overrides,
+    }
     for (const [key, value] of Object.entries(merged)) {
       if (value) next.set(key, value)
     }
@@ -76,13 +86,15 @@ export default async function LeadsPage({
       <div>
         <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Leads</h2>
         <p className="text-sm text-slate-400 mt-0.5">
-          {total} N400Ready {total === 1 ? 'lead' : 'leads'}, highest score first
+          {total} {showHidden ? 'hidden' : 'N400Ready'} {total === 1 ? 'lead' : 'leads'}, highest
+          score first
         </p>
       </div>
 
       {/* Search */}
       <form method="GET" className="relative max-w-lg">
         {params.status && <input type="hidden" name="status" value={params.status} />}
+        {showHidden && <input type="hidden" name="hidden" value="1" />}
         <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">
           search
         </span>
@@ -122,6 +134,20 @@ export default async function LeadsPage({
             </Link>
           )
         })}
+        {isAdmin && (
+          <Link
+            href={linkFor({ hidden: showHidden ? undefined : '1', page: undefined })}
+            className={`ml-auto flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              showHidden
+                ? 'text-white'
+                : 'text-slate-600 bg-white border border-[#bcc9ca]/40 hover:bg-[#f1f4f9]'
+            }`}
+            style={showHidden ? { backgroundColor: '#006970' } : undefined}
+          >
+            <span className="material-symbols-outlined text-[14px]">visibility_off</span>
+            Hidden
+          </Link>
+        )}
       </div>
 
       {/* List */}

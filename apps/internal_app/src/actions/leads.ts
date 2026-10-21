@@ -1,6 +1,11 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentAdminId } from '@/lib/auth/is-admin'
+import { hideLeadRow } from '@/lib/deletion/perform'
+import { closePendingFor, deletionDeps } from '@/lib/deletion/flow'
+import type { Result } from '@/lib/jobs/types'
 import {
   LEADS_LIST_COLUMNS,
   LEADS_PAGE_SIZE,
@@ -25,6 +30,8 @@ export async function getLeads(params: {
   q?: string
   status?: string
   page?: number
+  /** true lists only hidden leads; otherwise hidden leads are left out. */
+  hidden?: boolean
 }): Promise<{
   leads: LeadRow[]
   total: number
@@ -34,6 +41,7 @@ export async function getLeads(params: {
 }> {
   const page = Math.max(1, params.page ?? 1)
   const supabase = await createClient()
+  const hiddenIds = await getHiddenLeadIds()
 
   let query = supabase
     .from('n400_leads_view')
@@ -43,6 +51,8 @@ export async function getLeads(params: {
     // Secondary key so paging is stable when scores tie.
     .order('user_id', { ascending: true })
 
+  if (params.hidden) query = query.in('user_id', hiddenIds)
+  else if (hiddenIds.length > 0) query = query.not('user_id', 'in', `(${hiddenIds.join(',')})`)
   if (params.status) query = query.eq('effective_status', params.status)
   if (params.q) {
     const term = params.q.replace(/[%,()]/g, '')
@@ -79,6 +89,53 @@ export async function getLeads(params: {
     pageSize: LEADS_PAGE_SIZE,
     convertedClientIds,
   }
+}
+
+/** Ids an admin hid from the Leads list (hidden_leads, migration 017). */
+async function getHiddenLeadIds(): Promise<string[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('hidden_leads').select('user_id')
+  if (error) throw error
+  return (data ?? []).map((r) => r.user_id as string)
+}
+
+/** When the lead was hidden from the Leads list, or null when it is not. */
+export async function getLeadHiddenAt(userId: string): Promise<string | null> {
+  if (!isUuid(userId)) return null
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('hidden_leads')
+    .select('hidden_at')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (error) throw error
+  return (data?.hidden_at as string | undefined) ?? null
+}
+
+/**
+ * Admin only: hide (or unhide) a lead from the Leads list and the Sales-Ready
+ * email. Never deletes anything — a lead is a live N400Ready account. RLS
+ * enforces admin; the check here only gives staff a readable message.
+ */
+export async function setLeadHidden(userId: string, hidden: boolean): Promise<Result<null>> {
+  if (!isUuid(userId)) return { ok: false, error: 'Unknown lead.' }
+  const adminId = await getCurrentAdminId()
+  if (!adminId) return { ok: false, error: 'Only an admin can hide leads.' }
+
+  const supabase = await createClient()
+  if (hidden) {
+    const result = await hideLeadRow(supabase, userId)
+    if (!result.ok) return result
+    await closePendingFor(deletionDeps(supabase), 'lead', userId, adminId)
+    revalidatePath('/deletion-requests')
+  } else {
+    const { error } = await supabase.from('hidden_leads').delete().eq('user_id', userId)
+    if (error) return { ok: false, error: error.message }
+  }
+
+  revalidatePath('/leads')
+  revalidatePath(`/leads/${userId}`)
+  return { ok: true, value: null }
 }
 
 /** One lead, or null when the id does not exist or RLS hides it. */

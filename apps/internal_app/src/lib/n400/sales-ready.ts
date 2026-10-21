@@ -1,6 +1,8 @@
 // Daily Sales-Ready digest (spec 2026-10-18-g4-followups §C). Pure: the cron
 // route loads rows and sends mail; this decides who and what.
 
+import { escapeHtml } from '@/lib/html'
+
 export interface SalesReadyLead {
   user_id: string
   full_name: string | null
@@ -16,15 +18,6 @@ export function selectClaimedLeads(
 ): SalesReadyLead[] {
   const claimed = new Set(claimedIds)
   return salesReady.filter((l) => claimed.has(l.user_id))
-}
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 export function buildSalesReadyEmail(

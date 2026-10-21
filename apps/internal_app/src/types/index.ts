@@ -22,34 +22,39 @@ export type FormType =
   | 'i129'
   | 'i589'
 
-export type CaseStatus =
-  | 'drafting'
-  | 'awaiting_docs'
-  | 'under_review'
-  | 'rfe_issued'
-  | 'rfe_submitted'
-  | 'interview_scheduled'
-  | 'approved'
-  | 'denied'
+// Must match the cases_status_check constraint (migration 001); the website
+// portal reads the same values. __tests__/lib/case-status.test.ts pins this.
+export const CASE_STATUSES = [
+  'documents_pending',
+  'ready_to_file',
+  'submitted',
+  'receipt_received',
+  'in_progress',
+  'rfe_issued',
+  'approved',
+  'denied',
+] as const
+
+export type CaseStatus = (typeof CASE_STATUSES)[number]
 
 export const CASE_STATUS_COLORS: Record<CaseStatus, string> = {
-  drafting: 'bg-primary/10 text-primary',
-  awaiting_docs: 'bg-amber-100 text-amber-700',
-  under_review: 'bg-blue-100 text-blue-700',
+  documents_pending: 'bg-amber-100 text-amber-700',
+  ready_to_file: 'bg-primary/10 text-primary',
+  submitted: 'bg-blue-100 text-blue-700',
+  receipt_received: 'bg-sky-100 text-sky-700',
+  in_progress: 'bg-slate-200 text-slate-700',
   rfe_issued: 'bg-error-container/50 text-error',
-  rfe_submitted: 'bg-green-100 text-green-700',
-  interview_scheduled: 'bg-slate-200 text-slate-700',
   approved: 'bg-green-600 text-white',
   denied: 'bg-red-600 text-white',
 }
 
 export const CASE_STATUS_LABELS: Record<CaseStatus, string> = {
-  drafting: 'DRAFTING',
-  awaiting_docs: 'AWAITING DOCS',
-  under_review: 'UNDER REVIEW',
-  rfe_issued: 'ACTION REQ.',
-  rfe_submitted: 'RFE SUBMITTED',
-  interview_scheduled: 'INTERVIEW SCHED.',
+  documents_pending: 'DOCUMENTS PENDING',
+  ready_to_file: 'READY TO FILE',
+  submitted: 'SUBMITTED',
+  receipt_received: 'RECEIPT RECEIVED',
+  in_progress: 'IN PROGRESS',
+  rfe_issued: 'RFE ISSUED',
   approved: 'APPROVED',
   denied: 'DENIED',
 }

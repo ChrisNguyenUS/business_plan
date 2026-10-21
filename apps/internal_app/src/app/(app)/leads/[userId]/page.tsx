@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import {
   getLead,
   getLeadConversion,
+  getLeadHiddenAt,
   getLeadProfiling,
   getLeadTimeline,
   getLeadWeakSection,
@@ -12,6 +13,11 @@ import LeadSummaryPanel from '@/components/leads/LeadSummaryPanel'
 import LeadKpis from '@/components/leads/LeadKpis'
 import LeadActivityChart from '@/components/leads/LeadActivityChart'
 import LeadProfilingCard from '@/components/leads/LeadProfilingCard'
+import HideLeadButton from '@/components/leads/HideLeadButton'
+import RequestDeletionButton from '@/components/deletion/RequestDeletionButton'
+import PendingRequestBanner from '@/components/deletion/PendingRequestBanner'
+import { getPendingRequestFor } from '@/actions/deletion-requests'
+import { isCurrentUserAdmin } from '@/lib/auth/is-admin'
 import { groupTimeline, summarizeActivity } from '@/lib/n400/activity'
 import { answersFromLead, describeProfiling, questionsOf } from '@/lib/n400/profiling-status'
 
@@ -28,11 +34,14 @@ export default async function LeadDetailPage({
   // Missing row and RLS-filtered row are the same thing from here.
   if (!lead) notFound()
 
-  const [timeline, weakSection, profiling, clientId] = await Promise.all([
+  const [timeline, weakSection, profiling, clientId, hiddenAt, isAdmin, pendingRequest] = await Promise.all([
     getLeadTimeline(userId),
     getLeadWeakSection(userId),
     getLeadProfiling(userId),
     getLeadConversion(userId),
+    getLeadHiddenAt(userId),
+    isCurrentUserAdmin(),
+    getPendingRequestFor('lead', userId),
   ])
 
   const summary = summarizeActivity(timeline.events)
@@ -42,6 +51,27 @@ export default async function LeadDetailPage({
 
   return (
     <div className="space-y-6">
+      {hiddenAt && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-amber-50 text-sm text-amber-800">
+          <span className="material-symbols-outlined text-[18px]">visibility_off</span>
+          <span>
+            Hidden from the Leads list and the Sales-Ready email since{' '}
+            {new Date(hiddenAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+            .
+          </span>
+        </div>
+      )}
+      {pendingRequest && (
+        <PendingRequestBanner
+          entityType="lead"
+          requesterName={pendingRequest.requesterName}
+          createdAt={pendingRequest.createdAt}
+        />
+      )}
       <div className="flex items-end justify-between gap-4">
         <div>
           <Link
@@ -56,6 +86,18 @@ export default async function LeadDetailPage({
           </h2>
           <p className="text-sm text-slate-400 mt-0.5">{lead.email ?? '—'}</p>
         </div>
+        <div className="flex items-start gap-2 shrink-0">
+        {isAdmin ? (
+          <HideLeadButton userId={lead.user_id} hidden={hiddenAt !== null} />
+        ) : (
+          !hiddenAt && (
+            <RequestDeletionButton
+              entityType="lead"
+              entityId={lead.user_id}
+              alreadyPending={!!pendingRequest}
+            />
+          )
+        )}
         {clientId ? (
           <Link
             href={`/clients/${clientId}`}
@@ -74,6 +116,7 @@ export default async function LeadDetailPage({
             Convert to Client
           </Link>
         )}
+        </div>
       </div>
 
       <LeadKpis summary={summary} />

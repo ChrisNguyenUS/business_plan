@@ -1,9 +1,21 @@
 import { getCases } from '@/actions/cases'
 import Link from 'next/link'
-import { CASE_STATUS_COLORS, CASE_STATUS_LABELS, type CaseStatus } from '@/types'
+import { CASE_STATUSES, CASE_STATUS_COLORS, CASE_STATUS_LABELS, type CaseStatus } from '@/types'
 import { timeAgo } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+
+// Filter chip text; Record<CaseStatus, …> fails to compile if a status is missing.
+const FILTER_LABELS: Record<CaseStatus, string> = {
+  documents_pending: 'Documents Pending',
+  ready_to_file: 'Ready to File',
+  submitted: 'Submitted',
+  receipt_received: 'Receipt Received',
+  in_progress: 'In Progress',
+  rfe_issued: 'RFE Issued',
+  approved: 'Approved',
+  denied: 'Denied',
+}
 
 export default async function CasesPage({
   searchParams,
@@ -17,14 +29,7 @@ export default async function CasesPage({
 
   const statusOptions: Array<{ value: CaseStatus | ''; label: string }> = [
     { value: '', label: 'All Cases' },
-    { value: 'drafting', label: 'Drafting' },
-    { value: 'awaiting_docs', label: 'Awaiting Docs' },
-    { value: 'under_review', label: 'Under Review' },
-    { value: 'rfe_issued', label: 'Action Req. (RFE)' },
-    { value: 'rfe_submitted', label: 'RFE Submitted' },
-    { value: 'interview_scheduled', label: 'Interview Sched.' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'denied', label: 'Denied' },
+    ...CASE_STATUSES.map((value) => ({ value, label: FILTER_LABELS[value] })),
   ]
 
   return (
@@ -96,7 +101,7 @@ export default async function CasesPage({
           <table className="w-full text-left">
             <thead className="bg-[#f7f9ff]/60 border-b border-[#ebeef3]">
               <tr>
-                {['Client', 'Case Type / Forms', 'Status', 'Receipt #', 'Created', ''].map((h) => (
+                {['Client', 'Case Type / Forms', 'Status', 'Receipt #', 'Created'].map((h) => (
                   <th
                     key={h}
                     className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
@@ -120,7 +125,7 @@ export default async function CasesPage({
                     className="border-t border-[#f1f4f9] hover:bg-[#f7f9ff]/40 transition-colors group"
                   >
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/cases/${c.id}`} className="flex items-center gap-3 group/open">
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
                           style={{ backgroundColor: '#3AAFB9' }}
@@ -128,7 +133,7 @@ export default async function CasesPage({
                           {initials}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">
+                          <p className="text-sm font-semibold text-slate-800 group-hover/open:text-[#006970] group-hover/open:underline">
                             {client
                               ? `${client.last_name}, ${client.first_name}`
                               : 'Unknown'}
@@ -137,7 +142,7 @@ export default async function CasesPage({
                             {client?.a_number ? `A# ${client.a_number}` : `#${c.id.slice(0, 8).toUpperCase()}`}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-slate-600 capitalize">{c.case_type}</p>
@@ -179,16 +184,6 @@ export default async function CasesPage({
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-xs text-slate-500">{timeAgo(c.created_at)}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/cases/${c.id}`}
-                        className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs font-semibold transition-all"
-                        style={{ color: '#3AAFB9' }}
-                      >
-                        Open
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                      </Link>
                     </td>
                   </tr>
                 )

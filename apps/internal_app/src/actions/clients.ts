@@ -2,7 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { isSourceLeadDuplicate, isUuid } from '@/lib/n400/lead-prefill'
+import { getCurrentAdminId } from '@/lib/auth/is-admin'
+import { deleteClientRow } from '@/lib/deletion/perform'
+import { closePendingFor, deletionDeps } from '@/lib/deletion/flow'
+import type { Result } from '@/lib/jobs/types'
 
 export async function getClients(query?: string) {
   const supabase = await createClient()
@@ -146,4 +151,23 @@ export async function updateClientServices(id: string, services: string[]) {
     .eq('id', id)
   if (error) throw error
   revalidatePath(`/clients/${id}`)
+}
+
+/**
+ * Admin only: permanently delete a client that has no cases and no jobs, then
+ * go back to the list. Same code as approving a staff request
+ * (lib/deletion/perform.ts); RLS "clients admin delete" (009) is the real gate.
+ */
+export async function deleteClient(id: string): Promise<Result<never>> {
+  if (!isUuid(id)) return { ok: false, error: 'Unknown client.' }
+  const adminId = await getCurrentAdminId()
+  if (!adminId) return { ok: false, error: 'Only an admin can delete clients.' }
+
+  const supabase = await createClient()
+  const result = await deleteClientRow(supabase, id)
+  if (!result.ok) return result
+  for (const path of result.value) revalidatePath(path)
+  await closePendingFor(deletionDeps(supabase), 'client', id, adminId)
+  revalidatePath('/deletion-requests')
+  redirect('/clients')
 }

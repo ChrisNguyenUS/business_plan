@@ -171,7 +171,7 @@ export default function ContactFormClient({ dictionary, locale }: ContactFormCli
   };
 
   const inputCls = (field: keyof ContactFields) =>
-    `block w-full rounded-xl border bg-white px-4 text-[15px] text-charcoal placeholder:text-muted-foreground/80 transition-colors focus:outline-none focus:ring-2 ${
+    `block w-full rounded-xl border bg-white px-4 text-base md:text-[15px] text-charcoal placeholder:text-muted-foreground/80 transition-colors focus:outline-none focus:ring-2 ${
       errors[field]
         ? "border-red-400 focus:border-red-500 focus:ring-red-200"
         : "border-border focus:border-primary focus:ring-primary/25"

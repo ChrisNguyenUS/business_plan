@@ -61,39 +61,36 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           transition: color 0.2s ease;
         }
         .nav-link:focus-visible {
-          outline: 2px solid hsl(174, 54%, 36%);
+          outline: 2px solid hsl(var(--primary));
           outline-offset: 4px;
           border-radius: 2px;
         }
+        /* Underline grows with transform (GPU), not width (layout). */
         .nav-link::after {
           content: '';
           position: absolute;
           bottom: -2px;
           left: 0;
-          width: 0;
-          height: 2px;
-          background-color: hsl(174, 54%, 36%);
-          border-radius: 1px;
-          transition: width 0.3s ease-in-out;
-        }
-        .nav-link:hover {
-          color: hsl(174, 54%, 36%);
-        }
-        .nav-link:hover::after {
           width: 100%;
+          height: 2px;
+          background-color: hsl(var(--primary));
+          border-radius: 1px;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 200ms var(--motion-easing);
         }
         .nav-link.active {
-          color: hsl(174, 54%, 36%);
+          color: hsl(var(--primary));
           font-weight: 600;
         }
         .nav-link.active::after {
-          width: 100%;
+          transform: scaleX(1);
         }
+        /* Scales out of its trigger; also opens on keyboard focus. */
         .services-dropdown {
           position: absolute;
           top: calc(100% + 12px);
           left: 50%;
-          transform: translateX(-50%);
           min-width: 220px;
           background: white;
           border-radius: 12px;
@@ -102,14 +99,24 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           padding: 8px;
           opacity: 0;
           visibility: hidden;
-          transform: translateX(-50%) translateY(-4px);
-          transition: all 0.2s ease;
+          transform: translateX(-50%) translateY(-4px) scale(0.97);
+          transform-origin: top center;
+          transition: opacity 150ms ease-out, transform 150ms var(--motion-easing), visibility 150ms;
           z-index: 100;
         }
-        .services-parent:hover .services-dropdown {
+        /* Bridges the 12px gap so the pointer can travel from link to menu. */
+        .services-dropdown::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: -12px;
+          height: 12px;
+        }
+        .services-parent:focus-within .services-dropdown {
           opacity: 1;
           visibility: visible;
-          transform: translateX(-50%) translateY(0);
+          transform: translateX(-50%) translateY(0) scale(1);
         }
         .dropdown-link {
           display: block;
@@ -120,15 +127,15 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           transition: background 0.15s ease, color 0.15s ease;
           text-decoration: none;
         }
-        .dropdown-link:hover {
-          background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
+        .dropdown-link:focus-visible {
+          outline: 2px solid hsl(var(--primary));
+          outline-offset: -2px;
         }
         .lang-toggle {
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background: hsl(174, 54%, 36%);
+          background: hsl(var(--primary));
           color: white;
           font-size: 0.75rem;
           font-weight: 700;
@@ -137,12 +144,9 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           justify-content: center;
           cursor: pointer;
           text-decoration: none;
-          transition: background 0.2s ease;
+          transition: background 0.2s ease, transform 160ms ease-out;
           flex-shrink: 0;
           letter-spacing: 0.03em;
-        }
-        .lang-toggle:hover {
-          background: hsl(174, 54%, 28%);
         }
         .search-btn {
           width: 36px;
@@ -155,11 +159,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           justify-content: center;
           cursor: pointer;
           color: #555;
-          transition: background 0.2s ease, color 0.2s ease;
-        }
-        .search-btn:hover {
-          background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
+          transition: background 0.2s ease, color 0.2s ease, transform 160ms ease-out;
         }
         .btn-client-login {
           display: inline-flex;
@@ -175,13 +175,8 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           font-weight: 500;
           cursor: pointer;
           text-decoration: none;
-          transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+          transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
-        }
-        .btn-client-login:hover {
-          border-color: hsl(174, 54%, 36%);
-          color: hsl(174, 54%, 36%);
-          background: hsl(170, 30%, 96%);
         }
         .btn-book-now {
           display: inline-flex;
@@ -191,18 +186,21 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           height: 38px;
           border-radius: 999px;
           border: none;
-          background: hsl(174, 54%, 36%);
+          background: hsl(var(--primary));
           color: white;
           font-size: 0.875rem;
           font-weight: 600;
           cursor: pointer;
           text-decoration: none;
-          transition: background 0.2s ease, box-shadow 0.2s ease;
+          transition: background 0.2s ease, box-shadow 0.2s ease, transform 160ms ease-out;
           white-space: nowrap;
         }
-        .btn-book-now:hover {
-          background: hsl(174, 54%, 28%);
-          box-shadow: 0 4px 12px hsla(174, 54%, 36%, 0.35);
+        /* Press feedback: the button visibly reacts to the tap/click. */
+        .lang-toggle:active,
+        .search-btn:active,
+        .btn-client-login:active,
+        .btn-book-now:active {
+          transform: scale(0.97);
         }
         /* Mobile nav-link style */
         .mobile-nav-link {
@@ -215,10 +213,59 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           text-decoration: none;
           transition: background 0.15s ease, color 0.15s ease;
         }
-        .mobile-nav-link:hover,
         .mobile-nav-link.active {
           background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
+          color: hsl(var(--primary));
+        }
+        /* Mobile menu slides in when opened; @starting-style is the "from" state. */
+        .mobile-menu {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 200ms ease-out, transform 200ms var(--motion-easing);
+        }
+        @starting-style {
+          .mobile-menu {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+        }
+        /* Hover only on real pointers: on touch, a tap would leave hover stuck. */
+        @media (hover: hover) and (pointer: fine) {
+          .nav-link:hover {
+            color: hsl(var(--primary));
+          }
+          .nav-link:hover::after {
+            transform: scaleX(1);
+          }
+          .services-parent:hover .services-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+          .dropdown-link:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(var(--primary));
+          }
+          .lang-toggle:hover {
+            background: hsl(174, 54%, 28%);
+          }
+          .search-btn:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(var(--primary));
+          }
+          .btn-client-login:hover {
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary));
+            background: hsl(170, 30%, 96%);
+          }
+          .btn-book-now:hover {
+            background: hsl(174, 54%, 28%);
+            box-shadow: 0 4px 12px hsl(var(--primary) / 0.35);
+          }
+          .mobile-nav-link:hover {
+            background: hsl(170, 30%, 96%);
+            color: hsl(var(--primary));
+          }
         }
       `}</style>
 
@@ -237,7 +284,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                 style={{ borderRadius: '8px' }}
               />
               <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1a1a' }}>
-                Manna One <span style={{ color: 'hsl(174, 54%, 36%)' }}>Solution</span>
+                Manna One <span style={{ color: 'hsl(var(--primary))' }}>Solution</span>
               </span>
             </Link>
 
@@ -298,7 +345,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
                   {/* Admin - only for admins */}
                   {isAdmin && (
-                    <Link href={`/${locale}/admin`} className="btn-client-login" style={{ borderColor: 'hsl(174, 54%, 36%)', color: 'hsl(174, 54%, 36%)' }}>
+                    <Link href={`/${locale}/admin`} className="btn-client-login" style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
                       <Shield style={{ width: '15px', height: '15px' }} />
                       Admin
                     </Link>
@@ -327,7 +374,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
             {/* Mobile Hamburger */}
             <button
-              className="lg:hidden"
+              className="lg:hidden transition-transform duration-150 ease-out active:scale-[0.97]"
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#333' }}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
@@ -339,7 +386,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: 'white' }}>
+          <div className="mobile-menu" style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: 'white' }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '12px 24px 20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {navLinks.map((link) => (
@@ -403,7 +450,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                     )}
                   </div>
                   {isAdmin && user && (
-                    <Link href={`/${locale}/admin`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center', borderColor: 'hsl(174, 54%, 36%)', color: 'hsl(174, 54%, 36%)' }}>
+                    <Link href={`/${locale}/admin`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center', borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
                       <Shield style={{ width: '15px', height: '15px' }} />
                       Admin Panel
                     </Link>

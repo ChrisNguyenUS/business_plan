@@ -116,7 +116,7 @@ export default async function ClientsPage({
                     className="hover:bg-[#f7f9ff]/60 transition-colors group"
                   >
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/clients/${client.id}`} className="flex items-center gap-3 group/open">
                         <div
                           className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
                           style={{ backgroundColor: '#3AAFB9' }}
@@ -124,7 +124,7 @@ export default async function ClientsPage({
                           {initials}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">
+                          <p className="text-sm font-semibold text-slate-800 group-hover/open:text-[#006970] group-hover/open:underline">
                             {client.last_name}, {client.first_name}{' '}
                             {client.middle_name ?? ''}
                           </p>
@@ -137,7 +137,7 @@ export default async function ClientsPage({
                             })}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-slate-600">{client.phone ?? '—'}</p>
@@ -165,14 +165,7 @@ export default async function ClientsPage({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          href={`/clients/${client.id}`}
-                          className="flex items-center gap-1 text-xs font-semibold text-[#006970] hover:underline"
-                        >
-                          <span className="material-symbols-outlined text-sm">visibility</span>
-                          View
-                        </Link>
+                      <div className="flex items-center gap-2">
                         <Link
                           href={`/cases/new?clientId=${client.id}`}
                           className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:underline"
