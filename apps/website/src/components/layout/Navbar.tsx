@@ -61,7 +61,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           transition: color 0.2s ease;
         }
         .nav-link:focus-visible {
-          outline: 2px solid hsl(174, 54%, 36%);
+          outline: 2px solid hsl(var(--primary));
           outline-offset: 4px;
           border-radius: 2px;
         }
@@ -73,14 +73,14 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           left: 0;
           width: 100%;
           height: 2px;
-          background-color: hsl(174, 54%, 36%);
+          background-color: hsl(var(--primary));
           border-radius: 1px;
           transform: scaleX(0);
           transform-origin: left;
           transition: transform 200ms var(--motion-easing);
         }
         .nav-link.active {
-          color: hsl(174, 54%, 36%);
+          color: hsl(var(--primary));
           font-weight: 600;
         }
         .nav-link.active::after {
@@ -128,14 +128,14 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           text-decoration: none;
         }
         .dropdown-link:focus-visible {
-          outline: 2px solid hsl(174, 54%, 36%);
+          outline: 2px solid hsl(var(--primary));
           outline-offset: -2px;
         }
         .lang-toggle {
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background: hsl(174, 54%, 36%);
+          background: hsl(var(--primary));
           color: white;
           font-size: 0.75rem;
           font-weight: 700;
@@ -186,7 +186,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           height: 38px;
           border-radius: 999px;
           border: none;
-          background: hsl(174, 54%, 36%);
+          background: hsl(var(--primary));
           color: white;
           font-size: 0.875rem;
           font-weight: 600;
@@ -215,7 +215,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
         }
         .mobile-nav-link.active {
           background: hsl(170, 30%, 96%);
-          color: hsl(174, 54%, 36%);
+          color: hsl(var(--primary));
         }
         /* Mobile menu slides in when opened; @starting-style is the "from" state. */
         .mobile-menu {
@@ -232,7 +232,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
         /* Hover only on real pointers: on touch, a tap would leave hover stuck. */
         @media (hover: hover) and (pointer: fine) {
           .nav-link:hover {
-            color: hsl(174, 54%, 36%);
+            color: hsl(var(--primary));
           }
           .nav-link:hover::after {
             transform: scaleX(1);
@@ -244,27 +244,27 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           }
           .dropdown-link:hover {
             background: hsl(170, 30%, 96%);
-            color: hsl(174, 54%, 36%);
+            color: hsl(var(--primary));
           }
           .lang-toggle:hover {
             background: hsl(174, 54%, 28%);
           }
           .search-btn:hover {
             background: hsl(170, 30%, 96%);
-            color: hsl(174, 54%, 36%);
+            color: hsl(var(--primary));
           }
           .btn-client-login:hover {
-            border-color: hsl(174, 54%, 36%);
-            color: hsl(174, 54%, 36%);
+            border-color: hsl(var(--primary));
+            color: hsl(var(--primary));
             background: hsl(170, 30%, 96%);
           }
           .btn-book-now:hover {
             background: hsl(174, 54%, 28%);
-            box-shadow: 0 4px 12px hsla(174, 54%, 36%, 0.35);
+            box-shadow: 0 4px 12px hsl(var(--primary) / 0.35);
           }
           .mobile-nav-link:hover {
             background: hsl(170, 30%, 96%);
-            color: hsl(174, 54%, 36%);
+            color: hsl(var(--primary));
           }
         }
       `}</style>
@@ -284,7 +284,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                 style={{ borderRadius: '8px' }}
               />
               <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1a1a' }}>
-                Manna One <span style={{ color: 'hsl(174, 54%, 36%)' }}>Solution</span>
+                Manna One <span style={{ color: 'hsl(var(--primary))' }}>Solution</span>
               </span>
             </Link>
 
@@ -345,7 +345,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
                   {/* Admin - only for admins */}
                   {isAdmin && (
-                    <Link href={`/${locale}/admin`} className="btn-client-login" style={{ borderColor: 'hsl(174, 54%, 36%)', color: 'hsl(174, 54%, 36%)' }}>
+                    <Link href={`/${locale}/admin`} className="btn-client-login" style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
                       <Shield style={{ width: '15px', height: '15px' }} />
                       Admin
                     </Link>
@@ -450,7 +450,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                     )}
                   </div>
                   {isAdmin && user && (
-                    <Link href={`/${locale}/admin`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center', borderColor: 'hsl(174, 54%, 36%)', color: 'hsl(174, 54%, 36%)' }}>
+                    <Link href={`/${locale}/admin`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center', borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
                       <Shield style={{ width: '15px', height: '15px' }} />
                       Admin Panel
                     </Link>
