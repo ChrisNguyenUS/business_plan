@@ -46,12 +46,17 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
 
   const item =
     "flex items-center gap-3 rounded-full bg-white pl-2 pr-4 py-2 text-sm font-medium text-charcoal shadow-lg border border-border hover:bg-teal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  // Each option rises out of the contact button when the menu opens (@starting-style).
+  const enter =
+    "origin-bottom-right transition-[opacity,translate,scale] duration-200 ease-out starting:translate-y-2 starting:scale-95 starting:opacity-0";
+  // The two icons are stacked and crossfade instead of swapping abruptly.
+  const icon = "absolute h-6 w-6 transition-[opacity,scale,rotate,filter] duration-200 ease-out";
 
   return (
     <div ref={rootRef} className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
       {open && (
         <ul id="floating-contact-menu" className="flex flex-col items-end gap-2">
-          <li>
+          <li className={enter} style={{ transitionDelay: "80ms" }}>
             <a href="https://zalo.me/3468524454" target="_blank" rel="noopener noreferrer" onClick={onZalo} className={item}>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white" aria-hidden="true">
                 Zalo
@@ -59,7 +64,7 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
               {labels.zalo}
             </a>
           </li>
-          <li>
+          <li className={enter} style={{ transitionDelay: "40ms" }}>
             <a href="https://m.me/mannaonesolution" target="_blank" rel="noopener noreferrer" onClick={onMessenger} className={item}>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white" aria-hidden="true">
                 <MessageCircle className="h-4 w-4" />
@@ -67,7 +72,7 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
               {labels.messenger}
             </a>
           </li>
-          <li>
+          <li className={enter}>
             <a href="tel:3468524454" onClick={onPhone} className={item}>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
                 <Phone className="h-4 w-4" />
@@ -83,9 +88,10 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
         aria-expanded={open}
         aria-controls="floating-contact-menu"
         aria-label={open ? labels.close : labels.menu}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:bg-teal-dark transition-[background-color,scale] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:bg-teal-dark transition-[background-color,scale] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        {open ? <X className="h-6 w-6" aria-hidden="true" /> : <MessagesSquare className="h-6 w-6" aria-hidden="true" />}
+        <X className={`${icon} ${open ? "opacity-100" : "rotate-[-45deg] scale-75 opacity-0 blur-[2px]"}`} aria-hidden="true" />
+        <MessagesSquare className={`${icon} ${open ? "scale-75 opacity-0 blur-[2px]" : "opacity-100"}`} aria-hidden="true" />
       </button>
     </div>
   );

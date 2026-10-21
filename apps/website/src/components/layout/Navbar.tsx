@@ -217,6 +217,18 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
           background: hsl(170, 30%, 96%);
           color: hsl(174, 54%, 36%);
         }
+        /* Mobile menu slides in when opened; @starting-style is the "from" state. */
+        .mobile-menu {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 200ms ease-out, transform 200ms var(--motion-easing);
+        }
+        @starting-style {
+          .mobile-menu {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+        }
         /* Hover only on real pointers: on touch, a tap would leave hover stuck. */
         @media (hover: hover) and (pointer: fine) {
           .nav-link:hover {
@@ -374,7 +386,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: 'white' }}>
+          <div className="mobile-menu" style={{ borderTop: '1px solid rgba(0,0,0,0.07)', background: 'white' }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '12px 24px 20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {navLinks.map((link) => (
