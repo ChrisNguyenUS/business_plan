@@ -1,5 +1,6 @@
 import type { StepStatus } from './progress'
 import type { NotificationKind } from './types'
+import { escapeHtml } from '@/lib/html'
 
 /** Which email a step status calls for; null for statuses that never email. */
 export function emailKindFor(status: StepStatus): NotificationKind | null {
@@ -27,15 +28,6 @@ export interface ProgressEmail {
   subject: string
   html: string
   text: string
-}
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 /** A header value must stay on one line. */
