@@ -8,9 +8,12 @@ import { actionLabel, type EntityType } from '@/lib/deletion/requests'
 export default function RequestDeletionButton({
   entityType,
   entityId,
+  alreadyPending,
 }: {
   entityType: EntityType
   entityId: string
+  /** Stays mounted while pending so its "sent" message survives the page refresh. */
+  alreadyPending: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
@@ -37,9 +40,11 @@ export default function RequestDeletionButton({
     })
   }
 
+  if (alreadyPending && !message) return null
+
   return (
     <div className="flex flex-col items-end gap-2">
-      {!open ? (
+      {alreadyPending ? null : !open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}

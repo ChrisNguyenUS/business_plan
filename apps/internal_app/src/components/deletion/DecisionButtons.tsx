@@ -18,9 +18,10 @@ export default function DecisionButtons({ requestId, action }: { requestId: stri
         setMessage({ kind: 'error', text: result.error })
         return
       }
-      // The row moves to History on revalidate; this note covers the email only.
+      // The row moves to History on revalidate and this component unmounts,
+      // so an inline message would never be seen.
       if (result.value.emailError) {
-        setMessage({ kind: 'error', text: `Done. Staff email not sent: ${result.value.emailError}` })
+        window.alert(`Done. The staff member was not emailed: ${result.value.emailError}`)
       }
     })
   }

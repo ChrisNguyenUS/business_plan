@@ -131,6 +131,24 @@ describe('approveRequest', () => {
     expect(send).not.toHaveBeenCalled()
   })
 
+  it('says so when the refused request could not be put back to pending', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    let updates = 0
+    const { deps } = setup((op) => {
+      if (op.table === 'deletion_requests' && op.action === 'update') {
+        updates += 1
+        return updates === 1 ? { data: [row({ entity_type: 'client' })] } : { error: { message: 'down' } }
+      }
+      if (op.table === 'cases') return { count: 1 }
+      return { count: 0 }
+    })
+    expect(await approveRequest(deps, REQ, ADMIN)).toEqual({
+      ok: false,
+      error:
+        'This client still has 1 case. Delete it first. The request could not be reset to pending and now shows as approved although nothing was deleted; ask for it to be filed again.',
+    })
+  })
+
   it('deletes, emails the requester and returns the paths', async () => {
     const { deps, send } = setup((op) => {
       if (op.table === 'deletion_requests') return { data: [row()] }

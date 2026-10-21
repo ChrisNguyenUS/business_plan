@@ -171,7 +171,14 @@ export async function approveRequest(
       .from('deletion_requests')
       .update({ status: 'pending', decided_by: null, decided_at: null })
       .eq('id', requestId)
-    if (back.error) console.error('[deletion-requests] un-claim failed', back.error.message)
+    if (back.error) {
+      console.error('[deletion-requests] un-claim failed', back.error.message)
+      // The history row now says approved for something that still exists.
+      return {
+        ok: false,
+        error: `${done.error} The request could not be reset to pending and now shows as approved although nothing was deleted; ask for it to be filed again.`,
+      }
+    }
     return done
   }
 

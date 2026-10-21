@@ -68,7 +68,7 @@ export default async function CaseDetailPage({
           {isAdmin ? (
             <DeleteCaseButton id={id} />
           ) : (
-            !pendingRequest && <RequestDeletionButton entityType="case" entityId={id} />
+            <RequestDeletionButton entityType="case" entityId={id} alreadyPending={!!pendingRequest} />
           )}
         </div>
       </div>

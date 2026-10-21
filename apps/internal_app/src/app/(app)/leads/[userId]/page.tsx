@@ -90,8 +90,13 @@ export default async function LeadDetailPage({
         {isAdmin ? (
           <HideLeadButton userId={lead.user_id} hidden={hiddenAt !== null} />
         ) : (
-          !hiddenAt &&
-          !pendingRequest && <RequestDeletionButton entityType="lead" entityId={lead.user_id} />
+          !hiddenAt && (
+            <RequestDeletionButton
+              entityType="lead"
+              entityId={lead.user_id}
+              alreadyPending={!!pendingRequest}
+            />
+          )
         )}
         {clientId ? (
           <Link

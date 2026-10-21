@@ -138,7 +138,11 @@ export default async function ClientProfilePage({
               name={`${client.first_name} ${client.last_name}`}
             />
           ) : (
-            !pendingRequest && <RequestDeletionButton entityType="client" entityId={client.id} />
+            <RequestDeletionButton
+              entityType="client"
+              entityId={client.id}
+              alreadyPending={!!pendingRequest}
+            />
           )}
           <Link
             href={`/clients/${client.id}/edit`}

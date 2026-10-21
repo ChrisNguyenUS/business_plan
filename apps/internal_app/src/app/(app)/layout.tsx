@@ -58,7 +58,13 @@ export default async function AppLayout({
     .slice(0, 2)
 
   // Admins see how many deletion requests wait for them.
-  const pendingDeletions = isAdmin ? await getPendingDeletionCount() : 0
+  // A nav badge must never take the whole app down: on error, show none.
+  const pendingDeletions = isAdmin
+    ? await getPendingDeletionCount().catch((error: unknown) => {
+        console.error('[layout] pending deletion count failed', error)
+        return 0
+      })
+    : 0
   const visibleNav = (isAdmin ? NAV_ITEMS : NAV_ITEMS.filter((item) => item.href !== '/jobs')).map(
     (item) =>
       item.href === '/deletion-requests' && pendingDeletions > 0
