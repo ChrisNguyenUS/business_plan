@@ -26,7 +26,7 @@ import Eb3MessengerButton from "./Eb3MessengerButton";
 type FormCopy = Dictionary["eb3"]["form"];
 
 const SELECT_CLASS =
-  "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-base md:text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 const LABEL_CLASS = "block text-sm font-medium text-charcoal mb-1.5";
 
 // Element to focus when a field has the first error (only fields that can error).
