@@ -368,7 +368,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
 
               {/* Book Now */}
               <Link href={`/${locale}/contact`} className="btn-book-now">
-                Book Now
+                {dictionary.nav_book}
               </Link>
             </div>
 
@@ -456,7 +456,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                     </Link>
                   )}
                   <Link href={`/${locale}/contact`} className="btn-book-now" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center' }}>
-                    Book Now
+                    {dictionary.nav_book}
                   </Link>
                 </div>
               </div>
