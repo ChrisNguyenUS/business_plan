@@ -13,7 +13,8 @@ checked_on: 2026-10-21
 
 > **Tóm tắt nhanh**
 > - Nước Mỹ không cấp một tờ "công hàm độc thân" duy nhất. Bạn dùng **giấy của County Clerk/Vital Records** xác nhận không có hồ sơ kết hôn, và/hoặc **bản tuyên thệ độc thân (Affidavit of Single Status)** công chứng ở Mỹ, rồi xin **Apostille**.
-> - Công dân Mỹ đang ở Việt Nam có thể ký bản tuyên thệ tại **Đại sứ quán Mỹ (Hà Nội) hoặc Tổng Lãnh sự quán Mỹ (TP.HCM)**, lệ phí **$50**.
+> - **Việt kiều (công dân Mỹ gốc Việt) bắt buộc có giấy No Marriage Record** của County Clerk/Vital Records, có Apostille. Bản tuyên thệ ký ở Đại sứ quán Mỹ không thay được giấy này.
+> - Công dân Mỹ không gốc Việt đang ở Việt Nam có thể ký bản tuyên thệ tại **Đại sứ quán Mỹ (Hà Nội) hoặc Tổng Lãnh sự quán Mỹ (TP.HCM)**, lệ phí **$50**.
 > - Giấy chứng minh độc thân và giấy khám sức khỏe tâm thần chỉ có giá trị **6 tháng** nếu giấy không ghi thời hạn.
 > - **Một bên nộp hồ sơ là đủ**, không cần giấy ủy quyền. Có thể nộp online. Thời hạn giải quyết **5 ngày làm việc** (tối đa 10 ngày nếu phải xác minh).
 > - **Cả hai người phải có mặt** khi nhận Giấy chứng nhận kết hôn.
@@ -28,9 +29,9 @@ Theo khoản 1 Điều 38 Luật Hộ tịch 2014, **người nước ngoài và
 
 | Bạn là | Làm giấy độc thân ở đâu | Lưu ý |
 |---|---|---|
-| **Công dân Mỹ gốc Việt** | Tại Mỹ (County Clerk/Vital Records + Apostille), hoặc ký tại Đại sứ quán/Tổng Lãnh sự quán Mỹ ở Việt Nam | Nếu còn quốc tịch Việt Nam, bạn cũng là "công dân Việt Nam định cư ở nước ngoài". Hỏi UBND xã có cần thêm giấy xác nhận tình trạng hôn nhân của Đại sứ quán/Lãnh sự quán Việt Nam tại Mỹ không |
+| **Công dân Mỹ gốc Việt** | **Tại Mỹ**: giấy No Marriage Record của County Clerk/Vital Records + Apostille | **Bắt buộc** có giấy No Marriage Record. Bản tuyên thệ ký ở Đại sứ quán Mỹ tại Việt Nam không thay được giấy này |
 | **Người có thẻ xanh** | **Tại Mỹ**: County Clerk/Vital Records + Apostille | Đại sứ quán Mỹ hướng dẫn thủ tục cho công dân Mỹ. Bạn cần giấy tờ cho phép cư trú do Mỹ cấp (thẻ xanh) |
-| **Công dân Mỹ không gốc Việt** | Tại Mỹ, hoặc ký tại Đại sứ quán/Tổng Lãnh sự quán Mỹ ở Việt Nam | Mọi giấy tiếng Anh phải dịch sang tiếng Việt và công chứng bản dịch |
+| **Công dân Mỹ không gốc Việt** | Tại Mỹ, hoặc ký bản tuyên thệ tại Đại sứ quán/Tổng Lãnh sự quán Mỹ ở Việt Nam | Mọi giấy tiếng Anh phải dịch sang tiếng Việt và công chứng bản dịch |
 
 ## Hướng dẫn cũ và quy định hiện hành khác nhau thế nào?
 
@@ -77,9 +78,11 @@ Nếu bạn là công dân Việt Nam và đã ly hôn ở Mỹ, cơ sở dữ l
 
 Mọi giấy có Apostille không viết bằng tiếng Việt phải **dịch sang tiếng Việt, và bản dịch phải được công chứng hoặc chứng thực** theo luật Việt Nam (Điều 27 Nghị định 293/2026/NĐ-CP). Bạn có thể dịch tại một văn phòng công chứng ở Việt Nam.
 
-## Cách 2: Công dân Mỹ ký bản tuyên thệ tại Đại sứ quán Mỹ ở Việt Nam
+## Cách 2: Công dân Mỹ không gốc Việt ký bản tuyên thệ tại Đại sứ quán Mỹ ở Việt Nam
 
-Nếu bạn là công dân Mỹ và đang ở Việt Nam, theo trang [Notarials](https://vn.usembassy.gov/services/notarials/) và trang [Marriage](https://vn.usembassy.gov/marriage/) của Đại sứ quán Mỹ:
+Cách này **không áp dụng cho Việt kiều**: công dân Mỹ gốc Việt vẫn phải có giấy No Marriage Record làm tại Mỹ (Cách 1).
+
+Nếu bạn là công dân Mỹ không gốc Việt và đang ở Việt Nam, theo trang [Notarials](https://vn.usembassy.gov/services/notarials/) và trang [Marriage](https://vn.usembassy.gov/marriage/) của Đại sứ quán Mỹ:
 
 1. **Đặt hẹn** dịch vụ công chứng (notarial) tại Đại sứ quán Hà Nội hoặc Tổng Lãnh sự quán TP.HCM. Lịch mở khoảng 2 tuần trước.
 2. **Tải mẫu "Affidavit of Single Status for marriage in Vietnam"**, điền sẵn, **không ký trước**.
@@ -143,9 +146,9 @@ Phụ thuộc vào tốc độ của County Clerk và Secretary of State ở ti�
 
 Không, với giấy tờ công của Mỹ đã có Apostille. Điều 37 Nghị định 293/2026/NĐ-CP ghi cơ quan đại diện Việt Nam ở nước ngoài không hợp pháp hóa giấy tờ thuộc diện được miễn theo Công ước Apostille.
 
-### Người có thẻ xanh có ký bản tuyên thệ ở Đại sứ quán Mỹ tại Việt Nam được không?
+### Việt kiều có ký bản tuyên thệ ở Đại sứ quán Mỹ tại Việt Nam thay cho giấy làm ở Mỹ được không?
 
-Hướng dẫn của Đại sứ quán Mỹ về kết hôn viết cho công dân Mỹ. Người có thẻ xanh nên làm giấy tại Mỹ (Cách 1).
+Không. Công dân Mỹ gốc Việt và người có thẻ xanh phải có giấy No Marriage Record của County Clerk/Vital Records, có Apostille (Cách 1).
 
 ### Tôi có cần về Việt Nam để nộp hồ sơ không?
 

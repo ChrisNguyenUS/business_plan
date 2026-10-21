@@ -14,7 +14,8 @@ To register a marriage in Vietnam with a Vietnamese citizen, the partner from ab
 
 > **Key takeaways**
 > - The U.S. has no single national "certificate of single status". You use a **no-marriage-record letter from a County Clerk or state Vital Records office**, and/or an **Affidavit of Single Status** notarized in the U.S., then get an **apostille**.
-> - U.S. citizens already in Vietnam can sign the affidavit at the **U.S. Embassy in Hanoi or the Consulate General in Ho Chi Minh City** for **$50**.
+> - **Vietnamese-American U.S. citizens must submit a No Marriage Record letter** from a County Clerk or Vital Records office, with an apostille. An affidavit signed at the U.S. Embassy does not replace it.
+> - U.S. citizens not of Vietnamese origin who are already in Vietnam can sign the affidavit at the **U.S. Embassy in Hanoi or the Consulate General in Ho Chi Minh City** for **$50**.
 > - If they show no expiry date, the single-status proof and the mental health certificate are valid for **6 months**.
 > - **One partner can file alone**, without a power of attorney, and online filing is allowed. Processing takes **5 working days** (up to 10 if verification is needed).
 > - **Both partners must appear** to receive the marriage certificate.
@@ -29,9 +30,9 @@ Article 30 of Decree 123/2015/ND-CP allows for this: if a country does not issue
 
 | You are | Where to get the single-status proof | Notes |
 |---|---|---|
-| **U.S. citizen of Vietnamese origin** | In the U.S. (County Clerk/Vital Records + apostille), or sign at the U.S. Embassy/Consulate in Vietnam | If you still hold Vietnamese nationality, you are also a "Vietnamese citizen living abroad". Ask the commune office whether it also wants a marital status certificate from a Vietnamese Embassy or Consulate in the U.S. |
+| **U.S. citizen of Vietnamese origin** | **In the U.S.**: No Marriage Record letter from a County Clerk/Vital Records office + apostille | The No Marriage Record letter is **required**. An affidavit signed at the U.S. Embassy in Vietnam does not replace it |
 | **Green card holder** | **In the U.S.**: County Clerk/Vital Records + apostille | The U.S. Embassy's marriage guidance is written for U.S. citizens. You also need your U.S. residence document (green card) |
-| **U.S. citizen not of Vietnamese origin** | In the U.S., or sign at the U.S. Embassy/Consulate in Vietnam | Every English document must be translated into Vietnamese, with a notarized or certified translation |
+| **U.S. citizen not of Vietnamese origin** | In the U.S., or sign the affidavit at the U.S. Embassy/Consulate in Vietnam | Every English document must be translated into Vietnamese, with a notarized or certified translation |
 
 ## Old guidance vs. current rules
 
@@ -78,9 +79,11 @@ If you are a Vietnamese citizen who divorced in the U.S., Vietnam's civil status
 
 Any apostilled document not in Vietnamese must be **translated into Vietnamese, and the translation notarized or certified** under Vietnamese law (Article 27, Decree 293/2026/ND-CP). A notary office in Vietnam can do this.
 
-## Option 2: U.S. citizens sign the affidavit at the U.S. Embassy in Vietnam
+## Option 2: U.S. citizens not of Vietnamese origin sign the affidavit at the U.S. Embassy in Vietnam
 
-If you are a U.S. citizen and already in Vietnam, the U.S. Embassy's [Notarials](https://vn.usembassy.gov/services/notarials/) and [Marriage](https://vn.usembassy.gov/marriage/) pages explain the process:
+This option **does not work for Vietnamese-Americans**: U.S. citizens of Vietnamese origin still need a No Marriage Record letter from the U.S. (Option 1).
+
+If you are a U.S. citizen not of Vietnamese origin and already in Vietnam, the U.S. Embassy's [Notarials](https://vn.usembassy.gov/services/notarials/) and [Marriage](https://vn.usembassy.gov/marriage/) pages explain the process:
 
 1. **Book a notarial appointment** at the Embassy in Hanoi or the Consulate General in Ho Chi Minh City. Slots open about two weeks ahead.
 2. **Download the "Affidavit of Single Status for marriage in Vietnam"** form and fill it in, but **don't sign it**. You sign in front of the consular officer.
@@ -144,9 +147,9 @@ It depends on your County Clerk and Secretary of State. Dropping the Vietnamese 
 
 No, not for U.S. public documents that carry an apostille. Article 37 of Decree 293/2026/ND-CP says Vietnamese missions abroad do not legalize documents exempted under the Apostille Convention.
 
-### Can a green card holder sign the affidavit at the U.S. Embassy in Vietnam?
+### Can a Vietnamese-American sign the affidavit at the U.S. Embassy in Vietnam instead of getting papers in the U.S.?
 
-The U.S. Embassy's marriage guidance is written for U.S. citizens. Green card holders should get their proof in the U.S. (Option 1).
+No. U.S. citizens of Vietnamese origin and green card holders need a No Marriage Record letter from a County Clerk or Vital Records office, with an apostille (Option 1).
 
 ### Do I have to fly to Vietnam to file the application?
 
