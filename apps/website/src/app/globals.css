@@ -141,6 +141,17 @@ label[for] {
     --motion-normal: 0ms;
     --motion-slow: 0ms;
   }
+
+  /* Most motion lives in Tailwind classes and component CSS, not the tokens:
+     make every transition/animation effectively instant site-wide. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }
 
 /* Page transition — subtle fade-in on route change */
