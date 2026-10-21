@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import SearchBar from '@/components/layout/SearchBar'
 import PageTitle from '@/components/layout/PageTitle'
+import { getPendingDeletionCount } from '@/actions/deletion-requests'
 
 interface NavItem {
   href: string
   label: string
   icon: string
+  badge?: number
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -17,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/clients', label: 'Clients', icon: 'group' },
   { href: '/leads', label: 'Leads', icon: 'trending_up' },
   { href: '/consultations', label: 'Consultations', icon: 'support_agent' },
+  { href: '/deletion-requests', label: 'Deletion requests', icon: 'delete_sweep' },
   { href: '/jobs', label: 'Jobs', icon: 'work' },
   { href: '/pdf-generator', label: 'PDF Generator', icon: 'picture_as_pdf' },
   { href: '/tracker', label: 'USCIS Tracker', icon: 'travel_explore' },
@@ -54,9 +57,14 @@ export default async function AppLayout({
     .toUpperCase()
     .slice(0, 2)
 
-  const visibleNav = isAdmin
-    ? NAV_ITEMS
-    : NAV_ITEMS.filter((item) => item.href !== '/jobs')
+  // Admins see how many deletion requests wait for them.
+  const pendingDeletions = isAdmin ? await getPendingDeletionCount() : 0
+  const visibleNav = (isAdmin ? NAV_ITEMS : NAV_ITEMS.filter((item) => item.href !== '/jobs')).map(
+    (item) =>
+      item.href === '/deletion-requests' && pendingDeletions > 0
+        ? { ...item, badge: pendingDeletions }
+        : item
+  )
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f7f9ff' }}>
@@ -164,6 +172,11 @@ function NavLink({ item }: { item: NavItem }) {
     >
       <span className="material-symbols-outlined text-xl">{item.icon}</span>
       <span className="text-sm font-medium">{item.label}</span>
+      {item.badge ? (
+        <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white">
+          {item.badge}
+        </span>
+      ) : null}
     </Link>
   )
 }

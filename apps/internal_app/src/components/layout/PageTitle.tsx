@@ -10,6 +10,7 @@ const TITLE_MAP: Record<string, string> = {
   '/pdf-generator': 'PDF Generator',
   '/tracker': 'USCIS Tracker',
   '/notifications': 'Notifications',
+  '/deletion-requests': 'Deletion requests',
 }
 
 export default function PageTitle() {
