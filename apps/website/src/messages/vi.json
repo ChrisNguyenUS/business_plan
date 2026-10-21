@@ -153,7 +153,7 @@
   "portal_empty_desc": "Liên hệ chúng tôi để bắt đầu.",
   "eb3": {
     "meta_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
-    "meta_desc": "Tìm hiểu diện EB-3 lao động phổ thông (Other Workers): điều kiện, quy trình 5 bước, thời gian ước tính 4–6 năm. Kiểm tra điều kiện miễn phí cùng MannaOS.",
+    "meta_desc": "Tìm hiểu diện EB-3 lao động phổ thông (Other Workers): điều kiện, quy trình 5 bước, thời gian ước tính 4–6 năm. Kiểm tra điều kiện miễn phí cùng Manna One Solution.",
     "featured_badge": "Mới",
     "featured_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
     "featured_desc": "Không cần bằng cấp. Dành cho người ở Việt Nam và người đang ở Mỹ muốn chuyển diện.",
@@ -176,7 +176,7 @@
       },
       {
         "title": "Other Workers — lao động phổ thông",
-        "desc": "Công việc cần dưới 2 năm kinh nghiệm. Không yêu cầu bằng cấp. Đây là diện MannaOS hỗ trợ."
+        "desc": "Công việc cần dưới 2 năm kinh nghiệm. Không yêu cầu bằng cấp. Đây là diện Manna One Solution hỗ trợ."
       }
     ],
     "where_title": "Bạn đang ở đâu?",
@@ -188,7 +188,7 @@
     "steps": [
       {
         "title": "Đánh giá hồ sơ",
-        "desc": "MannaOS xem thông tin của bạn và phản hồi trong 48 giờ."
+        "desc": "Manna One Solution xem thông tin của bạn và phản hồi trong 48 giờ."
       },
       {
         "title": "Ghép chủ lao động",
@@ -239,7 +239,7 @@
         "desc": "Lệ phí I-140, DS-260 hoặc I-485, khám sức khỏe."
       },
       {
-        "title": "Phí dịch vụ MannaOS",
+        "title": "Phí dịch vụ Manna One Solution",
         "desc": "Điều phối hồ sơ, hỗ trợ tiếng Việt, dịch thuật và theo dõi tiến độ."
       }
     ],
@@ -271,20 +271,20 @@
         "a": "Có. EB-3 dựa trên lời mời làm việc thật, bạn cần có ý định làm việc cho chủ lao động bảo lãnh sau khi nhận thẻ xanh."
       },
       {
-        "q": "MannaOS có phải là văn phòng luật không?",
-        "a": "Không. MannaOS là đơn vị hỗ trợ và điều phối hồ sơ. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận."
+        "q": "Manna One Solution có phải là văn phòng luật không?",
+        "a": "Không. Manna One Solution là đơn vị hỗ trợ và điều phối hồ sơ. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận."
       }
     ],
-    "disclaimer": "MannaOS là đơn vị hỗ trợ và điều phối hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận. Thời gian xử lý phụ thuộc USCIS và Bộ Ngoại giao Mỹ, không được bảo đảm.",
+    "disclaimer": "Manna One Solution là đơn vị hỗ trợ và điều phối hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận. Thời gian xử lý phụ thuộc USCIS và Bộ Ngoại giao Mỹ, không được bảo đảm.",
     "form": {
       "title": "Kiểm tra điều kiện miễn phí",
-      "sub": "Trả lời vài câu hỏi ngắn, MannaOS sẽ liên hệ bạn trong 48 giờ.",
+      "sub": "Trả lời vài câu hỏi ngắn, Manna One Solution sẽ liên hệ bạn trong 48 giờ.",
       "full_name": "Họ và tên",
       "location": "Bạn đang ở đâu?",
       "location_vn": "Việt Nam",
       "location_us": "Mỹ",
       "facebook": "Tên hoặc link Facebook",
-      "facebook_hint": "Để MannaOS nhắn Messenger cho bạn",
+      "facebook_hint": "Để Manna One Solution nhắn Messenger cho bạn",
       "zalo": "Số Zalo (không bắt buộc)",
       "phone": "Số điện thoại",
       "us_status": "Tình trạng visa hiện tại",
@@ -308,16 +308,16 @@
       "timeline_3_6_months": "Trong 3–6 tháng",
       "timeline_researching": "Đang tìm hiểu",
       "notes": "Ghi chú thêm (không bắt buộc)",
-      "ack": "Tôi hiểu MannaOS là đơn vị hỗ trợ hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý.",
+      "ack": "Tôi hiểu Manna One Solution là đơn vị hỗ trợ hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý.",
       "select_placeholder": "Chọn...",
       "submit": "Gửi thông tin",
       "submitting": "Đang gửi...",
       "error_required": "Vui lòng điền mục này",
       "error_invalid": "Thông tin chưa hợp lệ",
       "error_summary": "Vui lòng kiểm tra các mục được đánh dấu đỏ ở trên.",
-      "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho MannaOS.",
+      "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho Manna One Solution.",
       "success_title": "Cảm ơn bạn!",
-      "success_desc": "MannaOS sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",
+      "success_desc": "Manna One Solution sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",
       "success_cta": "Nhắn Messenger ngay"
     }
   },

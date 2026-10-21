@@ -153,7 +153,7 @@
   "portal_empty_desc": "Contact us to get started with your case.",
   "eb3": {
     "meta_title": "EB-3 Other Workers Green Card",
-    "meta_desc": "Learn about the EB-3 Other Workers (unskilled) green card: eligibility, the 5-step process, and an estimated 4–6 year timeline. Free eligibility check with MannaOS.",
+    "meta_desc": "Learn about the EB-3 Other Workers (unskilled) green card: eligibility, the 5-step process, and an estimated 4–6 year timeline. Free eligibility check with Manna One Solution.",
     "featured_badge": "New",
     "featured_title": "EB-3 Other Workers Green Card",
     "featured_desc": "No degree required. For people in Vietnam and people already in the U.S. seeking adjustment of status.",
@@ -176,7 +176,7 @@
       },
       {
         "title": "Other Workers — unskilled",
-        "desc": "Jobs requiring less than 2 years of experience. No degree required. This is the category MannaOS supports."
+        "desc": "Jobs requiring less than 2 years of experience. No degree required. This is the category Manna One Solution supports."
       }
     ],
     "where_title": "Where are you now?",
@@ -188,7 +188,7 @@
     "steps": [
       {
         "title": "Case review",
-        "desc": "MannaOS reviews your information and responds within 48 hours."
+        "desc": "Manna One Solution reviews your information and responds within 48 hours."
       },
       {
         "title": "Employer matching",
@@ -239,7 +239,7 @@
         "desc": "I-140, DS-260 or I-485 filing fees, and the medical exam."
       },
       {
-        "title": "MannaOS service fee",
+        "title": "Manna One Solution service fee",
         "desc": "Case coordination, Vietnamese-language support, translation, and progress tracking."
       }
     ],
@@ -271,20 +271,20 @@
         "a": "Yes. EB-3 is based on a real job offer, and you must intend to work for the sponsoring employer after receiving your green card."
       },
       {
-        "q": "Is MannaOS a law firm?",
-        "a": "No. MannaOS provides case support and coordination. Legal filings are handled by licensed U.S. immigration attorneys."
+        "q": "Is Manna One Solution a law firm?",
+        "a": "No. Manna One Solution provides case support and coordination. Legal filings are handled by licensed U.S. immigration attorneys."
       }
     ],
-    "disclaimer": "MannaOS provides case support and coordination. MannaOS is not a law firm and does not provide legal advice. Legal filings are handled by licensed U.S. immigration attorneys. Processing times depend on USCIS and the U.S. Department of State and are not guaranteed.",
+    "disclaimer": "Manna One Solution provides case support and coordination. Manna One Solution is not a law firm and does not provide legal advice. Legal filings are handled by licensed U.S. immigration attorneys. Processing times depend on USCIS and the U.S. Department of State and are not guaranteed.",
     "form": {
       "title": "Free eligibility check",
-      "sub": "Answer a few short questions and MannaOS will contact you within 48 hours.",
+      "sub": "Answer a few short questions and Manna One Solution will contact you within 48 hours.",
       "full_name": "Full name",
       "location": "Where are you now?",
       "location_vn": "Vietnam",
       "location_us": "United States",
       "facebook": "Facebook name or profile link",
-      "facebook_hint": "So MannaOS can message you on Messenger",
+      "facebook_hint": "So Manna One Solution can message you on Messenger",
       "zalo": "Zalo number (optional)",
       "phone": "Phone number",
       "us_status": "Current visa status",
@@ -308,16 +308,16 @@
       "timeline_3_6_months": "Within 3–6 months",
       "timeline_researching": "Just researching",
       "notes": "Anything else (optional)",
-      "ack": "I understand MannaOS provides case support, is not a law firm, and does not provide legal advice.",
+      "ack": "I understand Manna One Solution provides case support, is not a law firm, and does not provide legal advice.",
       "select_placeholder": "Select...",
       "submit": "Submit",
       "submitting": "Submitting...",
       "error_required": "This field is required",
       "error_invalid": "Please check this value",
       "error_summary": "Please check the fields marked in red above.",
-      "error_submit": "Something went wrong. Please try again or message MannaOS on Messenger.",
+      "error_submit": "Something went wrong. Please try again or message Manna One Solution on Messenger.",
       "success_title": "Thank you!",
-      "success_desc": "MannaOS will contact you on Messenger or by phone within 48 hours.",
+      "success_desc": "Manna One Solution will contact you on Messenger or by phone within 48 hours.",
       "success_cta": "Message us now"
     }
   },
