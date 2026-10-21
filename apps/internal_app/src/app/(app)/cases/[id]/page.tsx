@@ -62,9 +62,6 @@ export default async function CaseDetailPage({
         </div>
         <div className="flex items-center space-x-3">
           <StatusDropdown caseId={id} currentStatus={caseStatus} />
-          <button className="px-4 py-2 text-tertiary text-sm font-semibold hover:text-error transition-colors">
-            Archive Case
-          </button>
           {isAdmin ? (
             <DeleteCaseButton id={id} />
           ) : (
