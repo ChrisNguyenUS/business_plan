@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+/* animate-in / fade-in-0 / zoom-in-95 … used by the Radix dialog and select. */
+@import "tw-animate-css";
 /* Styles the `prose` article bodies (blog posts, privacy policy, terms). */
 @plugin "@tailwindcss/typography";
 
