@@ -2,12 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { updateCaseStatus } from '@/actions/cases'
-import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, type CaseStatus } from '@/types'
-
-const ALL_STATUSES: CaseStatus[] = [
-  'drafting', 'awaiting_docs', 'under_review', 'rfe_issued',
-  'rfe_submitted', 'interview_scheduled', 'approved', 'denied',
-]
+import { CASE_STATUSES, CASE_STATUS_LABELS, CASE_STATUS_COLORS, type CaseStatus } from '@/types'
 
 export default function StatusDropdown({
   caseId,
@@ -19,6 +14,7 @@ export default function StatusDropdown({
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState(currentStatus)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -32,10 +28,14 @@ export default function StatusDropdown({
   async function handleSelect(newStatus: CaseStatus) {
     if (newStatus === status) { setOpen(false); return }
     setLoading(true)
+    setError(null)
     try {
       await updateCaseStatus(caseId, newStatus)
       setStatus(newStatus)
-    } catch { /* keep current */ }
+    } catch {
+      // Next hides server error text in production, so say it plainly.
+      setError('Could not change the status. Try again.')
+    }
     setLoading(false)
     setOpen(false)
   }
@@ -55,7 +55,7 @@ export default function StatusDropdown({
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-1 w-52 bg-surface-container-lowest rounded-lg shadow-xl border border-outline-variant/20 z-50 py-1">
-          {ALL_STATUSES.map((s) => (
+          {CASE_STATUSES.map((s) => (
             <button
               key={s}
               onClick={() => handleSelect(s)}
@@ -68,6 +68,7 @@ export default function StatusDropdown({
           ))}
         </div>
       )}
+      {error && <p className="absolute right-0 top-full mt-1 text-xs text-red-600 whitespace-nowrap">{error}</p>}
     </div>
   )
 }

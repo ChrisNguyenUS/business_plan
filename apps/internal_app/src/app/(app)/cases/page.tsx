@@ -1,9 +1,21 @@
 import { getCases } from '@/actions/cases'
 import Link from 'next/link'
-import { CASE_STATUS_COLORS, CASE_STATUS_LABELS, type CaseStatus } from '@/types'
+import { CASE_STATUSES, CASE_STATUS_COLORS, CASE_STATUS_LABELS, type CaseStatus } from '@/types'
 import { timeAgo } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+
+// Filter chip text; Record<CaseStatus, …> fails to compile if a status is missing.
+const FILTER_LABELS: Record<CaseStatus, string> = {
+  documents_pending: 'Documents Pending',
+  ready_to_file: 'Ready to File',
+  submitted: 'Submitted',
+  receipt_received: 'Receipt Received',
+  in_progress: 'In Progress',
+  rfe_issued: 'RFE Issued',
+  approved: 'Approved',
+  denied: 'Denied',
+}
 
 export default async function CasesPage({
   searchParams,
@@ -17,14 +29,7 @@ export default async function CasesPage({
 
   const statusOptions: Array<{ value: CaseStatus | ''; label: string }> = [
     { value: '', label: 'All Cases' },
-    { value: 'drafting', label: 'Drafting' },
-    { value: 'awaiting_docs', label: 'Awaiting Docs' },
-    { value: 'under_review', label: 'Under Review' },
-    { value: 'rfe_issued', label: 'Action Req. (RFE)' },
-    { value: 'rfe_submitted', label: 'RFE Submitted' },
-    { value: 'interview_scheduled', label: 'Interview Sched.' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'denied', label: 'Denied' },
+    ...CASE_STATUSES.map((value) => ({ value, label: FILTER_LABELS[value] })),
   ]
 
   return (
