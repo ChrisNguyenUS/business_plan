@@ -7,7 +7,7 @@
   "nav_book": "Book Now",
   "nav_signin": "Sign In",
   "nav_portal": "My Portal",
-  "hero_headline": "Your Trusted Partner for Life, Business & Immigration.",
+  "hero_headline": "One stop, all solutions.",
   "hero_sub": "Bilingual support for immigration paperwork, tax preparation, business services, and insurance in Houston, with most services available online across the U.S.",
   "hero_desc": "Trusted by the Vietnamese community in Houston and beyond. We speak your language and handle everything — so you can focus on what matters.",
   "hero_cta1": "Book a Free Appointment",
@@ -321,7 +321,6 @@
       "success_cta": "Message us now"
     }
   },
-  "hero_eyebrow": "Immigration · Tax · Business · Insurance",
   "hero_n400_prefix": "Free citizenship test practice:",
   "contact_call": "Call Us",
   "contact_menu": "Contact us",

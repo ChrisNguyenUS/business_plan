@@ -30,10 +30,6 @@ export default function HeroSection({ dictionary, locale }: HeroSectionProps) {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="max-w-2xl">
-          <p className="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-            <span className="h-px w-8 bg-primary" aria-hidden="true" />
-            {dictionary.hero_eyebrow}
-          </p>
           <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-white mb-5 leading-[1.1] text-balance">
             {dictionary.hero_headline}
           </h1>
