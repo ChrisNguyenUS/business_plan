@@ -221,6 +221,46 @@ export const BLOG_TAGS: readonly BlogTag[] = [
       en: "Taxes for the self-employed and LLC owners: self-employment tax, quarterly estimated tax, Form 1099 and Texas sales tax.",
     },
   },
+  {
+    key: "ssn-and-id",
+    category: "documents",
+    slug: { vi: "ssn-giay-to-tuy-than", en: "ssn-and-id" },
+    label: { vi: "SSN và giấy tờ tùy thân", en: "SSN and ID" },
+    description: {
+      vi: "Thẻ Social Security, REAL ID, bằng lái xe và đổi tên trên giấy tờ sau kết hôn hoặc ly hôn.",
+      en: "Social Security cards, REAL ID, driver's licenses and changing your name on your documents after marriage or divorce.",
+    },
+  },
+  {
+    key: "birth-and-newborn",
+    category: "documents",
+    slug: { vi: "khai-sinh-sinh-con", en: "birth-and-newborn" },
+    label: { vi: "Khai sinh và sinh con", en: "Birth and newborns" },
+    description: {
+      vi: "Giấy khai sinh ở Mỹ, SSN và bảo hiểm sức khỏe cho em bé mới sinh.",
+      en: "U.S. birth certificates, your baby's SSN and health coverage for a newborn.",
+    },
+  },
+  {
+    key: "passport",
+    category: "documents",
+    slug: { vi: "ho-chieu", en: "passport" },
+    label: { vi: "Hộ chiếu Mỹ", en: "U.S. passport" },
+    description: {
+      vi: "Làm hộ chiếu Mỹ lần đầu cho người lớn và trẻ em: giấy tờ, lệ phí và thời gian chờ.",
+      en: "Getting a first U.S. passport for adults and children: documents, fees and wait times.",
+    },
+  },
+  {
+    key: "banking-and-credit",
+    category: "documents",
+    slug: { vi: "ngan-hang-tin-dung", en: "banking-and-credit" },
+    label: { vi: "Ngân hàng và tín dụng", en: "Banking and credit" },
+    description: {
+      vi: "Mở tài khoản ngân hàng cá nhân và xây dựng điểm tín dụng khi mới sang Mỹ.",
+      en: "Opening a personal bank account and building a credit score when you are new to the U.S.",
+    },
+  },
 ];
 
 /** URL segment between /blog/ and the hashtag slug. */

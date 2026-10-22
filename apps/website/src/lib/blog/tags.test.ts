@@ -62,6 +62,20 @@ describe("tax hashtags", () => {
   });
 });
 
+describe("documents hashtags", () => {
+  it("lists the documents hashtags in registry order", () => {
+    expect(tagsInCategory("documents").map((t) => t.key)).toEqual([
+      "ssn-and-id", "birth-and-newborn", "passport", "banking-and-credit",
+    ]);
+  });
+
+  it("builds localized paths for them", () => {
+    expect(tagPath("vi", "passport")).toBe("/vi/blog/chu-de/ho-chieu");
+    expect(tagPath("en", "ssn-and-id")).toBe("/en/blog/topics/ssn-and-id");
+    expect(tagBySlug("vi", "ngan-hang-tin-dung")?.key).toBe("banking-and-credit");
+  });
+});
+
 describe("hashtag lookups", () => {
   it("drops unknown keys and keeps registry order", () => {
     expect(tagsForPost(["uscis-fees", "nope", "green-card"]).map((t) => t.key)).toEqual(["green-card", "uscis-fees"]);
