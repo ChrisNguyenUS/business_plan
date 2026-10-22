@@ -50,7 +50,7 @@ const PHONE_DISPLAY = "346-852-4454";
 const PHONE_TEL = "tel:3468524454";
 const EMAIL = "Chris@mannaos.com";
 const FACEBOOK_URL = "https://facebook.com/mannaonesolution";
-const CALENDLY_URL = "https://calendly.com/mannaos";
+const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL ?? "https://calendly.com/mannaonesolution";
 
 const EMPTY: ContactFields = { full_name: "", phone: "", email: "", service_type: "", message: "" };
 const FIELD_ORDER: (keyof ContactFields)[] = ["full_name", "phone", "email", "service_type", "message"];
