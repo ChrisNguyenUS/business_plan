@@ -51,7 +51,7 @@ Nếu bạn có thể vừa là nonresident vừa là resident trong cùng năm,
 
 ## SSN hay ITIN?
 
-- **SSN (Social Security number)** dành cho người **được phép đi làm** ở Mỹ. Xem cách xin trong bài [Làm thẻ Social Security (SSN)](/vi/blog/lam-the-social-security-ssn).
+- **SSN (Social Security number)** dành cho người **được phép đi làm** ở Mỹ, do Cơ quan An sinh Xã hội (Social Security Administration) cấp.
 - **ITIN (Individual Taxpayer Identification Number)** là số của IRS cho người **cần khai thuế liên bang nhưng không đủ điều kiện có SSN**. Theo IRS, người có thẻ xanh hoặc bất kỳ ai đủ điều kiện có SSN **không** dùng ITIN.
 - ITIN chỉ dùng cho **mục đích thuế liên bang**. Nó không cho bạn quyền làm việc, không tính vào quyền lợi an sinh xã hội, và **không đổi tình trạng di trú**.
 - Bạn nộp **Form W-7 cùng với tờ khai thuế**, không nộp riêng. IRS cho biết phải chờ **khoảng 7 tuần**; có thể **9 đến 11 tuần** trong mùa thuế (15/1 đến 30/4) hoặc khi nộp từ nước ngoài.

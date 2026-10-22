@@ -48,6 +48,20 @@ describe("business and EB-3 hashtags", () => {
   });
 });
 
+describe("tax hashtags", () => {
+  it("lists the tax hashtags in registry order", () => {
+    expect(tagsInCategory("tax").map((t) => t.key)).toEqual([
+      "income-tax-filing", "foreign-accounts", "money-to-vietnam", "self-employed-taxes",
+    ]);
+  });
+
+  it("builds localized paths for them", () => {
+    expect(tagPath("vi", "income-tax-filing")).toBe("/vi/blog/chu-de/khai-thue");
+    expect(tagPath("en", "money-to-vietnam")).toBe("/en/blog/topics/money-to-vietnam");
+    expect(tagBySlug("vi", "thue-tu-doanh")?.key).toBe("self-employed-taxes");
+  });
+});
+
 describe("hashtag lookups", () => {
   it("drops unknown keys and keeps registry order", () => {
     expect(tagsForPost(["uscis-fees", "nope", "green-card"]).map((t) => t.key)).toEqual(["green-card", "uscis-fees"]);
@@ -65,7 +79,7 @@ describe("hashtag lookups", () => {
 
   it("lists hashtags of one category and keeps only those when the category changes", () => {
     expect(tagsInCategory("immigration").every((t) => t.category === "immigration")).toBe(true);
-    expect(tagsInCategory("tax")).toEqual([]);
+    expect(tagsInCategory("insurance")).toEqual([]);
     expect(keepTagsForCategory(["green-card", "nope"], "immigration")).toEqual(["green-card"]);
     expect(keepTagsForCategory(["green-card"], "tax")).toEqual([]);
   });

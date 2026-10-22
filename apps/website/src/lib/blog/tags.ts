@@ -181,6 +181,46 @@ export const BLOG_TAGS: readonly BlogTag[] = [
       en: "Forming a U.S. company while living in Vietnam: an EIN without an SSN, banking, Form 5472, and what a company can't do for a visa.",
     },
   },
+  {
+    key: "income-tax-filing",
+    category: "tax",
+    slug: { vi: "khai-thue", en: "filing-taxes" },
+    label: { vi: "Khai thuế", en: "Filing taxes" },
+    description: {
+      vi: "Khai thuế thu nhập liên bang cho cá nhân và gia đình: hạn nộp, giấy tờ, khấu trừ mới và khai thuế lần đầu ở Mỹ.",
+      en: "Filing your federal income tax return: deadlines, documents, new deductions, and your first U.S. tax return.",
+    },
+  },
+  {
+    key: "foreign-accounts",
+    category: "tax",
+    slug: { vi: "tai-khoan-nuoc-ngoai", en: "foreign-accounts" },
+    label: { vi: "Tài khoản ở nước ngoài", en: "Foreign accounts" },
+    description: {
+      vi: "Báo cáo tài khoản ngân hàng ở nước ngoài với Mỹ: FBAR, Form 8938 (FATCA), ngưỡng, hạn nộp và mức phạt.",
+      en: "Reporting foreign bank accounts to the U.S.: FBAR, Form 8938 (FATCA), thresholds, deadlines and penalties.",
+    },
+  },
+  {
+    key: "money-to-vietnam",
+    category: "tax",
+    slug: { vi: "gui-tien-ve-viet-nam", en: "money-to-vietnam" },
+    label: { vi: "Gửi tiền về Việt Nam", en: "Money to Vietnam" },
+    description: {
+      vi: "Gửi và nhận tiền giữa Mỹ và Việt Nam: thuế quà tặng Form 709, Form 3520 cho quà từ nước ngoài và thu nhập từ Việt Nam.",
+      en: "Sending and receiving money between the U.S. and Vietnam: gift tax Form 709, Form 3520 for foreign gifts, and Vietnam income.",
+    },
+  },
+  {
+    key: "self-employed-taxes",
+    category: "tax",
+    slug: { vi: "thue-tu-doanh", en: "self-employed-taxes" },
+    label: { vi: "Thuế tự doanh", en: "Self-employed taxes" },
+    description: {
+      vi: "Thuế cho người tự doanh và chủ LLC: self-employment tax, thuế ước tính hằng quý, Form 1099 và sales tax Texas.",
+      en: "Taxes for the self-employed and LLC owners: self-employment tax, quarterly estimated tax, Form 1099 and Texas sales tax.",
+    },
+  },
 ];
 
 /** URL segment between /blog/ and the hashtag slug. */
