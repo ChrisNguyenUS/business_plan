@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -21,6 +21,24 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user, profile, loading, signOut } = useAuth();
+
+  // Escape closes the mobile menu; so does opening the floating contact menu.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    const onContactOpen = () => setMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("manna:contact-open", onContactOpen);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("manna:contact-open", onContactOpen);
+    };
+  }, [mobileOpen]);
+
+  const toggleMobile = () => {
+    if (!mobileOpen) window.dispatchEvent(new Event("manna:nav-open"));
+    setMobileOpen(!mobileOpen);
+  };
 
   const alternateHref = getAlternateLocaleHref(pathname, locale);
   const altLabel = locale === "en" ? "VI" : "EN";
@@ -329,7 +347,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
               </Link>
 
               {/* Search */}
-              <button className="search-btn" aria-label="Search">
+              <button className="search-btn" aria-label={locale === "vi" ? "Tìm kiếm" : "Search"}>
                 <Search style={{ width: '17px', height: '17px' }} />
               </button>
 
@@ -361,14 +379,14 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                   {/* Client Login */}
                   <Link href={`/${locale}/login`} className="btn-client-login">
                     <LogIn style={{ width: '15px', height: '15px' }} />
-                    Client Login
+                    {locale === "vi" ? "Đăng Nhập" : "Client Login"}
                   </Link>
                 </>
               )}
 
               {/* Book Now */}
               <Link href={`/${locale}/contact`} className="btn-book-now">
-                Book Now
+                {dictionary.nav_book}
               </Link>
             </div>
 
@@ -376,8 +394,9 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
             <button
               className="lg:hidden transition-transform duration-150 ease-out active:scale-[0.97]"
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#333' }}
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
+              onClick={toggleMobile}
+              aria-expanded={mobileOpen}
+              aria-label={locale === "vi" ? "Mở menu" : "Toggle menu"}
             >
               {mobileOpen ? <X style={{ width: '22px', height: '22px' }} /> : <Menu style={{ width: '22px', height: '22px' }} />}
             </button>
@@ -436,7 +455,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                       <>
                         <Link href={`/${locale}/portal`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: 'center' }}>
                           <LayoutDashboard style={{ width: '15px', height: '15px' }} />
-                          My Portal
+                          {locale === "vi" ? "Cổng KH" : "My Portal"}
                         </Link>
                         <button onClick={() => { signOut(); setMobileOpen(false); }} className="btn-client-login" style={{ justifyContent: 'center' }}>
                           <LogOut style={{ width: '15px', height: '15px' }} />
@@ -445,7 +464,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                     ) : (
                       <Link href={`/${locale}/login`} className="btn-client-login" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: 'center' }}>
                         <LogIn style={{ width: '15px', height: '15px' }} />
-                        Client Login
+                        {locale === "vi" ? "Đăng Nhập" : "Client Login"}
                       </Link>
                     )}
                   </div>
@@ -456,7 +475,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
                     </Link>
                   )}
                   <Link href={`/${locale}/contact`} className="btn-book-now" onClick={() => setMobileOpen(false)} style={{ justifyContent: 'center' }}>
-                    Book Now
+                    {dictionary.nav_book}
                   </Link>
                 </div>
               </div>

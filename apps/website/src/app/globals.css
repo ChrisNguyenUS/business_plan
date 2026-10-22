@@ -99,22 +99,22 @@ label[for] {
   --card-foreground: 0 0% 10%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 10%;
-  --primary: 174 54% 36%;
+  --primary: 174 54% 31%;
   --primary-foreground: 0 0% 100%;
   --secondary: 210 20% 96%;
   --secondary-foreground: 0 0% 15%;
   --muted: 210 20% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 215 16% 42%;
   --accent: 170 30% 96%;
   --accent-foreground: 0 0% 10%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 174 54% 36%;
+  --ring: 174 54% 31%;
 
   /* MannaOS Brand tokens */
-  --teal: 174 54% 36%;
+  --teal: 174 54% 31%;
   --teal-dark: 174 54% 25%;
   --teal-light: 170 30% 96%;
   --charcoal: 0 0% 10%;

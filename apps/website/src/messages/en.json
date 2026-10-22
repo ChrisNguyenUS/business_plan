@@ -7,10 +7,10 @@
   "nav_book": "Book Now",
   "nav_signin": "Sign In",
   "nav_portal": "My Portal",
-  "hero_headline": "Your Trusted Partner for Life, Business & Immigration.",
+  "hero_headline": "One stop, all solutions.",
   "hero_sub": "Bilingual support for immigration paperwork, tax preparation, business services, and insurance in Houston, with most services available online across the U.S.",
   "hero_desc": "Trusted by the Vietnamese community in Houston and beyond. We speak your language and handle everything — so you can focus on what matters.",
-  "hero_cta1": "Book a Free Consultation",
+  "hero_cta1": "Book a Free Appointment",
   "hero_cta2": "Explore Our Services",
   "services_title": "Our Services",
   "services_subtitle": "Comprehensive solutions tailored to your needs",
@@ -58,9 +58,9 @@
   "contact_form_message": "Your Message",
   "contact_form_submit": "Send Message",
   "contact_form_success": "Message sent! We'll get back to you within 24 hours.",
-  "contact_book_title": "Book a Consultation",
-  "contact_book_desc": "Schedule a free 15-minute consultation to discuss your needs and determine the right next step.",
-  "contact_book_btn": "Book on Calendly",
+  "contact_book_title": "Book an Appointment",
+  "contact_book_desc": "Schedule a free 15-minute call to talk through your needs and find the right next step.",
+  "contact_book_btn": "Book a Free Appointment",
   "contact_direct_title": "Direct Contact",
   "contact_select_service": "Select a service...",
   "about_title": "About Manna One Solution",
@@ -73,7 +73,7 @@
   "about_credentials": "Our Credentials",
   "services_page_title": "Our Services",
   "services_page_subtitle": "Bilingual help across six areas of life, family, and business in the U.S.",
-  "services_cta": "Book Appointment",
+  "services_cta": "Book a Free Appointment",
   "services_faq_title": "Frequently Asked Questions",
   "services_pricing": "Pricing",
   "services_what_we_offer": "What We Offer",
@@ -100,7 +100,7 @@
   "insurance_s2": "Property & Casualty Insurance",
   "insurance_s3": "Annuity & Retirement-Related Solutions",
   "insurance_pricing_note": "Commission-based — free consultation, no upfront cost to you.",
-  "insurance_cta": "Free Consultation",
+  "insurance_cta": "Book a Free Appointment",
   "immigration_title": "Immigration Services",
   "immigration_desc": "Bilingual immigration form preparation — N-400, green card, travel documents. We help you get your paperwork complete and on the right USCIS forms. We are not attorneys and do not give legal advice.",
   "immigration_scope_note": "We prepare USCIS forms online for clients across the U.S. Manna One Solution is not a law firm and does not give legal advice. Some states require non-attorney immigration document preparers to register with the state, so we confirm your state before taking your case.",
@@ -108,14 +108,14 @@
   "immigration_s2": "Green Card Applications",
   "immigration_s3": "Visa Renewal",
   "immigration_s4": "Document Review Appointment",
-  "immigration_cta": "Contact for Case Evaluation",
+  "immigration_cta": "Book a Free Appointment",
   "ai_title": "AI, Automation & Digital Solutions",
   "ai_desc": "We understand your business — we build the automation. Modern AI tools to streamline operations and boost efficiency.",
   "ai_s1": "Workflow Automation",
   "ai_s2": "AI-Powered Business Tools",
   "ai_s3": "Website & Web Application Development",
   "ai_s4": "Business Process Optimization & Ongoing Support",
-  "ai_cta": "Free Discovery Call",
+  "ai_cta": "Book a Free Appointment",
   "notfound_title": "Page Not Found",
   "notfound_desc": "The page you're looking for doesn't exist.",
   "notfound_home": "Go Home",
@@ -153,7 +153,7 @@
   "portal_empty_desc": "Contact us to get started with your case.",
   "eb3": {
     "meta_title": "EB-3 Other Workers Green Card",
-    "meta_desc": "Learn about the EB-3 Other Workers (unskilled) green card: eligibility, the 5-step process, and an estimated 4–6 year timeline. Free eligibility check with MannaOS.",
+    "meta_desc": "Learn about the EB-3 Other Workers (unskilled) green card: eligibility, the 5-step process, and an estimated 4–6 year timeline. Free eligibility check with Manna One Solution.",
     "featured_badge": "New",
     "featured_title": "EB-3 Other Workers Green Card",
     "featured_desc": "No degree required. For people in Vietnam and people already in the U.S. seeking adjustment of status.",
@@ -176,7 +176,7 @@
       },
       {
         "title": "Other Workers — unskilled",
-        "desc": "Jobs requiring less than 2 years of experience. No degree required. This is the category MannaOS supports."
+        "desc": "Jobs requiring less than 2 years of experience. No degree required. This is the category Manna One Solution supports."
       }
     ],
     "where_title": "Where are you now?",
@@ -188,7 +188,7 @@
     "steps": [
       {
         "title": "Case review",
-        "desc": "MannaOS reviews your information and responds within 48 hours."
+        "desc": "Manna One Solution reviews your information and responds within 48 hours."
       },
       {
         "title": "Employer matching",
@@ -239,7 +239,7 @@
         "desc": "I-140, DS-260 or I-485 filing fees, and the medical exam."
       },
       {
-        "title": "MannaOS service fee",
+        "title": "Manna One Solution service fee",
         "desc": "Case coordination, Vietnamese-language support, translation, and progress tracking."
       }
     ],
@@ -271,20 +271,20 @@
         "a": "Yes. EB-3 is based on a real job offer, and you must intend to work for the sponsoring employer after receiving your green card."
       },
       {
-        "q": "Is MannaOS a law firm?",
-        "a": "No. MannaOS provides case support and coordination. Legal filings are handled by licensed U.S. immigration attorneys."
+        "q": "Is Manna One Solution a law firm?",
+        "a": "No. Manna One Solution provides case support and coordination. Legal filings are handled by licensed U.S. immigration attorneys."
       }
     ],
-    "disclaimer": "MannaOS provides case support and coordination. MannaOS is not a law firm and does not provide legal advice. Legal filings are handled by licensed U.S. immigration attorneys. Processing times depend on USCIS and the U.S. Department of State and are not guaranteed.",
+    "disclaimer": "Manna One Solution provides case support and coordination. Manna One Solution is not a law firm and does not provide legal advice. Legal filings are handled by licensed U.S. immigration attorneys. Processing times depend on USCIS and the U.S. Department of State and are not guaranteed.",
     "form": {
       "title": "Free eligibility check",
-      "sub": "Answer a few short questions and MannaOS will contact you within 48 hours.",
+      "sub": "Answer a few short questions and Manna One Solution will contact you within 48 hours.",
       "full_name": "Full name",
       "location": "Where are you now?",
       "location_vn": "Vietnam",
       "location_us": "United States",
       "facebook": "Facebook name or profile link",
-      "facebook_hint": "So MannaOS can message you on Messenger",
+      "facebook_hint": "So Manna One Solution can message you on Messenger",
       "zalo": "Zalo number (optional)",
       "phone": "Phone number",
       "us_status": "Current visa status",
@@ -308,20 +308,19 @@
       "timeline_3_6_months": "Within 3–6 months",
       "timeline_researching": "Just researching",
       "notes": "Anything else (optional)",
-      "ack": "I understand MannaOS provides case support, is not a law firm, and does not provide legal advice.",
+      "ack": "I understand Manna One Solution provides case support, is not a law firm, and does not provide legal advice.",
       "select_placeholder": "Select...",
       "submit": "Submit",
       "submitting": "Submitting...",
       "error_required": "This field is required",
       "error_invalid": "Please check this value",
       "error_summary": "Please check the fields marked in red above.",
-      "error_submit": "Something went wrong. Please try again or message MannaOS on Messenger.",
+      "error_submit": "Something went wrong. Please try again or message Manna One Solution on Messenger.",
       "success_title": "Thank you!",
-      "success_desc": "MannaOS will contact you on Messenger or by phone within 48 hours.",
+      "success_desc": "Manna One Solution will contact you on Messenger or by phone within 48 hours.",
       "success_cta": "Message us now"
     }
   },
-  "hero_eyebrow": "Immigration · Tax · Business · Insurance",
   "hero_n400_prefix": "Free citizenship test practice:",
   "contact_call": "Call Us",
   "contact_menu": "Contact us",
@@ -392,7 +391,7 @@
   ],
   "about_eyebrow": "About us",
   "about_tagline": "One Stop, All Solutions",
-  "about_photo_alt": "A consultant reviewing paperwork with a couple at a bright office table",
+  "about_photo_alt": "A staff member reviewing paperwork with a couple at a bright office table",
   "about_disclosure_title": "Non-Attorney Disclosure",
   "about_disclosure": "For immigration services, we prepare USCIS forms at client direction. We are NOT a law firm and do NOT provide legal advice. Complex cases (RFEs, denials, inadmissibility) are referred to licensed immigration attorneys.",
   "about_serving_heading": "Houston, Texas and beyond",
@@ -460,5 +459,69 @@
   "contact_label_facebook": "Facebook",
   "contact_label_location": "Location",
   "contact_new_tab": "(opens in a new tab)",
-  "contact_privacy_link": "Privacy Policy"
+  "contact_privacy_link": "Privacy Policy",
+  "footer_privacy": "Privacy Policy",
+  "footer_terms": "Terms of Service",
+  "immigration_cta_title": "Need help preparing your forms?",
+  "immigration_cta_desc": "Book a free appointment to talk through your paperwork.",
+  "tax_badge": "EFIN Licensed",
+  "insurance_badge": "Licensed Insurance Agent",
+  "tax_faqs": [
+    {
+      "q": "What documents do I need for tax preparation?",
+      "a": "You'll need W-2 forms, 1099 forms, Social Security numbers, previous year's tax return, and any deduction receipts. We'll provide a complete checklist at your appointment."
+    },
+    {
+      "q": "Can you file taxes for someone with an ITIN?",
+      "a": "Yes! We regularly help individuals with ITINs file their taxes and can also assist with ITIN applications."
+    },
+    {
+      "q": "Do you offer tax preparation in Vietnamese?",
+      "a": "Absolutely. Our team is fully bilingual in Vietnamese and English. We can explain everything in your preferred language."
+    },
+    {
+      "q": "What is the deadline for filing taxes?",
+      "a": "The standard deadline is April 15th. If you need more time, we can file an extension (Form 4868) to give you until October 15th."
+    }
+  ],
+  "insurance_faqs": [
+    {
+      "q": "How much does a life insurance consultation cost?",
+      "a": "Consultations are completely free. We help you understand your options before you make any decisions."
+    },
+    {
+      "q": "What types of life insurance do you offer?",
+      "a": "We offer term life, whole life, universal life, and indexed universal life insurance from top-rated carriers."
+    },
+    {
+      "q": "Can I get insurance with pre-existing conditions?",
+      "a": "Yes, many carriers offer policies for people with pre-existing conditions. We'll help you find the best option for your situation."
+    },
+    {
+      "q": "Do you explain policies in Vietnamese?",
+      "a": "Yes! We provide full bilingual service so you can understand every detail of your policy in Vietnamese or English."
+    },
+    {
+      "q": "What is an annuity and is it right for me?",
+      "a": "An annuity is a financial product that provides guaranteed income, typically for retirement. We'll assess your financial goals to determine if it's a good fit."
+    }
+  ],
+  "ai_faqs": [
+    {
+      "q": "What kind of automation can you build for my business?",
+      "a": "We build custom automations including appointment scheduling, invoice processing, customer follow-ups, data entry automation, and more — all tailored to your specific workflow."
+    },
+    {
+      "q": "Do I need technical knowledge to use AI tools?",
+      "a": "Not at all! We build everything to be user-friendly. We also provide training and ongoing support so you can use the tools confidently."
+    },
+    {
+      "q": "Can you help my Vietnamese business go digital?",
+      "a": "Absolutely. We specialize in helping Vietnamese-owned businesses adopt modern technology. We understand your business culture and needs."
+    },
+    {
+      "q": "What is a monthly retainer?",
+      "a": "A monthly retainer gives you ongoing access to our AI and automation team. We maintain your systems, add new features, and provide priority support."
+    }
+  ]
 }

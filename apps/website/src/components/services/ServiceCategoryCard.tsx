@@ -37,7 +37,7 @@ export default function ServiceCategoryCard({
       </div>
       <div className="flex flex-1 flex-col p-6">
         <Heading className="font-bold text-charcoal text-lg mb-2">{c.title}</Heading>
-        <p className="text-muted-foreground text-[15px] leading-relaxed mb-5">{c.desc}</p>
+        <p className="text-muted-foreground text-base leading-relaxed mb-5">{c.desc}</p>
         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3">
           <Link
             href={c.href}

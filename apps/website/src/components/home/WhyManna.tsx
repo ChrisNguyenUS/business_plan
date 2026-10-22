@@ -46,7 +46,7 @@ export default function WhyManna({ dictionary }: WhyMannaProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-charcoal text-base mb-1">{b.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{b.desc}</p>
+                  <p className="text-muted-foreground text-base leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             );

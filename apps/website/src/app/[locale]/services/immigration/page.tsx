@@ -22,7 +22,7 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl lg:text-5xl font-bold text-charcoal mb-4">
-            Immigration Services / Dịch Vụ Di Trú
+            {d.immigration_title}
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
             {d.immigration_desc}
@@ -53,7 +53,7 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
         {/* What We Offer */}
         {immigrationOfferings.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-xl font-bold text-charcoal mb-6">What We Offer / Dịch Vụ Của Chúng Tôi</h2>
+            <h2 className="text-xl font-bold text-charcoal mb-6">{d.services_what_we_offer}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {immigrationOfferings.map((s, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-teal-light/50 border border-border">
@@ -75,15 +75,15 @@ export default async function ImmigrationPage({ params }: { params: Promise<{ lo
         {/* CTA */}
         <div className="text-center p-10 rounded-2xl border border-primary/20 bg-teal-light">
           <h3 className="text-2xl font-bold text-charcoal mb-2">
-            Đặt Lịch Hỗ Trợ Hồ Sơ / Request Filing Support
+            {d.immigration_cta_title}
           </h3>
           <p className="text-muted-foreground text-sm mb-6">
-            Contact us today to discuss your case.
+            {d.immigration_cta_desc}
           </p>
           <Link href={`/${locale}/contact`}>
             <Button size="lg" className="bg-primary hover:bg-teal-dark text-white rounded-full px-8 gap-2">
               <Calendar className="h-4 w-4" />
-              Đặt Lịch Hỗ Trợ Hồ Sơ / Request Filing Support
+              {d.immigration_cta}
             </Button>
           </Link>
         </div>

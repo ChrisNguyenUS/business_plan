@@ -7,10 +7,10 @@
   "nav_book": "Đặt Lịch",
   "nav_signin": "Đăng Nhập",
   "nav_portal": "Cổng Khách Hàng",
-  "hero_headline": "Đối tác tin cậy cho cuộc sống, kinh doanh và di trú.",
+  "hero_headline": "Một nơi, mọi giải pháp.",
   "hero_sub": "Hỗ trợ song ngữ về hồ sơ di trú, khai thuế, dịch vụ doanh nghiệp và bảo hiểm tại Houston, phần lớn dịch vụ làm online trên toàn nước Mỹ.",
   "hero_desc": "Được cộng đồng người Việt tại Houston và các vùng lân cận tin tưởng. Chúng tôi nói tiếng Việt và xử lý mọi thứ — để bạn tập trung vào điều quan trọng.",
-  "hero_cta1": "Đặt lịch tư vấn miễn phí",
+  "hero_cta1": "Đặt lịch hẹn miễn phí",
   "hero_cta2": "Xem các dịch vụ",
   "services_title": "Dịch Vụ Của Chúng Tôi",
   "services_subtitle": "Giải pháp toàn diện phù hợp với nhu cầu của bạn",
@@ -54,13 +54,13 @@
   "contact_form_name": "Họ Tên",
   "contact_form_phone": "Số Điện Thoại",
   "contact_form_email": "Địa Chỉ Email",
-  "contact_form_service": "Dịch Vụ Cần Tư Vấn",
+  "contact_form_service": "Dịch Vụ Bạn Cần",
   "contact_form_message": "Nội Dung Tin Nhắn",
   "contact_form_submit": "Gửi Tin Nhắn",
   "contact_form_success": "Đã gửi! Chúng tôi sẽ phản hồi trong vòng 24 giờ.",
-  "contact_book_title": "Đặt Lịch Tư Vấn",
-  "contact_book_desc": "Đặt lịch tư vấn miễn phí 15 phút để trao đổi nhu cầu và xác định bước tiếp theo phù hợp.",
-  "contact_book_btn": "Đặt Lịch Qua Calendly",
+  "contact_book_title": "Đặt Lịch Hẹn",
+  "contact_book_desc": "Đặt cuộc gọi miễn phí 15 phút để trao đổi nhu cầu và xác định bước tiếp theo phù hợp.",
+  "contact_book_btn": "Đặt lịch hẹn miễn phí",
   "contact_direct_title": "Liên Hệ Trực Tiếp",
   "contact_select_service": "Chọn dịch vụ...",
   "about_title": "Về Manna One Solution",
@@ -73,7 +73,7 @@
   "about_credentials": "Chứng Chỉ & Giấy Phép",
   "services_page_title": "Dịch Vụ Của Chúng Tôi",
   "services_page_subtitle": "Hỗ trợ song ngữ trong sáu nhóm dịch vụ cho cuộc sống, gia đình và kinh doanh ở Mỹ.",
-  "services_cta": "Đặt Lịch Hẹn",
+  "services_cta": "Đặt lịch hẹn miễn phí",
   "services_faq_title": "Câu Hỏi Thường Gặp",
   "services_pricing": "Bảng Giá",
   "services_what_we_offer": "Dịch Vụ Chúng Tôi Cung Cấp",
@@ -100,7 +100,7 @@
   "insurance_s2": "Bảo Hiểm Tài Sản & Trách Nhiệm (P&C)",
   "insurance_s3": "Annuity & Giải Pháp Liên Quan Đến Hưu Trí",
   "insurance_pricing_note": "Dựa trên hoa hồng — tư vấn miễn phí, không thu phí trước.",
-  "insurance_cta": "Tư Vấn Miễn Phí",
+  "insurance_cta": "Đặt lịch hẹn miễn phí",
   "immigration_title": "Dịch Vụ Di Trú",
   "immigration_desc": "Hỗ trợ soạn và điền hồ sơ di trú bằng tiếng Việt — N-400, thẻ xanh, giấy phép đi lại. Chúng tôi giúp bạn chuẩn bị giấy tờ đầy đủ, đúng mẫu USCIS. Chúng tôi không phải luật sư và không tư vấn pháp lý.",
   "immigration_scope_note": "Chúng tôi chuẩn bị hồ sơ USCIS online cho khách trên toàn nước Mỹ. Manna One Solution không phải hãng luật và không tư vấn pháp lý. Một số bang yêu cầu người làm giấy tờ di trú không phải luật sư phải đăng ký với bang, nên chúng tôi sẽ xác nhận bang bạn đang sống trước khi nhận hồ sơ.",
@@ -108,14 +108,14 @@
   "immigration_s2": "Đơn Xin Thẻ Xanh",
   "immigration_s3": "Gia Hạn Visa",
   "immigration_s4": "Hẹn kiểm tra hồ sơ",
-  "immigration_cta": "Liên Hệ Đánh Giá Hồ Sơ",
+  "immigration_cta": "Đặt lịch hẹn miễn phí",
   "ai_title": "AI, Tự Động Hóa & Giải Pháp Số",
   "ai_desc": "Chúng tôi hiểu doanh nghiệp của bạn — chúng tôi xây dựng tự động hóa. Công cụ AI hiện đại giúp tối ưu hóa hoạt động.",
   "ai_s1": "Tự Động Hóa Quy Trình",
   "ai_s2": "Công Cụ AI Cho Doanh Nghiệp",
   "ai_s3": "Làm Website & Ứng Dụng Web",
   "ai_s4": "Tối Ưu Quy Trình & Hỗ Trợ Hàng Tháng",
-  "ai_cta": "Gọi Tư Vấn Miễn Phí",
+  "ai_cta": "Đặt lịch hẹn miễn phí",
   "notfound_title": "Không Tìm Thấy Trang",
   "notfound_desc": "Trang bạn tìm kiếm không tồn tại.",
   "notfound_home": "Về Trang Chủ",
@@ -153,30 +153,30 @@
   "portal_empty_desc": "Liên hệ chúng tôi để bắt đầu.",
   "eb3": {
     "meta_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
-    "meta_desc": "Tìm hiểu diện EB-3 lao động phổ thông (Other Workers): điều kiện, quy trình 5 bước, thời gian ước tính 4–6 năm. Kiểm tra điều kiện miễn phí cùng MannaOS.",
+    "meta_desc": "Tìm hiểu diện EB-3 lao động phổ thông (Other Workers): điều kiện, quy trình 5 bước, thời gian ước tính 4–6 năm. Kiểm tra điều kiện miễn phí cùng Manna One Solution.",
     "featured_badge": "Mới",
     "featured_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
     "featured_desc": "Không cần bằng cấp. Dành cho người ở Việt Nam và người đang ở Mỹ muốn chuyển diện.",
     "featured_cta": "Tìm hiểu EB-3",
-    "hero_eyebrow": "EB-3 Other Workers",
+    "hero_eyebrow": "EB-3 lao động phổ thông",
     "hero_title": "Định cư Mỹ diện EB-3 lao động phổ thông",
     "hero_sub": "Không cần bằng cấp, không cần tiếng Anh giỏi. Có chủ lao động Mỹ bảo lãnh, vợ/chồng và con dưới 21 tuổi được đi cùng.",
-    "cta_messenger": "Nhắn Messenger tư vấn",
+    "cta_messenger": "Nhắn Messenger",
     "cta_check": "Kiểm tra điều kiện",
     "what_title": "EB-3 là gì?",
     "what_intro": "EB-3 là diện thẻ xanh dựa trên việc làm, gồm 3 nhánh:",
     "categories": [
       {
-        "title": "Skilled Workers",
+        "title": "Skilled Workers — lao động có tay nghề",
         "desc": "Công việc cần ít nhất 2 năm kinh nghiệm hoặc đào tạo."
       },
       {
-        "title": "Professionals",
+        "title": "Professionals — chuyên gia có bằng cử nhân",
         "desc": "Công việc yêu cầu bằng cử nhân của Mỹ hoặc tương đương."
       },
       {
         "title": "Other Workers — lao động phổ thông",
-        "desc": "Công việc cần dưới 2 năm kinh nghiệm. Không yêu cầu bằng cấp. Đây là diện MannaOS hỗ trợ."
+        "desc": "Công việc cần dưới 2 năm kinh nghiệm. Không yêu cầu bằng cấp. Đây là diện Manna One Solution hỗ trợ."
       }
     ],
     "where_title": "Bạn đang ở đâu?",
@@ -188,7 +188,7 @@
     "steps": [
       {
         "title": "Đánh giá hồ sơ",
-        "desc": "MannaOS xem thông tin của bạn và phản hồi trong 48 giờ."
+        "desc": "Manna One Solution xem thông tin của bạn và phản hồi trong 48 giờ."
       },
       {
         "title": "Ghép chủ lao động",
@@ -239,7 +239,7 @@
         "desc": "Lệ phí I-140, DS-260 hoặc I-485, khám sức khỏe."
       },
       {
-        "title": "Phí dịch vụ MannaOS",
+        "title": "Phí dịch vụ Manna One Solution",
         "desc": "Điều phối hồ sơ, hỗ trợ tiếng Việt, dịch thuật và theo dõi tiến độ."
       }
     ],
@@ -271,20 +271,20 @@
         "a": "Có. EB-3 dựa trên lời mời làm việc thật, bạn cần có ý định làm việc cho chủ lao động bảo lãnh sau khi nhận thẻ xanh."
       },
       {
-        "q": "MannaOS có phải là văn phòng luật không?",
-        "a": "Không. MannaOS là đơn vị hỗ trợ và điều phối hồ sơ. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận."
+        "q": "Manna One Solution có phải là văn phòng luật không?",
+        "a": "Không. Manna One Solution là đơn vị hỗ trợ và điều phối hồ sơ. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận."
       }
     ],
-    "disclaimer": "MannaOS là đơn vị hỗ trợ và điều phối hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận. Thời gian xử lý phụ thuộc USCIS và Bộ Ngoại giao Mỹ, không được bảo đảm.",
+    "disclaimer": "Manna One Solution là đơn vị hỗ trợ và điều phối hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý. Hồ sơ pháp lý do luật sư di trú được cấp phép tại Mỹ đảm nhận. Thời gian xử lý phụ thuộc USCIS và Bộ Ngoại giao Mỹ, không được bảo đảm.",
     "form": {
       "title": "Kiểm tra điều kiện miễn phí",
-      "sub": "Trả lời vài câu hỏi ngắn, MannaOS sẽ liên hệ bạn trong 48 giờ.",
+      "sub": "Trả lời vài câu hỏi ngắn, Manna One Solution sẽ liên hệ bạn trong 48 giờ.",
       "full_name": "Họ và tên",
       "location": "Bạn đang ở đâu?",
       "location_vn": "Việt Nam",
       "location_us": "Mỹ",
       "facebook": "Tên hoặc link Facebook",
-      "facebook_hint": "Để MannaOS nhắn Messenger cho bạn",
+      "facebook_hint": "Để Manna One Solution nhắn Messenger cho bạn",
       "zalo": "Số Zalo (không bắt buộc)",
       "phone": "Số điện thoại",
       "us_status": "Tình trạng visa hiện tại",
@@ -308,20 +308,19 @@
       "timeline_3_6_months": "Trong 3–6 tháng",
       "timeline_researching": "Đang tìm hiểu",
       "notes": "Ghi chú thêm (không bắt buộc)",
-      "ack": "Tôi hiểu MannaOS là đơn vị hỗ trợ hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý.",
+      "ack": "Tôi hiểu Manna One Solution là đơn vị hỗ trợ hồ sơ, không phải hãng luật và không cung cấp tư vấn pháp lý.",
       "select_placeholder": "Chọn...",
       "submit": "Gửi thông tin",
       "submitting": "Đang gửi...",
       "error_required": "Vui lòng điền mục này",
       "error_invalid": "Thông tin chưa hợp lệ",
       "error_summary": "Vui lòng kiểm tra các mục được đánh dấu đỏ ở trên.",
-      "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho MannaOS.",
+      "error_submit": "Gửi chưa thành công. Vui lòng thử lại hoặc nhắn Messenger cho Manna One Solution.",
       "success_title": "Cảm ơn bạn!",
-      "success_desc": "MannaOS sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",
+      "success_desc": "Manna One Solution sẽ liên hệ qua Messenger hoặc điện thoại trong 48 giờ.",
       "success_cta": "Nhắn Messenger ngay"
     }
   },
-  "hero_eyebrow": "Di trú · Thuế · Kinh doanh · Bảo hiểm",
   "hero_n400_prefix": "Luyện thi quốc tịch miễn phí:",
   "contact_call": "Gọi cho chúng tôi",
   "contact_menu": "Liên hệ",
@@ -392,7 +391,7 @@
   ],
   "about_eyebrow": "Giới thiệu",
   "about_tagline": "Một Nơi, Mọi Giải Pháp",
-  "about_photo_alt": "Nhân viên tư vấn cùng một cặp vợ chồng xem giấy tờ tại văn phòng",
+  "about_photo_alt": "Nhân viên cùng một cặp vợ chồng xem giấy tờ tại văn phòng",
   "about_disclosure_title": "Lưu ý: chúng tôi không phải luật sư",
   "about_disclosure": "Với dịch vụ di trú, chúng tôi soạn mẫu đơn USCIS theo hướng dẫn của bạn. Chúng tôi KHÔNG phải văn phòng luật và KHÔNG tư vấn pháp lý. Hồ sơ phức tạp (RFE, bị từ chối, không đủ điều kiện nhập cảnh) sẽ được giới thiệu tới luật sư di trú có giấy phép.",
   "about_serving_heading": "Houston, Texas và các khu vực lân cận",
@@ -408,21 +407,21 @@
       "desc": "Mã số nộp thuế điện tử của IRS: được phép nộp tờ khai thuế điện tử cho khách hàng."
     },
     {
-      "title": "Texas Life Insurance License #3142469",
+      "title": "Giấy phép Bảo hiểm Nhân thọ Texas #3142469",
       "status": "active",
       "label": "Đã cấp phép",
       "desc": "Được cấp phép tại Texas cho bảo hiểm nhân thọ và sản phẩm annuity.",
       "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
     },
     {
-      "title": "Texas P&C Insurance License #3118525",
+      "title": "Giấy phép Bảo hiểm Tài sản & Trách nhiệm (P&C) Texas #3118525",
       "status": "active",
       "label": "Đã cấp phép",
       "desc": "Được cấp phép tại Texas cho bảo hiểm tài sản & trách nhiệm (P&C). NPN #21024561.",
       "verify": "https://www.tdi.texas.gov/agent/agent-lookup.html"
     },
     {
-      "title": "Texas Notary Public",
+      "title": "Công chứng viên Texas",
       "status": "pending",
       "label": "Đang chờ duyệt",
       "desc": "Đang nộp đơn với Texas Secretary of State. Chưa được cấp."
@@ -460,5 +459,69 @@
   "contact_label_facebook": "Facebook",
   "contact_label_location": "Địa điểm",
   "contact_new_tab": "(mở tab mới)",
-  "contact_privacy_link": "Chính sách quyền riêng tư"
+  "contact_privacy_link": "Chính sách quyền riêng tư",
+  "footer_privacy": "Chính sách bảo mật",
+  "footer_terms": "Điều khoản sử dụng",
+  "immigration_cta_title": "Cần hỗ trợ chuẩn bị hồ sơ?",
+  "immigration_cta_desc": "Đặt lịch hẹn miễn phí để trao đổi về giấy tờ của bạn.",
+  "tax_badge": "Được IRS cấp EFIN",
+  "insurance_badge": "Đại lý bảo hiểm có giấy phép",
+  "tax_faqs": [
+    {
+      "q": "Khai thuế cần chuẩn bị giấy tờ gì?",
+      "a": "Bạn cần mẫu W-2, mẫu 1099, số An sinh Xã hội, tờ khai thuế năm trước và các biên lai khấu trừ. Chúng tôi sẽ đưa bạn danh sách đầy đủ trong buổi hẹn."
+    },
+    {
+      "q": "Có khai thuế cho người dùng số ITIN được không?",
+      "a": "Được. Chúng tôi thường xuyên giúp người có ITIN khai thuế và cũng hỗ trợ làm đơn xin ITIN."
+    },
+    {
+      "q": "Có khai thuế bằng tiếng Việt không?",
+      "a": "Có. Đội ngũ của chúng tôi nói được cả tiếng Việt và tiếng Anh, nên có thể giải thích mọi thứ bằng ngôn ngữ bạn muốn."
+    },
+    {
+      "q": "Hạn chót khai thuế là khi nào?",
+      "a": "Hạn thông thường là ngày 15 tháng 4. Nếu cần thêm thời gian, chúng tôi có thể nộp đơn gia hạn (Form 4868) để bạn có tới ngày 15 tháng 10."
+    }
+  ],
+  "insurance_faqs": [
+    {
+      "q": "Buổi hẹn tìm hiểu bảo hiểm nhân thọ tốn bao nhiêu?",
+      "a": "Hoàn toàn miễn phí. Chúng tôi giúp bạn hiểu các lựa chọn trước khi bạn quyết định."
+    },
+    {
+      "q": "Có những loại bảo hiểm nhân thọ nào?",
+      "a": "Chúng tôi có bảo hiểm nhân thọ có thời hạn (term), trọn đời (whole life), universal life và indexed universal life từ các hãng được xếp hạng cao."
+    },
+    {
+      "q": "Có bệnh nền thì mua bảo hiểm được không?",
+      "a": "Được, nhiều hãng có hợp đồng cho người có bệnh nền. Chúng tôi sẽ giúp bạn tìm lựa chọn phù hợp nhất với hoàn cảnh của bạn."
+    },
+    {
+      "q": "Có giải thích hợp đồng bằng tiếng Việt không?",
+      "a": "Có. Chúng tôi phục vụ song ngữ để bạn hiểu từng chi tiết của hợp đồng bằng tiếng Việt hoặc tiếng Anh."
+    },
+    {
+      "q": "Annuity là gì và có hợp với tôi không?",
+      "a": "Annuity là sản phẩm tài chính cho bạn khoản thu nhập được bảo đảm, thường dùng khi nghỉ hưu. Chúng tôi sẽ xem mục tiêu tài chính của bạn để biết sản phẩm này có phù hợp không."
+    }
+  ],
+  "ai_faqs": [
+    {
+      "q": "Có thể tự động hóa những việc gì cho doanh nghiệp của tôi?",
+      "a": "Chúng tôi làm các quy trình tự động theo yêu cầu: đặt lịch hẹn, xử lý hóa đơn, nhắc khách hàng, nhập liệu và nhiều việc khác, tất cả theo đúng cách bạn làm việc."
+    },
+    {
+      "q": "Tôi có cần biết công nghệ để dùng công cụ AI không?",
+      "a": "Không cần. Chúng tôi làm mọi thứ dễ dùng, đồng thời hướng dẫn và hỗ trợ lâu dài để bạn tự tin sử dụng."
+    },
+    {
+      "q": "Có giúp tiệm/doanh nghiệp người Việt chuyển sang làm online không?",
+      "a": "Có. Chúng tôi chuyên giúp doanh nghiệp của người Việt áp dụng công nghệ mới, và hiểu văn hóa cũng như nhu cầu kinh doanh của bạn."
+    },
+    {
+      "q": "Gói dịch vụ hàng tháng (retainer) là gì?",
+      "a": "Gói hàng tháng cho bạn dùng đội ngũ AI và tự động hóa của chúng tôi lâu dài: bảo trì hệ thống, thêm tính năng mới và được hỗ trợ ưu tiên."
+    }
+  ]
 }
