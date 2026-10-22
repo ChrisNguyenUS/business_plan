@@ -32,7 +32,7 @@ export default function HowItWorks({ dictionary }: HowItWorksProps) {
                 </span>
               </div>
               <h3 className="font-bold text-charcoal text-lg mb-2">{step.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
+              <p className="text-muted-foreground text-base leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
