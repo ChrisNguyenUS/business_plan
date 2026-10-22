@@ -23,13 +23,22 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
     const onClick = (e: MouseEvent) => {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
+    const onNavOpen = () => setOpen(false);
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onClick);
+    window.addEventListener("manna:nav-open", onNavOpen);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
+      window.removeEventListener("manna:nav-open", onNavOpen);
     };
   }, [open]);
+
+  // Opening this menu closes the mobile nav menu, so the two never stack.
+  const toggle = () => {
+    if (!open) window.dispatchEvent(new Event("manna:contact-open"));
+    setOpen(!open);
+  };
 
   const onZalo = () => {
     trackFbq("Contact", { method: "zalo" });
@@ -84,7 +93,7 @@ export default function FloatingButtons({ labels }: { labels: FloatingLabels }) 
       )}
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={toggle}
         aria-expanded={open}
         aria-controls="floating-contact-menu"
         aria-label={open ? labels.close : labels.menu}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -21,6 +21,24 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user, profile, loading, signOut } = useAuth();
+
+  // Escape closes the mobile menu; so does opening the floating contact menu.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    const onContactOpen = () => setMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("manna:contact-open", onContactOpen);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("manna:contact-open", onContactOpen);
+    };
+  }, [mobileOpen]);
+
+  const toggleMobile = () => {
+    if (!mobileOpen) window.dispatchEvent(new Event("manna:nav-open"));
+    setMobileOpen(!mobileOpen);
+  };
 
   const alternateHref = getAlternateLocaleHref(pathname, locale);
   const altLabel = locale === "en" ? "VI" : "EN";
@@ -376,7 +394,8 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
             <button
               className="lg:hidden transition-transform duration-150 ease-out active:scale-[0.97]"
               style={{ padding: '8px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#333' }}
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={toggleMobile}
+              aria-expanded={mobileOpen}
               aria-label={locale === "vi" ? "Mở menu" : "Toggle menu"}
             >
               {mobileOpen ? <X style={{ width: '22px', height: '22px' }} /> : <Menu style={{ width: '22px', height: '22px' }} />}
