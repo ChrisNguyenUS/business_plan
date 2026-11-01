@@ -16,3 +16,11 @@ export function localeAlternates(locale: Locale, path: string): Metadata["altern
     },
   };
 }
+
+/**
+ * For a page with no Vietnamese text yet: /vi serves the same English copy, so
+ * both URLs name /en as canonical and there is no language pair to declare.
+ */
+export function englishOnlyAlternates(path: string): Metadata["alternates"] {
+  return { canonical: `/en${path}` };
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localeAlternates } from "./alternates";
+import { englishOnlyAlternates, localeAlternates } from "./alternates";
 
 describe("localeAlternates", () => {
   it("makes each locale version its own canonical", () => {
@@ -20,5 +20,11 @@ describe("localeAlternates", () => {
       canonical: "/vi",
       languages: { en: "/en", vi: "/vi", "x-default": "/en" },
     });
+  });
+});
+
+describe("englishOnlyAlternates", () => {
+  it("points both locales at the English page, with no hreflang pair", () => {
+    expect(englishOnlyAlternates("/privacy-policy")).toEqual({ canonical: "/en/privacy-policy" });
   });
 });

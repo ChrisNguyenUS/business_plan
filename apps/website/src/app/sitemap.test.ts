@@ -21,6 +21,14 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("sitemap.xml", () => {
+  it("lists the English-only legal pages once, under /en", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
+    expect(urls).toContain("https://www.mannaos.com/en/privacy-policy");
+    expect(urls).toContain("https://www.mannaos.com/en/terms-of-service");
+    expect(urls).not.toContain("https://www.mannaos.com/vi/privacy-policy");
+    expect(urls).not.toContain("https://www.mannaos.com/vi/terms-of-service");
+  });
+
   it("lists only www URLs, never the apex host that redirects", async () => {
     listPublishedPosts.mockResolvedValue([viPost]);
     for (const entry of await sitemap()) {

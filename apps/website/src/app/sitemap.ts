@@ -103,7 +103,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogIndex,
     ...postEntries,
     ...tagEntries,
-    ...urls("/privacy-policy", 0.3, "yearly"),
-    ...urls("/terms-of-service", 0.3, "yearly"),
+    // Legal pages are English-only for now: /vi canonicalizes to /en, so only /en is listed.
+    { url: `${SITE_URL}/en/privacy-policy`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${SITE_URL}/en/terms-of-service`, changeFrequency: "yearly", priority: 0.3 },
   ];
 }
