@@ -5,7 +5,7 @@ import { correctAnswersFor } from '../quiz-engine';
 import { NON_STATE_CODES } from '../location-rules';
 import { N400_QUESTIONS_BY_ID } from '../questions-data';
 import { REPS_BY_STATE } from '../reps-data';
-import { STATES_BY_CODE, type StateCode } from '../state-data';
+import { STATES, STATES_BY_CODE, type StateCode } from '../state-data';
 import { PUBLIC_COPY } from './copy';
 import { stateSlug } from './state-slugs';
 
@@ -59,7 +59,11 @@ export function buildStatePage(code: StateCode, locale: Locale): StatePageData {
     ? reps.map((r) => ({ label: r.districtNumber === 0 ? 'At-Large' : String(r.districtNumber), name: r.name }))
     : [];
 
-  const related = RELATED_ORDER.filter((c) => c !== code)
+  // The next three in the list give every state page links from its siblings; without
+  // them only the RELATED_ORDER states get any, and Google left the rest uncrawled.
+  const at = STATES.findIndex((s) => s.code === code);
+  const next = [1, 2, 3].map((n) => STATES[(at + n) % STATES.length].code);
+  const related = [...new Set([...next, ...RELATED_ORDER.filter((c) => c !== code)])]
     .slice(0, 6)
     .map((c) => ({ slug: stateSlug(c), name: locale === 'vi' ? STATES_BY_CODE[c].nameVi : STATES_BY_CODE[c].nameEn }));
 

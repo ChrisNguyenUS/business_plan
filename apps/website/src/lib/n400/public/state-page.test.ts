@@ -55,3 +55,20 @@ describe('buildStatePage', () => {
     }
   });
 });
+
+describe('related state links', () => {
+  it('gives every state links from other state pages, so none depends on the landing page alone', () => {
+    const inlinks = new Map<string, number>();
+    for (const s of STATES) {
+      for (const r of buildStatePage(s.code, 'en').related) inlinks.set(r.slug, (inlinks.get(r.slug) ?? 0) + 1);
+    }
+    for (const s of STATES) expect(inlinks.get(buildStatePage(s.code, 'en').slug) ?? 0).toBeGreaterThanOrEqual(3);
+  });
+
+  it('never lists the same state twice', () => {
+    for (const s of STATES) {
+      const slugs = buildStatePage(s.code, 'en').related.map((r) => r.slug);
+      expect(new Set(slugs).size).toBe(slugs.length);
+    }
+  });
+});
