@@ -30,6 +30,7 @@ language, or business type.
 - `offpage-seo.md` — Link building, backlinks, competitor gap analysis
 - `multilingual-seo.md` — hreflang, language-specific URLs, community keywords
 - `community-seo.md` — Reddit, Quora, Facebook Groups, forum SEO strategy
+- `audit-playbook.md` — Auditing a live site: evidence rules, AI crawlers, page-type fit, hreflang, programmatic gates, regression baselines
 
 ---
 
@@ -328,6 +329,9 @@ Support/FAQ page: 400–800 words
 Landing page:     600–1,200 words (conversion-focused, not length-focused)
 ```
 
+These are planning ranges, not targets. Google says there is no ideal page length, and writing to a
+word count is one of its warning signs. Stop when the reader's question is fully answered.
+
 ---
 
 ## PHASE 4: Technical SEO
@@ -361,27 +365,28 @@ Read `references/technical-seo.md` for full implementation details.
 ## PHASE 5: Schema Markup (SEO + GEO Bridge)
 
 Schema markup is structured data in JSON-LD format that tells Google and AI systems exactly
-what your content means. **This is the #1 technical factor for GEO (AI citation).**
+what your content means. Use it for rich result eligibility and clear entities. Google says it is
+not required for generative AI search and no special schema.org markup exists for it.
 
 Read `references/schema-library.md` for ready-to-use templates for:
 - Organization / LocalBusiness
 - Article / BlogPosting
-- FAQPage (most important for AI Overview)
+- FAQPage (optional entity markup; FAQ rich results ended 2026-05-07)
 - Product / Offer
 - BreadcrumbList
 - Person / ProfessionalService
-- HowTo
+- HowTo (valid schema.org type; no Google rich result since 2023)
 - Event
 - VideoObject
 
 ### Schema Priority by Project Type
 
 ```
-Local service business:  LocalBusiness + FAQPage + BreadcrumbList
-E-commerce:              Product + Offer + BreadcrumbList + FAQPage
-Blog / Content site:     Article + FAQPage + BreadcrumbList + Organization
-SaaS / App:              SoftwareApplication + FAQPage + Organization
-Personal brand:          Person + Article + FAQPage
+Local service business:  LocalBusiness + BreadcrumbList
+E-commerce:              Product + Offer + BreadcrumbList
+Blog / Content site:     Article + BreadcrumbList + Organization
+SaaS / App:              SoftwareApplication + Organization
+Personal brand:          Person + Article
 Portfolio:               Person + CreativeWork + BreadcrumbList
 ```
 
@@ -391,13 +396,24 @@ Portfolio:               Person + CreativeWork + BreadcrumbList
 
 GEO = making your content the source AI systems cite when answering questions in your niche.
 
+### Google's Position (Primary Source — Overrides Everything Below)
+
+Google's AI optimization guide (updated 2026-07-10) says GEO and AEO are still SEO: AI Overviews
+and AI Mode run on core ranking and quality systems. A page must be indexed and snippet-eligible,
+and the site included in Search generative AI features in Search Console.
+
+Google says you do NOT need to: create llms.txt or special markup, chunk content, rewrite for AI
+with special wording or long-tail variants, chase inauthentic mentions, or over-focus on structured
+data. Treat the rest of this phase as third-party heuristics for other AI systems and for readers.
+When a heuristic conflicts with Google's guidance, follow Google and say so.
+
 ### AI Systems and Their Citation Sources
 
 ```
 GOOGLE AI OVERVIEW
   → Pulls from pages Google already ranks highly in its index
-  → Schema (especially FAQPage) heavily influences extraction
-  → Best lever: rank well + add FAQPage schema + answer questions directly
+  → No special schema or markup for AI Overviews (Google)
+  → Best lever: rank well with unique, first-hand content that answers the question
 
 CHATGPT (browsing mode) + MICROSOFT COPILOT
   → Both use Bing's index as the primary source
@@ -412,8 +428,8 @@ PERPLEXITY
     increase the chance Perplexity uses your content as a relay
 
 CLAUDE / ANTHROPIC (AI assistants)
-  → Training data cutoff applies — real-time citation varies by product version
-  → Focus on Google and Bing ranking; Claude with web access follows similar patterns
+  → Claude-SearchBot and Claude-User fetch for search; ClaudeBot is for training
+  → Blocking a training bot does not have to block the search bot (see audit-playbook.md)
 ```
 
 ### What AI Systems Look for When Choosing Sources
@@ -460,9 +476,9 @@ Rule 3: Include location-specific data for local businesses
 Rule 4: Structure content with clear semantic sections
         H2 = topic, first paragraph under H2 = direct answer
 
-Rule 5: Add a dedicated FAQ section to every page
-        Mark it up with FAQPage schema (see references/schema-library.md)
-        These FAQ entries are the most commonly extracted by AI Overview
+Rule 5: Add a FAQ section only where readers really have those questions
+        FAQPage schema is optional entity markup with no Google rich result
+        Never add a FAQ just to pick up AI citations
 
 Rule 6: Link out to authoritative external sources
         IRS.gov, state agencies, government sites, academic institutions
@@ -827,10 +843,9 @@ TECHNICAL
 SCHEMA
   ☐ Organization or LocalBusiness on all pages
   ☐ Page-type schema on all key pages
-  ☐ FAQPage schema on content pages
+  ☐ FAQPage only as optional markup for a visible FAQ
   ☐ BreadcrumbList on all pages except homepage
   ☐ VideoObject on pages embedding videos (if applicable)
-  ☐ Speakable schema on pages with key definitions and FAQ answers
 
 GEO
   ☐ FAQ section on every content page

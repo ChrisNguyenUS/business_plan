@@ -3,8 +3,8 @@
 Ready-to-use JSON-LD schema templates. All schema goes inside a `<script>` tag
 in the `<head>` of the page. Use the correct type for each page.
 
-Schema markup is the primary technical bridge between SEO and GEO. The FAQPage
-schema in particular is the most commonly extracted format by Google AI Overview.
+Schema markup supports rich results and clear entities. Google says it is not required for
+generative AI search and that no special markup exists for it. Never promise AI citations from it.
 
 ---
 
@@ -12,16 +12,16 @@ schema in particular is the most commonly extracted format by Google AI Overview
 1. Organization (all sites)
 2. LocalBusiness (local service businesses)
 3. Article / BlogPosting (content pages)
-4. FAQPage (all content pages — highest GEO impact)
+4. FAQPage (optional — visible FAQs only, no Google rich result)
 5. Product + Offer (e-commerce)
 6. BreadcrumbList (all pages except homepage)
 7. Person (personal brand, author pages)
 8. ProfessionalService (licensed professionals)
-9. HowTo (instructional content)
+9. HowTo (optional — no Google rich result)
 10. SoftwareApplication (SaaS / apps)
 11. Event (time-based events)
 12. VideoObject (video embeds)
-13. Speakable (voice search + AI extraction)
+13. Speakable (limited Google beta — usually skip)
 14. Combining multiple schemas on one page
 
 ---
@@ -168,10 +168,11 @@ Use on: All blog posts, guides, news articles, case studies.
 
 ---
 
-## 4. FAQPage ⭐ Highest GEO Impact
+## 4. FAQPage (Optional)
 
-Use on: Every content page that has a FAQ section. This is the schema type most
-commonly extracted by Google AI Overview and AI answer engines.
+Google stopped showing FAQ rich results on 2026-05-07, for all sites. The schema.org type is still
+valid. Keep existing markup if it matches the page (Info priority, not an error), but do not add it
+expecting a Google SERP feature or AI citation benefit.
 
 Structure your page with a visible FAQ section (real H2/H3 + answers), then mark
 it up with this schema. The questions and answers in the schema must match what is
@@ -383,7 +384,10 @@ Extends LocalBusiness with credential information.
 
 ---
 
-## 9. HowTo
+## 9. HowTo (Optional)
+
+Google removed HowTo rich results in 2023. The schema.org type stays valid but earns no Google
+SERP feature.
 
 Use on: Step-by-step instructional articles ("How to file your taxes", "How to apply for a green card").
 
@@ -527,7 +531,10 @@ AI extractable text content alongside the video entity.
 
 ---
 
-## 13. Speakable — Voice Search + AI Extraction
+## 13. Speakable — Limited Google Beta
+
+Google documents this as a beta for English-language news publishers, for U.S. Google Home devices.
+It is not an AI citation signal. Skip it unless the site is such a publisher.
 
 Use on: Pages with key definitions, FAQ answers, or summary paragraphs that are ideal
 for voice assistants (Google Assistant, Siri) and AI extraction systems to read aloud
@@ -563,9 +570,6 @@ Add a CSS class (e.g., `speakable-content`) to the HTML elements you want marked
 </p>
 ```
 Then reference it in the schema: `"cssSelector": [".speakable-content"]`
-
-**GEO benefit:** Speakable markup helps AI systems identify exactly which part of your
-page to extract and cite, increasing the precision and likelihood of citation.
 
 ---
 
