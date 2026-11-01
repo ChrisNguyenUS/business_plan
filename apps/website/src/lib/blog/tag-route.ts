@@ -1,7 +1,7 @@
 import { isValidLocale, type Locale } from "@/lib/i18n/config";
 import { localesWithTag, postsForTag } from "./post-locale";
 import { listPublishedPosts } from "./queries";
-import { tagBySlug, type BlogTag } from "./tags";
+import { tagBySlug, tagPath, type BlogTag } from "./tags";
 import type { BlogPostRow, LocalizedPost } from "./types";
 
 export interface TagPageData {
@@ -10,6 +10,16 @@ export interface TagPageData {
   posts: LocalizedPost[];
   localesWithPosts: Locale[];
   rows: BlogPostRow[];
+}
+
+/**
+ * A hashtag URL typed or linked in the wrong language (/en/blog/chu-de/<vi slug>,
+ * /vi/blog/topics/<en slug>) points to the same hashtag in that locale; returns its path, else null.
+ */
+export function wrongLocaleTagPath(localeParam: string, slug: string, expected: Locale): string | null {
+  if (!isValidLocale(localeParam) || localeParam === expected) return null;
+  const tag = tagBySlug(expected, slug);
+  return tag ? tagPath(localeParam, tag.key) : null;
 }
 
 /** Data for /vi/blog/chu-de/<slug> or /en/blog/topics/<slug>; null means 404. */

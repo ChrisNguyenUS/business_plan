@@ -4,7 +4,7 @@ import type { BlogPostRow } from "./types";
 const listPublishedPosts = vi.fn<() => Promise<BlogPostRow[]>>();
 vi.mock("./queries", () => ({ listPublishedPosts: () => listPublishedPosts() }));
 
-import { loadTagPage } from "./tag-route";
+import { loadTagPage, wrongLocaleTagPath } from "./tag-route";
 
 const row: BlogPostRow = {
   id: "p1", slug_en: null, slug_vi: "bao-lanh-cha-me-sang-my", title_en: null, title_vi: "Bảo lãnh cha mẹ",
@@ -16,6 +16,19 @@ const row: BlogPostRow = {
 
 beforeEach(() => {
   listPublishedPosts.mockResolvedValue([row]);
+});
+
+describe("wrongLocaleTagPath", () => {
+  it("maps a hashtag URL in the wrong language to the right one", () => {
+    expect(wrongLocaleTagPath("en", "bao-lanh-cha-me", "vi")).toBe("/en/blog/topics/sponsor-parents");
+    expect(wrongLocaleTagPath("vi", "sponsor-parents", "en")).toBe("/vi/blog/chu-de/bao-lanh-cha-me");
+  });
+
+  it("returns null for the right locale, unknown slugs and invalid locales", () => {
+    expect(wrongLocaleTagPath("vi", "bao-lanh-cha-me", "vi")).toBeNull();
+    expect(wrongLocaleTagPath("en", "khong-co", "vi")).toBeNull();
+    expect(wrongLocaleTagPath("fr", "bao-lanh-cha-me", "vi")).toBeNull();
+  });
 });
 
 describe("loadTagPage", () => {

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n/config";
 import { BLOG_LABELS, CATEGORY_LABELS } from "@/lib/blog/labels";
 import { postsForTag } from "@/lib/blog/post-locale";
-import { loadTagPage } from "@/lib/blog/tag-route";
+import { loadTagPage, wrongLocaleTagPath } from "@/lib/blog/tag-route";
 import { tagJsonLd, tagMetadata } from "@/lib/blog/tag-seo";
 import { tagPath, tagsInCategory } from "@/lib/blog/tags";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
@@ -16,6 +16,8 @@ export async function tagPageMetadata(localeParam: string, slug: string, expecte
 }
 
 export async function TagPageView({ localeParam, slug, expected }: { localeParam: string; slug: string; expected: Locale }) {
+  const wrongLocale = wrongLocaleTagPath(localeParam, slug, expected);
+  if (wrongLocale) permanentRedirect(wrongLocale);
   const data = await loadTagPage(localeParam, slug, expected);
   if (!data) notFound();
   const { locale, tag, posts, rows } = data;
