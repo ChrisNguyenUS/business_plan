@@ -16,6 +16,8 @@ import Footer from "@/components/layout/Footer";
 import FloatingButtons from "@/components/layout/FloatingButtons";
 import { ConditionalChrome } from "@/components/layout/ConditionalChrome";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { listPostSlugPairs } from "@/lib/blog/queries";
+import { postSlugAlternates } from "@/lib/blog/post-locale";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -62,6 +64,8 @@ export default async function LocaleLayout({
   }
 
   const dictionary = await getDictionary(locale as Locale);
+  // Lets the language toggle on a blog post link straight to the post's other-language slug.
+  const postSlugs = postSlugAlternates(await listPostSlugPairs().catch(() => []));
 
   return (
     <html
@@ -80,7 +84,7 @@ export default async function LocaleLayout({
         />
         <AuthProvider>
           <ConditionalChrome
-            navbar={<Navbar dictionary={dictionary} locale={locale as Locale} />}
+            navbar={<Navbar dictionary={dictionary} locale={locale as Locale} postSlugs={postSlugs} />}
             footer={<Footer dictionary={dictionary} locale={locale as Locale} />}
             floating={
               <FloatingButtons

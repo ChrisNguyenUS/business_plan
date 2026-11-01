@@ -75,6 +75,22 @@ export function resolvePostRoute(candidates: BlogPostRow[], locale: Locale, slug
   return { kind: "not-found" };
 }
 
+/** For each locale, a post's slug there mapped to its slug in the other language (posts that exist in both). */
+export type PostSlugAlternates = Record<Locale, Record<string, string>>;
+
+export function postSlugAlternates(
+  rows: Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en">[],
+): PostSlugAlternates {
+  const out: PostSlugAlternates = { vi: {}, en: {} };
+  for (const r of rows) {
+    if (filled(r.slug_vi) && filled(r.title_vi) && filled(r.slug_en) && filled(r.title_en)) {
+      out.vi[r.slug_vi!] = r.slug_en!;
+      out.en[r.slug_en!] = r.slug_vi!;
+    }
+  }
+  return out;
+}
+
 /** A hashtag's posts as one locale's pages see them, in the rows' order. */
 export function postsForTag(rows: BlogPostRow[], key: string, locale: Locale): LocalizedPost[] {
   return rows.filter((r) => (r.tags ?? []).includes(key)).flatMap((r) => localizePost(r, locale) ?? []);

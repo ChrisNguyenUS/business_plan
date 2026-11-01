@@ -8,15 +8,17 @@ import { Menu, X, ChevronDown, Search, LogIn, LogOut, Shield, LayoutDashboard } 
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
 import { getAlternateLocaleHref } from "@/lib/i18n/navigation";
+import type { PostSlugAlternates } from "@/lib/blog/post-locale";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { serviceCategories } from "@/lib/services/categories";
 
 interface NavbarProps {
   dictionary: Dictionary;
   locale: Locale;
+  postSlugs?: PostSlugAlternates;
 }
 
-export default function Navbar({ dictionary, locale }: NavbarProps) {
+export default function Navbar({ dictionary, locale, postSlugs }: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -40,7 +42,7 @@ export default function Navbar({ dictionary, locale }: NavbarProps) {
     setMobileOpen(!mobileOpen);
   };
 
-  const alternateHref = getAlternateLocaleHref(pathname, locale);
+  const alternateHref = getAlternateLocaleHref(pathname, locale, postSlugs);
   const altLabel = locale === "en" ? "VI" : "EN";
   const isAdmin = profile?.role === "admin";
 

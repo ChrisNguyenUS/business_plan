@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blogIndexPosts, localesWithTag, localizePost, postSlugs, postsForTag, resolvePostRoute } from "./post-locale";
+import { blogIndexPosts, localesWithTag, localizePost, postSlugAlternates, postSlugs, postsForTag, resolvePostRoute } from "./post-locale";
 import type { BlogPostRow } from "./types";
 
 function row(over: Partial<BlogPostRow>): BlogPostRow {
@@ -39,6 +39,14 @@ describe("postSlugs", () => {
   it("drops a half-written translation (slug but blank content)", () => {
     expect(postSlugs(row({ slug_en: "x", title_en: "X", content_en: "  ", slug_vi: "y", title_vi: "Y", content_vi: "c" })))
       .toEqual({ vi: "y" });
+  });
+});
+
+describe("postSlugAlternates", () => {
+  it("maps each slug to the other language's slug for posts that exist in both", () => {
+    const both = { slug_vi: "bai-viet", slug_en: "the-post", title_vi: "Bài", title_en: "Post" };
+    const viOnly = { slug_vi: "chi-co-vi", slug_en: null, title_vi: "Chỉ VI", title_en: null };
+    expect(postSlugAlternates([both, viOnly])).toEqual({ vi: { "bai-viet": "the-post" }, en: { "the-post": "bai-viet" } });
   });
 });
 
