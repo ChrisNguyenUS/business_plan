@@ -76,6 +76,17 @@ describe("documents hashtags", () => {
   });
 });
 
+describe("insurance hashtags", () => {
+  it("lists the insurance hashtags in registry order", () => {
+    expect(tagsInCategory("insurance").map((t) => t.key)).toEqual(["health-insurance"]);
+  });
+
+  it("builds localized paths for them", () => {
+    expect(tagPath("vi", "health-insurance")).toBe("/vi/blog/chu-de/bao-hiem-suc-khoe");
+    expect(tagPath("en", "health-insurance")).toBe("/en/blog/topics/health-insurance");
+  });
+});
+
 describe("hashtag lookups", () => {
   it("drops unknown keys and keeps registry order", () => {
     expect(tagsForPost(["uscis-fees", "nope", "green-card"]).map((t) => t.key)).toEqual(["green-card", "uscis-fees"]);
@@ -93,7 +104,7 @@ describe("hashtag lookups", () => {
 
   it("lists hashtags of one category and keeps only those when the category changes", () => {
     expect(tagsInCategory("immigration").every((t) => t.category === "immigration")).toBe(true);
-    expect(tagsInCategory("insurance")).toEqual([]);
+    expect(tagsInCategory("ai")).toEqual([]);
     expect(keepTagsForCategory(["green-card", "nope"], "immigration")).toEqual(["green-card"]);
     expect(keepTagsForCategory(["green-card"], "tax")).toEqual([]);
   });

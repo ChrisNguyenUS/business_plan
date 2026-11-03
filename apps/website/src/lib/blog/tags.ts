@@ -260,6 +260,15 @@ export const BLOG_TAGS: readonly BlogTag[] = [
       vi: "Mở tài khoản ngân hàng cá nhân và xây dựng điểm tín dụng khi mới sang Mỹ.",
       en: "Opening a personal bank account and building a credit score when you are new to the U.S.",
     },
+  },  {
+    key: "health-insurance",
+    category: "insurance",
+    slug: { vi: "bao-hiem-suc-khoe", en: "health-insurance" },
+    label: { vi: "Bảo hiểm sức khỏe", en: "Health insurance" },
+    description: {
+      vi: "Bảo hiểm sức khỏe ở Mỹ: Open Enrollment trên Marketplace, trợ giá theo thu nhập, Medicaid và Medicare.",
+      en: "Health insurance in the U.S.: Marketplace Open Enrollment, income-based savings, Medicaid and Medicare.",
+    },
   },
 ];
 
