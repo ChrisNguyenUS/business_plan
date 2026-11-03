@@ -17,7 +17,7 @@
   "services_tax_title": "Tax Services",
   "services_tax_desc": "Individual, family, and small business tax preparation and filing assistance.",
   "services_insurance_title": "Insurance & Financial Protection",
-  "services_insurance_desc": "Life insurance, property and casualty coverage, and licensed annuity solutions.",
+  "services_insurance_desc": "Health insurance, life insurance, property and casualty coverage, and licensed annuity solutions in Texas.",
   "services_immigration_title": "Immigration Services",
   "services_immigration_desc": "Citizenship, green cards, family petitions, and immigration paperwork support.",
   "services_ai_title": "AI, Automation & Digital Solutions",
@@ -99,6 +99,7 @@
   "insurance_s1": "Life Insurance",
   "insurance_s2": "Property & Casualty Insurance",
   "insurance_s3": "Annuity & Retirement-Related Solutions",
+  "insurance_s4": "Health Insurance (Texas)",
   "insurance_pricing_note": "Commission-based — free consultation, no upfront cost to you.",
   "insurance_cta": "Book a Free Appointment",
   "immigration_title": "Immigration Services",
@@ -339,7 +340,7 @@
   "services_business_desc": "LLC formation, EIN, business registration, resale documentation, and website setup.",
   "services_insurance_nav": "Insurance",
   "services_ai_nav": "AI & Digital",
-  "insurance_note": "Texas-licensed Life and Property & Casualty agent. Annuities are offered only where licensed and appropriate. We do not give investment, tax, or legal advice.",
+  "insurance_note": "Texas-licensed agent for health, life, and property & casualty insurance. We serve Texas residents only. Annuities are offered only where licensed and appropriate. We do not give investment, tax, or legal advice.",
   "business_title": "Business Services",
   "business_desc": "Start and set up your business the right way: LLC formation, EIN, registration, resale documentation, and a website your customers can find.",
   "business_note": "Texas is our main state; other states case by case. We prepare and file paperwork with you. We are not a law firm and do not give legal advice.",
@@ -485,6 +486,10 @@
     }
   ],
   "insurance_faqs": [
+    {
+      "q": "Do you help with health insurance?",
+      "a": "Yes, for Texas residents. We help you compare and enroll in a plan, in Vietnamese or English. Open Enrollment for 2027 on HealthCare.gov runs from November 1, 2026 to January 15, 2027; enroll by December 15, 2026 for coverage that starts January 1, 2027."
+    },
     {
       "q": "How much does a life insurance consultation cost?",
       "a": "Consultations are completely free. We help you understand your options before you make any decisions."

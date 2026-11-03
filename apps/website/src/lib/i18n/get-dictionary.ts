@@ -54,7 +54,8 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
         dbDict.insurance_offerings = [
           { id: "1", name: dbDict.insurance_s1 },
           { id: "2", name: dbDict.insurance_s2 },
-          { id: "3", name: dbDict.insurance_s3 }
+          { id: "3", name: dbDict.insurance_s3 },
+          { id: "4", name: dbDict.insurance_s4 }
         ];
         dbDict.immigration_offerings = [
           { id: "1", name: dbDict.immigration_s1 },
@@ -153,7 +154,8 @@ export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
           else dbDict.insurance_offerings = [
             { id: "1", name: dbDict.insurance_s1 },
             { id: "2", name: dbDict.insurance_s2 },
-            { id: "3", name: dbDict.insurance_s3 }
+            { id: "3", name: dbDict.insurance_s3 },
+            { id: "4", name: dbDict.insurance_s4 }
           ];
 
           if (content.immigration_offerings && content.immigration_offerings.length > 0) {

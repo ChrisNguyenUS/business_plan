@@ -146,3 +146,16 @@ describe("getDictionary homepage row", () => {
     expect((await getDictionary("vi")).trust_badges).toEqual(vi);
   });
 });
+
+// Owner 2026-11-03: health insurance is sold (Texas only), so the default
+// offerings list it whether or not the DB has a services row.
+describe("getDictionary insurance offerings", () => {
+  it.each([
+    ["with a services row", [legacyServicesRow]],
+    ["without a services row", []],
+  ])("lists health insurance by default %s", async (_label, rows) => {
+    siteContentRows = rows;
+    const d = await getDictionary("vi");
+    expect(d.insurance_offerings?.map((o) => o.name)).toContain(viMessages.insurance_s4);
+  });
+});

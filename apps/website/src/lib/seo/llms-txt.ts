@@ -23,7 +23,7 @@ export function buildLlmsTxt(): string {
 - [EB-3 Other Workers green card](${en("/services/immigration/eb3")}): free eligibility check for the EB-3 unskilled-worker path, for applicants in Vietnam or already in the U.S.; legal filings are handled by licensed U.S. immigration attorneys.
 - [Tax & business](${en("/services/tax")}): tax preparation, extension filing, LLC setup and business registration.
 - [AI & automation](${en("/services/ai")}): workflow automation and AI tools for small businesses.
-- [Insurance & finance](${en("/services/insurance")}): life insurance, annuities and retirement planning for Texas residents.
+- [Insurance & finance](${en("/services/insurance")}): health insurance, life insurance, annuities and retirement planning for Texas residents.
 
 ## Tools
 

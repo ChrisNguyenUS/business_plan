@@ -121,7 +121,8 @@ const DEFAULT_TAX_SERVICES = [
 const DEFAULT_INSURANCE_OFFERINGS = [
   { id: "1", name: "Life Insurance" },
   { id: "2", name: "Annuity Plans" },
-  { id: "3", name: "Retirement Planning" }
+  { id: "3", name: "Retirement Planning" },
+  { id: "4", name: "Health Insurance (Texas)" }
 ];
 
 const DEFAULT_IMMIGRATION_OFFERINGS = [

@@ -17,7 +17,7 @@
   "services_tax_title": "Thuế",
   "services_tax_desc": "Khai thuế cá nhân, gia đình, doanh nghiệp nhỏ và hỗ trợ nộp thuế.",
   "services_insurance_title": "Bảo Hiểm & Bảo Vệ Tài Chính",
-  "services_insurance_desc": "Bảo hiểm nhân thọ, bảo hiểm tài sản và trách nhiệm, cùng các sản phẩm annuity được cấp phép.",
+  "services_insurance_desc": "Bảo hiểm sức khỏe, bảo hiểm nhân thọ, bảo hiểm tài sản và trách nhiệm, cùng các sản phẩm annuity được cấp phép tại Texas.",
   "services_immigration_title": "Di Trú",
   "services_immigration_desc": "Quốc tịch, thẻ xanh, bảo lãnh gia đình và hỗ trợ giấy tờ di trú.",
   "services_ai_title": "AI, Tự Động Hóa & Giải Pháp Số",
@@ -99,6 +99,7 @@
   "insurance_s1": "Bảo Hiểm Nhân Thọ",
   "insurance_s2": "Bảo Hiểm Tài Sản & Trách Nhiệm (P&C)",
   "insurance_s3": "Annuity & Giải Pháp Liên Quan Đến Hưu Trí",
+  "insurance_s4": "Bảo Hiểm Sức Khỏe (Texas)",
   "insurance_pricing_note": "Dựa trên hoa hồng — tư vấn miễn phí, không thu phí trước.",
   "insurance_cta": "Đặt lịch hẹn miễn phí",
   "immigration_title": "Dịch Vụ Di Trú",
@@ -339,7 +340,7 @@
   "services_business_desc": "Mở LLC, xin EIN, đăng ký kinh doanh, giấy tờ thuế bán lại (resale) và làm website.",
   "services_insurance_nav": "Bảo hiểm",
   "services_ai_nav": "AI & Giải pháp số",
-  "insurance_note": "Đại lý bảo hiểm Nhân thọ và Tài sản/Trách nhiệm (P&C) có giấy phép tại Texas. Annuity chỉ được giới thiệu khi phù hợp và trong phạm vi giấy phép. Chúng tôi không tư vấn đầu tư, thuế hay pháp lý.",
+  "insurance_note": "Đại lý bảo hiểm có giấy phép tại Texas: bảo hiểm sức khỏe, nhân thọ và tài sản/trách nhiệm (P&C). Chúng tôi chỉ phục vụ khách sống tại Texas. Annuity chỉ được giới thiệu khi phù hợp và trong phạm vi giấy phép. Chúng tôi không tư vấn đầu tư, thuế hay pháp lý.",
   "business_title": "Dịch Vụ Doanh Nghiệp",
   "business_desc": "Mở và thiết lập doanh nghiệp đúng cách: thành lập LLC, xin EIN, đăng ký kinh doanh, giấy tờ thuế bán lại và website để khách tìm thấy bạn.",
   "business_note": "Chủ yếu làm tại Texas, các bang khác xem từng trường hợp. Chúng tôi cùng bạn chuẩn bị và nộp giấy tờ. Chúng tôi không phải văn phòng luật và không tư vấn pháp lý.",
@@ -485,6 +486,10 @@
     }
   ],
   "insurance_faqs": [
+    {
+      "q": "Có giúp mua bảo hiểm sức khỏe không?",
+      "a": "Có, cho khách sống tại Texas. Chúng tôi giúp bạn so sánh và đăng ký plan bằng tiếng Việt. Đợt Open Enrollment cho năm 2027 trên HealthCare.gov kéo dài từ 1/11/2026 đến 15/1/2027; đăng ký trước 15/12/2026 để có bảo hiểm từ 1/1/2027."
+    },
     {
       "q": "Buổi hẹn tìm hiểu bảo hiểm nhân thọ tốn bao nhiêu?",
       "a": "Hoàn toàn miễn phí. Chúng tôi giúp bạn hiểu các lựa chọn trước khi bạn quyết định."
