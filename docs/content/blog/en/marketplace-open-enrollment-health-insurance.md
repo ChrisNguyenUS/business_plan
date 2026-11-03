@@ -134,7 +134,9 @@ CMS has reported [agents switching people's plans without their knowledge](https
 - **Marketplace Call Center:** [1-800-318-2596](https://www.healthcare.gov/language-resource/). You can ask for a Vietnamese interpreter. The line is open 24/7, except holidays.
 - **Local enrollment help:** search [Find Local Help](https://www.healthcare.gov/find-assistance/).
 
-Manna One Solution is a Texas-licensed agency for life and property and casualty (P&C) insurance, NPN #21024561. We **do not sell health insurance**, and this article is general information. It is not insurance, tax or legal advice. If you live in Texas and want to learn about [life or P&C insurance](/en/services/insurance), you can book a time with us.
+**Live in Texas?** Manna One Solution is a Texas-licensed insurance agency, NPN #21024561, and we help clients **in Texas** choose and enroll in health insurance, in Vietnamese or English. [Book a time with us](/en/services/insurance) before December 15 to compare plans. We serve insurance clients in Texas only; if you live in another state, use the call center or Find Local Help above.
+
+This article is general information, not tax or legal advice.
 
 ## Sources
 
@@ -186,4 +188,4 @@ Only with a qualifying life event, such as losing coverage, getting married, hav
 
 ### Does Manna One Solution sell health insurance?
 
-No. Manna One Solution is licensed in Texas for life and P&C insurance. For Marketplace help, call 1-800-318-2596 or use Find Local Help on HealthCare.gov.
+Yes, for clients who live in Texas only, because our insurance license is a Texas license (NPN #21024561). If you live in another state, call 1-800-318-2596 or use Find Local Help on HealthCare.gov.

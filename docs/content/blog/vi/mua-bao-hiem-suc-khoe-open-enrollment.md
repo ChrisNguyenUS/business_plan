@@ -133,7 +133,9 @@ CMS từng ghi nhận trường hợp [đại lý đổi plan của người mua
 - **Tổng đài Marketplace:** [1-800-318-2596](https://www.healthcare.gov/language-resource/). Bạn có thể xin thông dịch viên tiếng Việt. Tổng đài mở 24/7, trừ ngày lễ.
 - **Người giúp đăng ký tại địa phương:** tìm trên [Find Local Help](https://www.healthcare.gov/find-assistance/).
 
-Manna One Solution là đại lý bảo hiểm có giấy phép tại Texas cho bảo hiểm nhân thọ và tài sản/trách nhiệm (P&C), NPN #21024561. Chúng tôi **không bán bảo hiểm sức khỏe** và bài này chỉ cung cấp thông tin chung. Bài không phải tư vấn bảo hiểm, thuế hay pháp lý. Nếu bạn ở Texas và muốn tìm hiểu [bảo hiểm nhân thọ hoặc P&C](/vi/services/insurance), bạn có thể đặt lịch với chúng tôi.
+**Bạn sống ở Texas?** Manna One Solution là đại lý bảo hiểm có giấy phép tại Texas, NPN #21024561, và giúp khách **ở Texas** chọn và đăng ký bảo hiểm sức khỏe bằng tiếng Việt. Bạn có thể [đặt lịch với chúng tôi](/vi/services/insurance) trước 15/12 để so sánh plan. Chúng tôi chỉ phục vụ bảo hiểm tại Texas; nếu bạn ở bang khác, hãy dùng tổng đài hoặc Find Local Help ở trên.
+
+Bài này chỉ cung cấp thông tin chung, không phải tư vấn thuế hay pháp lý.
 
 ## Nguồn
 
@@ -185,4 +187,4 @@ Chỉ khi bạn có sự kiện đủ điều kiện như mất bảo hiểm, k�
 
 ### Manna One Solution có bán bảo hiểm sức khỏe không?
 
-Không. Manna One Solution có giấy phép tại Texas cho bảo hiểm nhân thọ và P&C. Để được giúp về Marketplace, bạn gọi 1-800-318-2596 hoặc dùng Find Local Help trên HealthCare.gov.
+Có, nhưng chỉ cho khách sống tại Texas, vì giấy phép bảo hiểm của chúng tôi là của Texas (NPN #21024561). Nếu bạn ở bang khác, bạn gọi 1-800-318-2596 hoặc dùng Find Local Help trên HealthCare.gov.
