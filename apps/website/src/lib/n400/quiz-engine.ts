@@ -112,7 +112,7 @@ export function correctAnswersFor(
   const info = STATES_BY_CODE[stateCode];
   if (!info) return [];
   // D.C./territory answers from the USCIS notes (no senators, no D.C. governor/capital).
-  const rule = locationRuleAnswer(question.id, stateCode);
+  const rule = locationRuleAnswer(question.id, stateCode, districtNumber);
   if (rule) return [{ en: rule.en, vi: rule.vi }];
 
   // Q23: senators

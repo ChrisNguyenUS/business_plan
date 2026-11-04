@@ -62,6 +62,8 @@ export interface PublicCopy {
     q29TerritoryNote: string;
     districtHeader: string;
     representativeHeader: string;
+    /** Table cell for a district with nobody in the seat. */
+    vacantSeat: string;
     findDistrictCta: string;
     houseFinderLabel: string;
     starNote: string;
@@ -184,6 +186,7 @@ export const PUBLIC_COPY: Record<Locale, PublicCopy> = {
       q29TerritoryNote: 'Theo USCIS, bạn cũng có thể trả lời rằng vùng lãnh thổ không có dân biểu có quyền biểu quyết.',
       districtHeader: 'Khu bầu cử',
       representativeHeader: 'Dân biểu',
+      vacantSeat: 'Đang trống',
       findDistrictCta: 'Không biết mình ở khu nào? Đăng ký N400 Ready và nhập địa chỉ, ứng dụng sẽ tìm giúp bạn.',
       houseFinderLabel: 'Hoặc tra trên house.gov',
       starNote: 'Câu có dấu ★ thuộc 20 câu dành cho người từ 65 tuổi có thẻ xanh từ 20 năm (diện 65/20).',
@@ -299,6 +302,7 @@ export const PUBLIC_COPY: Record<Locale, PublicCopy> = {
       q29TerritoryNote: 'USCIS also accepts saying that the territory has no voting representative in Congress.',
       districtHeader: 'District',
       representativeHeader: 'Representative',
+      vacantSeat: 'Vacant',
       findDistrictCta: 'Not sure which district you are in? Sign up for N400 Ready and enter your address; the app finds it for you.',
       houseFinderLabel: 'Or look it up on house.gov',
       starNote: 'Questions marked ★ are among the 20 questions for applicants 65 or older with a green card for 20 years (65/20).',

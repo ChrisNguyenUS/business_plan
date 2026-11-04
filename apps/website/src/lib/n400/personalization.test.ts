@@ -61,4 +61,9 @@ describe('buildCivicsPersonalization for D.C. and territories', () => {
     expect(buildCivicsPersonalization('DC', 0, 'en')!.governor).toBe('D.C. does not have a governor');
     expect(buildCivicsPersonalization('GU', 0, 'en')!.capital).toBe('Hagåtña');
   });
+
+  it('shows a vacant seat as vacant, not as an unresolved district', () => {
+    expect(buildCivicsPersonalization('TX', 23, 'vi')!.representative).toBe('Ghế này đang trống (hiện chưa có dân biểu)');
+    expect(buildCivicsPersonalization('FL', 20, 'en')!.representative).toBe('The seat is vacant (no representative right now)');
+  });
 });

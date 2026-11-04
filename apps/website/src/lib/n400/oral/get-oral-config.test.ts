@@ -102,4 +102,11 @@ describe('American Samoa governor is graded on his surname', () => {
   it('accepts "Governor Pula"', () => {
     expect(gradeOralAnswer('Governor Pula', getOralAnswerConfig(61, { stateCode: 'AS', districtNumber: 0 })!).verdict).toBe('correct');
   });
+
+  it('grades "vacant" as correct for a vacant district, the old holder as wrong', () => {
+    const config = getOralAnswerConfig(29, { stateCode: 'FL', districtNumber: 20 })!;
+    expect(gradeOralAnswer('the seat is vacant', config).verdict).toBe('correct');
+    expect(gradeOralAnswer('no representative', config).verdict).toBe('correct');
+    expect(gradeOralAnswer('Cherfilus-McCormick', config).verdict).not.toBe('correct');
+  });
 });

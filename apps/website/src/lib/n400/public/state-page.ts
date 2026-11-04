@@ -2,7 +2,7 @@
 // functions the app teaches with (correctAnswersFor + location rules).
 import type { Locale } from '@/lib/i18n/config';
 import { correctAnswersFor } from '../quiz-engine';
-import { NON_STATE_CODES } from '../location-rules';
+import { NON_STATE_CODES, VACANT_HOUSE_SEATS } from '../location-rules';
 import { N400_QUESTIONS_BY_ID } from '../questions-data';
 import { REPS_BY_STATE } from '../reps-data';
 import { STATES, STATES_BY_CODE, type StateCode } from '../state-data';
@@ -55,8 +55,14 @@ export function buildStatePage(code: StateCode, locale: Locale): StatePageData {
     return { questionId: id, question, questionAlt, answers: taught, note, star };
   });
 
+  // A vacant seat has no row in reps-data but stays in the table, marked vacant.
+  const vacant = [...VACANT_HOUSE_SEATS]
+    .filter((key) => key.startsWith(`${code}-`))
+    .map((key) => ({ districtNumber: Number(key.slice(3)), name: copy.vacantSeat }));
   const districts: DistrictRow[] = isState
-    ? reps.map((r) => ({ label: r.districtNumber === 0 ? 'At-Large' : String(r.districtNumber), name: r.name }))
+    ? [...reps, ...vacant]
+        .sort((a, b) => a.districtNumber - b.districtNumber)
+        .map((r) => ({ label: r.districtNumber === 0 ? 'At-Large' : String(r.districtNumber), name: r.name }))
     : [];
 
   // The next three in the list give every state page links from its siblings; without

@@ -26,7 +26,7 @@ export function getOralAnswerConfig(qid: number, location?: OralLocation): OralA
     if (!location) return null;
     // D.C./territory rule sentences are graded on their key words ("no senator"),
     // not on a surname like the people answers.
-    const rule = locationRuleAnswer(qid, location.stateCode);
+    const rule = locationRuleAnswer(qid, location.stateCode, location.districtNumber);
     if (rule) return { type: 'single', alternatives: rule.oral, noPartialCredit: true };
     const answers = correctAnswersFor(q, location.stateCode, location.districtNumber);
     if (answers.length === 0) return null;

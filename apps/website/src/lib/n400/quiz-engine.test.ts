@@ -174,6 +174,20 @@ describe('correctAnswersFor', () => {
       'Ted Cruz',
     ]);
   });
+
+  it('teaches "vacant" for Q29 in a vacant district', () => {
+    const q29 = N400_QUESTIONS_BY_ID.get(29)!;
+    expect(correctAnswersFor(q29, 'FL', 20)).toEqual([
+      { en: 'The seat is vacant (no representative right now)', vi: 'Ghế này đang trống (hiện chưa có dân biểu)' },
+    ]);
+  });
+
+  it('never offers a vacant seat\'s old holder when the district is unknown', () => {
+    const q29 = N400_QUESTIONS_BY_ID.get(29)!;
+    const names = correctAnswersFor(q29, 'FL', null).map((a) => a.en);
+    expect(names.length).toBe(27);
+    expect(names).not.toContain('Sheila Cherfilus-McCormick');
+  });
 });
 
 describe('selectMockTestQuestions', () => {

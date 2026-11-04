@@ -71,4 +71,11 @@ describe('related state links', () => {
       expect(new Set(slugs).size).toBe(slugs.length);
     }
   });
+
+  it('keeps a vacant district in the table, marked vacant', () => {
+    const tx = buildStatePage('TX', 'vi');
+    expect(tx.districts.length).toBe(38);
+    expect(tx.districts.find((d) => d.label === '23')).toEqual({ label: '23', name: 'Đang trống' });
+    expect(buildStatePage('FL', 'en').districts.find((d) => d.label === '20')).toEqual({ label: '20', name: 'Vacant' });
+  });
 });

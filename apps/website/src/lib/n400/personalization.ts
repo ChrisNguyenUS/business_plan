@@ -35,6 +35,7 @@ export function buildCivicsPersonalization(
 
   const rep = repForDistrict(info.code, districtNumber);
   const governorRule = locationRuleAnswer(61, info.code);
+  const repRule = locationRuleAnswer(29, info.code, districtNumber);
 
   return {
     stateCode: info.code,
@@ -42,7 +43,7 @@ export function buildCivicsPersonalization(
     governor: governorRule ? governorRule[lang] : info.governor,
     capital: info.capital,
     senators: info.senators,
-    representative: rep?.name ?? null,
+    representative: repRule ? repRule[lang] : rep?.name ?? null,
     districtNumber,
   };
 }

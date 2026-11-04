@@ -20,6 +20,11 @@ const tag = (chunk, name) => chunk.match(new RegExp(`<${name}>([^<]*)</${name}>`
 
 const stateSrc = readFileSync('src/lib/n400/state-data.ts', 'utf8');
 const repsSrc = readFileSync('src/lib/n400/reps-data.ts', 'utf8');
+const rulesSrc = readFileSync('src/lib/n400/location-rules.ts', 'utf8');
+// Seats we teach as vacant (VACANT_HOUSE_SEATS in location-rules.ts).
+const ourVacant = new Set(
+  [...(rulesSrc.match(/VACANT_HOUSE_SEATS[^=]*= new Set\(\[([^\]]*)\]/)?.[1] ?? '').matchAll(/'([A-Z]{2}-\d+)'/g)].map((x) => x[1])
+);
 
 const ourSenators = {};
 for (const m of stateSrc.matchAll(/code: '([A-Z]{2})'[^\n]*senators: \[([^\]]*)\]/g)) {
@@ -64,7 +69,10 @@ for (const [st, names] of Object.entries(offSenators)) {
   if (!matched) problems.push(`Senate ${st}: ours ${ours} vs official ${names}`);
 }
 for (const [key, name] of Object.entries(offReps)) {
-  if (name === null) problems.push(`House ${key}: vacant on clerk.house.gov, ours ${ourReps[key] ?? '(none)'}`);
+  if (ourVacant.has(key)) {
+    if (name !== null) problems.push(`House ${key}: we teach vacant, official ${name}`);
+    if (ourReps[key]) problems.push(`House ${key}: marked vacant but reps-data still has ${ourReps[key]}`);
+  } else if (name === null) problems.push(`House ${key}: vacant on clerk.house.gov, ours ${ourReps[key] ?? '(none)'}`);
   else if (!sameName(name, ourReps[key])) problems.push(`House ${key}: ours ${ourReps[key] ?? '(none)'} vs official ${name}`);
 }
 // Seats we teach that the official list does not have at all.
