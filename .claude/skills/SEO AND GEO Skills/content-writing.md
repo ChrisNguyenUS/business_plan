@@ -215,6 +215,10 @@ TABLE SNIPPET — comparisons, pricing tiers, specifications
   → 2–5 columns, 3–8 rows is the sweet spot
   → Label columns clearly ("Service", "Price", "Turnaround", "Best For")
   → Google extracts tables nearly verbatim — accuracy is critical
+  → Short label cells (dates, fees, form numbers) must not wrap. In Markdown,
+    join their words with &nbsp; ("November&nbsp;1,&nbsp;2026", not
+    "November 1, 2026"); the year otherwise drops to a second line when the
+    next column is long. Numeric dates (1/11/2026) need nothing.
 
 VIDEO SNIPPET — "How to X" (visual/procedural topics)
   → Embed a YouTube video on the page
