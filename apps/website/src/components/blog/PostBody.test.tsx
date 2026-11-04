@@ -20,6 +20,11 @@ describe("PostBody", () => {
     expect(html).toContain('<div class="my-8 overflow-x-auto"><table>');
   });
 
+  it("keeps &nbsp; date cells on one line", () => {
+    const html = renderToStaticMarkup(<PostBody markdown={"| Date | What |\n|---|---|\n| November&nbsp;1,&nbsp;2026 | Starts |"} />);
+    expect(html).toContain("<td>November\u00a01,\u00a02026</td>");
+  });
+
   it("opens external links safely and keeps internal links in-tab", () => {
     const html = renderToStaticMarkup(<PostBody markdown={"[USCIS](https://www.uscis.gov) [N400](/n400ready)"} />);
     expect(html).toContain('<a href="https://www.uscis.gov" target="_blank" rel="noopener noreferrer">USCIS</a>');

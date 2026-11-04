@@ -24,11 +24,11 @@ From the [HealthCare.gov calendar](https://www.healthcare.gov/quick-guide/dates-
 
 | Date | What happens |
 |---|---|
-| November 1, 2026 | Open Enrollment begins |
-| December 15, 2026 | Last day to enroll or change plans for January 1, 2027 coverage |
-| January 1, 2027 | Coverage starts if you enrolled by December 15 and paid your first premium |
-| January 15, 2027 | Open Enrollment ends |
-| February 1, 2027 | Coverage starts if you enrolled from December 16 to January 15 and paid your first premium |
+| November&nbsp;1,&nbsp;2026 | Open Enrollment begins |
+| December&nbsp;15,&nbsp;2026 | Last day to enroll or change plans for January 1, 2027 coverage |
+| January&nbsp;1,&nbsp;2027 | Coverage starts if you enrolled by December 15 and paid your first premium |
+| January&nbsp;15,&nbsp;2027 | Open Enrollment ends |
+| February&nbsp;1,&nbsp;2027 | Coverage starts if you enrolled from December 16 to January 15 and paid your first premium |
 
 Some states run their own Marketplace and may use a different website and different dates. Oregon, for example, uses ExploreHealthOR.gov. [Pick your state on HealthCare.gov](https://www.healthcare.gov/marketplace-in-your-state/) to find where you apply.
 
