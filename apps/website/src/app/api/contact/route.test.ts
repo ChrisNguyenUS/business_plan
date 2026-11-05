@@ -96,3 +96,47 @@ describe("POST /api/contact", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("POST /api/contact server-side limits", () => {
+  const base = { full_name: "An Nguyen", email: "an@example.com", service_type: "tax", message: "Need help" };
+
+  it("still accepts the general form and the EB-3 form", async () => {
+    expect((await post(base)).status).toBe(200);
+    const eb3 = await post({ full_name: "Binh", zalo: "0912 345 678", service_type: "eb3", message: "Q1: yes", email: "" });
+    expect(eb3.status).toBe(200);
+  });
+
+  it("rejects a name that is not text or is over 200 characters", async () => {
+    expect((await post({ ...base, full_name: { a: 1 } })).status).toBe(400);
+    expect((await post({ ...base, full_name: "x".repeat(201) })).status).toBe(400);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a message over 5000 characters", async () => {
+    expect((await post({ ...base, message: "x".repeat(5001) })).status).toBe(400);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed email", async () => {
+    expect((await post({ ...base, email: "not-an-email" })).status).toBe(400);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unknown service type", async () => {
+    expect((await post({ ...base, service_type: "<script>" })).status).toBe(400);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("stores only en or vi as the locale", async () => {
+    await post({ ...base, locale: "xx" });
+    expect(insertedRow().locale).toBe("en");
+  });
+
+  it("cuts tracking fields to 500 characters instead of losing the lead", async () => {
+    const res = await post({ ...base, utm_source: "u".repeat(900), fbclid: "f".repeat(900) });
+    expect(res.status).toBe(200);
+    const row = insertedRow();
+    expect((row.utm_source as string).length).toBe(500);
+    expect((row.fbclid as string).length).toBe(500);
+  });
+});

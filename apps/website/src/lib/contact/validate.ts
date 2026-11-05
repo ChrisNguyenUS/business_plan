@@ -1,5 +1,6 @@
-// Client-side checks for the general contact form. The API still applies its own
-// rules (name + a contact method); these only give the visitor inline feedback.
+// Client-side checks for the general contact form. The API applies its own,
+// looser rules (it also serves the EB-3 form: name + any contact method, plus
+// type and length limits); these only give the visitor inline feedback.
 
 /** Stored `service_type` values, in dropdown order. "general" is shown as "Other". */
 export const CONTACT_SERVICES = ["immigration", "personal-documents", "tax", "business", "insurance", "ai", "general"] as const;
@@ -15,7 +16,7 @@ export interface ContactFields {
 export type ContactError = "required" | "email" | "phone";
 export type ContactErrors = Partial<Record<keyof ContactFields, ContactError>>;
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 // Digits plus the separators people actually type: + ( ) - . and spaces.
 const PHONE_CHARS_RE = /^\+?[\d\s().-]+$/;
 

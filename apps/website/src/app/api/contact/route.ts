@@ -1,6 +1,24 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendCapiLead } from "@/lib/analytics/meta-capi";
+import { CONTACT_SERVICES, EMAIL_RE } from "@/lib/contact/validate";
+
+// Server-side limits. The two forms that post here (contact page, EB-3
+// screening) send far less; anything beyond these is junk or abuse, and every
+// field is stored and emailed as-is.
+const MAX = { name: 200, email: 254, phone: 40, handle: 200, message: 5000, tracking: 500 };
+const SERVICE_TYPES = new Set<string>([...CONTACT_SERVICES, "eb3"]);
+
+/** Optional text: missing → "", a non-string → null (invalid). */
+function optionalText(value: unknown): string | null {
+  if (value === undefined || value === null) return "";
+  return typeof value === "string" ? value : null;
+}
+
+/** Tracking values come from the URL and cookies: keep them, cut to size. */
+function trackingText(value: unknown): string | null {
+  return typeof value === "string" && value ? value.slice(0, MAX.tracking) : null;
+}
 
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
@@ -78,8 +96,29 @@ export async function POST(request: Request) {
     const facebookHandle = typeof facebook === "string" ? facebook.replace(/\s+/g, " ").trim() : "";
     const zaloHandle = typeof zalo === "string" ? zalo.replace(/\s+/g, " ").trim() : "";
 
+    const nameText = optionalText(full_name);
+    const emailText = optionalText(email);
+    const phoneText = optionalText(phone);
+    const messageText = optionalText(message);
+    const serviceText = optionalText(service_type);
+    if (
+      nameText === null || nameText.trim().length > MAX.name ||
+      emailText === null || emailText.trim().length > MAX.email ||
+      (emailText.trim() !== "" && !EMAIL_RE.test(emailText.trim())) ||
+      phoneText === null || phoneText.trim().length > MAX.phone ||
+      messageText === null || messageText.length > MAX.message ||
+      serviceText === null || (serviceText !== "" && !SERVICE_TYPES.has(serviceText)) ||
+      facebookHandle.length > MAX.handle || zaloHandle.length > MAX.handle
+    ) {
+      return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
+    }
+    const name = nameText.trim();
+    const emailValue = emailText.trim();
+    const phoneValue = phoneText.trim();
+    const lang = locale === "vi" ? "vi" : "en";
+
     // Validation
-    if (!full_name || (!email && !phone && !facebookHandle && !zaloHandle)) {
+    if (!name || (!emailValue && !phoneValue && !facebookHandle && !zaloHandle)) {
       return NextResponse.json(
         { error: "Name and a contact method are required." },
         { status: 400 }
@@ -90,7 +129,7 @@ export async function POST(request: Request) {
       [
         facebookHandle && `Facebook: ${facebookHandle}`,
         zaloHandle && `Zalo: ${zaloHandle}`,
-        message,
+        messageText,
       ]
         .filter(Boolean)
         .join("\n") || null;
@@ -105,21 +144,21 @@ export async function POST(request: Request) {
       const { error: dbError } = await supabase
         .from("contact_submissions")
         .insert({
-          full_name,
-          phone: phone || null,
-          email: email || null,
-          service_type: service_type || null,
+          full_name: name,
+          phone: phoneValue || null,
+          email: emailValue || null,
+          service_type: serviceText || null,
           message: fullMessage,
-          locale,
-          utm_source: utm_source || null,
-          utm_medium: utm_medium || null,
-          utm_campaign: utm_campaign || null,
-          utm_content: utm_content || null,
-          utm_term: utm_term || null,
-          fbclid: fbclid || null,
-          gclid: gclid || null,
+          locale: lang,
+          utm_source: trackingText(utm_source),
+          utm_medium: trackingText(utm_medium),
+          utm_campaign: trackingText(utm_campaign),
+          utm_content: trackingText(utm_content),
+          utm_term: trackingText(utm_term),
+          fbclid: trackingText(fbclid),
+          gclid: trackingText(gclid),
           status: "new",
-          user_agent: request.headers.get("user-agent") || null,
+          user_agent: request.headers.get("user-agent")?.slice(0, MAX.tracking) || null,
         });
 
       if (dbError) {
@@ -138,17 +177,17 @@ export async function POST(request: Request) {
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "MannaOS <notifications@mannaos.com>",
           to: ["Chris@mannaos.com"],
-          subject: `[MannaOS] New Contact: ${String(full_name).slice(0, 100)} — ${String(service_type || "General").slice(0, 50)}`,
+          subject: `[MannaOS] New Contact: ${name.slice(0, 100)} — ${(serviceText || "General").slice(0, 50)}`,
           html: `
             <h2>New Contact Submission</h2>
-            <p><strong>Name:</strong> ${escapeHtml(full_name)}</p>
-            <p><strong>Phone:</strong> ${escapeHtml(phone || "N/A")}</p>
-            <p><strong>Email:</strong> ${escapeHtml(email || "N/A")}</p>
-            <p><strong>Service:</strong> ${escapeHtml(service_type || "General")}</p>
+            <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(phoneValue || "N/A")}</p>
+            <p><strong>Email:</strong> ${escapeHtml(emailValue || "N/A")}</p>
+            <p><strong>Service:</strong> ${escapeHtml(serviceText || "General")}</p>
             <p><strong>Message:</strong></p>
             <p style="white-space:pre-line">${escapeHtml(fullMessage || "N/A")}</p>
             <hr/>
-            <p><small>Language: ${escapeHtml(locale)} | Source: ${escapeHtml(utm_source || "direct")} | Campaign: ${escapeHtml(utm_campaign || "none")}</small></p>
+            <p><small>Language: ${escapeHtml(lang)} | Source: ${escapeHtml(trackingText(utm_source) || "direct")} | Campaign: ${escapeHtml(trackingText(utm_campaign) || "none")}</small></p>
           `,
         });
       } catch (emailError) {
@@ -157,27 +196,30 @@ export async function POST(request: Request) {
     }
 
     // 3. Mirror Lead to Meta CAPI (deduped with browser Pixel via shared event_id)
-    if (event_id) {
-      const [firstName, ...rest] = (full_name || "").trim().split(/\s+/);
+    const eventId = trackingText(event_id);
+    if (eventId) {
+      const [firstName, ...rest] = name.split(/\s+/);
       const lastName = rest.join(" ");
+      const source = trackingText(utm_source);
+      const campaign = trackingText(utm_campaign);
       await sendCapiLead({
-        eventId: event_id,
-        eventSourceUrl: event_source_url || "",
+        eventId,
+        eventSourceUrl: trackingText(event_source_url) || "",
         user: {
-          emails: email ? [email] : undefined,
-          phones: phone ? [phone] : undefined,
+          emails: emailValue ? [emailValue] : undefined,
+          phones: phoneValue ? [phoneValue] : undefined,
           firstName: firstName || undefined,
           lastName: lastName || undefined,
           clientIp: clientIp === "unknown" ? null : clientIp,
           clientUserAgent: request.headers.get("user-agent"),
-          fbp: fbp || null,
-          fbc: fbc || null,
+          fbp: trackingText(fbp),
+          fbc: trackingText(fbc),
         },
         customData: {
-          content_name: service_type || "general",
-          locale,
-          ...(utm_source ? { utm_source } : {}),
-          ...(utm_campaign ? { utm_campaign } : {}),
+          content_name: serviceText || "general",
+          locale: lang,
+          ...(source ? { utm_source: source } : {}),
+          ...(campaign ? { utm_campaign: campaign } : {}),
         },
       });
     }
