@@ -12,7 +12,9 @@ import {
 import { anonN400Destination, loginLangSwitch } from '@/lib/n400/public/anon-redirect';
 
 const SKIP_PREFIXES = ['/_next', '/api', '/images', '/n400-audio'];
-const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt'];
+// /sw-n400.js must never be redirected: the browser rejects a service worker
+// script that sits behind a redirect, so the N400 audio cache never installs.
+const SKIP_EXACT = ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/llms.txt', '/sw-n400.js'];
 const ADMIN_RE = /^\/[a-z]{2}\/admin(\/|$)/;
 const PORTAL_RE = /^\/[a-z]{2}\/portal(\/|$)/;
 // N400 app lives at /n400ready — no locale segment (language is cookie-based).
@@ -216,5 +218,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|images|n400-audio|favicon.ico|icon.png|apple-icon.png|robots.txt|sitemap.xml|llms.txt).*)'],
+  matcher: ['/((?!_next|api|images|n400-audio|favicon.ico|icon.png|apple-icon.png|robots.txt|sitemap.xml|llms.txt|sw-n400.js).*)'],
 };
