@@ -50,9 +50,11 @@ function recognitionCtor(): (new () => RecognitionLike) | null {
 }
 
 async function reportToSentry(code: string, message?: string): Promise<void> {
+  // A build without a browser DSN never starts Sentry: skip the download.
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return;
   try {
-    const Sentry = await import('@sentry/nextjs');
-    Sentry.captureMessage(`n400 oral: ${code}`, {
+    const { captureMessage } = await import('@/lib/sentry-browser');
+    captureMessage(`n400 oral: ${code}`, {
       level: 'warning',
       tags: { feature: 'n400-oral', code },
       extra: { message },
