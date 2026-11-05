@@ -44,7 +44,7 @@ export default async function AppLayout({
     .eq('id', user.id)
     .single()
 
-  // Defense-in-depth: block client accounts that slipped past middleware
+  // Defense-in-depth: block client accounts that slipped past the proxy (src/proxy.ts)
   if (!profile || profile.role === 'client') redirect('/login')
 
   const isAdmin = profile.role === 'admin'

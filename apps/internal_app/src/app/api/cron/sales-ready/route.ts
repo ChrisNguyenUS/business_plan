@@ -14,7 +14,7 @@ const RECIPIENT = 'Chris@mannaos.com'
 /**
  * Daily Sales-Ready digest, called by Vercel Cron (vercel.json). Vercel sends
  * `Authorization: Bearer $CRON_SECRET`; anything else is refused before any
- * database or email work. Excluded from the auth middleware matcher.
+ * database or email work. Excluded from the auth proxy matcher (src/proxy.ts).
  */
 export async function GET(request: Request): Promise<Response> {
   const secret = process.env.CRON_SECRET
