@@ -3,22 +3,13 @@ import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { EmailOtpType, SupabaseClient, User } from '@supabase/supabase-js';
 import { ATTRIB_COOKIE, parseAttributionCookie } from '@/lib/n400/growth/attribution';
+import { fetchProviderAvatar } from '@/lib/auth/provider-avatar';
 
 // Auth callback: exchanges the provider/PKCE code for a session cookie,
 // then bootstraps the avatar on first login. Email links (password recovery)
 // may instead carry ?token_hash=&type= — verified server-side, so they work
 // even when opened in a different browser/device than the one that asked. The profile row itself is
 // created by the handle_new_user_v2 DB trigger — not here.
-
-const CONTENT_TYPE_TO_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-};
-
-// Provider avatars are small; anything bigger is not a profile picture.
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 async function bootstrapAvatar(supabase: SupabaseClient, user: User) {
   const providerAvatarUrl =
@@ -34,20 +25,15 @@ async function bootstrapAvatar(supabase: SupabaseClient, user: User) {
     .single();
   if (!profile || profile.avatar_path) return;
 
-  const res = await fetch(providerAvatarUrl);
-  if (!res.ok) return;
+  // user_metadata is user-editable, so this URL is untrusted: the helper only
+  // fetches Google/Facebook image hosts over https, with a time and size cap.
+  const avatar = await fetchProviderAvatar(providerAvatarUrl);
+  if (!avatar) return;
 
-  const contentType = res.headers.get('content-type')?.split(';')[0].trim() ?? '';
-  const ext = CONTENT_TYPE_TO_EXT[contentType];
-  if (!ext) return;
-
-  const buffer = await res.arrayBuffer();
-  if (buffer.byteLength === 0 || buffer.byteLength > MAX_AVATAR_BYTES) return;
-
-  const avatarPath = `${user.id}/avatar.${ext}`;
+  const avatarPath = `${user.id}/avatar.${avatar.ext}`;
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(avatarPath, buffer, { contentType, upsert: true });
+    .upload(avatarPath, avatar.bytes, { contentType: avatar.contentType, upsert: true });
   if (uploadError) return;
 
   await supabase
