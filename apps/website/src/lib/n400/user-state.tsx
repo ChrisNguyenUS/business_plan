@@ -9,6 +9,7 @@ import { practiceAttemptRow, sectionAttemptRow, sectionMockResultRow, type Answe
 import { gradedOnly, masteredQuestionIds } from './quiz-engine';
 import type { SectionMockItem } from './section-mock-items';
 import { evaluateAfterAttempt, evaluateAfterStreak } from './badges/actions';
+import { fetchAllRows } from './fetch-all-rows';
 import type { QuizMode, MockResult, SectionMockResult, UserSettings, UserAddress, N400State } from './storage';
 import {
   deriveSectionKnown,
@@ -80,21 +81,32 @@ async function loadAll(userId: string): Promise<N400State> {
       .eq('user_id', userId)
       .maybeSingle(),
     supabase.from('n400_bookmarks').select('question_id').eq('user_id', userId),
-    supabase
-      .from('n400_quiz_attempts')
-      .select(`
-        id,mode,score,total_questions,passed,started_at,completed_at,
-        n400_question_attempts (
-          question_id, was_correct, answered_at, attempt_id
-        )
-      `)
-      .eq('user_id', userId)
-      .order('started_at', { ascending: true }),
-    supabase
-      .from('n400_section_attempts')
-      .select('section, item_id, mode, was_correct, answered_at')
-      .eq('user_id', userId)
-      .order('answered_at', { ascending: true }),
+    // Both histories grow without bound: page past PostgREST's silent 1000-row
+    // cap (oldest-first, so a cut would drop the newest rows). The id
+    // tiebreak keeps the order stable from page to page.
+    fetchAllRows((from, to) =>
+      supabase
+        .from('n400_quiz_attempts')
+        .select(`
+          id,mode,score,total_questions,passed,started_at,completed_at,
+          n400_question_attempts (
+            question_id, was_correct, answered_at, attempt_id
+          )
+        `)
+        .eq('user_id', userId)
+        .order('started_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      supabase
+        .from('n400_section_attempts')
+        .select('section, item_id, mode, was_correct, answered_at')
+        .eq('user_id', userId)
+        .order('answered_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to)
+    ),
     supabase
       .from('n400_section_mock_results')
       .select('id, section, passed, score, total, completed_at')
