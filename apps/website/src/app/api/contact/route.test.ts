@@ -140,3 +140,18 @@ describe("POST /api/contact server-side limits", () => {
     expect((row.fbclid as string).length).toBe(500);
   });
 });
+
+describe("POST /api/contact rate limit", () => {
+  it("answers 429 to the 6th submission from one IP within a minute", async () => {
+    const send = () =>
+      POST(
+        new Request("http://localhost/api/contact", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-forwarded-for": "10.9.9.9" },
+          body: JSON.stringify({ full_name: "An", email: "an@example.com" }),
+        }),
+      );
+    for (let i = 0; i < 5; i++) expect((await send()).status).toBe(200);
+    expect((await send()).status).toBe(429);
+  });
+});

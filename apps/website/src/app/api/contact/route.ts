@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendCapiLead } from "@/lib/analytics/meta-capi";
 import { CONTACT_SERVICES, EMAIL_RE } from "@/lib/contact/validate";
+import { createContactLimiter } from "@/lib/contact/rate-limit";
 
 // Server-side limits. The two forms that post here (contact page, EB-3
 // screening) send far less; anything beyond these is junk or abuse, and every
@@ -29,32 +30,14 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 5;
-const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const bucket = rateLimitBuckets.get(key);
-  if (!bucket || bucket.resetAt < now) {
-    if (rateLimitBuckets.size > 5_000) {
-      for (const [k, v] of rateLimitBuckets) {
-        if (v.resetAt < now) rateLimitBuckets.delete(k);
-      }
-    }
-    rateLimitBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (bucket.count >= RATE_LIMIT_MAX) return false;
-  bucket.count++;
-  return true;
-}
+// 5 per IP per minute; shared across instances when Upstash is configured.
+const limiter = createContactLimiter();
 
 export async function POST(request: Request) {
   try {
     const xff = request.headers.get("x-forwarded-for") || "";
     const clientIp = xff.split(",")[0]?.trim() || "unknown";
-    if (!checkRateLimit(clientIp)) {
+    if (!(await limiter.allow(clientIp))) {
       return NextResponse.json(
         { error: "Too many requests. Please try again in a minute." },
         { status: 429 }
