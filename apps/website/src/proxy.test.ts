@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { N400_LANG_COOKIE } from '@/lib/n400/i18n/config';
-import { config, middleware } from './middleware';
+import { config, proxy } from './proxy';
 
 // A stand-in Supabase: getUser() returns db.user, and each table read records
 // that it started. A test can hold the profiles read open (db.profilesGate)
@@ -48,7 +48,7 @@ beforeEach(() => {
   db.profilesGate = null;
 });
 
-describe('middleware and the N400 service worker', () => {
+describe('proxy and the N400 service worker', () => {
   // navigator.serviceWorker.register() rejects a script that sits behind a
   // redirect, so /sw-n400.js must be served as-is, never sent to /en/sw-n400.js.
   it('the matcher skips /sw-n400.js', () => {
@@ -56,27 +56,27 @@ describe('middleware and the N400 service worker', () => {
   });
 
   it('does not redirect /sw-n400.js even when it runs', async () => {
-    const res = await middleware(request('/sw-n400.js'));
+    const res = await proxy(request('/sw-n400.js'));
     expect(res.headers.get('location')).toBeNull();
   });
 
   it('still sends a page without a locale to one', async () => {
-    const res = await middleware(request('/about'));
+    const res = await proxy(request('/about'));
     expect(res.status).toBe(307);
     expect(new URL(res.headers.get('location')!).pathname).toMatch(/^\/(en|vi)\/about$/);
   });
 });
 
-describe('middleware auth gates', () => {
+describe('proxy auth gates', () => {
   it('sends an anonymous visitor on an app page to the N400 login', async () => {
-    const res = await middleware(request('/n400ready/study'));
+    const res = await proxy(request('/n400ready/study'));
     expect(redirectPath(res)).toBe('/n400ready/login');
   });
 
   it('sends a signed-in learner without an N400 profile to onboarding', async () => {
     db.user = { id: 'u1' };
     db.role = 'client';
-    const res = await middleware(request('/n400ready/study'));
+    const res = await proxy(request('/n400ready/study'));
     expect(redirectPath(res)).toBe('/n400ready/onboarding');
   });
 
@@ -84,7 +84,7 @@ describe('middleware auth gates', () => {
     db.user = { id: 'u1' };
     db.role = 'client';
     db.n400Profile = { user_id: 'u1', ui_language: 'vi' };
-    const res = await middleware(request('/n400ready/study'));
+    const res = await proxy(request('/n400ready/study'));
     expect(res.headers.get('location')).toBeNull();
     expect(res.cookies.get(N400_LANG_COOKIE)?.value).toBe('vi');
   });
@@ -92,7 +92,7 @@ describe('middleware auth gates', () => {
   it('sends a non-admin on an admin page to the login page', async () => {
     db.user = { id: 'u1' };
     db.role = 'client';
-    const res = await middleware(request('/en/admin'));
+    const res = await proxy(request('/en/admin'));
     expect(redirectPath(res)).toBe('/en/login');
     expect(db.started).not.toContain('n400_user_profile');
   });
@@ -104,7 +104,7 @@ describe('middleware auth gates', () => {
     let release!: () => void;
     db.profilesGate = new Promise<void>((resolve) => (release = resolve));
 
-    const pending = middleware(request('/n400ready/study'));
+    const pending = proxy(request('/n400ready/study'));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(db.started).toEqual(['profiles', 'n400_user_profile']);
 

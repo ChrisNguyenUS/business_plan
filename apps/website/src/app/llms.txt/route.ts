@@ -1,6 +1,6 @@
 import { buildLlmsTxt } from "@/lib/seo/llms-txt";
 
-// Built once at deploy. middleware.ts already skips /llms.txt; before this
+// Built once at deploy. proxy.ts already skips /llms.txt; before this
 // route existed the request fell through to [locale] and returned a 500.
 export const dynamic = "force-static";
 
