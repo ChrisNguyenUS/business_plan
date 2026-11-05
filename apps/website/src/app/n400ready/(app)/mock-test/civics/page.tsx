@@ -218,15 +218,6 @@ function MockTestPageInner() {
     } catch {}
   }, []);
 
-  // Auto-start when arriving from the picker card (?start=1), unless voice is
-  // available here: then the intro stays so the learner can pick "Cách trả lời".
-  useEffect(() => {
-    if (!hydrated || !autoStart || !voiceFlags.loaded) return;
-    if (!mockAutoStarts(voiceState)) return;
-    startNew();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, autoStart, voiceFlags.loaded, voiceState]);
-
   const startNew = () => {
     if (startedRef.current) return;
     startedRef.current = true;
@@ -270,6 +261,16 @@ function MockTestPageInner() {
     p.catch(() => {}); // surfaced at submit time; avoid an unhandled rejection
     attemptIdPromise.current = p;
   };
+
+  // Auto-start when arriving from the picker card (?start=1), unless voice is
+  // available here: then the intro stays so the learner can pick "Cách trả lời".
+  // Declared after startNew so the effect never reads it before it exists.
+  useEffect(() => {
+    if (!hydrated || !autoStart || !voiceFlags.loaded) return;
+    if (!mockAutoStarts(voiceState)) return;
+    startNew();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, autoStart, voiceFlags.loaded, voiceState]);
 
   const finish = async (finalPicks: PickState[], finalItems: (VoiceItem | null)[]) => {
     setSubmitting(true);

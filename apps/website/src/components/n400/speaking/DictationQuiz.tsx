@@ -251,6 +251,9 @@ export function DictationQuiz({
     if (done || examMode || typeof window === 'undefined') return;
     const id = questions[index]?.id;
     const saved = id ? window.sessionStorage.getItem(`n400.writing.draft.${id}`) : null;
+    // sessionStorage exists only in the browser: reading it during render would
+    // make the server and client HTML differ, so the draft is restored here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setUserInput(saved);
     // Only when the sentence index changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps

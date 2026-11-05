@@ -153,6 +153,9 @@ export default function N400ResetPasswordPage() {
     // The recovery session has served its purpose — sign out so the user
     // re-authenticates with the new password.
     await supabase.auth.signOut();
+    // Full reload on purpose: the session just ended, so middleware and every
+    // server component must run again with the new cookies.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = LOGIN_SUCCESS_URL;
   }
 

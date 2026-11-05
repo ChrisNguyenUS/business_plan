@@ -67,8 +67,12 @@ export function AddressAutocomplete({
     }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (query.trim().length < MIN_CHARS) {
+      // This effect keeps the list in sync with the geocoder; a query too short
+      // to search clears the previous results as part of that sync.
+      /* eslint-disable react-hooks/set-state-in-effect */
       setSuggestions([])
       setIsOpen(false)
+      /* eslint-enable react-hooks/set-state-in-effect */
       return
     }
 

@@ -141,6 +141,9 @@ function N400LoginScreen() {
       return;
     }
 
+    // Full reload on purpose: the session just started, so middleware (the
+    // onboarding gate) and every server component must see the new cookies.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/n400ready';
   }
 

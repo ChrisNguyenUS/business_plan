@@ -150,7 +150,9 @@ export default function PracticePage() {
   // Session timing + today's completed-session count, both surfaced on the
   // summary. The timer restarts on resume — better a low estimate than one
   // inflated by hours away from the tab.
-  const startedAtRef = useRef(Date.now());
+  // Lazy initializer: Date.now() runs once, not on every render.
+  const [mountedAt] = useState(() => Date.now());
+  const startedAtRef = useRef(mountedAt);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [sessionsToday, setSessionsToday] = useState(0);
 
@@ -472,6 +474,9 @@ export default function PracticePage() {
     if (start) window.history.replaceState(null, '', window.location.pathname);
     const chosen = presets.find((p) => p.id === start);
     if (chosen) {
+      // One-shot URL-to-state sync after hydration: ?start= only exists in the
+      // browser, so this cannot run during render (same as the writing page).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       startSession(chosen, null);
       return;
     }

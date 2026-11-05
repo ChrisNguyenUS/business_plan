@@ -227,6 +227,9 @@ export default function AdminContent() {
   }, [activeSection]);
 
   useEffect(() => {
+    // Fetch when the section tab changes; the spinner must show before the
+    // request goes out (admin-only page).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     load();
   }, [load]);

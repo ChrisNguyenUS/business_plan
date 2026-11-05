@@ -136,6 +136,9 @@ export default function PortalPage() {
   }, [user]);
 
   useEffect(() => {
+    // Fetch on mount and when the signed-in user changes; loadData turns the
+    // spinner off at once while there is no user yet.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, [loadData]);
 
