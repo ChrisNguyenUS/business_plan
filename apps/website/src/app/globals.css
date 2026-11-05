@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Inter comes from next/font in both root layouts (self-hosted, family name
+   "Inter", latin + vietnamese). No Google Fonts @import: it loaded Inter a
+   second time and blocked rendering on every page. */
 @import "tailwindcss";
 /* animate-in / fade-in-0 / zoom-in-95 … used by the Radix dialog and select. */
 @import "tw-animate-css";
