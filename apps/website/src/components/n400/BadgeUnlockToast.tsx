@@ -32,11 +32,15 @@ const AUTO_DISMISS_MS = 5000;
 
 export function BadgeUnlockToast({ slugs, catalog, trigger }: BadgeUnlockToastProps) {
   const [visibleSlugs, setVisibleSlugs] = useState<string[]>(slugs);
-  const { dict } = useN400Lang();
-
-  useEffect(() => {
+  // New unlocks replace the stack. Adjusted during render (React's "storing
+  // information from previous renders" pattern), not in an effect, so the old
+  // cards never render once more with the new props.
+  const [shownFor, setShownFor] = useState(slugs);
+  if (slugs !== shownFor) {
+    setShownFor(slugs);
     setVisibleSlugs(slugs);
-  }, [slugs]);
+  }
+  const { dict } = useN400Lang();
 
   // Fire one analytics event per unlock when the toast mounts. We don't
   // need server-side dedupe — n400_user_badges PK already guarantees one
