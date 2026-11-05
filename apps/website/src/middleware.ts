@@ -165,11 +165,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+  // The role and (on gated N400 pages) the N400 profile are independent reads:
+  // run them together so a request waits for one round trip instead of two.
+  const needsN400Profile = isN400Path && !N400_NO_PROFILE_GATE_RE.test(pathname);
+  const [{ data: profile }, n400ProfileRes] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    needsN400Profile
+      ? supabase.from('n400_user_profile').select('user_id, ui_language').eq('user_id', user.id).maybeSingle()
+      : null,
+  ]);
 
   const role = profile?.role as string | undefined;
 
@@ -190,12 +194,8 @@ export async function middleware(request: NextRequest) {
 
   // N400 profile gate: no n400_user_profile row means onboarding never finished
   // (step 2's upsert is what creates it), so send the user to step 1.
-  if (isN400Path && !N400_NO_PROFILE_GATE_RE.test(pathname)) {
-    const { data: n400Profile } = await supabase
-      .from('n400_user_profile')
-      .select('user_id, ui_language')
-      .eq('user_id', user.id)
-      .maybeSingle();
+  if (needsN400Profile) {
+    const n400Profile = n400ProfileRes?.data;
     if (!n400Profile) {
       return NextResponse.redirect(new URL('/n400ready/onboarding', request.url));
     }
