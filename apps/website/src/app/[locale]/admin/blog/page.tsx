@@ -5,7 +5,7 @@ import { Plus, Search, Edit, Eye, EyeOff, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
 import { slugify } from "@/lib/blog/slugify";
-import { publishBlocker } from "@/lib/blog/publish-guard";
+import { publishBlocker, saveBlocker } from "@/lib/blog/publish-guard";
 import { keepTagsForCategory, tagsInCategory } from "@/lib/blog/tags";
 
 type BlogPost = BlogPostRow;
@@ -62,10 +62,9 @@ export default function AdminBlog() {
 
   async function savePost() {
     if (!editing) return;
-    if (editing.published) {
-      const blocker = publishBlocker(editing);
-      if (blocker) { setSaveError(blocker); return; }
-    }
+    // Drafts too: the database rejects a bad slug or a post with no slug.
+    const blocker = editing.published ? publishBlocker(editing) : saveBlocker(editing);
+    if (blocker) { setSaveError(blocker); return; }
     setSaving(true);
     setSaveError(null);
 
@@ -94,7 +93,13 @@ export default function AdminBlog() {
 
     setSaving(false);
     if (error) {
-      setSaveError(error.code === "23505" ? "Slug này đã được dùng cho bài khác." : error.message);
+      setSaveError(
+        error.code === "23505"
+          ? "Slug này đã được dùng cho bài khác."
+          : error.code === "23514"
+            ? "Dữ liệu chưa hợp lệ (slug, chủ đề hoặc loại bài). Kiểm tra lại rồi lưu."
+            : `Không lưu được bài: ${error.message}`,
+      );
       return;
     }
     setEditing(null);
@@ -198,7 +203,7 @@ export default function AdminBlog() {
               />
               <div>
                 <FormField
-                  label={`Excerpt / meta description (${lang.toUpperCase()})`}
+                  label={`Excerpt / meta description (${lang.toUpperCase()}) — bắt buộc khi đăng`}
                   value={excerpt}
                   onChange={(v) => setEditing({ ...editing, [lang === "vi" ? "excerpt_vi" : "excerpt_en"]: v })}
                 />

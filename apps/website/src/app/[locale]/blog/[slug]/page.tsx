@@ -10,6 +10,7 @@ import { BLOG_LABELS, formatPostDate } from "@/lib/blog/labels";
 import { tagPath, tagsForPost } from "@/lib/blog/tags";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { PostBody } from "@/components/blog/PostBody";
+import { isAllowedCoverUrl } from "@/lib/blog/cover";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -64,7 +65,7 @@ export default async function BlogPostPage({ params }: Props) {
           </ul>
         )}
 
-        {post.coverImageUrl && (
+        {post.coverImageUrl && isAllowedCoverUrl(post.coverImageUrl) && (
           <div className="rounded-2xl overflow-hidden mb-8 relative aspect-[1200/630]">
             <Image src={post.coverImageUrl} alt={post.title} fill priority sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
           </div>
