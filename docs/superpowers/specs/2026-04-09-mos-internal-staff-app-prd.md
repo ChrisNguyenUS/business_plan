@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** April 9, 2026
 **Owner:** Manna One Solution, Houston, TX
-**URL:** `app.mannaonesolution.com`
+**URL:** `app.mannaos.com` (updated 2026-11-05; `app.mannaonesolution.com` was never set up)
 **Stack:** Next.js + Supabase (PostgreSQL + Auth + Storage) + Vercel
 
 ---
@@ -90,7 +90,7 @@
 - **User Role:** Immigration Staff
 - **Goal:** Collect a new client's information once and open a case without any re-entry
 - **User Flow:**
-  1. Staff logs in at `app.mannaonesolution.com`
+  1. Staff logs in at `app.mannaos.com`
   2. Clicks **+ New Client** from the dashboard
   3. Fills in client profile form (name, DOB, A-Number, address, immigration history, etc.)
   4. Saves profile — client record created in database
@@ -863,7 +863,7 @@ The closest SaaS alternatives are **eimmigration** ($55/user/month) and **Docket
 | Phase 1 — Foundation | Auth (Ultimate Admin + Staff roles), Client Profile CRM, Case Manager (Simple only), Document Checklist (upload + ZIP), Checklist Template Manager (Ultimate Admin), Audit Trail | Week 3 |
 | Phase 2 — Filing & Finance | Mode A copy-paste screen (N-400, I-765, I-130), Mode B PDF (I-131), Package Cases, Fee Schedule Manager, Payment Tracking (milestone-based), Expense Tracking | Week 7 |
 | Phase 3 — Services & Tracking | USCIS status tracker (daily cron + notifications), Non-immigration Job Tracker (Tax/Insurance/AI), Cross-sell tagging, remaining forms (I-485, I-864, I-90) | Week 10 |
-| Phase 4 — Dashboard & Polish | Ultimate Admin Finance Dashboard, Financial Export (CSV), staff account management, UAT with real cases, bug fixes, go-live at `app.mannaonesolution.com` | Week 13 |
+| Phase 4 — Dashboard & Polish | Ultimate Admin Finance Dashboard, Financial Export (CSV), staff account management, UAT with real cases, bug fixes, go-live at `app.mannaos.com` | Week 13 |
 
 ---
 
