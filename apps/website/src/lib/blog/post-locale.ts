@@ -27,6 +27,14 @@ export function postSlugs(post: BlogPostRow): Partial<Record<Locale, string>> {
   return slugs;
 }
 
+/** Where the admin's "Xem bài" link goes: the live Vietnamese page, else the live English one. */
+export function viewPostPath(post: BlogPostRow): string | null {
+  const slugs = postSlugs(post);
+  if (slugs.vi) return blogPostPath("vi", slugs.vi);
+  if (slugs.en) return blogPostPath("en", slugs.en);
+  return null;
+}
+
 export function localizePost(post: BlogPostRow, locale: Locale): LocalizedPost | null {
   const slugs = postSlugs(post);
   const slug = slugs[locale];

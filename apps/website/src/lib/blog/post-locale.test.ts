@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blogIndexPosts, localesWithTag, localizePost, postSlugAlternates, postSlugs, postsForTag, resolvePostRoute } from "./post-locale";
+import { blogIndexPosts, localesWithTag, localizePost, postSlugAlternates, postSlugs, postsForTag, resolvePostRoute, viewPostPath } from "./post-locale";
 import type { BlogPostRow } from "./types";
 
 function row(over: Partial<BlogPostRow>): BlogPostRow {
@@ -140,5 +140,19 @@ describe("hashtags on posts", () => {
   it("lists the locales where a hashtag has posts", () => {
     expect(localesWithTag([tagged], "green-card")).toEqual(["vi"]);
     expect(localesWithTag([tagged], "sponsor-parents")).toEqual([]);
+  });
+});
+
+describe("viewPostPath", () => {
+  it("opens the Vietnamese page when it is live", () => {
+    expect(viewPostPath(both)).toBe("/vi/blog/don-n-400");
+  });
+
+  it("opens the English page when the Vietnamese one is only a slug so far", () => {
+    expect(viewPostPath({ ...both, content_vi: "" })).toBe("/en/blog/what-is-form-n-400");
+  });
+
+  it("has nowhere to go when no language is live", () => {
+    expect(viewPostPath(row({ slug_vi: "nhap", title_vi: "Nháp" }))).toBeNull();
   });
 });

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
 import { slugify } from "@/lib/blog/slugify";
 import { publishBlocker, saveBlocker } from "@/lib/blog/publish-guard";
+import { viewPostPath } from "@/lib/blog/post-locale";
 import { keepTagsForCategory, tagsInCategory } from "@/lib/blog/tags";
 
 type BlogPost = BlogPostRow;
@@ -143,7 +144,9 @@ export default function AdminBlog() {
         <p className="text-center text-muted-foreground py-16">No blog posts found.</p>
       ) : (
         <div className="space-y-3">
-          {filtered.map(p => (
+          {filtered.map(p => {
+            const viewHref = p.published ? viewPostPath(p) : null;
+            return (
             <div key={p.id} className="bg-white rounded-xl border border-border p-5 flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -157,9 +160,9 @@ export default function AdminBlog() {
                 <p className="font-semibold text-charcoal text-sm truncate">{p.title_vi || p.title_en || "Untitled"}</p>
                 <div className="flex items-center gap-3">
                   <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</p>
-                  {p.published && (p.slug_vi || p.slug_en) && (
+                  {viewHref && (
                     <a
-                      href={p.slug_vi ? `/vi/blog/${p.slug_vi}` : `/en/blog/${p.slug_en}`}
+                      href={viewHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-primary"
@@ -171,7 +174,8 @@ export default function AdminBlog() {
               </div>
               <button onClick={() => openEditor(p)} className="ml-4 p-2 rounded-lg hover:bg-muted transition-colors"><Edit className="h-4 w-4 text-muted-foreground" /></button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
