@@ -1,6 +1,6 @@
 import { N400_CATEGORY_LABELS, N400_QUESTIONS, N400_QUESTIONS_BY_ID } from './questions-data';
-import { N400_DISTRACTORS, type N400Distractor } from './distractors-data';
-import { answerAudioUrl, questionAudioUrl } from './quiz-engine';
+import { type N400Distractor } from './distractors-data';
+import { answerAudioUrl, questionAudioUrl, staticDistractorsFor } from './quiz-engine';
 
 // Read-only view for the admin "Câu hỏi" pages. questions-data.ts is the
 // single source of truth (owner 2026-10-16); the n400_questions/n400_answers
@@ -40,7 +40,8 @@ export function adminQuestionDetail(id: number): AdminQuestionDetail | null {
     category: N400_CATEGORY_LABELS[q.category].en,
     isLocationBased: q.isLocationBased,
     answers: q.answersEn.map((en, i) => ({ en, vi: q.answersVi[i] })),
-    distractors: N400_DISTRACTORS[q.id] ?? [],
+    // Same filter as the quiz: an accepted answer is never shown as a wrong choice.
+    distractors: staticDistractorsFor(q.id, q.answersEn),
     questionAudio: questionAudioUrl(q.id),
     // Location-based answers vary by state; those have no civic_answer file.
     answerAudio: q.isLocationBased ? null : answerAudioUrl(q.id),
