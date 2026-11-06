@@ -5,6 +5,7 @@ import nextConfig from '../next.config'
 // The internal app shows client PII (A-numbers, immigration cases), so every
 // response carries basic browser hardening. Framing stays same-origin only:
 // the case PDF page shows /api/pdf/... in an iframe of its own.
+// It is a staff-only tool, so search engines must not index any of it.
 async function headersFor(path: string) {
   const res = await unstable_getResponseFromNextConfig({ url: `https://app.example.com${path}`, nextConfig })
   return res.headers
@@ -19,5 +20,6 @@ describe('security headers from next.config', () => {
     expect(h.get('referrer-policy')).toBe('same-origin')
     expect(h.get('strict-transport-security')).toMatch(/max-age=\d+/)
     expect(h.get('permissions-policy')).toContain('camera=()')
+    expect(h.get('x-robots-tag')).toBe('noindex, nofollow')
   })
 })
