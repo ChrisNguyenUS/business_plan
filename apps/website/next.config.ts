@@ -72,6 +72,17 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        // The old Categories page ("Conquest Map") lost every link in the July
+        // 2026 navigation redesign and was deleted on 2026-11-05.
+        source: "/n400ready/categories",
+        destination: "/n400ready/study/civics",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

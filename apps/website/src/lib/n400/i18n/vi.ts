@@ -635,18 +635,6 @@ export const vi = {
     prev: 'Trước',
     next: 'Tiếp',
   },
-  categories: {
-    searchPlaceholder: 'Tìm câu hỏi theo từ khóa hoặc số (1-128)...',
-    allCategories: 'Tất cả danh mục',
-    masteredSuffix: '/ {total} thuộc',
-    viewMore: 'Xem →',
-    roadmapTitle: 'Bản đồ chinh phục',
-    exploreAll: 'Khám phá tất cả danh mục',
-    mastered: 'Đã thuộc {count} / 128 câu — tập trung vào nhóm còn yếu để tiến bộ nhanh hơn.',
-    questionCount: '{count} câu',
-    answers: 'Đáp án',
-    practiceCta: 'Luyện tập',
-  },
   speaking: {
     whatmean: {
       badge: 'Từ vựng / Vocabulary #{num}',

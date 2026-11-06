@@ -636,18 +636,6 @@ export const en: N400Dict = {
     prev: 'Previous',
     next: 'Next',
   },
-  categories: {
-    searchPlaceholder: 'Search questions by keyword or number (1-128)...',
-    allCategories: 'All categories',
-    masteredSuffix: '/ {total} mastered',
-    viewMore: 'View →',
-    roadmapTitle: 'Conquest Map',
-    exploreAll: 'Explore all categories',
-    mastered: 'Mastered {count} / 128 questions — focus on weak areas to progress faster.',
-    questionCount: '{count} questions',
-    answers: 'Answers',
-    practiceCta: 'Practice',
-  },
   speaking: {
     whatmean: {
       badge: 'Vocabulary #{num}',
