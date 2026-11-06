@@ -7,27 +7,47 @@ async function headersFor(path: string) {
   return res.headers;
 }
 
+function directive(csp: string, name: string): string {
+  return csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${name} `)) ?? '';
+}
+
 describe('content security policy', () => {
-  // Enforced: only directives that cannot break the site's own scripts,
-  // styles, images or API calls.
-  it('enforces framing, plugin and base-tag rules on every page', async () => {
+  // The full policy is enforced. Before that, it ran report-only on prod and a
+  // signed-in pass over the N400 app, admin, portal and public pages logged
+  // zero violations (2026-11-05).
+  it('enforces the full policy on every page and drops the report-only copy', async () => {
     for (const path of ['/vi', '/n400ready/setup', '/vi/admin']) {
-      const csp = (await headersFor(path)).get('content-security-policy') ?? '';
+      const h = await headersFor(path);
+      const csp = h.get('content-security-policy') ?? '';
       expect(csp).toContain("frame-ancestors 'none'");
       expect(csp).toContain("object-src 'none'");
       expect(csp).toContain("base-uri 'self'");
-      expect(csp).not.toContain('script-src');
-      expect(csp).not.toContain('connect-src');
+      expect(csp).toContain("default-src 'self'");
+      expect(directive(csp, 'script-src')).toContain('https://www.googletagmanager.com');
+      expect(directive(csp, 'connect-src')).toContain('https://api.geoapify.com');
+      expect(h.get('content-security-policy-report-only')).toBeNull();
     }
   });
 
-  // Report-only: the full policy must list what the site really uses, or it
-  // can never be switched on (N400 address autocomplete, admin audio, GA4).
-  it('lists the hosts the site calls in the report-only policy', async () => {
-    const csp = (await headersFor('/n400ready/setup')).get('content-security-policy-report-only') ?? '';
-    const directive = (name: string) => csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${name} `)) ?? '';
-    expect(directive('connect-src')).toContain('https://api.geoapify.com');
-    expect(directive('connect-src')).toContain('https://*.google-analytics.com');
-    expect(directive('media-src')).toContain('https://*.supabase.co');
+  it('allows what the site calls: GA4, Meta, Supabase, Geoapify, Sentry ingest', async () => {
+    const csp = (await headersFor('/n400ready/setup')).get('content-security-policy') ?? '';
+    const connect = directive(csp, 'connect-src');
+    for (const host of [
+      'https://*.google-analytics.com',
+      'https://graph.facebook.com',
+      'https://*.supabase.co',
+      'wss://*.supabase.co',
+      'https://*.ingest.sentry.io',
+      'https://*.ingest.us.sentry.io',
+    ]) {
+      expect(connect).toContain(host);
+    }
+    expect(directive(csp, 'media-src')).toContain('https://*.supabase.co');
+  });
+
+  // eval is only for `next dev` tooling; tests and production builds never get it.
+  it('has no unsafe-eval outside next dev', async () => {
+    const csp = (await headersFor('/vi')).get('content-security-policy') ?? '';
+    expect(directive(csp, 'script-src')).not.toContain("'unsafe-eval'");
   });
 });

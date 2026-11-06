@@ -1,30 +1,32 @@
 import type { NextConfig } from "next";
 
-// Full policy, report-only: browsers log what it would block and nothing
-// breaks. It must list everything the site calls (N400 address autocomplete
-// → Geoapify, admin audio → Supabase storage, GA4 regional endpoints).
-// Enforcing script-src/connect-src needs a pass over the signed-in N400 pages
-// first (autocomplete, voice, OAuth).
-const cspReportOnly = [
+// `next dev` tooling evaluates strings and Vercel Analytics loads its debug
+// script from va.vercel-scripts.com; production builds need neither.
+const isDev = process.env.NODE_ENV === "development";
+
+// Enforced Content-Security-Policy. It ran report-only on prod first, and a
+// signed-in pass on 2026-11-05 (N400 app incl. address autocomplete and audio,
+// admin incl. question audio, portal, public pages) logged zero violations.
+// It lists everything the site calls: Geoapify (N400 address autocomplete),
+// Supabase (API, realtime, storage), GA4 incl. regional endpoints, Meta Pixel,
+// and Sentry ingest so turning on a DSN later is not silently blocked.
+// Adding a third-party script, iframe or API? Add its host here or it breaks.
+const csp = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co https://www.facebook.com https://*.facebook.net https://www.google-analytics.com https://www.googletagmanager.com",
   "media-src 'self' https://*.supabase.co",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.geoapify.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com https://graph.facebook.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.geoapify.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com https://graph.facebook.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
   "frame-src 'self'",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
 ].join("; ");
-
-// Enforced: only directives that cannot break the site's own scripts, styles,
-// images or API calls (the site has no <object>, <embed>, <base> or iframes).
-const cspEnforced = ["frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'"].join("; ");
 
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -32,8 +34,7 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=(), interest-cohort=()" },
-  { key: "Content-Security-Policy", value: cspEnforced },
-  { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
+  { key: "Content-Security-Policy", value: csp },
 ];
 
 const nextConfig: NextConfig = {
