@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
+import { recordAttribution } from "@/lib/n400/growth/record-attribution";
 import type { User, Session } from "@supabase/supabase-js";
 
 export type OAuthProvider = "google" | "facebook" | "apple";
@@ -110,8 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchProfile]);
 
+  // Email auth never passes through /api/auth/callback, so attribution is
+  // recorded here, before the pages navigate away with a full reload.
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data?.session) await recordAttribution(supabase, document.cookie);
     return { error: error?.message ?? null };
   };
 
@@ -121,7 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: { data: { full_name: fullName } },
     });
-    return { error: error?.message ?? null, hasSession: !!data.session };
+    if (!error && data?.session) await recordAttribution(supabase, document.cookie);
+    return { error: error?.message ?? null, hasSession: !!data?.session };
   };
 
   const signInWithOAuth = async (provider: OAuthProvider) => {

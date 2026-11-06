@@ -1,9 +1,10 @@
 //
 // First-party attribution capture (spec §1.2). A cookie records first touch
 // (immutable) + last touch (overwritten whenever a new UTM/click-id arrives).
-// At login/signup the auth callback persists the cookie into
-// n400_lead_profiles via the n400_set_attribution RPC. Edge-safe: no Node or
-// Supabase imports — middleware runs this.
+// At login/signup the cookie is persisted into n400_lead_profiles via the
+// n400_set_attribution RPC: by the auth callback for OAuth, by
+// record-attribution.ts for email auth. Edge-safe: no Node or Supabase
+// imports — middleware runs this.
 
 export const ATTRIB_COOKIE = 'n400_attrib';
 export const ATTRIB_COOKIE_MAX_AGE = 60 * 60 * 24 * 90; // 90 days
