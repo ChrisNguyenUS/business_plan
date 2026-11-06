@@ -8,6 +8,7 @@ vi.mock("@supabase/supabase-js", () => ({
 vi.mock("@/lib/analytics/meta-capi", () => ({ sendCapiLead: vi.fn() }));
 
 import { POST } from "./route";
+import { sendCapiLead } from "@/lib/analytics/meta-capi";
 
 let ipCounter = 0;
 function post(body: Record<string, unknown>) {
@@ -28,6 +29,7 @@ function insertedRow() {
 
 beforeEach(() => {
   insert.mockReset();
+  vi.mocked(sendCapiLead).mockClear();
   insert.mockResolvedValue({ error: null });
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://supabase.test");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-key");
@@ -39,6 +41,22 @@ afterEach(() => {
 });
 
 describe("POST /api/contact", () => {
+  it("sends a Zalo number to Meta CAPI as a phone with the Vietnam country code", async () => {
+    await post({ full_name: "An Nguyen", zalo: "0912 345 678", service_type: "eb3", message: "m", event_id: "ev1" });
+    expect(sendCapiLead).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(sendCapiLead).mock.calls[0][0].user.phones).toEqual(["+84912345678"]);
+  });
+
+  it("sends both the phone and the Zalo number to Meta CAPI", async () => {
+    await post({ full_name: "An", phone: "3465550123", zalo: "0912345678", message: "m", event_id: "ev1" });
+    expect(vi.mocked(sendCapiLead).mock.calls[0][0].user.phones).toEqual(["3465550123", "+84912345678"]);
+  });
+
+  it("does not send a Zalo username to Meta CAPI as a phone", async () => {
+    await post({ full_name: "An", zalo: "an.nguyen", message: "m", event_id: "ev1" });
+    expect(vi.mocked(sendCapiLead).mock.calls[0][0].user.phones).toBeUndefined();
+  });
+
   it("accepts a Facebook-only lead and prepends the handle to the message", async () => {
     const res = await post({
       full_name: "Nguyễn Văn An",
