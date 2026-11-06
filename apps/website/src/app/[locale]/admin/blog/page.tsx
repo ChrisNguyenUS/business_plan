@@ -7,6 +7,7 @@ import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
 import { slugify } from "@/lib/blog/slugify";
 import { publishBlocker, saveBlocker } from "@/lib/blog/publish-guard";
 import { viewPostPath } from "@/lib/blog/post-locale";
+import { previousSlugsAfterEdit } from "@/lib/blog/previous-slugs";
 import { keepTagsForCategory, tagsInCategory } from "@/lib/blog/tags";
 
 type BlogPost = BlogPostRow;
@@ -66,6 +67,7 @@ export default function AdminBlog() {
     // Drafts too: the database rejects a bad slug or a post with no slug.
     const blocker = editing.published ? publishBlocker(editing) : saveBlocker(editing);
     if (blocker) { setSaveError(blocker); return; }
+    const original = editing.id ? posts.find((p) => p.id === editing.id) : undefined;
     setSaving(true);
     setSaveError(null);
 
@@ -86,6 +88,11 @@ export default function AdminBlog() {
       tags: editing.tags ?? [],
       post_type: editing.post_type || "article",
       published: editing.published ?? false,
+      // Old links keep working after a slug change (website_03). Sent only when
+      // the loaded row has the column, so saving still works before the migration.
+      ...(original && "previous_slugs" in original
+        ? { previous_slugs: previousSlugsAfterEdit(original, { slug_vi: editing.slug_vi || null, slug_en: editing.slug_en || null }) }
+        : {}),
     };
 
     const { error } = editing.id

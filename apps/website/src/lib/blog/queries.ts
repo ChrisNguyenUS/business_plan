@@ -35,15 +35,29 @@ export async function listPostSlugPairs(): Promise<SlugPair[]> {
   return (data ?? []) as unknown as SlugPair[];
 }
 
-/** Published rows whose English or Vietnamese slug equals `slug`. */
+/**
+ * Published rows whose English or Vietnamese slug equals `slug`; failing that,
+ * the post that gave `slug` up (previous_slugs, migration website_03), so the
+ * page can redirect an old link. The second lookup runs only for unknown slugs
+ * and never throws: an error there just means "not found".
+ */
 export async function findPublishedPostsBySlug(slug: string): Promise<BlogPostRow[]> {
   if (!isValidSlug(slug)) return []; // also keeps the .or() filter injection-free
-  const { data, error } = await publicClient()
+  const client = publicClient();
+  const { data, error } = await client
     .from("blog_posts")
     .select(COLUMNS)
     .eq("published", true)
     .or(`slug_en.eq.${slug},slug_vi.eq.${slug}`)
     .limit(2);
   if (error) throw new Error(`blog_posts lookup failed: ${error.message}`);
-  return (data ?? []) as unknown as BlogPostRow[];
+  if (data && data.length > 0) return data as unknown as BlogPostRow[];
+
+  const old = await client
+    .from("blog_posts")
+    .select(COLUMNS)
+    .eq("published", true)
+    .contains("previous_slugs", [slug])
+    .limit(1);
+  return old.error ? [] : ((old.data ?? []) as unknown as BlogPostRow[]);
 }

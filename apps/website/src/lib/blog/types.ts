@@ -20,6 +20,8 @@ export interface BlogPostRow {
   category: string;
   /** Hashtag keys from src/lib/blog/tags.ts (migration website_02). */
   tags: string[];
+  /** Slugs the post gave up after going public; old links redirect (migration website_03). */
+  previous_slugs?: string[];
   post_type: string;
   published: boolean;
   published_at: string | null;
