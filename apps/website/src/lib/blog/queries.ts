@@ -23,11 +23,16 @@ export async function listPublishedPosts(): Promise<BlogPostRow[]> {
   return (data ?? []) as unknown as BlogPostRow[];
 }
 
-/** Slugs and titles only (no bodies): enough to link each post to its other-language slug. */
-export async function listPostSlugPairs(): Promise<Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en">[]> {
-  const { data, error } = await publicClient().from("blog_posts").select("slug_vi,slug_en,title_vi,title_en").eq("published", true);
+type SlugPair = Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en" | "excerpt_vi" | "excerpt_en">;
+
+/** Slugs, titles and excerpts only (no bodies): enough to link each post to its other-language slug. */
+export async function listPostSlugPairs(): Promise<SlugPair[]> {
+  const { data, error } = await publicClient()
+    .from("blog_posts")
+    .select("slug_vi,slug_en,title_vi,title_en,excerpt_vi,excerpt_en")
+    .eq("published", true);
   if (error) throw new Error(`blog_posts slug pairs failed: ${error.message}`);
-  return (data ?? []) as unknown as Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en">[];
+  return (data ?? []) as unknown as SlugPair[];
 }
 
 /** Published rows whose English or Vietnamese slug equals `slug`. */

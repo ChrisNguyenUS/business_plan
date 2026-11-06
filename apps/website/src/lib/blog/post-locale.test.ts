@@ -26,27 +26,36 @@ function row(over: Partial<BlogPostRow>): BlogPostRow {
 const viOnly = row({ slug_vi: "don-n-400-la-gi", title_vi: "Đơn N-400 là gì?", content_vi: "Nội dung", excerpt_vi: "Tóm tắt" });
 const both = row({
   id: "p2",
-  slug_en: "what-is-form-n-400", title_en: "What is Form N-400?", content_en: "Body",
-  slug_vi: "don-n-400", title_vi: "Đơn N-400", content_vi: "Nội dung",
+  slug_en: "what-is-form-n-400", title_en: "What is Form N-400?", content_en: "Body", excerpt_en: "Summary",
+  slug_vi: "don-n-400", title_vi: "Đơn N-400", content_vi: "Nội dung", excerpt_vi: "Tóm tắt",
 });
 
 describe("postSlugs", () => {
-  it("lists only locales with slug, title and content", () => {
+  it("lists only locales with slug, title, excerpt and content", () => {
     expect(postSlugs(viOnly)).toEqual({ vi: "don-n-400-la-gi" });
     expect(postSlugs(both)).toEqual({ en: "what-is-form-n-400", vi: "don-n-400" });
   });
 
   it("drops a half-written translation (slug but blank content)", () => {
-    expect(postSlugs(row({ slug_en: "x", title_en: "X", content_en: "  ", slug_vi: "y", title_vi: "Y", content_vi: "c" })))
+    expect(postSlugs(row({ slug_en: "x", title_en: "X", content_en: "  ", excerpt_en: "e", slug_vi: "y", title_vi: "Y", content_vi: "c", excerpt_vi: "e" })))
       .toEqual({ vi: "y" });
+  });
+
+  it("drops a language without an excerpt, which is its meta description", () => {
+    expect(postSlugs({ ...both, excerpt_en: " " })).toEqual({ vi: "don-n-400" });
   });
 });
 
 describe("postSlugAlternates", () => {
   it("maps each slug to the other language's slug for posts that exist in both", () => {
-    const both = { slug_vi: "bai-viet", slug_en: "the-post", title_vi: "Bài", title_en: "Post" };
-    const viOnly = { slug_vi: "chi-co-vi", slug_en: null, title_vi: "Chỉ VI", title_en: null };
+    const both = { slug_vi: "bai-viet", slug_en: "the-post", title_vi: "Bài", title_en: "Post", excerpt_vi: "Tóm tắt", excerpt_en: "Summary" };
+    const viOnly = { slug_vi: "chi-co-vi", slug_en: null, title_vi: "Chỉ VI", title_en: null, excerpt_vi: "Tóm tắt", excerpt_en: null };
     expect(postSlugAlternates([both, viOnly])).toEqual({ vi: { "bai-viet": "the-post" }, en: { "the-post": "bai-viet" } });
+  });
+
+  it("skips a post whose other language has no excerpt yet (that page is not live)", () => {
+    const noEnExcerpt = { slug_vi: "bai-viet", slug_en: "the-post", title_vi: "Bài", title_en: "Post", excerpt_vi: "Tóm tắt", excerpt_en: "" };
+    expect(postSlugAlternates([noEnExcerpt])).toEqual({ vi: {}, en: {} });
   });
 });
 
@@ -84,8 +93,8 @@ describe("resolvePostRoute", () => {
   });
 
   it("prefers the post whose own-locale slug matches when two posts share a slug across locales", () => {
-    const enPost = row({ id: "en-post", slug_en: "shared", title_en: "EN", content_en: "b" });
-    const viPost = row({ id: "vi-post", slug_vi: "shared", title_vi: "VI", content_vi: "b" });
+    const enPost = row({ id: "en-post", slug_en: "shared", title_en: "EN", content_en: "b", excerpt_en: "e" });
+    const viPost = row({ id: "vi-post", slug_vi: "shared", title_vi: "VI", content_vi: "b", excerpt_vi: "e" });
     const r = resolvePostRoute([enPost, viPost], "vi", "shared");
     expect(r.kind === "render" && r.post.id).toBe("vi-post");
   });
@@ -112,7 +121,7 @@ describe("blogIndexPosts", () => {
 describe("hashtags on posts", () => {
   const tagged = row({
     id: "p3", tags: ["green-card", "uscis-fees"],
-    slug_vi: "gia-han-the-xanh", title_vi: "Gia hạn thẻ xanh", content_vi: "Nội dung",
+    slug_vi: "gia-han-the-xanh", title_vi: "Gia hạn thẻ xanh", content_vi: "Nội dung", excerpt_vi: "Tóm tắt",
   });
 
   it("carries the row's tags onto the localized post", () => {
