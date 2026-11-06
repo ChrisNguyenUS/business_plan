@@ -43,6 +43,8 @@ export default async function BlogPostPage({ params }: Props) {
           <Link href={`/${locale}`} className="hover:text-primary">{t.home}</Link>
           <span className="mx-2">›</span>
           <Link href={`/${locale}/blog`} className="hover:text-primary">{t.blog}</Link>
+          <span className="mx-2">›</span>
+          <span aria-current="page" className="text-charcoal">{post.title}</span>
         </nav>
 
         <h1 className="text-3xl lg:text-4xl font-bold text-charcoal mb-4 leading-tight">{post.title}</h1>
@@ -79,8 +81,8 @@ export default async function BlogPostPage({ params }: Props) {
           <section className="mt-12">
             <h2 className="text-2xl font-bold text-charcoal mb-4">{t.faq}</h2>
             <div className="space-y-3">
-              {post.faq.map((f) => (
-                <details key={f.q} className="rounded-xl border border-border p-4 [&::-webkit-details-marker]:hidden">
+              {post.faq.map((f, i) => (
+                <details key={i} className="rounded-xl border border-border p-4 [&::-webkit-details-marker]:hidden">
                   <summary className="font-semibold text-charcoal cursor-pointer">{f.q}</summary>
                   <p className="mt-2 text-muted-foreground">{f.a}</p>
                 </details>
