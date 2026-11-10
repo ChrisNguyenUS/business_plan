@@ -260,7 +260,8 @@ export const BLOG_TAGS: readonly BlogTag[] = [
       vi: "Mở tài khoản ngân hàng cá nhân và xây dựng điểm tín dụng khi mới sang Mỹ.",
       en: "Opening a personal bank account and building a credit score when you are new to the U.S.",
     },
-  },  {
+  },
+  {
     key: "health-insurance",
     category: "insurance",
     slug: { vi: "bao-hiem-suc-khoe", en: "health-insurance" },
@@ -268,6 +269,16 @@ export const BLOG_TAGS: readonly BlogTag[] = [
     description: {
       vi: "Bảo hiểm sức khỏe ở Mỹ: Open Enrollment trên Marketplace, trợ giá theo thu nhập, Medicaid và Medicare.",
       en: "Health insurance in the U.S.: Marketplace Open Enrollment, income-based savings, Medicaid and Medicare.",
+    },
+  },
+  {
+    key: "life-insurance",
+    category: "insurance",
+    slug: { vi: "bao-hiem-nhan-tho", en: "life-insurance" },
+    label: { vi: "Bảo hiểm nhân thọ", en: "Life insurance" },
+    description: {
+      vi: "Bảo hiểm nhân thọ ở Mỹ: term, whole life, universal life, người thụ hưởng và quyền của bạn khi mua tại Texas.",
+      en: "Life insurance in the U.S.: term, whole life, universal life, beneficiaries and your rights when you buy in Texas.",
     },
   },
 ];

@@ -78,12 +78,14 @@ describe("documents hashtags", () => {
 
 describe("insurance hashtags", () => {
   it("lists the insurance hashtags in registry order", () => {
-    expect(tagsInCategory("insurance").map((t) => t.key)).toEqual(["health-insurance"]);
+    expect(tagsInCategory("insurance").map((t) => t.key)).toEqual(["health-insurance", "life-insurance"]);
   });
 
   it("builds localized paths for them", () => {
     expect(tagPath("vi", "health-insurance")).toBe("/vi/blog/chu-de/bao-hiem-suc-khoe");
     expect(tagPath("en", "health-insurance")).toBe("/en/blog/topics/health-insurance");
+    expect(tagPath("vi", "life-insurance")).toBe("/vi/blog/chu-de/bao-hiem-nhan-tho");
+    expect(tagPath("en", "life-insurance")).toBe("/en/blog/topics/life-insurance");
   });
 });
 
