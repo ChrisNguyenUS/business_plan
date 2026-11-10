@@ -46,6 +46,13 @@ Documents (8 posts):
 7. Bank account: a debit card, a stack of gold coins, a small bank building with columns.
 8. Credit score: a gauge dial with a gold needle rising low to high, a credit card, a small three-bar chart.
 
+Insurance (3 posts, plum family confirmed in production 2026-11):
+1. Medicare: a blank health card with a cross, a tipped pill bottle with capsules, round reading glasses, a calendar page with one gold-circled day.
+2. Life insurance: a small house under a large open paper umbrella, a gold heart, a blank scroll with a ribbon seal, a young sapling.
+3. Marketplace Open Enrollment: see `mua-bao-hiem-suc-khoe-open-enrollment.webp`.
+
+Tax (one recent example): 1099-NEC for nail salons: a blank grid form on a clipboard, a nail polish bottle with a gold cap, a salon chair, a sealed envelope.
+
 Tax, Immigration and Business scenes are in the existing covers under `apps/website/public/images/blog/`; look at one of the same category before writing a new scene.
 
 ## Workflow
