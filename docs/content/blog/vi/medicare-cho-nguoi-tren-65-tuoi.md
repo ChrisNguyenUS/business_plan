@@ -107,7 +107,7 @@ Mùa Open Enrollment cũng là mùa nhiều cuộc gọi lạ. Hãy nhớ:
 - **1-800-MEDICARE (1-800-633-4227):** bạn có thể xin thông dịch viên tiếng Việt.
 - **Social Security:** 1-800-772-1213, để đăng ký Part A, B và hỏi về Extra Help.
 
-**Bạn sống ở Texas?** Manna One Solution là đại lý bảo hiểm có giấy phép tại Texas, NPN #21024561. Nếu trong nhà có người dưới 65 tuổi cần bảo hiểm sức khỏe, hoặc bạn muốn tìm hiểu bảo hiểm nhân thọ, bạn có thể [đặt lịch với chúng tôi](/vi/services/insurance) để được giải thích bằng tiếng Việt. Chúng tôi chỉ phục vụ bảo hiểm tại Texas.
+**Bạn sống ở Texas?** Manna One Solution là đại lý bảo hiểm có giấy phép tại Texas, NPN #21024561, và giúp khách **ở Texas** so sánh và đăng ký plan Medicare bằng tiếng Việt. Bạn có thể [đặt lịch với chúng tôi](/vi/services/insurance) trước 7/12 để xem lại plan cho năm 2027, hoặc trước sinh nhật 65 tuổi để đăng ký lần đầu. Chúng tôi chỉ phục vụ bảo hiểm tại Texas; nếu bạn ở bang khác, hãy gọi 1-800-MEDICARE hoặc chương trình SHIP của bang bạn.
 
 Bài này chỉ cung cấp thông tin chung, không phải tư vấn bảo hiểm, thuế hay pháp lý cho trường hợp riêng của bạn.
 
@@ -149,3 +149,7 @@ Theo Medicare.gov, mỗi người tự trả tiền thuốc Part D tối đa $2,
 ### Ai giúp tôi so sánh plan miễn phí bằng tiếng Việt?
 
 Ở Texas, bạn gọi HICAP số 1-800-252-9240. Bạn cũng có thể gọi 1-800-MEDICARE và xin thông dịch viên tiếng Việt.
+
+### Manna One Solution có giúp đăng ký Medicare không?
+
+Có, cho khách sống tại Texas, vì giấy phép bảo hiểm của chúng tôi là của Texas (NPN #21024561). Nếu bạn ở bang khác, bạn gọi 1-800-MEDICARE hoặc chương trình SHIP miễn phí của bang mình.

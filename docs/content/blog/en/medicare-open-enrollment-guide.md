@@ -108,7 +108,7 @@ Open Enrollment season brings a lot of unwanted calls. Keep in mind:
 - **1-800-MEDICARE (1-800-633-4227):** you can ask for an interpreter.
 - **Social Security:** 1-800-772-1213, to sign up for Parts A and B and ask about Extra Help.
 
-**Live in Texas?** Manna One Solution is a licensed Texas insurance agency, NPN #21024561. If someone in your household under 65 needs health insurance, or you want to learn about life insurance, you can [book a time with us](/en/services/insurance) for an explanation in Vietnamese or English. We only serve insurance clients in Texas.
+**Live in Texas?** Manna One Solution is a licensed Texas insurance agency, NPN #21024561, and helps **Texas residents** compare and enroll in Medicare plans in Vietnamese or English. You can [book a time with us](/en/services/insurance) before December 7 to review your plan for 2027, or before your 65th birthday to sign up for the first time. We only serve insurance clients in Texas; if you live in another state, call 1-800-MEDICARE or your state's SHIP program.
 
 This article is general information, not insurance, tax or legal advice for your situation.
 
@@ -150,3 +150,7 @@ According to Medicare.gov, out-of-pocket Part D drug costs are capped at $2,400 
 ### Who can help me compare plans for free?
 
 In Texas, call HICAP at 1-800-252-9240. You can also call 1-800-MEDICARE and ask for an interpreter.
+
+### Does Manna One Solution help with Medicare enrollment?
+
+Yes, for clients who live in Texas, because our insurance license is a Texas license (NPN #21024561). If you live in another state, call 1-800-MEDICARE or your state's free SHIP program.
