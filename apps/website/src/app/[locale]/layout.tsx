@@ -44,7 +44,10 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 30;
+// Safety net only. Admin saves (Content, Blog) refresh pages on demand via
+// revalidatePath, so this can stay long. 30s here regenerated every visited page
+// twice a minute and blew through Vercel's ISR write quota (255k/30 days).
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   return [{ locale: "en" }, { locale: "vi" }];

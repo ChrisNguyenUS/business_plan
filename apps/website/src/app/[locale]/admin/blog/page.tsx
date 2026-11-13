@@ -110,6 +110,8 @@ export default function AdminBlog() {
       );
       return;
     }
+    // Public pages are cached for a day; refresh them now so the change shows.
+    fetch("/api/admin/revalidate", { method: "POST" }).catch(() => {});
     setEditing(null);
     load();
   }
