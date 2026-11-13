@@ -5,7 +5,9 @@ import { Plus, Search, Edit, Eye, EyeOff, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { BlogPostRow, FaqItem } from "@/lib/blog/types";
 import { slugify } from "@/lib/blog/slugify";
-import { publishBlocker } from "@/lib/blog/publish-guard";
+import { publishBlocker, saveBlocker } from "@/lib/blog/publish-guard";
+import { viewPostPath } from "@/lib/blog/post-locale";
+import { previousSlugsAfterEdit } from "@/lib/blog/previous-slugs";
 import { keepTagsForCategory, tagsInCategory } from "@/lib/blog/tags";
 
 type BlogPost = BlogPostRow;
@@ -62,10 +64,10 @@ export default function AdminBlog() {
 
   async function savePost() {
     if (!editing) return;
-    if (editing.published) {
-      const blocker = publishBlocker(editing);
-      if (blocker) { setSaveError(blocker); return; }
-    }
+    // Drafts too: the database rejects a bad slug or a post with no slug.
+    const blocker = editing.published ? publishBlocker(editing) : saveBlocker(editing);
+    if (blocker) { setSaveError(blocker); return; }
+    const original = editing.id ? posts.find((p) => p.id === editing.id) : undefined;
     setSaving(true);
     setSaveError(null);
 
@@ -86,6 +88,11 @@ export default function AdminBlog() {
       tags: editing.tags ?? [],
       post_type: editing.post_type || "article",
       published: editing.published ?? false,
+      // Old links keep working after a slug change (website_03). Sent only when
+      // the loaded row has the column, so saving still works before the migration.
+      ...(original && "previous_slugs" in original
+        ? { previous_slugs: previousSlugsAfterEdit(original, { slug_vi: editing.slug_vi || null, slug_en: editing.slug_en || null }) }
+        : {}),
     };
 
     const { error } = editing.id
@@ -94,9 +101,17 @@ export default function AdminBlog() {
 
     setSaving(false);
     if (error) {
-      setSaveError(error.code === "23505" ? "Slug này đã được dùng cho bài khác." : error.message);
+      setSaveError(
+        error.code === "23505"
+          ? "Slug này đã được dùng cho bài khác."
+          : error.code === "23514"
+            ? "Dữ liệu chưa hợp lệ (slug, chủ đề hoặc loại bài). Kiểm tra lại rồi lưu."
+            : `Không lưu được bài: ${error.message}`,
+      );
       return;
     }
+    // Public pages are cached for a day; refresh them now so the change shows.
+    fetch("/api/admin/revalidate", { method: "POST" }).catch(() => {});
     setEditing(null);
     load();
   }
@@ -138,7 +153,9 @@ export default function AdminBlog() {
         <p className="text-center text-muted-foreground py-16">No blog posts found.</p>
       ) : (
         <div className="space-y-3">
-          {filtered.map(p => (
+          {filtered.map(p => {
+            const viewHref = p.published ? viewPostPath(p) : null;
+            return (
             <div key={p.id} className="bg-white rounded-xl border border-border p-5 flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -152,9 +169,9 @@ export default function AdminBlog() {
                 <p className="font-semibold text-charcoal text-sm truncate">{p.title_vi || p.title_en || "Untitled"}</p>
                 <div className="flex items-center gap-3">
                   <p className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</p>
-                  {p.published && (p.slug_vi || p.slug_en) && (
+                  {viewHref && (
                     <a
-                      href={p.slug_vi ? `/vi/blog/${p.slug_vi}` : `/en/blog/${p.slug_en}`}
+                      href={viewHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-primary"
@@ -166,7 +183,8 @@ export default function AdminBlog() {
               </div>
               <button onClick={() => openEditor(p)} className="ml-4 p-2 rounded-lg hover:bg-muted transition-colors"><Edit className="h-4 w-4 text-muted-foreground" /></button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -198,7 +216,7 @@ export default function AdminBlog() {
               />
               <div>
                 <FormField
-                  label={`Excerpt / meta description (${lang.toUpperCase()})`}
+                  label={`Excerpt / meta description (${lang.toUpperCase()}) — bắt buộc khi đăng`}
                   value={excerpt}
                   onChange={(v) => setEditing({ ...editing, [lang === "vi" ? "excerpt_vi" : "excerpt_en"]: v })}
                 />

@@ -10,6 +10,9 @@ import { BLOG_LABELS, formatPostDate } from "@/lib/blog/labels";
 import { tagPath, tagsForPost } from "@/lib/blog/tags";
 import { serializeJsonLd } from "@/lib/seo/json-ld";
 import { PostBody } from "@/components/blog/PostBody";
+import Eb3MessengerButton from "@/components/services/Eb3MessengerButton";
+import { isAllowedCoverUrl } from "@/lib/blog/cover";
+import { postCta } from "@/lib/blog/post-cta";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -33,6 +36,7 @@ export default async function BlogPostPage({ params }: Props) {
   const t = BLOG_LABELS[locale];
   const postTags = tagsForPost(post.tags);
   const d = await getDictionary(locale);
+  const cta = postCta(post);
 
   return (
     <div className="py-16 lg:py-24">
@@ -42,6 +46,8 @@ export default async function BlogPostPage({ params }: Props) {
           <Link href={`/${locale}`} className="hover:text-primary">{t.home}</Link>
           <span className="mx-2">›</span>
           <Link href={`/${locale}/blog`} className="hover:text-primary">{t.blog}</Link>
+          <span className="mx-2">›</span>
+          <span aria-current="page" className="text-charcoal">{post.title}</span>
         </nav>
 
         <h1 className="text-3xl lg:text-4xl font-bold text-charcoal mb-4 leading-tight">{post.title}</h1>
@@ -64,7 +70,7 @@ export default async function BlogPostPage({ params }: Props) {
           </ul>
         )}
 
-        {post.coverImageUrl && (
+        {post.coverImageUrl && isAllowedCoverUrl(post.coverImageUrl) && (
           <div className="rounded-2xl overflow-hidden mb-8 relative aspect-[1200/630]">
             <Image src={post.coverImageUrl} alt={post.title} fill priority sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
           </div>
@@ -78,8 +84,8 @@ export default async function BlogPostPage({ params }: Props) {
           <section className="mt-12">
             <h2 className="text-2xl font-bold text-charcoal mb-4">{t.faq}</h2>
             <div className="space-y-3">
-              {post.faq.map((f) => (
-                <details key={f.q} className="rounded-xl border border-border p-4 [&::-webkit-details-marker]:hidden">
+              {post.faq.map((f, i) => (
+                <details key={i} className="rounded-xl border border-border p-4 [&::-webkit-details-marker]:hidden">
                   <summary className="font-semibold text-charcoal cursor-pointer">{f.q}</summary>
                   <p className="mt-2 text-muted-foreground">{f.a}</p>
                 </details>
@@ -88,11 +94,26 @@ export default async function BlogPostPage({ params }: Props) {
           </section>
         )}
 
-        {post.category === "immigration" && (
+        {cta && (
           <>
             <p className="mt-10 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground leading-relaxed">
               {d.immigration_scope_note}
             </p>
+            {cta === "eb3" ? (
+              <div className="mt-8 rounded-2xl border border-primary/20 bg-teal-light p-8 text-center">
+                <h2 className="text-xl font-bold text-charcoal mb-2">{d.eb3.featured_title}</h2>
+                <p className="text-muted-foreground text-sm mb-6">{d.eb3.featured_desc}</p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Eb3MessengerButton label={d.eb3.cta_messenger} />
+                  <Link
+                    href={`/${locale}/services/immigration/eb3#eb3-check`}
+                    className="inline-flex items-center justify-center rounded-full border border-primary/30 bg-white px-6 h-11 text-sm font-semibold text-primary hover:bg-primary/5"
+                  >
+                    {d.eb3.cta_check}
+                  </Link>
+                </div>
+              </div>
+            ) : (
             <div className="mt-8 rounded-2xl border border-primary/20 bg-teal-light p-8 text-center">
               <h2 className="text-xl font-bold text-charcoal mb-2">{t.ctaTitle}</h2>
               <p className="text-muted-foreground text-sm mb-6">{t.ctaBody}</p>
@@ -108,6 +129,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </Link>
               </div>
             </div>
+            )}
           </>
         )}
       </article>

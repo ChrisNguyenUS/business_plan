@@ -29,4 +29,14 @@ describe("BlogCardGrid", () => {
     expect(html).toContain("3 phút đọc");
     expect(html).toContain('dateTime="2026-10-19T19:43:00Z"');
   });
+
+  it("leaves out a cover next/image cannot load instead of breaking the page", () => {
+    const render = (coverImageUrl: string) =>
+      renderToStaticMarkup(
+        <BlogCardGrid cards={[toBlogCard({ ...post, coverImageUrl }, "vi")]} categoryLabels={{}} minReadLabel="{n}" />,
+      );
+    expect(() => render("https://example.com/a.jpg")).not.toThrow();
+    expect(render("https://example.com/a.jpg")).not.toContain("<img");
+    expect(render("/images/blog/a.webp")).toContain("<img");
+  });
 });

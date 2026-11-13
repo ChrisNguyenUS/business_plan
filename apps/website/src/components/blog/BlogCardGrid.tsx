@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { isAllowedCoverUrl } from "@/lib/blog/cover";
 import { Calendar, ChevronRight, Clock } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { blogPostPath } from "@/lib/blog/post-locale";
@@ -54,7 +55,7 @@ export function BlogCardGrid({
           href={p.href}
           className="group flex flex-col bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          {p.coverImageUrl && (
+          {p.coverImageUrl && isAllowedCoverUrl(p.coverImageUrl) && (
             <div className="aspect-[1200/630] overflow-hidden relative">
               <Image src={p.coverImageUrl} alt={p.title} fill sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw" className="object-cover" />
             </div>

@@ -32,7 +32,19 @@ describe('adminQuestionDetail', () => {
     const d = adminQuestionDetail(38)!;
     expect(d.questionEn).toBe('What is the name of the President of the United States now?');
     expect(d.answers).toEqual([{ en: 'Donald Trump', vi: 'Donald Trump' }]);
-    expect(d.distractors).toEqual(N400_DISTRACTORS[38]);
+    expect(d.distractors).toEqual(N400_DISTRACTORS[38].filter((x) => x.en !== 'Donald Trump'));
+  });
+
+  it('lists only the wrong choices learners can see, never an accepted answer', () => {
+    // The static lists for Q38/Q39 contain the current officeholder; the quiz
+    // engine drops it, and so does the admin view.
+    expect(adminQuestionDetail(38)!.distractors.map((x) => x.en)).toEqual(['Barack Obama', 'Bill Clinton', 'George W. Bush', 'Jimmy Carter']);
+    expect(adminQuestionDetail(39)!.distractors.map((x) => x.en)).toEqual(['Mike Pence', 'Joe Biden', 'Al Gore', 'Dick Cheney']);
+    for (const q of N400_QUESTIONS) {
+      const d = adminQuestionDetail(q.id)!;
+      const accepted = new Set(q.answersEn.map((a) => a.toLowerCase()));
+      for (const x of d.distractors) expect(accepted.has(x.en.toLowerCase())).toBe(false);
+    }
   });
 
   it('points at the audio files learners hear, and every one exists', () => {

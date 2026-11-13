@@ -39,6 +39,27 @@ export function normalizePhone(phone: string): string {
   return digits.startsWith("1") ? digits : `1${digits}`;
 }
 
+// Zalo accounts are tied to phone numbers, and the EB-3 form only sends Zalo
+// for leads in Vietnam, where numbers are written 0xxx without the country
+// code. Returns E.164 ("+84..."), or null for a Zalo username or text too
+// short or long to be a phone number. An explicit "+" or "00" keeps its own
+// country code. The "+" matters: normalizePhone would read 84... as US.
+export function vnPhoneToE164(raw: string): string | null {
+  const compact = raw.trim().replace(/[\s.\-()]/g, "");
+  if (!/^\+?\d+$/.test(compact)) return null;
+  const digits = compact.replace(/\D/g, "");
+  let e164: string;
+  if (compact.startsWith("+")) e164 = digits;
+  else if (digits.startsWith("00")) e164 = digits.slice(2);
+  else if (digits.startsWith("84") && digits.length >= 11) e164 = digits;
+  else if (digits.startsWith("0")) e164 = `84${digits.slice(1)}`;
+  else e164 = `84${digits}`;
+  // E.164 allows 15 digits at most; a Vietnamese number is 84 + 9 or 10 digits.
+  if (e164.length < 10 || e164.length > 15) return null;
+  if (e164.startsWith("84") && (e164.length < 11 || e164.length > 12)) return null;
+  return `+${e164}`;
+}
+
 export function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }

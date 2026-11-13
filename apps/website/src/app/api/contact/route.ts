@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendCapiLead } from "@/lib/analytics/meta-capi";
+import { vnPhoneToE164 } from "@/lib/analytics/events";
 import { CONTACT_SERVICES, EMAIL_RE } from "@/lib/contact/validate";
 import { createContactLimiter } from "@/lib/contact/rate-limit";
 
@@ -185,12 +186,17 @@ export async function POST(request: Request) {
       const lastName = rest.join(" ");
       const source = trackingText(utm_source);
       const campaign = trackingText(utm_campaign);
+      // A Zalo handle that is a phone number is a Vietnamese number (the
+      // EB-3 form only sends Zalo for leads in Vietnam): pass it as +84 so
+      // Meta can match the lead.
+      const zaloPhone = zaloHandle ? vnPhoneToE164(zaloHandle) : null;
+      const phones = [phoneValue, zaloPhone].filter((p): p is string => !!p);
       await sendCapiLead({
         eventId,
         eventSourceUrl: trackingText(event_source_url) || "",
         user: {
           emails: emailValue ? [emailValue] : undefined,
-          phones: phoneValue ? [phoneValue] : undefined,
+          phones: phones.length ? phones : undefined,
           firstName: firstName || undefined,
           lastName: lastName || undefined,
           clientIp: clientIp === "unknown" ? null : clientIp,

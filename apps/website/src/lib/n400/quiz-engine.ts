@@ -1,5 +1,5 @@
 import { N400_QUESTIONS, N400_QUESTIONS_BY_ID, type N400Question, type N400CategoryKey } from './questions-data';
-import { N400_DISTRACTORS } from './distractors-data';
+import { N400_DISTRACTORS, type N400Distractor } from './distractors-data';
 import { STATES_BY_CODE, type StateCode } from './state-data';
 import { REPS_BY_STATE, repForDistrict } from './reps-data';
 import { NON_STATE_CODES, locationRuleAnswer } from './location-rules';
@@ -175,6 +175,25 @@ function normalizeAnswer(s: string): string {
     .trim();
 }
 
+/**
+ * A question's hand-written wrong choices that learners can actually see:
+ * any equal to, or overlapping, an accepted answer is dropped. (The static
+ * lists for Q38/Q39 contain the current officeholder.)
+ */
+export function staticDistractorsFor(questionId: number, correctAnswersEn: string[]): N400Distractor[] {
+  const correctSet = new Set(correctAnswersEn.map(normalizeAnswer));
+  return (N400_DISTRACTORS[questionId] || []).filter((d) => {
+    const enNorm = normalizeAnswer(d.en);
+    if (correctSet.has(enNorm)) return false;
+    // Filter clear semantic overlap
+    for (const c of correctSet) {
+      if (c.length > 4 && enNorm.includes(c)) return false;
+      if (enNorm.length > 4 && c.includes(enNorm)) return false;
+    }
+    return true;
+  });
+}
+
 export function shuffle<T>(arr: T[], seed: string | number): T[] {
   const rng = mulberry32(hashSeed(seed));
   const out = [...arr];
@@ -216,22 +235,11 @@ export function buildOptions(
   const correct = fallback[Math.floor(rng() * fallback.length)] ?? { en: '—', vi: '—' };
 
   const correctSet = new Set(fallback.map((c) => normalizeAnswer(c.en)));
-  const candidates: { en: string; vi: string }[] = [];
-
   // 1. Try manually authored static distractors for this question
-  const staticList = N400_DISTRACTORS[question.id] || [];
-  for (const d of staticList) {
-    const enNorm = normalizeAnswer(d.en);
-    if (correctSet.has(enNorm)) continue;
-    // Filter clear semantic overlap
-    let overlap = false;
-    for (const c of correctSet) {
-      if (c.length > 4 && enNorm.includes(c)) { overlap = true; break; }
-      if (enNorm.length > 4 && c.includes(enNorm)) { overlap = true; break; }
-    }
-    if (overlap) continue;
-    candidates.push({ en: d.en, vi: d.vi });
-  }
+  const candidates: { en: string; vi: string }[] = staticDistractorsFor(
+    question.id,
+    fallback.map((c) => c.en),
+  ).map((d) => ({ en: d.en, vi: d.vi }));
 
   // 2. Fall back to other questions in the same category if we have fewer than 3 candidates
   if (candidates.length < 3) {

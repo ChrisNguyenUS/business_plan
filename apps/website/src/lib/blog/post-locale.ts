@@ -13,14 +13,26 @@ export function blogPostPath(locale: Locale, slug: string): string {
   return `/${locale}/blog/${slug}`;
 }
 
-/** Locales whose slug, title and content are all filled in — the post "exists" there. */
+/**
+ * Locales whose slug, title, excerpt and content are all filled in — the post
+ * "exists" there. Same rule as the publish guard: the excerpt is the page's
+ * meta description, so a language without one is not live.
+ */
 export function postSlugs(post: BlogPostRow): Partial<Record<Locale, string>> {
   const slugs: Partial<Record<Locale, string>> = {};
   for (const locale of locales) {
     const f = fieldsFor(post, locale);
-    if (filled(f.slug) && filled(f.title) && filled(f.content)) slugs[locale] = f.slug!;
+    if (filled(f.slug) && filled(f.title) && filled(f.excerpt) && filled(f.content)) slugs[locale] = f.slug!;
   }
   return slugs;
+}
+
+/** Where the admin's "Xem bài" link goes: the live Vietnamese page, else the live English one. */
+export function viewPostPath(post: BlogPostRow): string | null {
+  const slugs = postSlugs(post);
+  if (slugs.vi) return blogPostPath("vi", slugs.vi);
+  if (slugs.en) return blogPostPath("en", slugs.en);
+  return null;
 }
 
 export function localizePost(post: BlogPostRow, locale: Locale): LocalizedPost | null {
@@ -79,11 +91,13 @@ export function resolvePostRoute(candidates: BlogPostRow[], locale: Locale, slug
 export type PostSlugAlternates = Record<Locale, Record<string, string>>;
 
 export function postSlugAlternates(
-  rows: Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en">[],
+  rows: Pick<BlogPostRow, "slug_vi" | "slug_en" | "title_vi" | "title_en" | "excerpt_vi" | "excerpt_en">[],
 ): PostSlugAlternates {
   const out: PostSlugAlternates = { vi: {}, en: {} };
   for (const r of rows) {
-    if (filled(r.slug_vi) && filled(r.title_vi) && filled(r.slug_en) && filled(r.title_en)) {
+    const live = (slug: string | null, title: string | null, excerpt: string | null) =>
+      filled(slug) && filled(title) && filled(excerpt);
+    if (live(r.slug_vi, r.title_vi, r.excerpt_vi) && live(r.slug_en, r.title_en, r.excerpt_en)) {
       out.vi[r.slug_vi!] = r.slug_en!;
       out.en[r.slug_en!] = r.slug_vi!;
     }
